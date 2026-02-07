@@ -5,7 +5,7 @@ set key tc rgb 'gray'
 set xlabel 'x' tc rgb 'gray'
 set ylabel 'z' tc rgb 'gray'
 set grid
-set output '../../png/Chebyshev.png'
+set output '../../png/Chebyshev/Chebyshev.png'
 
 plot '../../Data/Chebyshev' u 1:2 notitle with lines lw 4 lc rgb 'red',\
      '../../Data/Chebyshev' u 1:3 notitle with lines lw 4 lc rgb 'blue',\

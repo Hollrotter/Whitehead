@@ -1,7 +1,5 @@
 #pragma once
-#define ARMA_DONT_PRINT_FAST_MATH_WARNING
-#include <armadillo>
-#include <omp.h>
+#include "misc.hpp"
 #include "enums.hpp"
 
 namespace Chebyshev

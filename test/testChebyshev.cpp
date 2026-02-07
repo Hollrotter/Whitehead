@@ -9,7 +9,7 @@ int main()
     z.t().print();
     dz.t().print();
     d2z.t().print();
-    std::ofstream file("plot/Data/Chebyshev");
+    std::ofstream file("plot/Data/Chebyshev/Chebyshev");
     for (size_t i = 0; i < x.size(); i++)
         file << x(i) << ' ' << z(i) << ' ' << dz(i) << ' ' << d2z(i) << '\n';
     file.close();
