@@ -1,0 +1,6 @@
+*.o
+*.a
+test/.vscode/
+test/plot/Data/*
+test/plot/png/*
+test/test
