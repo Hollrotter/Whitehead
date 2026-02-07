@@ -2,7 +2,8 @@
 
 STRING = lib/String.o lib/StringLinear.o lib/StringNonlinear.o lib/StringStructuralMatrix.o
 CHEBYSHEV = lib/Chebyshev.o
-OBJS = $(STRING) $(CHEBYSHEV)
+METRIC = lib/Christoffel.o lib/Metric.o lib/MetricCo.o lib/Jacobian.o
+OBJS = $(STRING) $(CHEBYSHEV) $(METRIC)
 BINS = $(OBJS) lib/libWhitehead.a
 OPTIONS = g++ -Ofast -c
 INCLUDE = -I./include -fopenmp -std=c++23
@@ -12,6 +13,18 @@ all: $(BINS)
 
 lib/Chebyshev.o: src/Chebyshev.cpp
 	$(OPTIONS) src/Chebyshev.cpp $(INCLUDE) $(LDLIBS) -o lib/Chebyshev.o
+
+lib/Christoffel.o: src/Christoffel.cpp
+	$(OPTIONS) src/Christoffel.cpp $(INCLUDE) $(LDLIBS) -o lib/Christoffel.o
+
+lib/Jacobian.o: src/Jacobian.cpp
+	$(OPTIONS) src/Jacobian.cpp $(INCLUDE) $(LDLIBS) -o lib/Jacobian.o
+
+lib/Metric.o: src/Metric.cpp
+	$(OPTIONS) src/Metric.cpp $(INCLUDE) $(LDLIBS) -o lib/Metric.o
+
+lib/MetricCo.o: src/MetricCo.cpp
+	$(OPTIONS) src/MetricCo.cpp $(INCLUDE) $(LDLIBS) -o lib/MetricCo.o
 
 lib/String.o: src/String.cpp
 	$(OPTIONS) src/String.cpp $(INCLUDE) $(LDLIBS) -o lib/String.o
