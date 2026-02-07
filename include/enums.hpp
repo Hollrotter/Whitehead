@@ -4,6 +4,7 @@
 enum class Analysis
 {
     linear, // Linear analysis
+    semilinear, // Semilinear analysis
     nonlinear // Nonlinear analysis
 };
 
@@ -21,6 +22,29 @@ enum class Derivative
 {
     first, // First derivative
     second // Second derivative
+};
+
+// Describes the location of the wing boundary (north, south, east, west)
+enum class Direction
+{
+    S, // Southern boundary (Normally the leading edge)
+    E, // Eastern boundary (Normally the tip of the wing)
+    N, // Northern boundary (Normally the trailing edge)
+    W // Western boundary (Normally the base of the wing)
+};
+
+// For output or boundary conditions, one field must be selected
+enum class Field
+{
+    z, // Deformation in z-direction
+    v1, // Displacement in 1-direction (physical component)
+    v2, // Displacement in 2-direction (physical component)
+    n11, // Stress component 11 (physical component)
+    n12, // Stress component 12 (physical component)
+    n22, // Stress component 22 (physical component)
+    k11, // Stress component 11 in projection surface (physical component)
+    k12, // Stress component 12 in projection surface (physical component)
+    k22  // Stress component 22 in projection surface (physical component)
 };
 
 // Boundary location of the camber (leading- or trailing edge)

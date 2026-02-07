@@ -9,7 +9,7 @@
  * @param D2 Derivative Matrix of differentiation in 2-direction.
  * @return arma::field<arma::mat> 
  */
-arma::field<arma::mat> jacobian(arma::mat &y1, arma::mat &y2, arma::mat &D1, arma::mat &D2)
+arma::field<arma::mat> Jacobian(arma::mat &y1, arma::mat &y2, arma::mat &D1, arma::mat &D2)
 {
 	arma::field<arma::mat> J(2, 2);
 
