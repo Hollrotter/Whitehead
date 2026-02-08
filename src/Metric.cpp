@@ -16,6 +16,13 @@ std::tuple<arma::cube, arma::cube> Metric(arma::mat &y1, arma::mat &y2, arma::ma
 	return {g_c, gc};
 }
 
+std::tuple<arma::cube, arma::cube> Metric(const std::array<Lagrange::CurveInterpolant*, 4> chi)
+{
+	arma::cube g_c = MetricCo(chi);
+	arma::cube gc  = MetricContra(g_c);
+	return {g_c, gc};
+}
+
 /**
  * @brief 
  * 

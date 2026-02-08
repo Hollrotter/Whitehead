@@ -1,11 +1,11 @@
 #pragma once
 #include <memory>
-#include "Chebyshev.hpp"
 #include "TensorField.hpp"
 #include "Metric.hpp"
 
 class Membrane
 {
+    std::array<Lagrange::CurveInterpolant*, 4> chi;
     double Et = 1000; // Young's modulus multiplied by thickness
     double nu = 0.3; // Poisson's ratio
     double D = Et/(1 - nu*nu); // Material constant
@@ -97,10 +97,17 @@ class Membrane
     arma::mat v1__2 = arma::zeros(nx, ny);
     arma::mat v2__1 = arma::zeros(nx, ny);
     arma::mat v2__2 = arma::zeros(nx, ny);
+    Membrane fromTransfiniteQuadMap(std::array<Lagrange::CurveInterpolant*, 4> _chi)
+    {
+        chi = _chi;
+        auto [x, y] = Lagrange::TransfiniteQuadMap(chi);
+        return {x, y};
+    }
 public:
     Membrane() = default;
     // Constructor to set x and y
     Membrane(arma::mat _x, arma::mat _y) : x(_x), y(_y) {}
+    Membrane(std::array<Lagrange::CurveInterpolant*, 4> _chi) : Membrane(fromTransfiniteQuadMap(_chi)) {}
     // Sets the Young's modulus times thickness (Et)
     void youngsModulus(const double _Et);
     // Sets the Poisson's ratio (nu)
@@ -170,7 +177,7 @@ public:
     {
         n22.fill(_n22);
     }
-   void inPlaneTensorial(const arma::vec, const arma::vec);
+    void inPlaneTensorial(const arma::vec, const arma::vec);
     void inPlaneKartesian(const arma::vec, const arma::vec);
     void inPlaneKartesian(const arma::mat, const arma::mat, const arma::mat);
     arma::mat X() const
@@ -358,15 +365,25 @@ public:
     {
         boundary(field, dir, bc, 0);
     }
+    void boundary(const Field field, const Lagrange::CurveInterpolant* dir, const BC bc)
+    {
+        boundary(field, dir, bc, 0);
+    }
     // Set arbitrary boundary condition at specified boundary with specified type
     template <class C> void boundary(const Field, const Direction, const BC, const C);
+    template <class C> void boundary(const Field, const Lagrange::CurveInterpolant*, const BC, const C);
     // Set boundary condition with constants for homogeneous boundary condition
     void boundary(const Field field, const Direction dir, const BC bc, const double _r1, const double _r2)
     {
         boundary(field, dir, bc, _r1, _r2, 0);
     }
+    void boundary(const Field field, const Lagrange::CurveInterpolant* dir, const BC bc, const double _r1, const double _r2)
+    {
+        boundary(field, dir, bc, _r1, _r2, 0);
+    }
     // Set boundary condition with constants for Robin boundary condition
     template <class C> void boundary(const Field, const Direction, const BC, const double, const double, const C);
+    template <class C> void boundary(const Field, const Lagrange::CurveInterpolant*, const BC, const double, const double, const C);
     // Linear analysis
     void linear();
     // Semilinear analysis
@@ -389,6 +406,8 @@ public:
     {
         return operator()(i, j, field);
     }
+    void operator()(const arma::mat, const arma::mat);
+    void operator()(const std::array<Lagrange::CurveInterpolant*, 4>);
     TensorField operator()(const Field);
 private:
     arma::mat ddx()

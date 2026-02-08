@@ -7,14 +7,14 @@ void Membrane::nonlinear()
     arma::mat D2_t  = D2.t();
     arma::mat D22_t = D22.t();
 
-    arma::mat G112DD1 = 2*g112()^DD1; 
-    arma::mat G212DD2 = 2*g212()^DD2;
-    arma::mat G211DD2 =   g211()^DD2;
-    arma::mat G122DD1 =   g122()^DD1;
+    arma::mat G112DD1 = QLM(2*g112(), DD1);
+    arma::mat G212DD2 = QLM(2*g212(), DD2);
+    arma::mat G211DD2 = QLM(  g211(), DD2);
+    arma::mat G122DD1 = QLM(  g122(), DD1);
 
-    arma::mat dz__11dz = D2D11 - (g111()^DD1) -     G211DD2;
-    arma::mat dz__12dz = D2D12 - (g112()^DD1) - (g212()^DD2);
-    arma::mat dz__22dz = D2D22 -     G122DD1  - (g222()^DD2);
+    arma::mat dz__11dz = D2D11 - QLM(g111(), DD1) -     G211DD2;
+    arma::mat dz__12dz = D2D12 - QLM(g112(), DD1) - QLM(g212(), DD2);
+    arma::mat dz__22dz = D2D22 -     G122DD1  - QLM(g222(), DD2);
 
     arma::mat dv1__1dv1  = DD1 - diagmat(vectorise(g111()));
     arma::mat dv1__2dv1  = DD2 - diagmat(vectorise(g112()));
@@ -25,20 +25,20 @@ void Membrane::nonlinear()
     arma::mat dv2__1dv2  = DD1 - diagmat(vectorise(g212()));
     arma::mat dv2__2dv2  = DD2 - diagmat(vectorise(g222()));
 
-    arma::mat dv1__11dv1 = D2D11 - (3*g111()^DD1) - G211DD2 + diagmat(vectorise(Psi1111));
-    arma::mat dv2__22dv2 = D2D22 - (3*g222()^DD2) - G122DD1 + diagmat(vectorise(Psi2222));
+    arma::mat dv1__11dv1 = D2D11 - QLM(3*g111(), DD1) - G211DD2 + diagmat(vectorise(Psi1111));
+    arma::mat dv2__22dv2 = D2D22 - QLM(3*g222(), DD2) - G122DD1 + diagmat(vectorise(Psi2222));
 
-    arma::mat dv1__11dv2 = diagmat(vectorise(Psi1112)) - (2*g211()^DD1);
-    arma::mat dv2__22dv1 = diagmat(vectorise(Psi2221)) - (2*g122()^DD2);
+    arma::mat dv1__11dv2 = diagmat(vectorise(Psi1112)) - QLM(2*g211(), DD1);
+    arma::mat dv2__22dv1 = diagmat(vectorise(Psi2221)) - QLM(2*g122(), DD2);
 
-    arma::mat dv1__12dv1 = D2D12 - G112DD1 - ((g111() + g212())^DD2) + diagmat(vectorise(Psi1121));
-    arma::mat dv2__12dv2 = D2D12 - G212DD2 - ((g112() + g222())^DD1) + diagmat(vectorise(Psi2122));
+    arma::mat dv1__12dv1 = D2D12 - G112DD1 - QLM((g111() + g212()), DD2) + diagmat(vectorise(Psi1121));
+    arma::mat dv2__12dv2 = D2D12 - G212DD2 - QLM((g112() + g222()), DD1) + diagmat(vectorise(Psi2122));
 
-    arma::mat dv1__12dv2 = diagmat(vectorise(Psi1122)) - G211DD2 - (g212()^DD1);
-    arma::mat dv2__12dv1 = diagmat(vectorise(Psi2121)) - G122DD1 - (g112()^DD2);
+    arma::mat dv1__12dv2 = diagmat(vectorise(Psi1122)) - G211DD2 - QLM(g212(), DD1);
+    arma::mat dv2__12dv1 = diagmat(vectorise(Psi2121)) - G122DD1 - QLM(g112(), DD2);
 
-    arma::mat dv1__22dv1 = D2D22 - G122DD1 - ((2*g112() - g222())^DD2) + diagmat(vectorise(Psi1221));
-    arma::mat dv2__11dv2 = D2D11 - G211DD2 - ((2*g212() + g111())^DD1) + diagmat(vectorise(Psi2111));
+    arma::mat dv1__22dv1 = D2D22 - G122DD1 - QLM((2*g112() - g222()), DD2) + diagmat(vectorise(Psi1221));
+    arma::mat dv2__11dv2 = D2D11 - G211DD2 - QLM((2*g212() + g111()), DD1) + diagmat(vectorise(Psi2111));
 
     arma::mat dv1__22dv2 = diagmat(vectorise(Psi1222)) - G212DD2;
     arma::mat dv2__11dv1 = diagmat(vectorise(Psi2112)) - G112DD1;
@@ -140,121 +140,121 @@ void Membrane::nonlinear()
                           vectorise(n12__1 + n22__2 + L211%n11 + 2*L212%n12 + L222%n22 + sae%s2)/D,
                           vectorise(z__11%n11 + 2*z__12%n12 + z__22%n22 + sae%s3)/D);
             
-            arma::mat dz_1__12 = z_1^dz__12dz;
-            arma::mat dz_2__12 = z_2^dz__12dz;
+            arma::mat dz_1__12 = QLM(z_1, dz__12dz);
+            arma::mat dz_2__12 = QLM(z_2, dz__12dz);
 
-            arma::mat dG_11__1dz  = (z__11^DD1) + (z_1^dz__11dz);
-            arma::mat dG_11__2dz  = (z__12^DD1) + dz_1__12;
-            arma::mat dG_12__1dz  = ((z__12^DD1) + dz_1__12 + (z__11^DD2) + (z_2^dz__11dz))/2;
-            arma::mat dG_12__2dz  = ((z__22^DD1) + (z_1^dz__22dz) + (z__12^DD2) + dz_2__12)/2;
-            arma::mat dG_22__1dz  = (z__12^DD2) + dz_2__12;
-            arma::mat dG_22__2dz  = (z__22^DD2) + (z_2^dz__22dz);
+            arma::mat dG_11__1dz  = QLM(z__11, DD1) + QLM(z_1, dz__11dz);
+            arma::mat dG_11__2dz  = QLM(z__12, DD1) + dz_1__12;
+            arma::mat dG_12__1dz  = (QLM(z__12, DD1) + dz_1__12 + QLM(z__11, DD2) + QLM(z_2, dz__11dz))/2;
+            arma::mat dG_12__2dz  = (QLM(z__22, DD1) + QLM(z_1, dz__22dz) + QLM(z__12, DD2) + dz_2__12)/2;
+            arma::mat dG_22__1dz  = QLM(z__12, DD2) + dz_2__12;
+            arma::mat dG_22__2dz  = QLM(z__22, DD2) + QLM(z_2, dz__22dz);
 
-            arma::mat dG_11dv1 = dv1__1dv1 + (e11()%v1__1^dv1__1dv1) + (e12()%v1__1^dv2__1dv1) + (e12()%v2__1^dv1__1dv1) + (e22()%v2__1^dv2__1dv1);
-            arma::mat dG_11dv2 = dv1__1dv2 + (e11()%v1__1^dv1__1dv2) + (e12()%v1__1^dv2__1dv2) + (e12()%v2__1^dv1__1dv2) + (e22()%v2__1^dv2__1dv2);
-            arma::mat dG_12dv1 = (dv1__2dv1 + dv2__1dv1 + (e11()%v1__1^dv1__2dv1) + (e11()%v1__2^dv1__1dv1) + (e12()%v1__1^dv2__2dv1) + (e12()%v2__2^dv1__1dv1) + (e12()%v1__2^dv2__1dv1) + (e12()%v2__1^dv1__2dv1) + (e22()%v2__1^dv2__2dv1) + (e22()%v2__2^dv2__1dv1))/2;
-            arma::mat dG_12dv2 = (dv1__2dv2 + dv2__1dv2 + (e11()%v1__1^dv1__2dv2) + (e11()%v1__2^dv1__1dv2) + (e12()%v1__1^dv2__2dv2) + (e12()%v2__2^dv1__1dv2) + (e12()%v1__2^dv2__1dv2) + (e12()%v2__1^dv1__2dv2) + (e22()%v2__1^dv2__2dv2) + (e22()%v2__2^dv2__1dv2))/2; 
-            arma::mat dG_22dv1 = dv2__2dv1 + (e11()%v1__2^dv1__2dv1) + (e12()%v1__2^dv2__2dv1) + (e12()%v2__2^dv1__2dv1) + (e22()%v2__2^dv2__2dv1);
-            arma::mat dG_22dv2 = dv2__2dv2 + (e11()%v1__2^dv1__2dv2) + (e12()%v1__2^dv2__2dv2) + (e12()%v2__2^dv1__2dv2) + (e22()%v2__2^dv2__2dv2);
+            arma::mat dG_11dv1 = dv1__1dv1 + QLM(e11()%v1__1, dv1__1dv1) + QLM(e12()%v1__1, dv2__1dv1) + QLM(e12()%v2__1, dv1__1dv1) + QLM(e22()%v2__1, dv2__1dv1);
+            arma::mat dG_11dv2 = dv1__1dv2 + QLM(e11()%v1__1, dv1__1dv2) + QLM(e12()%v1__1, dv2__1dv2) + QLM(e12()%v2__1, dv1__1dv2) + QLM(e22()%v2__1, dv2__1dv2);
+            arma::mat dG_12dv1 = (dv1__2dv1 + dv2__1dv1 + QLM(e11()%v1__1, dv1__2dv1) + QLM(e11()%v1__2, dv1__1dv1) + QLM(e12()%v1__1, dv2__2dv1) + QLM(e12()%v2__2, dv1__1dv1) + QLM(e12()%v1__2, dv2__1dv1) + QLM(e12()%v2__1, dv1__2dv1) + QLM(e22()%v2__1, dv2__2dv1) + QLM(e22()%v2__2, dv2__1dv1))/2;
+            arma::mat dG_12dv2 = (dv1__2dv2 + dv2__1dv2 + QLM(e11()%v1__1, dv1__2dv2) + QLM(e11()%v1__2, dv1__1dv2) + QLM(e12()%v1__1, dv2__2dv2) + QLM(e12()%v2__2, dv1__1dv2) + QLM(e12()%v1__2, dv2__1dv2) + QLM(e12()%v2__1, dv1__2dv2) + QLM(e22()%v2__1, dv2__2dv2) + QLM(e22()%v2__2, dv2__1dv2))/2; 
+            arma::mat dG_22dv1 = dv2__2dv1 + QLM(e11()%v1__2, dv1__2dv1) + QLM(e12()%v1__2, dv2__2dv1) + QLM(e12()%v2__2, dv1__2dv1) + QLM(e22()%v2__2, dv2__2dv1);
+            arma::mat dG_22dv2 = dv2__2dv2 + QLM(e11()%v1__2, dv1__2dv2) + QLM(e12()%v1__2, dv2__2dv2) + QLM(e12()%v2__2, dv1__2dv2) + QLM(e22()%v2__2, dv2__2dv2);
 
-            arma::mat dG_11__1dv1 = dv1__11dv1 + (e11()^((v1__1^dv1__11dv1) + (v1__11^dv1__1dv1))) + (e12()^((v2__1^dv1__11dv1) + (v1__11^dv2__1dv1) + (v1__1^dv2__11dv1) + (v2__11^dv1__1dv1))) + (e22()^((v2__1^dv2__11dv1) + (v2__11^dv2__1dv1)));
-            arma::mat dG_11__1dv2 = dv1__11dv2 + (e11()^((v1__1^dv1__11dv2) + (v1__11^dv1__1dv2))) + (e12()^((v2__1^dv1__11dv2) + (v1__11^dv2__1dv2) + (v1__1^dv2__11dv2) + (v2__11^dv1__1dv2))) + (e22()^((v2__1^dv2__11dv2) + (v2__11^dv2__1dv2)));
-            arma::mat dG_11__2dv1 = dv1__12dv1 + (e11()^((v1__1^dv1__12dv1) + (v1__12^dv1__1dv1))) + (e12()^((v2__1^dv1__12dv1) + (v1__12^dv2__1dv1) + (v1__1^dv2__12dv1) + (v2__12^dv1__1dv1))) + (e22()^((v2__1^dv2__12dv1) + (v2__12^dv2__1dv1)));
-            arma::mat dG_11__2dv2 = dv1__12dv2 + (e11()^((v1__1^dv1__12dv2) + (v1__12^dv1__1dv2))) + (e12()^((v2__1^dv1__12dv2) + (v1__12^dv2__1dv2) + (v1__1^dv2__12dv2) + (v2__12^dv1__1dv2))) + (e22()^((v2__1^dv2__12dv2) + (v2__12^dv2__1dv2)));
+            arma::mat dG_11__1dv1 = dv1__11dv1 + QLM(e11()%v1__1, dv1__11dv1) + QLM(e11()%v1__11, dv1__1dv1) + QLM(e12()%v2__1, dv1__11dv1) + QLM(e12()%v1__11, dv2__1dv1) + QLM(e12()%v1__1, dv2__11dv1) + QLM(e12()%v2__11, dv1__1dv1) + QLM(e22()%v2__1, dv2__11dv1) + QLM(e22()%v2__11, dv2__1dv1);
+            arma::mat dG_11__1dv2 = dv1__11dv2 + QLM(e11()%v1__1, dv1__11dv2) + QLM(e11()%v1__11, dv1__1dv2) + QLM(e12()%v2__1, dv1__11dv2) + QLM(e12()%v1__11, dv2__1dv2) + QLM(e12()%v1__1, dv2__11dv2) + QLM(e12()%v2__11, dv1__1dv2) + QLM(e22()%v2__1, dv2__11dv2) + QLM(e22()%v2__11, dv2__1dv2);
+            arma::mat dG_11__2dv1 = dv1__12dv1 + QLM(e11()%v1__1, dv1__12dv1) + QLM(e11()%v1__12, dv1__1dv1) + QLM(e12()%v2__1, dv1__12dv1) + QLM(e12()%v1__12, dv2__1dv1) + QLM(e12()%v1__1, dv2__12dv1) + QLM(e12()%v2__12, dv1__1dv1) + QLM(e22()%v2__1, dv2__12dv1) + QLM(e22()%v2__12, dv2__1dv1);
+            arma::mat dG_11__2dv2 = dv1__12dv2 + QLM(e11()%v1__1, dv1__12dv2) + QLM(e11()%v1__12, dv1__1dv2) + QLM(e12()%v2__1, dv1__12dv2) + QLM(e12()%v1__12, dv2__1dv2) + QLM(e12()%v1__1, dv2__12dv2) + QLM(e12()%v2__12, dv1__1dv2) + QLM(e22()%v2__1, dv2__12dv2) + QLM(e22()%v2__12, dv2__1dv2);
 
-            arma::mat dG_12__1dv1 = (dv1__12dv1 + dv2__11dv1 + (e11()^((v1__1^dv1__12dv1) + (v1__12^dv1__1dv1) + (v1__2^dv1__11dv1) + (v1__11^dv1__2dv1))) + (e12()^((v2__1^dv1__12dv1) + (v1__12^dv2__1dv1) + (v1__2^dv2__11dv1) + (v2__11^dv1__2dv1) + (v1__1^dv2__12dv1) + (v2__12^dv1__1dv1) + (v2__2^dv1__11dv1) + (v1__11^dv2__2dv1))) + (e22()^((v2__1^dv2__12dv1) + (v2__12^dv2__1dv1) + (v2__2^dv2__11dv1) + (v2__11^dv2__2dv1))))/2;
-            arma::mat dG_12__1dv2 = (dv1__12dv2 + dv2__11dv2 + (e11()^((v1__1^dv1__12dv2) + (v1__12^dv1__1dv2) + (v1__2^dv1__11dv2) + (v1__11^dv1__2dv2))) + (e12()^((v2__1^dv1__12dv2) + (v1__12^dv2__1dv2) + (v1__2^dv2__11dv2) + (v2__11^dv1__2dv2) + (v1__1^dv2__12dv2) + (v2__12^dv1__1dv2) + (v2__2^dv1__11dv2) + (v1__11^dv2__2dv2))) + (e22()^((v2__1^dv2__12dv2) + (v2__12^dv2__1dv2) + (v2__2^dv2__11dv2) + (v2__11^dv2__2dv2))))/2;
-            arma::mat dG_12__2dv1 = (dv1__22dv1 + dv2__12dv1 + (e11()^((v1__1^dv1__22dv1) + (v1__22^dv1__1dv1) + (v1__2^dv1__12dv1) + (v1__12^dv1__2dv1))) + (e12()^((v2__1^dv1__22dv1) + (v1__22^dv2__1dv1) + (v1__2^dv2__12dv1) + (v2__12^dv1__2dv1) + (v1__1^dv2__22dv1) + (v2__22^dv1__1dv1) + (v2__2^dv1__12dv1) + (v1__12^dv2__2dv1))) + (e22()^((v2__1^dv2__22dv1) + (v2__22^dv2__1dv1) + (v2__2^dv2__12dv1) + (v2__12^dv2__2dv1))))/2;
-            arma::mat dG_12__2dv2 = (dv1__22dv2 + dv2__12dv2 + (e11()^((v1__1^dv1__22dv2) + (v1__22^dv1__1dv2) + (v1__2^dv1__12dv2) + (v1__12^dv1__2dv2))) + (e12()^((v2__1^dv1__22dv2) + (v1__22^dv2__1dv2) + (v1__2^dv2__12dv2) + (v2__12^dv1__2dv2) + (v1__1^dv2__22dv2) + (v2__22^dv1__1dv2) + (v2__2^dv1__12dv2) + (v1__12^dv2__2dv2))) + (e22()^((v2__1^dv2__22dv2) + (v2__22^dv2__1dv2) + (v2__2^dv2__12dv2) + (v2__12^dv2__2dv2))))/2;
+            arma::mat dG_12__1dv1 = (dv1__12dv1 + dv2__11dv1 + QLM(e11()%v1__1, dv1__12dv1) + QLM(e11()%v1__12, dv1__1dv1) + QLM(e11()%v1__2, dv1__11dv1) + QLM(e11()%v1__11, dv1__2dv1) + QLM(e12()%v2__1, dv1__12dv1) + QLM(e12()%v1__12, dv2__1dv1) + QLM(e12()%v1__2, dv2__11dv1) + QLM(e12()%v2__11, dv1__2dv1) + QLM(e12()%v1__1, dv2__12dv1) + QLM(e12()%v2__12, dv1__1dv1) + QLM(e12()%v2__2, dv1__11dv1) + QLM(e12()%v1__11, dv2__2dv1) + QLM(e22()%v2__1, dv2__12dv1) + QLM(e22()%v2__12, dv2__1dv1) + QLM(e22()%v2__2, dv2__11dv1) + QLM(e22()%v2__11, dv2__2dv1))/2;
+            arma::mat dG_12__1dv2 = (dv1__12dv2 + dv2__11dv2 + QLM(e11()%v1__1, dv1__12dv2) + QLM(e11()%v1__12, dv1__1dv2) + QLM(e11()%v1__2, dv1__11dv2) + QLM(e11()%v1__11, dv1__2dv2) + QLM(e12()%v2__1, dv1__12dv2) + QLM(e12()%v1__12, dv2__1dv2) + QLM(e12()%v1__2, dv2__11dv2) + QLM(e12()%v2__11, dv1__2dv2) + QLM(e12()%v1__1, dv2__12dv2) + QLM(e12()%v2__12, dv1__1dv2) + QLM(e12()%v2__2, dv1__11dv2) + QLM(e12()%v1__11, dv2__2dv2) + QLM(e22()%v2__1, dv2__12dv2) + QLM(e22()%v2__12, dv2__1dv2) + QLM(e22()%v2__2, dv2__11dv2) + QLM(e22()%v2__11, dv2__2dv2))/2;
+            arma::mat dG_12__2dv1 = (dv1__22dv1 + dv2__12dv1 + QLM(e11()%v1__1, dv1__22dv1) + QLM(e11()%v1__22, dv1__1dv1) + QLM(e11()%v1__2, dv1__12dv1) + QLM(e11()%v1__12, dv1__2dv1) + QLM(e12()%v2__1, dv1__22dv1) + QLM(e12()%v1__22, dv2__1dv1) + QLM(e12()%v1__2, dv2__12dv1) + QLM(e12()%v2__12, dv1__2dv1) + QLM(e12()%v1__1, dv2__22dv1) + QLM(e12()%v2__22, dv1__1dv1) + QLM(e12()%v2__2, dv1__12dv1) + QLM(e12()%v1__12, dv2__2dv1) + QLM(e22()%v2__1, dv2__22dv1) + QLM(e22()%v2__22, dv2__1dv1) + QLM(e22()%v2__2, dv2__12dv1) + QLM(e22()%v2__12, dv2__2dv1))/2;
+            arma::mat dG_12__2dv2 = (dv1__22dv2 + dv2__12dv2 + QLM(e11()%v1__1, dv1__22dv2) + QLM(e11()%v1__22, dv1__1dv2) + QLM(e11()%v1__2, dv1__12dv2) + QLM(e11()%v1__12, dv1__2dv2) + QLM(e12()%v2__1, dv1__22dv2) + QLM(e12()%v1__22, dv2__1dv2) + QLM(e12()%v1__2, dv2__12dv2) + QLM(e12()%v2__12, dv1__2dv2) + QLM(e12()%v1__1, dv2__22dv2) + QLM(e12()%v2__22, dv1__1dv2) + QLM(e12()%v2__2, dv1__12dv2) + QLM(e12()%v1__12, dv2__2dv2) + QLM(e22()%v2__1, dv2__22dv2) + QLM(e22()%v2__22, dv2__1dv2) + QLM(e22()%v2__2, dv2__12dv2) + QLM(e22()%v2__12, dv2__2dv2))/2;
 
-            arma::mat dG_22__1dv1 = dv2__12dv1 + (e11()^((v1__2^dv1__12dv1) + (v1__12^dv1__2dv1))) + (e12()^((v2__2^dv1__12dv1) + (v1__12^dv2__2dv1) + (v1__2^dv2__12dv1) + (v2__12^dv1__2dv1))) + (e22()^((v2__2^dv2__12dv1) + (v2__12^dv2__2dv1)));
-            arma::mat dG_22__1dv2 = dv2__12dv2 + (e11()^((v1__2^dv1__12dv2) + (v1__12^dv1__2dv2))) + (e12()^((v2__2^dv1__12dv2) + (v1__12^dv2__2dv2) + (v1__2^dv2__12dv2) + (v2__12^dv1__2dv2))) + (e22()^((v2__2^dv2__12dv2) + (v2__12^dv2__2dv2)));
-            arma::mat dG_22__2dv1 = dv2__22dv1 + (e11()^((v1__2^dv1__22dv1) + (v1__22^dv1__2dv1))) + (e12()^((v2__2^dv1__22dv1) + (v1__22^dv2__2dv1) + (v1__2^dv2__22dv1) + (v2__22^dv1__2dv1))) + (e22()^((v2__2^dv2__22dv1) + (v2__22^dv2__2dv1)));
-            arma::mat dG_22__2dv2 = dv2__22dv2 + (e11()^((v1__2^dv1__22dv2) + (v1__22^dv1__2dv2))) + (e12()^((v2__2^dv1__22dv2) + (v1__22^dv2__2dv2) + (v1__2^dv2__22dv2) + (v2__22^dv1__2dv2))) + (e22()^((v2__2^dv2__22dv2) + (v2__22^dv2__2dv2)));
+            arma::mat dG_22__1dv1 = dv2__12dv1 + QLM(e11()%v1__2, dv1__12dv1) + QLM(e11()%v1__12, dv1__2dv1) + QLM(e12()%v2__2, dv1__12dv1) + QLM(e12()%v1__12, dv2__2dv1) + QLM(e12()%v1__2, dv2__12dv1) + QLM(e12()%v2__12, dv1__2dv1) + QLM(e22()%v2__2, dv2__12dv1) + QLM(e22()%v2__12, dv2__2dv1);
+            arma::mat dG_22__1dv2 = dv2__12dv2 + QLM(e11()%v1__2, dv1__12dv2) + QLM(e11()%v1__12, dv1__2dv2) + QLM(e12()%v2__2, dv1__12dv2) + QLM(e12()%v1__12, dv2__2dv2) + QLM(e12()%v1__2, dv2__12dv2) + QLM(e12()%v2__12, dv1__2dv2) + QLM(e22()%v2__2, dv2__12dv2) + QLM(e22()%v2__12, dv2__2dv2);
+            arma::mat dG_22__2dv1 = dv2__22dv1 + QLM(e11()%v1__2, dv1__22dv1) + QLM(e11()%v1__22, dv1__2dv1) + QLM(e12()%v2__2, dv1__22dv1) + QLM(e12()%v1__22, dv2__2dv1) + QLM(e12()%v1__2, dv2__22dv1) + QLM(e12()%v2__22, dv1__2dv1) + QLM(e22()%v2__2, dv2__22dv1) + QLM(e22()%v2__22, dv2__2dv1);
+            arma::mat dG_22__2dv2 = dv2__22dv2 + QLM(e11()%v1__2, dv1__22dv2) + QLM(e11()%v1__22, dv1__2dv2) + QLM(e12()%v2__2, dv1__22dv2) + QLM(e12()%v1__22, dv2__2dv2) + QLM(e12()%v1__2, dv2__22dv2) + QLM(e12()%v2__22, dv1__2dv2) + QLM(e22()%v2__2, dv2__22dv2) + QLM(e22()%v2__22, dv2__2dv2);
 
-            arma::mat dG_11dz  = z_1^DD1;
-            arma::mat dG_22dz  = z_2^DD2;
-            arma::mat dG_12dz  = (z_1/2^DD2) + (z_2/2^DD1);
+            arma::mat dG_11dz  = QLM(z_1, DD1);
+            arma::mat dG_22dz  = QLM(z_2, DD2);
+            arma::mat dG_12dz  = QLM(z_1/2, DD2) + QLM(z_2/2, DD1);
 
-            arma::mat dn11dv1 = D*((H1111^dG_11dv1) + (2*H1112^dG_12dv1) + (H1122^dG_22dv1));
-            arma::mat dn11dv2 = D*((H1111^dG_11dv2) + (2*H1112^dG_12dv2) + (H1122^dG_22dv2));
-            arma::mat dn11dz  = D*((H1111^dG_11dz)  + (2*H1112^dG_12dz)  + (H1122^dG_22dz));
+            arma::mat dn11dv1 = D*(QLM(H1111, dG_11dv1) + QLM(2*H1112, dG_12dv1) + QLM(H1122, dG_22dv1));
+            arma::mat dn11dv2 = D*(QLM(H1111, dG_11dv2) + QLM(2*H1112, dG_12dv2) + QLM(H1122, dG_22dv2));
+            arma::mat dn11dz  = D*(QLM(H1111, dG_11dz)  + QLM(2*H1112, dG_12dz)  + QLM(H1122, dG_22dz));
 
-            arma::mat dn12dv1 = D*((H1112^dG_11dv1) + (2*H1221^dG_12dv1) + (H1222^dG_22dv1));
-            arma::mat dn12dv2 = D*((H1112^dG_11dv2) + (2*H1221^dG_12dv2) + (H1222^dG_22dv2));
-            arma::mat dn12dz  = D*((H1112^dG_11dz)  + (2*H1221^dG_12dz)  + (H1222^dG_22dz));
+            arma::mat dn12dv1 = D*(QLM(H1112, dG_11dv1) + QLM(2*H1221, dG_12dv1) + QLM(H1222, dG_22dv1));
+            arma::mat dn12dv2 = D*(QLM(H1112, dG_11dv2) + QLM(2*H1221, dG_12dv2) + QLM(H1222, dG_22dv2));
+            arma::mat dn12dz  = D*(QLM(H1112, dG_11dz)  + QLM(2*H1221, dG_12dz)  + QLM(H1222, dG_22dz));
 
-            arma::mat dn22dv1 = D*((H1122^dG_11dv1) + (2*H1222^dG_12dv1) + (H2222^dG_22dv1));
-            arma::mat dn22dv2 = D*((H1122^dG_11dv2) + (2*H1222^dG_12dv2) + (H2222^dG_22dv2));
-            arma::mat dn22dz  = D*((H1122^dG_11dz)  + (2*H1222^dG_12dz)  + (H2222^dG_22dz));
+            arma::mat dn22dv1 = D*(QLM(H1122, dG_11dv1) + QLM(2*H1222, dG_12dv1) + QLM(H2222, dG_22dv1));
+            arma::mat dn22dv2 = D*(QLM(H1122, dG_11dv2) + QLM(2*H1222, dG_12dv2) + QLM(H2222, dG_22dv2));
+            arma::mat dn22dz  = D*(QLM(H1122, dG_11dz)  + QLM(2*H1222, dG_12dz)  + QLM(H2222, dG_22dz));
 
-            arma::mat dn11__1dv1 = D*((H1111^dG_11__1dv1) + (2*H1112^dG_12__1dv1) + (H1122^dG_22__1dv1));
-            arma::mat dn11__1dv2 = D*((H1111^dG_11__1dv2) + (2*H1112^dG_12__1dv2) + (H1122^dG_22__1dv2));
-            arma::mat dn11__1dz  = D*((H1111^dG_11__1dz)  + (2*H1112^dG_12__1dz)  + (H1122^dG_22__1dz));
+            arma::mat dn11__1dv1 = D*(QLM(H1111, dG_11__1dv1) + QLM(2*H1112, dG_12__1dv1) + QLM(H1122, dG_22__1dv1));
+            arma::mat dn11__1dv2 = D*(QLM(H1111, dG_11__1dv2) + QLM(2*H1112, dG_12__1dv2) + QLM(H1122, dG_22__1dv2));
+            arma::mat dn11__1dz  = D*(QLM(H1111, dG_11__1dz)  + QLM(2*H1112, dG_12__1dz)  + QLM(H1122, dG_22__1dz));
 
-            arma::mat dn12__1dv1 = D*((H1112^dG_11__1dv1) + (2*H1221^dG_12__1dv1) + (H1222^dG_22__1dv1));
-            arma::mat dn12__1dv2 = D*((H1112^dG_11__1dv2) + (2*H1221^dG_12__1dv2) + (H1222^dG_22__1dv2));
-            arma::mat dn12__1dz  = D*((H1112^dG_11__1dz)  + (2*H1221^dG_12__1dz)  + (H1222^dG_22__1dz));
+            arma::mat dn12__1dv1 = D*(QLM(H1112, dG_11__1dv1) + QLM(2*H1221, dG_12__1dv1) + QLM(H1222, dG_22__1dv1));
+            arma::mat dn12__1dv2 = D*(QLM(H1112, dG_11__1dv2) + QLM(2*H1221, dG_12__1dv2) + QLM(H1222, dG_22__1dv2));
+            arma::mat dn12__1dz  = D*(QLM(H1112, dG_11__1dz)  + QLM(2*H1221, dG_12__1dz)  + QLM(H1222, dG_22__1dz));
 
-            arma::mat dn12__2dv1 = D*((H1112^dG_11__2dv1) + (2*H1221^dG_12__2dv1) + (H1222^dG_22__2dv1));
-            arma::mat dn12__2dv2 = D*((H1112^dG_11__2dv2) + (2*H1221^dG_12__2dv2) + (H1222^dG_22__2dv2));
-            arma::mat dn12__2dz  = D*((H1112^dG_11__2dz)  + (2*H1221^dG_12__2dz)  + (H1222^dG_22__2dz));
+            arma::mat dn12__2dv1 = D*(QLM(H1112, dG_11__2dv1) + QLM(2*H1221, dG_12__2dv1) + QLM(H1222, dG_22__2dv1));
+            arma::mat dn12__2dv2 = D*(QLM(H1112, dG_11__2dv2) + QLM(2*H1221, dG_12__2dv2) + QLM(H1222, dG_22__2dv2));
+            arma::mat dn12__2dz  = D*(QLM(H1112, dG_11__2dz)  + QLM(2*H1221, dG_12__2dz)  + QLM(H1222, dG_22__2dz));
 
-            arma::mat dn22__2dv1 = D*((H1122^dG_11__2dv1) + (2*H1222^dG_12__2dv1) + (H2222^dG_22__2dv1));
-            arma::mat dn22__2dv2 = D*((H1122^dG_11__2dv2) + (2*H1222^dG_12__2dv2) + (H2222^dG_22__2dv2));
-            arma::mat dn22__2dz  = D*((H1122^dG_11__2dz)  + (2*H1222^dG_12__2dz)  + (H2222^dG_22__2dz));
+            arma::mat dn22__2dv1 = D*(QLM(H1122, dG_11__2dv1) + QLM(2*H1222, dG_12__2dv1) + QLM(H2222, dG_22__2dv1));
+            arma::mat dn22__2dv2 = D*(QLM(H1122, dG_11__2dv2) + QLM(2*H1222, dG_12__2dv2) + QLM(H2222, dG_22__2dv2));
+            arma::mat dn22__2dz  = D*(QLM(H1122, dG_11__2dz)  + QLM(2*H1222, dG_12__2dz)  + QLM(H2222, dG_22__2dz));
 
-            arma::mat dwdz    = ((-e11()%z_1 - e12()%z_2)^DD1) + ((-e12()%z_1 - e22()%z_2)^DD2);
-            arma::mat dw_1dz  = ((e11()%v1__1 + e12()%v2__1 - 1)^DD1) + ((e12()%v1__1 + e22()%v2__1)    ^DD2);
-            arma::mat dw_2dz  = ((e11()%v1__2 + e12()%v2__2)    ^DD1) + ((e12()%v1__2 + e22()%v2__2 - 1)^DD2);
-            arma::mat dw_1dv1 = (e11()%z_1^dv1__1dv1) + (e12()%z_2^dv2__1dv1);
-            arma::mat dw_2dv1 = (e12()%z_1^dv1__2dv1) + (e22()%z_2^dv2__2dv1);
-            arma::mat dw_1dv2 = (e11()%z_1^dv1__1dv2) + (e12()%z_2^dv2__1dv2);
-            arma::mat dw_2dv2 = (e12()%z_1^dv1__2dv2) + (e22()%z_2^dv2__2dv2);
-            arma::mat dw1dv1 = (e11()^dw_1dv1) + (e12()^dw_2dv1);
-            arma::mat dw2dv1 = (e12()^dw_1dv1) + (e22()^dw_2dv1);
-            arma::mat dw1dv2 = (e11()^dw_1dv2) + (e12()^dw_2dv2);
-            arma::mat dw2dv2 = (e12()^dw_1dv2) + (e22()^dw_2dv2);
-            arma::mat dw1dz  = (e11()^dw_1dz)  + (e12()^dw_2dz);
-            arma::mat dw2dz  = (e12()^dw_1dz)  + (e22()^dw_2dz);
-            arma::mat ds1dv1 = (surface1^((e11()^dv1__1dv1) + (e12()^dv2__1dv1))) + (surface2^((e11()^dv1__2dv1) + (e12()^dv2__2dv1))) + (pressure^dw1dv1);
-            arma::mat ds2dv1 = (surface1^((e12()^dv1__1dv1) + (e22()^dv2__1dv1))) + (surface2^((e12()^dv1__2dv1) + (e22()^dv2__2dv1))) + (pressure^dw2dv1);
-            arma::mat ds1dv2 = (surface1^((e11()^dv1__1dv2) + (e12()^dv2__1dv2))) + (surface2^((e11()^dv1__2dv2) + (e12()^dv2__2dv2))) + (pressure^dw1dv2);
-            arma::mat ds2dv2 = (surface1^((e12()^dv1__1dv2) + (e22()^dv2__1dv2))) + (surface2^((e12()^dv1__2dv2) + (e22()^dv2__2dv2))) + (pressure^dw2dv2);
-            arma::mat ds1dz  = pressure^dw1dz;
-            arma::mat ds2dz  = pressure^dw2dz;
-            arma::mat ds3dz  = (surface1^DD1) + (surface2^DD2) + (pressure^dwdz);
+            arma::mat dwdz    = QLM((-e11()%z_1 - e12()%z_2), DD1) + QLM((-e12()%z_1 - e22()%z_2), DD2);
+            arma::mat dw_1dz  = QLM((e11()%v1__1 + e12()%v2__1 - 1), DD1) + QLM((e12()%v1__1 + e22()%v2__1)    , DD2);
+            arma::mat dw_2dz  = QLM((e11()%v1__2 + e12()%v2__2)    , DD1) + QLM((e12()%v1__2 + e22()%v2__2 - 1), DD2);
+            arma::mat dw_1dv1 = QLM(e11()%z_1, dv1__1dv1) + QLM(e12()%z_2, dv2__1dv1);
+            arma::mat dw_2dv1 = QLM(e12()%z_1, dv1__2dv1) + QLM(e22()%z_2, dv2__2dv1);
+            arma::mat dw_1dv2 = QLM(e11()%z_1, dv1__1dv2) + QLM(e12()%z_2, dv2__1dv2);
+            arma::mat dw_2dv2 = QLM(e12()%z_1, dv1__2dv2) + QLM(e22()%z_2, dv2__2dv2);
+            arma::mat dw1dv1  = QLM(e11(), dw_1dv1) + QLM(e12(), dw_2dv1);
+            arma::mat dw2dv1  = QLM(e12(), dw_1dv1) + QLM(e22(), dw_2dv1);
+            arma::mat dw1dv2  = QLM(e11(), dw_1dv2) + QLM(e12(), dw_2dv2);
+            arma::mat dw2dv2  = QLM(e12(), dw_1dv2) + QLM(e22(), dw_2dv2);
+            arma::mat dw1dz   = QLM(e11(), dw_1dz)  + QLM(e12(), dw_2dz);
+            arma::mat dw2dz   = QLM(e12(), dw_1dz)  + QLM(e22(), dw_2dz);
+            arma::mat ds1dv1  = QLM(surface1%e11(), dv1__1dv1) + QLM(surface1%e12(), dv2__1dv1) + QLM(surface2%e11(), dv1__2dv1) + QLM(surface2%e12(), dv2__2dv1) + QLM(pressure, dw1dv1);
+            arma::mat ds2dv1  = QLM(surface1%e12(), dv1__1dv1) + QLM(surface1%e22(), dv2__1dv1) + QLM(surface2%e12(), dv1__2dv1) + QLM(surface2%e22(), dv2__2dv1) + QLM(pressure, dw2dv1);
+            arma::mat ds1dv2  = QLM(surface1%e11(), dv1__1dv2) + QLM(surface1%e12(), dv2__1dv2) + QLM(surface2%e11(), dv1__2dv2) + QLM(surface2%e12(), dv2__2dv2) + QLM(pressure, dw1dv2);
+            arma::mat ds2dv2  = QLM(surface1%e12(), dv1__1dv2) + QLM(surface1%e22(), dv2__1dv2) + QLM(surface2%e12(), dv1__2dv2) + QLM(surface2%e22(), dv2__2dv2) + QLM(pressure, dw2dv2);
+            arma::mat ds1dz   = QLM(pressure, dw1dz);
+            arma::mat ds2dz   = QLM(pressure, dw2dz);
+            arma::mat ds3dz   = QLM(surface1, DD1) + QLM(surface2, DD2) + QLM(pressure, dwdz);
 
-            arma::mat dL111dv1 = (e11()^dv1__11dv1) + (e12()^dv2__11dv1);
-            arma::mat dL111dv2 = (e11()^dv1__11dv2) + (e12()^dv2__11dv2);
-            arma::mat dL112dv1 = (e11()^dv1__12dv1) + (e12()^dv2__12dv1);
-            arma::mat dL112dv2 = (e11()^dv1__12dv2) + (e12()^dv2__12dv2);
-            arma::mat dL122dv1 = (e11()^dv1__22dv1) + (e12()^dv2__22dv1);
-            arma::mat dL122dv2 = (e11()^dv1__22dv2) + (e12()^dv2__22dv2);
-            arma::mat dL211dv1 = (e12()^dv1__11dv1) + (e22()^dv2__11dv1);
-            arma::mat dL211dv2 = (e12()^dv1__11dv2) + (e22()^dv2__11dv2);
-            arma::mat dL212dv1 = (e12()^dv1__12dv1) + (e22()^dv2__12dv1);
-            arma::mat dL212dv2 = (e12()^dv1__12dv2) + (e22()^dv2__12dv2);
-            arma::mat dL222dv1 = (e12()^dv1__22dv1) + (e22()^dv2__22dv1);
-            arma::mat dL222dv2 = (e12()^dv1__22dv2) + (e22()^dv2__22dv2);
+            arma::mat dL111dv1 = QLM(e11(), dv1__11dv1) + QLM(e12(), dv2__11dv1);
+            arma::mat dL111dv2 = QLM(e11(), dv1__11dv2) + QLM(e12(), dv2__11dv2);
+            arma::mat dL112dv1 = QLM(e11(), dv1__12dv1) + QLM(e12(), dv2__12dv1);
+            arma::mat dL112dv2 = QLM(e11(), dv1__12dv2) + QLM(e12(), dv2__12dv2);
+            arma::mat dL122dv1 = QLM(e11(), dv1__22dv1) + QLM(e12(), dv2__22dv1);
+            arma::mat dL122dv2 = QLM(e11(), dv1__22dv2) + QLM(e12(), dv2__22dv2);
+            arma::mat dL211dv1 = QLM(e12(), dv1__11dv1) + QLM(e22(), dv2__11dv1);
+            arma::mat dL211dv2 = QLM(e12(), dv1__11dv2) + QLM(e22(), dv2__11dv2);
+            arma::mat dL212dv1 = QLM(e12(), dv1__12dv1) + QLM(e22(), dv2__12dv1);
+            arma::mat dL212dv2 = QLM(e12(), dv1__12dv2) + QLM(e22(), dv2__12dv2);
+            arma::mat dL222dv1 = QLM(e12(), dv1__22dv1) + QLM(e22(), dv2__22dv1);
+            arma::mat dL222dv2 = QLM(e12(), dv1__22dv2) + QLM(e22(), dv2__22dv2);
 
-            arma::mat dsaedz  = (e11()^dG_11dz)  + (2*e12()^dG_12dz)  + (e22()^dG_22dz);
-            arma::mat dsaedv1 = (e11()^dG_11dv1) + (2*e12()^dG_12dv1) + (e22()^dG_22dv1);
-            arma::mat dsaedv2 = (e11()^dG_11dv2) + (2*e12()^dG_12dv2) + (e22()^dG_22dv2);
+            arma::mat dsaedz  = QLM(e11(), dG_11dz)  + QLM(2*e12(), dG_12dz)  + QLM(e22(), dG_22dz);
+            arma::mat dsaedv1 = QLM(e11(), dG_11dv1) + QLM(2*e12(), dG_12dv1) + QLM(e22(), dG_22dv1);
+            arma::mat dsaedv2 = QLM(e11(), dG_11dv2) + QLM(2*e12(), dG_12dv2) + QLM(e22(), dG_22dv2);
 
             arma::mat A(nxy3, nxy3, arma::fill::zeros);
 
-            A.submat(   0,    0,  nxy-1,  nxy-1) = (dn11__1dv1 + dn12__2dv1 + (L111^dn11dv1) + (2*L112^dn12dv1) + (L122^dn22dv1) + (sae^ds1dv1) + (s1^dsaedv1) + (n11^dL111dv1) + (2*n12^dL112dv1) + (n22^dL122dv1))/D;
-            A.submat(   0,  nxy,  nxy-1, nxy2-1) = (dn11__1dv2 + dn12__2dv2 + (L111^dn11dv2) + (2*L112^dn12dv2) + (L122^dn22dv2) + (sae^ds1dv2) + (s1^dsaedv2) + (n11^dL111dv2) + (2*n12^dL112dv2) + (n22^dL122dv2))/D;
-            A.submat(   0, nxy2,  nxy-1, nxy3-1) = (dn11__1dz  + dn12__2dz  + (L111^dn11dz)  + (2*L112^dn12dz)  + (L122^dn22dz)  + (sae^ds1dz)  + (s1^dsaedz))/D;
+            A.submat(   0,    0,  nxy-1,  nxy-1) = (dn11__1dv1 + dn12__2dv1 + QLM(L111, dn11dv1) + QLM(2*L112, dn12dv1) + QLM(L122, dn22dv1) + QLM(sae, ds1dv1) + QLM(s1, dsaedv1) + QLM(n11, dL111dv1) + QLM(2*n12, dL112dv1) + QLM(n22, dL122dv1))/D;
+            A.submat(   0,  nxy,  nxy-1, nxy2-1) = (dn11__1dv2 + dn12__2dv2 + QLM(L111, dn11dv2) + QLM(2*L112, dn12dv2) + QLM(L122, dn22dv2) + QLM(sae, ds1dv2) + QLM(s1, dsaedv2) + QLM(n11, dL111dv2) + QLM(2*n12, dL112dv2) + QLM(n22, dL122dv2))/D;
+            A.submat(   0, nxy2,  nxy-1, nxy3-1) = (dn11__1dz  + dn12__2dz  + QLM(L111, dn11dz)  + QLM(2*L112, dn12dz)  + QLM(L122, dn22dz)  + QLM(sae, ds1dz)  + QLM(s1, dsaedz))/D;
 
-            A.submat( nxy,    0, nxy2-1,  nxy-1) = (dn12__1dv1 + dn22__2dv1 + (L211^dn11dv1) + (2*L212^dn12dv1) + (L222^dn22dv1) + (sae^ds2dv1) + (s2^dsaedv1) + (n11^dL211dv1) + (2*n12^dL212dv1) + (n22^dL222dv1))/D;
-            A.submat( nxy,  nxy, nxy2-1, nxy2-1) = (dn12__1dv2 + dn22__2dv2 + (L211^dn11dv2) + (2*L212^dn12dv2) + (L222^dn22dv2) + (sae^ds2dv2) + (s2^dsaedv2) + (n11^dL211dv2) + (2*n12^dL212dv2) + (n22^dL222dv2))/D;
-            A.submat( nxy, nxy2, nxy2-1, nxy3-1) = (dn12__1dz  + dn22__2dz  + (L211^dn11dz)  + (2*L212^dn12dz)  + (L222^dn22dz)  + (sae^ds2dz)  + (s2^dsaedz))/D;
+            A.submat( nxy,    0, nxy2-1,  nxy-1) = (dn12__1dv1 + dn22__2dv1 + QLM(L211, dn11dv1) + QLM(2*L212, dn12dv1) + QLM(L222, dn22dv1) + QLM(sae, ds2dv1) + QLM(s2, dsaedv1) + QLM(n11, dL211dv1) + QLM(2*n12, dL212dv1) + QLM(n22, dL222dv1))/D;
+            A.submat( nxy,  nxy, nxy2-1, nxy2-1) = (dn12__1dv2 + dn22__2dv2 + QLM(L211, dn11dv2) + QLM(2*L212, dn12dv2) + QLM(L222, dn22dv2) + QLM(sae, ds2dv2) + QLM(s2, dsaedv2) + QLM(n11, dL211dv2) + QLM(2*n12, dL212dv2) + QLM(n22, dL222dv2))/D;
+            A.submat( nxy, nxy2, nxy2-1, nxy3-1) = (dn12__1dz  + dn22__2dz  + QLM(L211, dn11dz)  + QLM(2*L212, dn12dz)  + QLM(L222, dn22dz)  + QLM(sae, ds2dz)  + QLM(s2, dsaedz))/D;
 
-            A.submat(nxy2,    0, nxy3-1,  nxy-1) = ((z__11^dn11dv1) + (2*z__12^dn12dv1) + (z__22^dn22dv1) + (s3^dsaedv1))/D;
-            A.submat(nxy2,  nxy, nxy3-1, nxy2-1) = ((z__11^dn11dv2) + (2*z__12^dn12dv2) + (z__22^dn22dv2) + (s3^dsaedv2))/D;
-            A.submat(nxy2, nxy2, nxy3-1, nxy3-1) = ((z__11^dn11dz)  + (2*z__12^dn12dz)  + (z__22^dn22dz)  + (s3^dsaedz) + (sae^ds3dz) + (n11^dz__11dz) + (2*n12^dz__12dz) + (n22^dz__22dz))/D;
+            A.submat(nxy2,    0, nxy3-1,  nxy-1) = (QLM(z__11, dn11dv1) + QLM(2*z__12, dn12dv1) + QLM(z__22, dn22dv1) + QLM(s3, dsaedv1))/D;
+            A.submat(nxy2,  nxy, nxy3-1, nxy2-1) = (QLM(z__11, dn11dv2) + QLM(2*z__12, dn12dv2) + QLM(z__22, dn22dv2) + QLM(s3, dsaedv2))/D;
+            A.submat(nxy2, nxy2, nxy3-1, nxy3-1) = (QLM(z__11, dn11dz)  + QLM(2*z__12, dn12dz)  + QLM(z__22, dn22dz)  + QLM(s3, dsaedz) + QLM(sae, ds3dz) + QLM(n11, dz__11dz) + QLM(2*n12, dz__12dz) + QLM(n22, dz__22dz))/D;
 
             for (size_t j = 1; j < ny-1; j++)
             {

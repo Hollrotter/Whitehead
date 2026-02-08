@@ -41,10 +41,7 @@ enum class Field
     v2, // Displacement in 2-direction (physical component)
     n11, // Stress component 11 (physical component)
     n12, // Stress component 12 (physical component)
-    n22, // Stress component 22 (physical component)
-    k11, // Stress component 11 in projection surface (physical component)
-    k12, // Stress component 12 in projection surface (physical component)
-    k22  // Stress component 22 in projection surface (physical component)
+    n22  // Stress component 22 (physical component)
 };
 
 // Boundary location of the camber (leading- or trailing edge)

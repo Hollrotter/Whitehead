@@ -34,6 +34,38 @@ template <class C> void Membrane::boundary(const Field field, const Direction di
     f.release();
 }
 
+template <class C> void Membrane::boundary(const Field field, const Lagrange::CurveInterpolant* dir, const BC bc, const C val)
+{
+    std::unique_ptr<TensorField> f = setField(field);
+    if(dir == chi[0])
+    {
+        f->southBC = bc;
+        f->south   = (typeid(val) == typeid(arma::vec) ? arma::vec(val) : f->south*val);
+    }
+    else if(dir == chi[1])
+    {
+        f->eastBC  = bc;
+        f->east    = (typeid(val) == typeid(arma::vec) ? arma::vec(val) : f->east*val);
+    }
+    else if(dir == chi[2])
+    {
+        f->northBC = bc;
+        f->north   = (typeid(val) == typeid(arma::vec) ? arma::vec(val) : f->north*val);
+    }
+    else if(dir == chi[3])
+    {
+        f->westBC  = bc;
+        f->west    = (typeid(val) == typeid(arma::vec) ? arma::vec(val) : f->west*val);
+    }
+    else
+    {
+        std::println("Not a curve of the membrane!");
+        f.release();
+        exit(EXIT_FAILURE);
+    }
+    f.release();
+}
+
 /**
  * @brief 
  * 
@@ -66,6 +98,39 @@ template <class C> void Membrane::boundary(const Field field, const Direction di
             f->r1East = _r1;
             f->r2East = _r2;
             break;
+    }
+    f.release();
+    boundary(field, dir, bc, val);
+}
+
+template <class C> void Membrane::boundary(const Field field, const Lagrange::CurveInterpolant* dir, const BC bc, const double _r1, const double _r2, const C val)
+{
+    std::unique_ptr<TensorField> f = setField(field);
+    if(dir == chi[0])
+    {
+        f->r1South = _r1;
+        f->r2South = _r2;
+    }
+    else if(dir == chi[1])
+    {
+        f->r1East = _r1;
+        f->r2East = _r2;
+    }
+    else if(dir == chi[2])
+    {
+        f->r1North = _r1;
+        f->r2North = _r2;
+    }
+    else if(dir == chi[3])
+    {
+        f->r1West = _r1;
+        f->r2West = _r2;
+    }
+    else
+    {
+        std::println("Not a curve of the membrane!");
+        f.release();
+        exit(EXIT_FAILURE);
     }
     f.release();
     boundary(field, dir, bc, val);
@@ -727,3 +792,11 @@ template void Membrane::boundary<int>(const Field, const Direction, const BC, co
 template void Membrane::boundary<size_t>(const Field, const Direction, const BC, const double, const double, const size_t);
 template void Membrane::boundary<double>(const Field, const Direction, const BC, const double, const double, const double);
 template void Membrane::boundary<arma::vec>(const Field, const Direction, const BC, const double, const double, const arma::vec);
+template void Membrane::boundary<int>(const Field, const Lagrange::CurveInterpolant*, const BC, const int);
+template void Membrane::boundary<size_t>(const Field, const Lagrange::CurveInterpolant*, const BC, const size_t);
+template void Membrane::boundary<double>(const Field, const Lagrange::CurveInterpolant*, const BC, const double);
+template void Membrane::boundary<arma::vec>(const Field, const Lagrange::CurveInterpolant*, const BC, const arma::vec);
+template void Membrane::boundary<int>(const Field, const Lagrange::CurveInterpolant*, const BC, const double, const double, const int);
+template void Membrane::boundary<size_t>(const Field, const Lagrange::CurveInterpolant*, const BC, const double, const double, const size_t);
+template void Membrane::boundary<double>(const Field, const Lagrange::CurveInterpolant*, const BC, const double, const double, const double);
+template void Membrane::boundary<arma::vec>(const Field, const Lagrange::CurveInterpolant*, const BC, const double, const double, const arma::vec);

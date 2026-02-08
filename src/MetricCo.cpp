@@ -28,6 +28,23 @@ arma::cube MetricCo(arma::mat &y1, arma::mat &y2, arma::mat &D1, arma::mat &D2)
 	return g_c;
 }
 
+arma::cube MetricCo(const std::array<Lagrange::CurveInterpolant*, 4> chi)
+{
+	size_t nx = chi[1]->getNodes().size();
+	size_t ny = chi[0]->getNodes().size();
+	arma::cube g_c(nx, ny, 3);
+	auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(chi);
+	#pragma omp parallel for
+	for (size_t i = 0; i < nx; i++)
+		for (size_t j = 0; j < ny; j++)
+		{
+			arma::vec g1 = {dxdx1(i, j), dydx1(i, j)};
+			arma::vec g2 = {dxdx2(i, j), dydx2(i, j)};
+			g_c.tube(i, j) = arma::vec{dot(g1, g1), dot(g1, g2), dot(g2, g2)};
+		}
+	return g_c;
+}
+
 /**
  * @brief 
  * 

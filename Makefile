@@ -4,8 +4,10 @@ STRING = lib/String.o lib/StringLinear.o lib/StringNonlinear.o lib/StringStructu
 MEMBRANE = lib/Membrane.o lib/MembraneBoundary.o lib/MembraneDerivative.o lib/MembraneLinear.o \
 lib/MembraneSemilinear.o lib/MembraneNonlinear.o lib/MembraneStructuralMatrix.o lib/PlaneStrain.o
 CHEBYSHEV = lib/Chebyshev.o
+LAGRANGE = lib/Lagrange.o
 METRIC = lib/Christoffel.o lib/Metric.o lib/MetricCo.o lib/Jacobian.o
-OBJS = $(STRING) $(MEMBRANE) $(CHEBYSHEV) $(METRIC)
+MISC = lib/misc.o
+OBJS = $(STRING) $(MEMBRANE) $(CHEBYSHEV) $(LAGRANGE) $(METRIC) $(MISC)
 BINS = $(OBJS) lib/libWhitehead.a
 OPTIONS = g++ -Ofast -c
 INCLUDE = -I./include -fopenmp -std=c++23
@@ -21,6 +23,9 @@ lib/Christoffel.o: src/Christoffel.cpp
 
 lib/Jacobian.o: src/Jacobian.cpp
 	$(OPTIONS) src/Jacobian.cpp $(INCLUDE) $(LDLIBS) -o lib/Jacobian.o
+
+lib/Lagrange.o: src/Lagrange.cpp
+	$(OPTIONS) src/Lagrange.cpp $(INCLUDE) $(LDLIBS) -o lib/Lagrange.o
 
 lib/Membrane.o: src/Membrane.cpp
 	$(OPTIONS) src/Membrane.cpp $(INCLUDE) $(LDLIBS) -o lib/Membrane.o
@@ -49,6 +54,9 @@ lib/Metric.o: src/Metric.cpp
 lib/MetricCo.o: src/MetricCo.cpp
 	$(OPTIONS) src/MetricCo.cpp $(INCLUDE) $(LDLIBS) -o lib/MetricCo.o
 
+lib/misc.o: src/misc.cpp
+	$(OPTIONS) src/misc.cpp $(INCLUDE) $(LDLIBS) -o lib/misc.o
+
 lib/PlaneStrain.o: src/PlaneStrain.cpp
 	$(OPTIONS) src/PlaneStrain.cpp $(INCLUDE) $(LDLIBS) -o lib/PlaneStrain.o
 
@@ -73,5 +81,17 @@ clean:
 cleanString:
 	-rm $(STRING)
 
+cleanMembrane:
+	-rm $(MEMBRANE)
+
 cleanChebyshev:
 	-rm $(CHEBYSHEV)
+
+cleanMetric:
+	-rm $(METRIC)
+
+cleanLagrange:
+	-rm $(LAGRANGE)
+
+cleanMisc:
+	-rm $(MISC)

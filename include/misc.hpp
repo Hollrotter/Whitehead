@@ -3,6 +3,14 @@
 #include <armadillo>
 #include <print>
 #include <omp.h>
+#include "float.h"
+
+// Comparing two floating point numbers for (almost) equality.
+bool almostEqual(double a, double b);
+inline bool almostEqual(std::pair<double, double> a, std::pair<double, double> b)
+{
+    return almostEqual(a.first, b.first) && almostEqual(a.second, b.second);
+}
 
 template <typename T>
 concept Number = std::integral<T> || std::floating_point<T>;
