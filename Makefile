@@ -3,11 +3,13 @@
 STRING = lib/String.o lib/StringLinear.o lib/StringNonlinear.o lib/StringStructuralMatrix.o
 MEMBRANE = lib/Membrane.o lib/MembraneBoundary.o lib/MembraneDerivative.o lib/MembraneLinear.o \
 lib/MembraneSemilinear.o lib/MembraneNonlinear.o lib/MembraneStructuralMatrix.o lib/PlaneStrain.o
+STRUCTURE = lib/Structure.o lib/StructureLinear.o lib/StructureSemilinear.o lib/StructureNonlinear.o \
+lib/StructurePlaneStrain.o
 CHEBYSHEV = lib/Chebyshev.o
 LAGRANGE = lib/Lagrange.o
 METRIC = lib/Christoffel.o lib/Metric.o lib/MetricCo.o lib/Jacobian.o
 MISC = lib/misc.o
-OBJS = $(STRING) $(MEMBRANE) $(CHEBYSHEV) $(LAGRANGE) $(METRIC) $(MISC)
+OBJS = $(STRING) $(MEMBRANE) $(STRUCTURE) $(CHEBYSHEV) $(LAGRANGE) $(METRIC) $(MISC)
 BINS = $(OBJS) lib/libWhitehead.a
 OPTIONS = g++ -Ofast -c
 INCLUDE = -I./include -fopenmp -std=c++23
@@ -72,6 +74,21 @@ lib/StringNonlinear.o: src/StringNonlinear.cpp
 lib/StringStructuralMatrix.o: src/StringStructuralMatrix.cpp
 	$(OPTIONS) src/StringStructuralMatrix.cpp $(INCLUDE) $(LDLIBS) -o lib/StringStructuralMatrix.o
 
+lib/Structure.o: src/Structure.cpp
+	$(OPTIONS) src/Structure.cpp $(INCLUDE) $(LDLIBS) -o lib/Structure.o
+	
+lib/StructureLinear.o: src/StructureLinear.cpp
+	$(OPTIONS) src/StructureLinear.cpp $(INCLUDE) $(LDLIBS) -o lib/StructureLinear.o
+
+lib/StructureSemilinear.o: src/StructureSemilinear.cpp
+	$(OPTIONS) src/StructureSemilinear.cpp $(INCLUDE) $(LDLIBS) -o lib/StructureSemilinear.o
+
+lib/StructureNonlinear.o: src/StructureNonlinear.cpp
+	$(OPTIONS) src/StructureNonlinear.cpp $(INCLUDE) $(LDLIBS) -o lib/StructureNonlinear.o
+
+lib/StructurePlaneStrain.o: src/StructurePlaneStrain.cpp
+	$(OPTIONS) src/StructurePlaneStrain.cpp $(INCLUDE) $(LDLIBS) -o lib/StructurePlaneStrain.o
+
 lib/libWhitehead.a: $(OBJS)
 	ar rcs lib/libWhitehead.a $(OBJS)
 
@@ -83,6 +100,9 @@ cleanString:
 
 cleanMembrane:
 	-rm $(MEMBRANE)
+
+cleanStructure:
+	-rm $(STRUCTURE)
 
 cleanChebyshev:
 	-rm $(CHEBYSHEV)

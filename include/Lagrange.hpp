@@ -3,6 +3,7 @@
 #include "Point.hpp"
 
 class Membrane;
+class Structure;
 
 namespace Lagrange
 {
@@ -25,6 +26,7 @@ namespace Lagrange
         arma::vec y = arma::zeros(1);
         arma::vec nodes;
         arma::vec w = barycentricWeights(nodes);
+        CurveType curveType = CurveType::Boundary;
         CurveInterpolant(arma::vec _x, arma::vec _y, double r) : x(_x), y(_y), nodes(Chebyshev::gaussLobatto(x.size())) {}
         CurveInterpolant arc(Point p1, Point p2, Point pm, double r, size_t n)
         {
@@ -61,7 +63,8 @@ namespace Lagrange
         {
             return nodes;
         }
-        friend class Membrane;
+        friend class ::Membrane;
+        friend class ::Structure;
     private:
         arma::vec parametrize();
     };

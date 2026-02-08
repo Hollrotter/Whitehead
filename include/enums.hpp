@@ -17,6 +17,12 @@ enum class BC
     None // No boundary condition
 };
 
+enum class CurveType
+{
+    Boundary,
+    Interface
+};
+
 // First or second derivative
 enum class Derivative
 {

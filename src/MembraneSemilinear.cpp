@@ -40,22 +40,42 @@ void Membrane::semilinear()
                 zBoundarySemilinear(z.northBC, z.north(i), i, ny-1, A, b, z.r1North, z.r2North, z_1(i+(ny-1)*nx), z_2(i+(ny-1)*nx), h_2s1_north(i), h_2s2_north(i));
             }
             // BC south-west corner (i = 0, j = 0)
-            zBoundarySemilinear(z.southBC, z.south(0), 0, 0, A, b, z.r1South, z.r2South, z_1(0), z_2(0), h_2s1_south(0), h_2s2_south(0));
+            if (chi[0]->curveType == CurveType::Interface && chi[3]->curveType == CurveType::Boundary)
+                zBoundarySemilinear(z.westBC,  z.west(0),  0, 0, A, b, z.r1West,  z.r2West,  z_1(0), z_2(0), h_1s1_west(0),  h_1s2_west(0));
+            else if (chi[0]->curveType == CurveType::Boundary  && chi[3]->curveType == CurveType::Interface)
+                zBoundarySemilinear(z.southBC, z.south(0), 0, 0, A, b, z.r1South, z.r2South, z_1(0), z_2(0), h_2s1_south(0), h_2s2_south(0));
+            else
+                zBoundarySemilinear(z.southBC, z.south(0), 0, 0, A, b, z.r1South, z.r2South, z_1(0), z_2(0), h_2s1_south(0), h_2s2_south(0));
 
             // BC north-west corner (i = 0, j = ny-1)
             size_t j = ny-1;
             size_t k = j*nx;
-            zBoundarySemilinear(z.westBC,  z.west(j),  0, j, A, b, z.r1West,  z.r2West,  z_1(k), z_2(k), h_1s1_west(j),  h_1s2_west(j));
+            if (chi[2]->curveType == CurveType::Interface && chi[3]->curveType == CurveType::Boundary)
+                zBoundarySemilinear(z.westBC,  z.west(j),  0, j, A, b, z.r1West,  z.r2West,  z_1(k), z_2(k), h_1s1_west(j),  h_1s2_west(j));
+            else if (chi[2]->curveType == CurveType::Boundary  && chi[3]->curveType == CurveType::Interface)
+                zBoundarySemilinear(z.northBC, z.north(0), 0, j, A, b, z.r1North, z.r2North, z_1(k), z_2(k), h_2s1_north(0), h_2s2_north(0));
+            else
+                zBoundarySemilinear(z.westBC,  z.west(j),  0, j, A, b, z.r1West,  z.r2West,  z_1(k), z_2(k), h_1s1_west(j),  h_1s2_west(j));
 
             // BC south-east corner (i = nx-1, j = 0)
             size_t i = nx-1;
-            zBoundarySemilinear(z.eastBC,  z.east(0),  i, 0, A, b, z.r1East,  z.r2East,  z_1(i), z_2(i), h_1s1_east(0),  h_1s2_east(0));
+            if (chi[0]->curveType == CurveType::Interface && chi[1]->curveType == CurveType::Boundary)
+                zBoundarySemilinear(z.eastBC,  z.east(0),  i, 0, A, b, z.r1East,  z.r2East,  z_1(i), z_2(i), h_1s1_east(0),  h_1s2_east(0));
+            else if (chi[0]->curveType == CurveType::Boundary  && chi[1]->curveType == CurveType::Interface)
+                zBoundarySemilinear(z.southBC, z.south(i), i, 0, A, b, z.r1South, z.r2South, z_1(i), z_2(i), h_2s1_south(i), h_2s2_south(i));
+            else
+                zBoundarySemilinear(z.eastBC,  z.east(0),  i, 0, A, b, z.r1East,  z.r2East,  z_1(i), z_2(i), h_1s1_east(0),  h_1s2_east(0));
 
             // BC north-east corner (i = nx-1, j = ny-1)
             i = nx-1;
             j = ny-1;
             k = i + j*nx;
-            zBoundarySemilinear(z.northBC, z.north(i), i, j, A, b, z.r1North, z.r2North, z_1(k), z_2(k), h_2s1_north(i), h_2s2_north(i));
+            if (chi[2]->curveType == CurveType::Interface && chi[1]->curveType == CurveType::Boundary)
+                zBoundarySemilinear(z.eastBC,  z.east(j),  i, j, A, b, z.r1East,  z.r2East,  z_1(k), z_2(k), h_1s1_east(j),  h_1s2_east(j));
+            else if (chi[2]->curveType == CurveType::Boundary  && chi[1]->curveType == CurveType::Interface)
+                zBoundarySemilinear(z.northBC, z.north(i), i, j, A, b, z.r1North, z.r2North, z_1(k), z_2(k), h_2s1_north(i), h_2s2_north(i));
+            else
+                zBoundarySemilinear(z.northBC, z.north(i), i, j, A, b, z.r1North, z.r2North, z_1(k), z_2(k), h_2s1_north(i), h_2s2_north(i));
 
             double resMAX = max(arma::abs(b))/pMAX;
             double resRMS = sqrt(sum(b%b)/nxy)/pRMS;
