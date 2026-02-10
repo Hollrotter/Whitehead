@@ -5,7 +5,7 @@ MEMBRANE = lib/Membrane.o lib/MembraneBoundary.o lib/MembraneDerivative.o lib/Me
 lib/MembraneSemilinear.o lib/MembraneNonlinear.o lib/MembraneStructuralMatrix.o lib/PlaneStrain.o
 STRUCTURE = lib/Structure.o lib/StructureLinear.o lib/StructureSemilinear.o lib/StructureNonlinear.o \
 lib/StructurePlaneStrain.o
-CHEBYSHEV = lib/Chebyshev.o
+CHEBYSHEV = lib/Chebyshev.o lib/ChebyshevFFT.o lib/ChebyshevPolynomial.o
 LAGRANGE = lib/Lagrange.o
 METRIC = lib/Christoffel.o lib/Metric.o lib/MetricCo.o lib/Jacobian.o
 MISC = lib/misc.o
@@ -19,6 +19,12 @@ all: $(BINS)
 
 lib/Chebyshev.o: src/Chebyshev.cpp
 	$(OPTIONS) src/Chebyshev.cpp $(INCLUDE) $(LDLIBS) -o lib/Chebyshev.o
+
+lib/ChebyshevFFT.o: src/ChebyshevFFT.cpp
+	$(OPTIONS) src/ChebyshevFFT.cpp $(INCLUDE) $(LDLIBS) -o lib/ChebyshevFFT.o
+
+lib/ChebyshevPolynomial.o: src/ChebyshevPolynomial.cpp
+	$(OPTIONS) src/ChebyshevPolynomial.cpp $(INCLUDE) $(LDLIBS) -o lib/ChebyshevPolynomial.o
 
 lib/Christoffel.o: src/Christoffel.cpp
 	$(OPTIONS) src/Christoffel.cpp $(INCLUDE) $(LDLIBS) -o lib/Christoffel.o
