@@ -84,5 +84,31 @@ int main()
 			eigval.print();
             break;
         }
+		case 4: // Chebyshev Polynomials
+		{
+			// Performing a time comparison between
+			// 1. The Boost implementation using Armadillo for vectors
+			// 2. The own implementation (following Kopriva (2009))
+			// Two results:
+			// 1. Running the loop for Boost in parallel made it slower
+			// 2. Boost faster for small node numbers (at least n < 30). Our implementation will get faster at some node number.
+			size_t n = 30; // Number of samples
+			size_t k = 20; // k-th Chebyshev Polynomial
+			arma::vec x = Chebyshev::gaussLobatto(n);
+			auto t1 = std::chrono::high_resolution_clock::now();
+			arma::vec u1(n);
+			for (size_t i = 0; i < n; i++) // parallelization with openmp made this one slower!
+				u1(i) = boost::math::chebyshev_t(k, x(i));
+			auto t2 = std::chrono::high_resolution_clock::now();
+			arma::vec u2 = Chebyshev::Polynomial(k, x);
+			auto t3 = std::chrono::high_resolution_clock::now();
+
+			std::chrono::duration<double> dt12 = t2 - t1;
+			std::chrono::duration<double> dt23 = t3 - t2;
+
+			std::cout << "Boost:     " << dt12.count() << '\n';
+			std::cout << "Armadillo: " << dt23.count() << '\n';
+			break;
+		}
     }
 }
