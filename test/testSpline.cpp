@@ -1,8 +1,8 @@
-#include "B_Spline.hpp"
+#include "Splinefit.hpp"
 
 int main()
 {
-    switch (1)
+    switch (2)
     {
         case 0: // B-Spline
         {
@@ -22,9 +22,10 @@ int main()
                     file << z(j, i) << ' ';
                 file << '\n';
             }
+            file.close();
             break;
         }
-        case 1:
+        case 1: // Integral
         {
             size_t order = 3;
             size_t M = 7;
@@ -44,6 +45,19 @@ int main()
                     std::cout << B2.integrate(i, j, order-1) << ' ';
                 std::cout << " = " << B2.integrate(0.0, M-1.0, j, order-1) << '\n';
             }
+            break;
+        }
+        case 2: // Splinefit for derivative
+        {
+            int n = 25;
+            arma::vec x = arma::linspace(0, 1, n);
+            arma::vec z = cos(arma::datum::pi*x);
+            arma::vec dz = -arma::datum::pi*sin(arma::datum::pi*x);
+            Splinefit s(x, z, 5);
+            arma::vec dzdx = s.diff(x);
+            std::ofstream file("plot/Data/Spline/Splinefit");
+            for (int i = 0; i < n; i++)
+                file << x(i) << ' ' << dz(i) << ' ' << dzdx(i) << '\n';
             break;
         }
     }

@@ -2,7 +2,6 @@ set terminal png background rgb 'black' size 2000, 500
 
 set xlabel 'x' tc rgb 'gray'
 set ylabel 'y' tc rgb 'gray'
-set zlabel 'z' tc rgb 'gray'
 set border lc rgb 'gray'
 set grid
 set key tc rgb 'gray'

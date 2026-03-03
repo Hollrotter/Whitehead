@@ -8,7 +8,7 @@ lib/StructurePlaneStrain.o
 CHEBYSHEV = lib/Chebyshev.o lib/ChebyshevFFT.o lib/ChebyshevPolynomial.o
 LAGRANGE = lib/Lagrange.o
 METRIC = lib/Christoffel.o lib/Metric.o lib/MetricCo.o lib/Jacobian.o
-SPLINE = lib/B_Spline.o
+SPLINE = lib/B_Spline.o lib/setQR.o lib/Splinefit.o lib/SplinefitDiff.o
 MISC = lib/misc.o
 OBJS = $(STRING) $(MEMBRANE) $(STRUCTURE) $(CHEBYSHEV) $(LAGRANGE) $(METRIC) $(SPLINE) $(MISC)
 BINS = $(OBJS) lib/libWhitehead.a
@@ -71,6 +71,15 @@ lib/misc.o: src/misc.cpp
 
 lib/PlaneStrain.o: src/PlaneStrain.cpp
 	$(OPTIONS) src/PlaneStrain.cpp $(INCLUDE) $(LDLIBS) -o lib/PlaneStrain.o
+
+lib/setQR.o: src/setQR.cpp
+	$(OPTIONS) src/setQR.cpp $(INCLUDE) $(LDLIBS) -o lib/setQR.o
+
+lib/Splinefit.o: src/Splinefit.cpp
+	$(OPTIONS) src/Splinefit.cpp $(INCLUDE) $(LDLIBS) -o lib/Splinefit.o
+
+lib/SplinefitDiff.o: src/SplinefitDiff.cpp
+	$(OPTIONS) src/SplinefitDiff.cpp $(INCLUDE) $(LDLIBS) -o lib/SplinefitDiff.o
 
 lib/String.o: src/String.cpp
 	$(OPTIONS) src/String.cpp $(INCLUDE) $(LDLIBS) -o lib/String.o
