@@ -8,14 +8,18 @@ lib/StructurePlaneStrain.o
 CHEBYSHEV = lib/Chebyshev.o lib/ChebyshevFFT.o lib/ChebyshevPolynomial.o
 LAGRANGE = lib/Lagrange.o
 METRIC = lib/Christoffel.o lib/Metric.o lib/MetricCo.o lib/Jacobian.o
+SPLINE = lib/B_Spline.o
 MISC = lib/misc.o
-OBJS = $(STRING) $(MEMBRANE) $(STRUCTURE) $(CHEBYSHEV) $(LAGRANGE) $(METRIC) $(MISC)
+OBJS = $(STRING) $(MEMBRANE) $(STRUCTURE) $(CHEBYSHEV) $(LAGRANGE) $(METRIC) $(SPLINE) $(MISC)
 BINS = $(OBJS) lib/libWhitehead.a
 OPTIONS = g++ -Ofast -c
 INCLUDE = -I./include -fopenmp -std=c++23
 LDLIBS = -llibarmadillo
 
 all: $(BINS)
+
+lib/B_Spline.o: src/B_Spline.cpp
+	$(OPTIONS) src/B_Spline.cpp $(INCLUDE) $(LDLIBS) -o lib/B_Spline.o
 
 lib/Chebyshev.o: src/Chebyshev.cpp
 	$(OPTIONS) src/Chebyshev.cpp $(INCLUDE) $(LDLIBS) -o lib/Chebyshev.o
@@ -118,6 +122,9 @@ cleanMetric:
 
 cleanLagrange:
 	-rm $(LAGRANGE)
+
+cleanSpline:
+	-rm $(SPLINE)
 
 cleanMisc:
 	-rm $(MISC)
