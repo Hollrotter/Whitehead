@@ -17,6 +17,13 @@ enum class BC
     None // No boundary condition
 };
 
+enum class CamberType
+{
+    none, // The camber has no profile (flat plate)
+    function, // The profile is defined by an analytical function
+    b_spline // The profile is approximated by a B-Spline
+};
+
 enum class CurveType
 {
     Boundary,

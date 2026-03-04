@@ -9,8 +9,9 @@ CHEBYSHEV = lib/Chebyshev.o lib/ChebyshevFFT.o lib/ChebyshevPolynomial.o
 LAGRANGE = lib/Lagrange.o
 METRIC = lib/Christoffel.o lib/Metric.o lib/MetricCo.o lib/Jacobian.o
 SPLINE = lib/B_Spline.o lib/setQR.o lib/Splinefit.o lib/SplinefitDiff.o
+DVM = lib/DVM.o lib/DVMAerodynamicMatrix.o
 MISC = lib/misc.o
-OBJS = $(STRING) $(MEMBRANE) $(STRUCTURE) $(CHEBYSHEV) $(LAGRANGE) $(METRIC) $(SPLINE) $(MISC)
+OBJS = $(STRING) $(MEMBRANE) $(STRUCTURE) $(CHEBYSHEV) $(LAGRANGE) $(METRIC) $(SPLINE) $(DVM) $(MISC)
 BINS = $(OBJS) lib/libWhitehead.a
 OPTIONS = g++ -Ofast -c
 INCLUDE = -I./include -fopenmp -std=c++23
@@ -32,6 +33,12 @@ lib/ChebyshevPolynomial.o: src/ChebyshevPolynomial.cpp
 
 lib/Christoffel.o: src/Christoffel.cpp
 	$(OPTIONS) src/Christoffel.cpp $(INCLUDE) $(LDLIBS) -o lib/Christoffel.o
+
+lib/DVM.o: src/DVM.cpp
+	$(OPTIONS) src/DVM.cpp $(INCLUDE) $(LDLIBS) -o lib/DVM.o
+
+lib/DVMAerodynamicMatrix.o: src/DVMAerodynamicMatrix.cpp
+	$(OPTIONS) src/DVMAerodynamicMatrix.cpp $(INCLUDE) $(LDLIBS) -o lib/DVMAerodynamicMatrix.o
 
 lib/Jacobian.o: src/Jacobian.cpp
 	$(OPTIONS) src/Jacobian.cpp $(INCLUDE) $(LDLIBS) -o lib/Jacobian.o
@@ -134,6 +141,9 @@ cleanLagrange:
 
 cleanSpline:
 	-rm $(SPLINE)
+
+cleanDVM:
+	-rm $(DVM)
 
 cleanMisc:
 	-rm $(MISC)
