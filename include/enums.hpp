@@ -70,3 +70,10 @@ enum class Material
     inextensible, // No change of String length
     extensible // With change of String length
 };
+
+// Symmetry type for the Vortex Lattice Method
+enum class Symmetry
+{
+    none, // No symmetry is applied to the wing
+    y // The wing will be modelled as symmetric in y-direction
+};

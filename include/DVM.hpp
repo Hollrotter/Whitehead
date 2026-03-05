@@ -1,13 +1,10 @@
 #pragma once
-#include "Splinefit.hpp"
+#include "Camber.hpp"
 #include "Chebyshev.hpp"
 
 class DVM
 {
-    CamberType camberType; //Camber type (none, function or B_Spline)
-    std::function<double(double)>  f; // Analytical function for the camber
-    std::function<double(double)> df; // Analytical function for the camber slope
-    Splinefit s; // Splinefitting for the initial contour of the camber
+    Camber camber;
     double c; // Chord length
     double qdyn = 1; // Dynamic pressure
     arma::vec alpha = arma::zeros(1); // Pitch
@@ -29,29 +26,23 @@ class DVM
     arma::mat nC; // Normal vector of the surface
     Analysis analysis = Analysis::linear; // Analysis type (linear or nonlinear)
 public:
-    DVM() : camberType(CamberType::none) {}
+    DVM() : camber(Camber()) {}
     // Constructor for flat plate
-    DVM(double _c, size_t _nx) : c(_c), nx(_nx), camberType(CamberType::none) {}
+    DVM(double _c, size_t _nx) : c(_c), nx(_nx), camber(Camber()) {}
     // Constructor for camber defined by function describing only the derivative of z (use for linear analysis only!)
-    DVM(std::function<double(double)> dF) : df(dF), camberType(CamberType::function) {}
+    DVM(std::function<double(double)> dF) : camber(Camber(dF)) {}
     // Constructor for camber defined by function describing only the derivative of z (use for linear analysis only!)
-    DVM(double _c, size_t _nx, std::function<double(double)> dF) : c(_c), nx(_nx), df(dF), camberType(CamberType::function) {}
+    DVM(double _c, size_t _nx, std::function<double(double)> dF) : c(_c), nx(_nx), camber(Camber(dF)) {}
     // Constructor for camber defined by function describing the value and the derivative of z (use for nonlinear analysis!)
-    DVM(std::function<double(double)> F, std::function<double(double)> dF) : f(F), df(dF), camberType(CamberType::function) {}
+    DVM(std::function<double(double)> F, std::function<double(double)> dF) : camber(Camber(F, dF)) {}
     // Constructor for camber defined by function describing the value and the derivative of z (use for nonlinear analysis!)
-    DVM(double _c, size_t _nx, std::function<double(double)> F, std::function<double(double)> dF) : c(_c), nx(_nx), f(F), df(dF), camberType(CamberType::function) {}
+    DVM(double _c, size_t _nx, std::function<double(double)> F, std::function<double(double)> dF) : c(_c), nx(_nx), camber(Camber(F, dF)) {}
     // Constructor for camber defined by Splinefitting
-    DVM(Splinefit S) : s(S), camberType(CamberType::b_spline) {}
+    DVM(Splinefit S) : camber(Camber(S)) {}
     // Constructor for camber defined by Splinefitting
-    DVM(double _c, size_t _nx, Splinefit S) : c(_c), nx(_nx), s(S), camberType(CamberType::b_spline) {}
-    // Compute z coordinate at given x value
-    double operator() (double);
-    // Compute z coordinates at given vector x
-    arma::vec operator() (arma::vec);
-    // Compute derivative at given x value
-    double diff(double);
-    // Compute derivatives at given vector x
-    arma::vec diff(arma::vec);
+    DVM(double _c, size_t _nx, Splinefit S) : c(_c), nx(_nx), camber(Camber(S)) {}
+    DVM(Camber _camber) : camber(_camber) {}
+    DVM(double _c, size_t _nx, Camber _camber) : c(_c), nx(_nx), camber(_camber) {}
     // Set dynamic pressure
     void dynamicPressure(double);
     // Set pitch in degree

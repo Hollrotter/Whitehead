@@ -3,76 +3,6 @@
 /**
  * @brief 
  * 
- * @param x Normalized x-coordinate where the camber height will be evaluated.
- * @return double 
- */
-double DVM::operator() (double x)
-{
-    switch(camberType)
-    {
-        case CamberType::none:
-            return 0;
-        case CamberType::function:
-            return f(x);
-        case CamberType::b_spline:
-            return s(x);
-    }
-    std::unreachable();
-}
-
-/**
- * @brief 
- * 
- * @param x Vector of normalized x-coordinates where the camber height will be evaluated.
- * @return arma::vec 
- */
-arma::vec DVM::operator() (arma::vec x)
-{
-    arma::vec z(x.size());
-    #pragma omp parallel for
-    for (size_t i = 0; i < x.size(); i++)
-        z(i) = operator()(x(i));
-    return z;
-}
-
-/**
- * @brief 
- * 
- * @param x Normalized x-coordinate where the camber slope will be evaluated.
- * @return double 
- */
-double DVM::diff(double x)
-{
-    switch(camberType)
-    {
-        case CamberType::none:
-            return 0;
-        case CamberType::function:
-            return df(x);
-        case CamberType::b_spline:
-            return s.diff(x);
-    }
-    std::unreachable();
-}
-
-/**
- * @brief 
- * 
- * @param x Vector of normalized x-coordinates where the camber slope will be evaluated.
- * @return arma::vec 
- */
-arma::vec DVM::diff(arma::vec x)
-{
-    arma::vec dz(x.size());
-    #pragma omp parallel for
-    for (size_t i = 0; i < x.size(); i++)
-        dz(i) = diff(x(i));
-    return dz;
-}
-
-/**
- * @brief 
- * 
  * @param _qdyn Dynamic pressure of the inflow.
  */
 void DVM::dynamicPressure(double _qdyn)
@@ -159,12 +89,12 @@ void DVM::dvmEval()
  */
 void DVM::dvmNonlinear()
 {
-    z = c*operator()(x/c);
+    z = c*camber(x/c);
     geometry();
     nC.zeros(2, nx);
     #pragma omp parallel for
     for (size_t i = 0; i < nx; i++)
-        nC.col(i) = normalise(arma::vec::fixed<2>{-diff(xC(i)/c), 1});
+        nC.col(i) = normalise(arma::vec::fixed<2>{-camber.diff(xC(i)/c), 1});
     aerodynamicMatrix();
     arma::mat Q = join_horiz(cos(alpha), sin(alpha));
     arma::mat g = solve(A,-(Q*nC).t());
@@ -201,7 +131,7 @@ void DVM::postprocessing(arma::mat &g)
         case Analysis::nonlinear:
             cM  = 2*sum((c/4-xg*cos(alpha).t())%g).t()/pow(c, 2);
             dcp.zeros(nx, con);
-            arma::vec alpha_panel =-atan(diff(xC/c));
+            arma::vec alpha_panel =-atan(camber.diff(xC/c));
             for (size_t i = 0; i < nx; i++)
                 dcp.row(i) = 2*cos(alpha + alpha_panel(i))%g.row(i)/sqrt(pow(x(i+1)-x(i), 2) + pow(z(i+1)-z(i), 2)); // Maybe wrong in Katz & Plotkin!
             break;

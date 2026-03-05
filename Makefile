@@ -9,9 +9,10 @@ CHEBYSHEV = lib/Chebyshev.o lib/ChebyshevFFT.o lib/ChebyshevPolynomial.o
 LAGRANGE = lib/Lagrange.o
 METRIC = lib/Christoffel.o lib/Metric.o lib/MetricCo.o lib/Jacobian.o
 SPLINE = lib/B_Spline.o lib/setQR.o lib/Splinefit.o lib/SplinefitDiff.o
-DVM = lib/DVM.o lib/DVMAerodynamicMatrix.o
+DVM = lib/Camber.o lib/DVM.o lib/DVMAerodynamicMatrix.o
+VLM = lib/VLM.o lib/VLMAerodynamicMatrix.o lib/Vortex.o
 MISC = lib/misc.o
-OBJS = $(STRING) $(MEMBRANE) $(STRUCTURE) $(CHEBYSHEV) $(LAGRANGE) $(METRIC) $(SPLINE) $(DVM) $(MISC)
+OBJS = $(STRING) $(MEMBRANE) $(STRUCTURE) $(CHEBYSHEV) $(LAGRANGE) $(METRIC) $(SPLINE) $(DVM) $(VLM) $(MISC)
 BINS = $(OBJS) lib/libWhitehead.a
 OPTIONS = g++ -Ofast -c
 INCLUDE = -I./include -fopenmp -std=c++23
@@ -21,6 +22,9 @@ all: $(BINS)
 
 lib/B_Spline.o: src/B_Spline.cpp
 	$(OPTIONS) src/B_Spline.cpp $(INCLUDE) $(LDLIBS) -o lib/B_Spline.o
+
+lib/Camber.o: src/Camber.cpp
+	$(OPTIONS) src/Camber.cpp $(INCLUDE) $(LDLIBS) -o lib/Camber.o
 
 lib/Chebyshev.o: src/Chebyshev.cpp
 	$(OPTIONS) src/Chebyshev.cpp $(INCLUDE) $(LDLIBS) -o lib/Chebyshev.o
@@ -115,6 +119,15 @@ lib/StructureNonlinear.o: src/StructureNonlinear.cpp
 lib/StructurePlaneStrain.o: src/StructurePlaneStrain.cpp
 	$(OPTIONS) src/StructurePlaneStrain.cpp $(INCLUDE) $(LDLIBS) -o lib/StructurePlaneStrain.o
 
+lib/VLM.o: src/VLM.cpp
+	$(OPTIONS) src/VLM.cpp $(INCLUDE) $(LDLIBS) -o lib/VLM.o
+
+lib/VLMAerodynamicMatrix.o: src/VLMAerodynamicMatrix.cpp
+	$(OPTIONS) src/VLMAerodynamicMatrix.cpp $(INCLUDE) $(LDLIBS) -o lib/VLMAerodynamicMatrix.o
+
+lib/Vortex.o: src/Vortex.cpp
+	$(OPTIONS) src/Vortex.cpp $(INCLUDE) $(LDLIBS) -o lib/Vortex.o
+
 lib/libWhitehead.a: $(OBJS)
 	ar rcs lib/libWhitehead.a $(OBJS)
 
@@ -144,6 +157,9 @@ cleanSpline:
 
 cleanDVM:
 	-rm $(DVM)
+
+cleanVLM:
+	-rm $(VLM)
 
 cleanMisc:
 	-rm $(MISC)

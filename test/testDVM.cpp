@@ -45,8 +45,9 @@ int main()
         {
             double c = 2.0;
             double h = 1;
-            DVM dvm(c, 100, [&](double xc){ return 4*h*xc*(1 -   xc); },
-                            [&](double xc){ return 4*h/c *(1 - 2*xc); });
+            Camber cam([&](double xc){ return 4*h*xc*(1 -   xc); },
+                       [&](double xc){ return 4*h/c *(1 - 2*xc); });
+            DVM dvm(c, 100, cam);
             dvm.pitch(5);
             dvm.dynamicPressure(1.225/2*15*15);
             dvm.aerodynamics(Analysis::nonlinear);
