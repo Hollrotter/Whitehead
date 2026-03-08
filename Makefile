@@ -11,14 +11,21 @@ METRIC = lib/Christoffel.o lib/Metric.o lib/MetricCo.o lib/Jacobian.o
 SPLINE = lib/B_Spline.o lib/setQR.o lib/Splinefit.o lib/SplinefitDiff.o
 DVM = lib/Camber.o lib/DVM.o lib/DVMAerodynamicMatrix.o
 VLM = lib/VLM.o lib/VLMAerodynamicMatrix.o lib/Vortex.o
+AIRFOIL = lib/Airfoil.o lib/AirfoilAerodynamicMatrix.o
 MISC = lib/misc.o
-OBJS = $(STRING) $(MEMBRANE) $(STRUCTURE) $(CHEBYSHEV) $(LAGRANGE) $(METRIC) $(SPLINE) $(DVM) $(VLM) $(MISC)
+OBJS = $(STRING) $(MEMBRANE) $(STRUCTURE) $(CHEBYSHEV) $(LAGRANGE) $(METRIC) $(SPLINE) $(DVM) $(VLM) $(AIRFOIL) $(MISC)
 BINS = $(OBJS) lib/libWhitehead.a
 OPTIONS = g++ -Ofast -c
 INCLUDE = -I./include -fopenmp -std=c++23
 LDLIBS = -llibarmadillo
 
 all: $(BINS)
+
+lib/Airfoil.o: src/Airfoil.cpp
+	$(OPTIONS) src/Airfoil.cpp $(INCLUDE) $(LDLIBS) -o lib/Airfoil.o
+
+lib/AirfoilAerodynamicMatrix.o: src/AirfoilAerodynamicMatrix.cpp
+	$(OPTIONS) src/AirfoilAerodynamicMatrix.cpp $(INCLUDE) $(LDLIBS) -o lib/AirfoilAerodynamicMatrix.o
 
 lib/B_Spline.o: src/B_Spline.cpp
 	$(OPTIONS) src/B_Spline.cpp $(INCLUDE) $(LDLIBS) -o lib/B_Spline.o
@@ -160,6 +167,9 @@ cleanDVM:
 
 cleanVLM:
 	-rm $(VLM)
+
+cleanAirfoil:
+	-rm $(AIRFOIL)
 
 cleanMisc:
 	-rm $(MISC)

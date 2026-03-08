@@ -9,6 +9,10 @@ namespace Chebyshev
     arma::vec Polynomial(const size_t k, const arma::vec x);
     // Evaluates all the Chebyshev Polynomials up to order len(u) at values x.
     arma::mat Polynomial(const arma::vec u, const arma::vec x);
+    inline double integral(const size_t k)
+    {
+        return (k%2==0) ? 2./(1.-k*k) : 0;
+    }
     // Calculates the amplitudes for Discrete-Chebyshev-Transform in 1D
     arma::vec DiscreteChebyshevTransform(const arma::vec x, const arma::vec u);
     // Calculates the amplitudes for Discrete-Chebyshev-Transform in 2D
