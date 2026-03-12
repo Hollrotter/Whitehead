@@ -12,8 +12,10 @@ SPLINE = lib/B_Spline.o lib/setQR.o lib/Splinefit.o lib/SplinefitDiff.o
 DVM = lib/Camber.o lib/DVM.o lib/DVMAerodynamicMatrix.o
 VLM = lib/VLM.o lib/VLMAerodynamicMatrix.o lib/Vortex.o
 AIRFOIL = lib/Airfoil.o lib/AirfoilAerodynamicMatrix.o
-MISC = lib/misc.o
-OBJS = $(STRING) $(MEMBRANE) $(STRUCTURE) $(CHEBYSHEV) $(LAGRANGE) $(METRIC) $(SPLINE) $(DVM) $(VLM) $(AIRFOIL) $(MISC)
+WING = lib/Wing.o lib/WingAerodynamicMatrix.o lib/WingBoundary.o
+MISC = lib/misc.o lib/fastgl.o
+OBJS = $(STRING) $(MEMBRANE) $(STRUCTURE) $(CHEBYSHEV) $(LAGRANGE) $(METRIC) $(SPLINE) $(DVM) $(VLM) \
+$(AIRFOIL) $(WING) $(MISC)
 BINS = $(OBJS) lib/libWhitehead.a
 OPTIONS = g++ -Ofast -c
 INCLUDE = -I./include -fopenmp -std=c++23
@@ -50,6 +52,9 @@ lib/DVM.o: src/DVM.cpp
 
 lib/DVMAerodynamicMatrix.o: src/DVMAerodynamicMatrix.cpp
 	$(OPTIONS) src/DVMAerodynamicMatrix.cpp $(INCLUDE) $(LDLIBS) -o lib/DVMAerodynamicMatrix.o
+
+lib/fastgl.o: src/fastgl.cpp
+	$(OPTIONS) src/fastgl.cpp $(INCLUDE) $(LDLIBS) -o lib/fastgl.o
 
 lib/Jacobian.o: src/Jacobian.cpp
 	$(OPTIONS) src/Jacobian.cpp $(INCLUDE) $(LDLIBS) -o lib/Jacobian.o
@@ -135,6 +140,15 @@ lib/VLMAerodynamicMatrix.o: src/VLMAerodynamicMatrix.cpp
 lib/Vortex.o: src/Vortex.cpp
 	$(OPTIONS) src/Vortex.cpp $(INCLUDE) $(LDLIBS) -o lib/Vortex.o
 
+lib/Wing.o: src/Wing.cpp
+	$(OPTIONS) src/Wing.cpp $(INCLUDE) $(LDLIBS) -o lib/Wing.o
+
+lib/WingAerodynamicMatrix.o: src/WingAerodynamicMatrix.cpp
+	$(OPTIONS) src/WingAerodynamicMatrix.cpp $(INCLUDE) $(LDLIBS) -o lib/WingAerodynamicMatrix.o
+
+lib/WingBoundary.o: src/WingBoundary.cpp
+	$(OPTIONS) src/WingBoundary.cpp $(INCLUDE) $(LDLIBS) -o lib/WingBoundary.o
+
 lib/libWhitehead.a: $(OBJS)
 	ar rcs lib/libWhitehead.a $(OBJS)
 
@@ -170,6 +184,9 @@ cleanVLM:
 
 cleanAirfoil:
 	-rm $(AIRFOIL)
+
+cleanWing:
+	-rm $(WING)
 
 cleanMisc:
 	-rm $(MISC)

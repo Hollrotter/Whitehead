@@ -69,5 +69,7 @@ namespace Lagrange
         arma::vec parametrize();
     };
     std::pair<arma::mat, arma::mat> TransfiniteQuadMap(const std::array<CurveInterpolant*, 4> chi);
+    std::pair<arma::mat, arma::mat> TransfiniteQuadMap(const arma::vec &x1, const arma::vec &x2, const std::array<CurveInterpolant*, 4> chi);
     std::tuple<arma::mat, arma::mat, arma::mat, arma::mat> TransfiniteQuadMetrics(const std::array<CurveInterpolant*, 4> chi);
+    std::tuple<arma::mat, arma::mat, arma::mat, arma::mat> TransfiniteQuadMetrics(const arma::vec &x1, const arma::vec &x2, const std::array<CurveInterpolant*, 4> chi);
 }

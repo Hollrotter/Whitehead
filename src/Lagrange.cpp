@@ -249,6 +249,13 @@ arma::vec Lagrange::CurveInterpolant::parametrize()
 
 std::pair<arma::mat, arma::mat> Lagrange::TransfiniteQuadMap(const std::array<CurveInterpolant*, 4> chi)
 {
+    arma::vec x1 = Chebyshev::gaussLobatto(chi[0]->getNodes().size());
+    arma::vec x2 = Chebyshev::gaussLobatto(chi[1]->getNodes().size());
+    return TransfiniteQuadMap(x1, x2, chi);
+}
+
+std::pair<arma::mat, arma::mat> Lagrange::TransfiniteQuadMap(const arma::vec &x1, const arma::vec &x2, const std::array<CurveInterpolant*, 4> chi)
+{
     if (chi[0]->getNodes().size() != chi[2]->getNodes().size() || chi[1]->getNodes().size() != chi[3]->getNodes().size())
     {
         std::println("TransfiniteQuadMap: size mismatch!");
@@ -309,8 +316,6 @@ std::pair<arma::mat, arma::mat> Lagrange::TransfiniteQuadMap(const std::array<Cu
     auto [x_2, y_2] = chi[0]->evaluate( sign1);
     auto [x_3, y_3] = chi[2]->evaluate( sign3);
     auto [x_4, y_4] = chi[2]->evaluate(-sign3);
-    arma::vec x1 = Chebyshev::gaussLobatto(chi[0]->getNodes().size());
-    arma::vec x2 = Chebyshev::gaussLobatto(chi[1]->getNodes().size());
     arma::mat x(x1.size(), x2.size());
     arma::mat y(x1.size(), x2.size());
     for (size_t i = 0; i < x1.size(); i++)
@@ -334,9 +339,16 @@ std::pair<arma::mat, arma::mat> Lagrange::TransfiniteQuadMap(const std::array<Cu
 
 std::tuple<arma::mat, arma::mat, arma::mat, arma::mat> Lagrange::TransfiniteQuadMetrics(const std::array<CurveInterpolant*, 4> chi)
 {
+    arma::vec x1 = Chebyshev::gaussLobatto(chi[0]->getNodes().size());
+    arma::vec x2 = Chebyshev::gaussLobatto(chi[1]->getNodes().size());
+    return TransfiniteQuadMetrics(x1, x2, chi);
+}
+
+std::tuple<arma::mat, arma::mat, arma::mat, arma::mat> Lagrange::TransfiniteQuadMetrics(const arma::vec &x1, const arma::vec &x2, const std::array<CurveInterpolant*, 4> chi)
+{
     if (chi[0]->getNodes().size() != chi[2]->getNodes().size() || chi[1]->getNodes().size() != chi[3]->getNodes().size())
     {
-        std::println("TransfiniteQuadMetric: size mismatch!");
+        std::println("TransfiniteQuadMetrics: size mismatch!");
         exit(EXIT_FAILURE);
     }
     double sign1, sign2, sign3, sign4;
@@ -362,7 +374,7 @@ std::tuple<arma::mat, arma::mat, arma::mat, arma::mat> Lagrange::TransfiniteQuad
     }
     else
     {
-        std::println("TransfiniteQuadMap: chi1 and chi4 mismatch!");
+        std::println("TransfiniteQuadMaps: chi1 and chi4 mismatch!");
         exit(EXIT_FAILURE);
     }
     if (almostEqual(chi[1]->evaluate(1.0), chi[2]->evaluate(1.0)))
@@ -387,15 +399,13 @@ std::tuple<arma::mat, arma::mat, arma::mat, arma::mat> Lagrange::TransfiniteQuad
     }
     else
     {
-        std::println("TransfiniteQuadMap: chi2 and chi3 mismatch!");
+        std::println("TransfiniteQuadMaps: chi2 and chi3 mismatch!");
         exit(EXIT_FAILURE);
     }
     auto [x_1,  y_1] = chi[0]->evaluate(-sign1);
     auto [x_2,  y_2] = chi[0]->evaluate( sign1);
     auto [x_3,  y_3] = chi[2]->evaluate( sign3);
     auto [x_4,  y_4] = chi[2]->evaluate(-sign3);
-    arma::vec x1 = Chebyshev::gaussLobatto(chi[0]->getNodes().size());
-    arma::vec x2 = Chebyshev::gaussLobatto(chi[1]->getNodes().size());
     arma::mat dxdx1(x1.size(), x2.size());
     arma::mat dydx1(x1.size(), x2.size());
     arma::mat dxdx2(x1.size(), x2.size());
@@ -407,6 +417,10 @@ std::tuple<arma::mat, arma::mat, arma::mat, arma::mat> Lagrange::TransfiniteQuad
         auto [X_3,  Y_3]  = chi[2]->evaluate(sign3*x1i);
         auto [Xs_1, Ys_1] = chi[0]->derivative(sign1*x1i);
         auto [Xs_3, Ys_3] = chi[2]->derivative(sign3*x1i);
+        Xs_1 *= sign1;
+        Ys_1 *= sign1;
+        Xs_3 *= sign3;
+        Ys_3 *= sign3;
         for (size_t j = 0; j < x2.size(); j++)
         {
             double x2j = x2(j);
@@ -414,6 +428,10 @@ std::tuple<arma::mat, arma::mat, arma::mat, arma::mat> Lagrange::TransfiniteQuad
             auto [X_4,  Y_4]  = chi[3]->evaluate(sign4*x2j);
             auto [Xs_2, Ys_2] = chi[1]->derivative(sign2*x2j);
             auto [Xs_4, Ys_4] = chi[3]->derivative(sign4*x2j);
+            Xs_2 *= sign2;
+            Ys_2 *= sign2;
+            Xs_4 *= sign4;
+            Ys_4 *= sign4;
             dxdx1(i, j) = (X_2 - X_4 + (1 - x2j)*Xs_1 + (1 + x2j)*Xs_3)/2 - ((1 - x2j)*(x_2 - x_1) + (1 + x2j)*(x_3 - x_4))/4;
             dydx1(i, j) = (Y_2 - Y_4 + (1 - x2j)*Ys_1 + (1 + x2j)*Ys_3)/2 - ((1 - x2j)*(y_2 - y_1) + (1 + x2j)*(y_3 - y_4))/4;
             dxdx2(i, j) = ((1 - x1i)*Xs_4 + (1 + x1i)*Xs_2 + X_3 - X_1)/2 - ((1 - x1i)*(x_4 - x_1) + (1 + x1i)*(x_3 - x_2))/4;

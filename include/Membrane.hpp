@@ -99,14 +99,14 @@ class Membrane
     arma::mat v2__2 = arma::zeros(nx, ny);
     Membrane fromTransfiniteQuadMap(std::array<Lagrange::CurveInterpolant*, 4> _chi)
     {
-        chi = _chi;
-        auto [x, y] = Lagrange::TransfiniteQuadMap(chi);
-        return {x, y};
+        auto [_x, _y] = Lagrange::TransfiniteQuadMap(_chi);
+        return {_x, _y, _chi};
     }
 public:
     Membrane() = default;
     // Constructor to set x and y
     Membrane(arma::mat _x, arma::mat _y) : x(_x), y(_y) {}
+    Membrane(arma::mat _x, arma::mat _y, std::array<Lagrange::CurveInterpolant*, 4> _chi) : x(_x), y(_y), chi(_chi) {}
     Membrane(std::array<Lagrange::CurveInterpolant*, 4> _chi) : Membrane(fromTransfiniteQuadMap(_chi)) {}
     // Sets the Young's modulus times thickness (Et)
     void youngsModulus(const double _Et);

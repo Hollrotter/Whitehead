@@ -1,5 +1,4 @@
 #pragma once
-#include "misc.hpp"
 #include "Lagrange.hpp"
 
 arma::field<arma::mat> Jacobian(arma::mat &y1, arma::mat &y2, arma::mat &D1, arma::mat &D2);

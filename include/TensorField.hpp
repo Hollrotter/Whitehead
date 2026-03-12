@@ -62,6 +62,7 @@ public:
         return arma::mat::operator/=(d);
     }
     friend class Membrane;
+    friend class Wing;
 };
 
 inline arma::mat  operator+(TensorField A, const TensorField &B)

@@ -88,7 +88,7 @@ public:
     {
         return dcp;
     }
-    // Output y, x and dcp for surface plots
+    // Output x, y and dcp for surface plots
     void output(std::string);
     void operator()(Camber _c)
     {
