@@ -12,10 +12,12 @@ class Wing
     size_t ny = y.n_cols; // Number of nodes in y-Direction
     size_t nxy = nx*ny; // Product of nx and ny
     TensorField mu{nx, ny}; // Doublet distribution
-    arma::vec x1 = Chebyshev::gaussLobatto(nx);
-    arma::vec x2 = Chebyshev::gaussLobatto(ny);
-    arma::vec xi_1 =-cos(arma::datum::pi*(2*arma::regspace(1, nx) - 1)/(2*nx)); // Collocation points 1-coordinates
-    arma::vec xi_2 =-cos(arma::datum::pi*(2*arma::regspace(1, ny) - 1)/(2*ny)); // Collocation points 2-coordinates
+    arma::vec x1   = Chebyshev::gaussLobatto(nx);
+    arma::vec x2   = Chebyshev::gaussLobatto(ny);
+    arma::vec xi_1 = Chebyshev::gauss(nx); // Collocation points 1-coordinates
+    arma::vec xi_2 = Chebyshev::gauss(ny); // Collocation points 2-coordinates
+    arma::mat D1 = Lagrange::derivativeMatrix(xi_1);
+    arma::mat D2 = Lagrange::derivativeMatrix(xi_2);
     size_t con = 1; // Number of configurations
     double qdyn = 1; // Dynamic pressure
     arma::vec alpha = arma::zeros(con); // Pitch

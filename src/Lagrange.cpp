@@ -27,6 +27,20 @@ arma::vec Lagrange::barycentricWeights(const size_t n)
     return w;
 }
 
+arma::mat Lagrange::derivativeMatrix(const arma::vec x)
+{
+    arma::vec w = barycentricWeights(x);
+    arma::mat D(x.size(), x.size(), arma::fill::zeros);
+    for (size_t i = 0; i < x.size(); i++)
+        for (size_t j = 0; j < x.size(); j++)
+            if (i != j)
+            {
+                D(i, j) = w(j)/w(i)/(x(i)-x(j));
+                D(i, i) -= D(i, j);
+            }
+    return D;
+}
+
 double Lagrange::interpolation(const double x, const arma::vec X, const arma::vec f, const arma::vec w)
 {
     double numerator   = 0;

@@ -7,6 +7,6 @@ set ylabel 'z' tc rgb 'gray'
 set grid
 set output '../../png/Chebyshev/Chebyshev.png'
 
-plot '../../Data/Chebyshev' u 1:2 notitle with lines lw 4 lc rgb 'red',\
-     '../../Data/Chebyshev' u 1:3 notitle with lines lw 4 lc rgb 'blue',\
-     '../../Data/Chebyshev' u 1:4 notitle with lines lw 4 lc rgb 'green'
+plot '../../Data/Chebyshev/Chebyshev' u 1:2 notitle with lines lw 4 lc rgb 'red',\
+     '../../Data/Chebyshev/Chebyshev' u 1:3 notitle with lines lw 4 lc rgb 'blue',\
+     '../../Data/Chebyshev/Chebyshev' u 1:4 notitle with lines lw 4 lc rgb 'green'

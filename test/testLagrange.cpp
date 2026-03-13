@@ -2,7 +2,7 @@
 
 int main()
 {
-    switch (2)
+    switch (5)
     {
         case 0: // Interpolation 1D
         {
@@ -160,6 +160,19 @@ int main()
                 for (size_t j = 0; j < m; j++, file<<'\n')
                     file << x(i, j) << ' ' << y(i, j) << ' ' <<
                     dxdx1(i, j) << ' ' << dxdx2(i, j) << ' ' << dydx1(i, j) << ' ' << dydx2(i, j);
+            file.close();
+            break;
+        }
+        case 5: // Derivative Matrix
+        {
+            size_t n = 50;
+            arma::vec x = Chebyshev::gauss(n);
+            arma::mat D = Lagrange::derivativeMatrix(x);
+            arma::vec z = sin(arma::datum::pi*x);
+            arma::vec dzdx = D*z;
+            std::ofstream file("plot/Data/Lagrange/derivativeMatrix");
+            for (size_t i = 0; i < n; i++, file<<'\n')
+                file << x(i) << ' ' << z(i) << ' ' << dzdx(i);
             file.close();
             break;
         }

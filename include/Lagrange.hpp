@@ -10,6 +10,7 @@ namespace Lagrange
     // Calculates the barycentric weights needed for the Lagrange-Interpolation
     arma::vec barycentricWeights(const arma::vec x);
     arma::vec barycentricWeights(const size_t n);
+    arma::mat derivativeMatrix(const arma::vec x);
     double interpolation(const double x, const arma::vec X, const arma::vec f, const arma::vec w);
     arma::vec interpolation(const arma::vec x, const arma::vec X, const arma::vec f, const arma::vec w);
     double interpolantDerivative(const double x, const arma::vec X, const arma::vec f, const arma::vec w);

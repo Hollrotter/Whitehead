@@ -36,6 +36,10 @@ namespace Chebyshev
     {
         return (j == 0 || j == N) ? arma::datum::pi/2/N : arma::datum::pi/N;
     }
+    inline arma::vec gauss(const size_t n)
+    {
+        return -cos(arma::datum::pi*(2*arma::regspace(0, n-1) + 1)/(2*n));
+    }
     // Generates the Gauss-Lobatto-Nodes with length n
     inline arma::vec gaussLobatto(const size_t n)
     {
