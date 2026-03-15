@@ -13,15 +13,19 @@ DVM = lib/Camber.o lib/DVM.o lib/DVMAerodynamicMatrix.o
 VLM = lib/VLM.o lib/VLMAerodynamicMatrix.o lib/Vortex.o
 AIRFOIL = lib/Airfoil.o lib/AirfoilAerodynamicMatrix.o
 WING = lib/Wing.o lib/WingAerodynamicMatrix.o lib/WingBoundary.o
+AERODYNAMICS = lib/Aerodynamics.o
 MISC = lib/misc.o lib/fastgl.o
 OBJS = $(STRING) $(MEMBRANE) $(STRUCTURE) $(CHEBYSHEV) $(LAGRANGE) $(METRIC) $(SPLINE) $(DVM) $(VLM) \
-$(AIRFOIL) $(WING) $(MISC)
+$(AIRFOIL) $(WING) $(AERODYNAMICS) $(MISC)
 BINS = $(OBJS) lib/libWhitehead.a
 OPTIONS = g++ -Ofast -c
 INCLUDE = -I./include -fopenmp -std=c++23
 LDLIBS = -llibarmadillo
 
 all: $(BINS)
+
+lib/Aerodynamics.o: src/Aerodynamics.cpp
+	$(OPTIONS) src/Aerodynamics.cpp $(INCLUDE) $(LDLIBS) -o lib/Aerodynamics.o
 
 lib/Airfoil.o: src/Airfoil.cpp
 	$(OPTIONS) src/Airfoil.cpp $(INCLUDE) $(LDLIBS) -o lib/Airfoil.o

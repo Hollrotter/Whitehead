@@ -6,16 +6,16 @@ int main()
     {
         case 0: // Rectangle
         {
-            size_t nx = 20;
-            size_t ny = 20;
+            size_t nx = 7;
+            size_t ny = 7;
 
             double l = 2;
-            double b = 4;
+            double b = 10;
 
-            Point p1(-l/2,-b/2);
-            Point p2( l/2,-b/2);
-            Point p3( l/2, b/2);
-            Point p4(-l/2, b/2);
+            Point p1(0, 0);
+            Point p2(l, 0);
+            Point p3(l, b/2);
+            Point p4(0, b/2);
 
             Lagrange::CurveInterpolant chi1(p1, p2, nx);
             Lagrange::CurveInterpolant chi2(p2, p3, ny);
@@ -26,10 +26,10 @@ int main()
 
             w.pitch(2);
 
-            w.boundary(&chi1, BC::Dirichlet);
-            w.boundary(&chi2, BC::Dirichlet);
+            w.boundary(&chi1, BC::Neumann);
+            w.boundary(&chi2, BC::Neumann);
             w.boundary(&chi3, BC::Dirichlet);
-            w.boundary(&chi4, BC::Neumann);
+            w.boundary(&chi4, BC::Dirichlet);
 
             w.linear();
 

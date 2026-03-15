@@ -79,13 +79,13 @@ void Wing::aerodynamicMatrix()
                     b.row(k1) =-4*arma::datum::pi*alpha; // Must be corrected later!
 
                     double J0 = detJ(i, j);
-                    arma::vec J1 = dJdxi_1*cT + dJdxi_2*sT;
+                    arma::vec J1 = dJdxi_1(i, j)*cT + dJdxi_2(i, j)*sT;
                     
                     for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                         for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                         {
                             double T_1 = boost::math::chebyshev_t_prime(p, eta_1) * boost::math::chebyshev_t(q, eta_2);
-                            double T_2 = boost::math::chebyshev_t(p, eta_1)       * boost::math::chebyshev_t_prime(p, eta_2);
+                            double T_2 = boost::math::chebyshev_t(p, eta_1)       * boost::math::chebyshev_t_prime(q, eta_2);
                             double mu0 = boost::math::chebyshev_t(p, eta_1) * boost::math::chebyshev_t(q, eta_2);
                             double I0  = 0;
                             double I_1 = 0;
@@ -269,7 +269,7 @@ void Wing::aerodynamicMatrix()
                         for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                         {
                             double T_1 = boost::math::chebyshev_t_prime(p, eta_1) * boost::math::chebyshev_t(q, eta_2);
-                            double T_2 = boost::math::chebyshev_t(p, eta_1)       * boost::math::chebyshev_t_prime(p, eta_2);
+                            double T_2 = boost::math::chebyshev_t(p, eta_1)       * boost::math::chebyshev_t_prime(q, eta_2);
                             double mu0 = boost::math::chebyshev_t(p, eta_1) * boost::math::chebyshev_t(q, eta_2);
                             arma::vec::fixed<3> I0(arma::fill::zeros);
                             arma::vec::fixed<3> I_1(arma::fill::zeros);

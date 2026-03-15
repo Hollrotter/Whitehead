@@ -63,6 +63,7 @@ public:
     }
     // Sets the pitch for multiple configurations
     void pitch(arma::vec);
+    void checkMesh();
     void linear();
     void nonlinear();
     // Gets the lift
@@ -85,18 +86,29 @@ public:
     {
         return dcp;
     }
+    void boundary(const Direction dir, const BC bc)
+    {
+        boundary(dir, bc, 0);
+    }
     void boundary(const Lagrange::CurveInterpolant* dir, const BC bc)
     {
         boundary(dir, bc, 0);
     }
+    template <class C> void boundary(const Direction, const BC, const C);
     template <class C> void boundary(const Lagrange::CurveInterpolant*, const BC, const C);
+    void boundary(const Direction dir, const BC bc, const double _r1, const double _r2)
+    {
+        boundary(dir, bc, _r1, _r2, 0);
+    }
     void boundary(const Lagrange::CurveInterpolant* dir, const BC bc, const double _r1, const double _r2)
     {
         boundary(dir, bc, _r1, _r2, 0);
     }
+    template <class C> void boundary(const Direction, const BC, const double, const double, const C);
     template <class C> void boundary(const Lagrange::CurveInterpolant*, const BC, const double, const double, const C);
     // Output x, y and dcp for surface plots
     void output(std::string);
+    friend class Aerodynamics;
 private:
     arma::vec externalContour(double, double, double, double, double, double, arma::vec);
     // Calculating the Aerodynamic Matrix for the Panel Method

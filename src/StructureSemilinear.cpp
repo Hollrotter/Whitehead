@@ -6,19 +6,7 @@ void Structure::semilinear()
     bool converged = false;
     int count = 0;
     arma::field<arma::vec> Ztarget(interfaces.size()), Zsource(interfaces.size());
-    for (size_t k = 0; k < interfaces.size(); k++)
-    {
-        size_t nn;
-        switch (interfaces[k].sourceCurve)
-        {
-            case 0: case 2:
-                nn = membranes[interfaces[k].sourceDomain]->nx;
-                break;
-            case 1: case 3:
-                nn = membranes[interfaces[k].sourceDomain]->ny;
-                break;
-        }
-    }
+
     arma::vec iter_old(membranes.size());
     for (size_t k = 0; k < membranes.size(); k++)
     {

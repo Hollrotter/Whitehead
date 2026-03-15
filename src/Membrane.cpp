@@ -34,7 +34,7 @@ void Membrane::poissonsRatio(const double _nu)
 
 void Membrane::checkMesh()
 {
-    printf("Checking for negative volumes...\n");
+    std::println("Checking for negative volumes...");
     bool negativeVolumes = false;
     arma::mat detJ = J(0, 0)%J(1, 1) - J(0, 1)%J(1, 0);
     for (size_t i = 0; i < nx; i++)
@@ -42,9 +42,9 @@ void Membrane::checkMesh()
             if (detJ(i, j) < 0)
                 negativeVolumes = true;
     if (negativeVolumes == false)
-        printf("No negative volumes found!\n");
+        std::println("No negative volumes found!");
     else
-        printf("Negative volumes were found!\n");
+        std::println("Negative volumes were found!");
 }
 
 /**

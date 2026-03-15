@@ -75,7 +75,7 @@ public:
     void linear();
     void semilinear();
     void nonlinear();
-    void principalStresses(std::string, std::string);
-    void principalStrains(std::string, std::string, std::string);
-    void output(std::string, Field);
+    void principalStresses(const std::string, const std::string);
+    void principalStrains(const std::string, const std::string, const std::string);
+    void output(const std::string, const Field);
 };

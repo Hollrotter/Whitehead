@@ -10,4 +10,5 @@ class Interface
 public:
     Interface(size_t sD, size_t tD, size_t sC, size_t tC) : sourceDomain(sD), targetDomain(tD), sourceCurve(sC), targetCurve(tC) {};
     friend class Structure;
+    friend class Aerodynamics;
 };

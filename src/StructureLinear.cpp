@@ -6,22 +6,10 @@ void Structure::linear()
     bool converged = false;
     int count = 0;
     arma::field<arma::vec> Ztarget(interfaces.size()), Zsource(interfaces.size());
-    for (size_t k = 0; k < interfaces.size(); k++)
-    {
-        size_t nn;
-        switch (interfaces[k].sourceCurve)
-        {
-            case 0: case 2:
-                nn = membranes[interfaces[k].sourceDomain]->nx;
-                break;
-            case 1: case 3:
-                nn = membranes[interfaces[k].sourceDomain]->ny;
-                break;
-        }
-    }
+
     do
     {
-        std::cout << "Iteration " << count << '/' << iterations << '\n';
+        std::cout << "Iteration " << count << '/' << iterations << std::endl;
         for (auto& interface:interfaces)
         {
             Direction targetDirection = static_cast<Direction>(interface.targetCurve);
@@ -124,11 +112,11 @@ void Structure::linear()
             }
             switch (interface.sourceCurve)
             {
-                case 1: case 2: // East and North
-                    membranes[interface.sourceDomain]->boundary(Field::z, sourceDirection, BC::Robin, gamma, 1, targetZ);
-                    break;
                 case 0: case 3: // South and West
                     membranes[interface.sourceDomain]->boundary(Field::z, sourceDirection, BC::Robin, gamma,-1, targetZ);
+                    break;
+                case 1: case 2: // East and North
+                    membranes[interface.sourceDomain]->boundary(Field::z, sourceDirection, BC::Robin, gamma, 1, targetZ);
                     break;
             }
         }

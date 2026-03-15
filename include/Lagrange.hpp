@@ -3,7 +3,9 @@
 #include "Point.hpp"
 
 class Membrane;
+class Wing;
 class Structure;
+class Aerodynamics;
 
 namespace Lagrange
 {
@@ -65,7 +67,9 @@ namespace Lagrange
             return nodes;
         }
         friend class ::Membrane;
+        friend class ::Wing;
         friend class ::Structure;
+        friend class ::Aerodynamics;
     private:
         arma::vec parametrize();
     };

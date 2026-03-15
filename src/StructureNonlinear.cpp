@@ -18,19 +18,7 @@ void Structure::nonlinear()
     arma::field<arma::vec> Vntarget(interfaces.size()), Vnsource(interfaces.size());
     arma::field<arma::vec> Vttarget(interfaces.size()), Vtsource(interfaces.size());
     arma::field<arma::vec> Ztarget(interfaces.size()),  Zsource(interfaces.size());
-    for (size_t k = 0; k < interfaces.size(); k++)
-    {
-        size_t nn;
-        switch (interfaces[k].sourceCurve)
-        {
-            case 0: case 2:
-                nn = membranes[interfaces[k].sourceDomain]->nx;
-                break;
-            case 1: case 3:
-                nn = membranes[interfaces[k].sourceDomain]->ny;
-                break;
-        }
-    }
+
     for (size_t substep = 1; substep <= substeps; substep++)
     {
         printf("Substep %lu/%lu\n", substep, substeps);

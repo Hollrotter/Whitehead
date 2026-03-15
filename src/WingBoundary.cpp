@@ -1,5 +1,28 @@
 #include "Wing.hpp"
 
+template <class C> void Wing::boundary(const Direction dir, const BC bc, const C val)
+{
+    switch (dir)
+    {
+        case Direction::N:
+            mu.northBC = bc;
+            mu.north   = typeid(val) == typeid(arma::vec) ? arma::vec(val) : mu.north*val;
+            break;
+        case Direction::S:
+            mu.southBC = bc;
+            mu.south   = typeid(val) == typeid(arma::vec) ? arma::vec(val) : mu.south*val;
+            break;
+        case Direction::W:
+            mu.westBC = bc;
+            mu.west   = typeid(val) == typeid(arma::vec) ? arma::vec(val) : mu.west*val;
+            break;
+        case Direction::E:
+            mu.eastBC = bc;
+            mu.east   = typeid(val) == typeid(arma::vec) ? arma::vec(val) : mu.east*val;
+            break;
+    }
+}
+
 template <class C> void Wing::boundary(const Lagrange::CurveInterpolant* dir, const BC bc, const C val)
 {
     if (dir == chi[0])
@@ -27,6 +50,30 @@ template <class C> void Wing::boundary(const Lagrange::CurveInterpolant* dir, co
         std::println("Not a curve of the wing!");
         exit(EXIT_FAILURE);
     }
+}
+
+template <class C> void Wing::boundary(const Direction dir, const BC bc, const double _r1, const double _r2, const C val)
+{
+    switch (dir)
+    {
+        case Direction::N:
+            mu.r1North = _r1;
+            mu.r2North = _r2;
+            break;
+        case Direction::S:
+            mu.r1South = _r1;
+            mu.r2South = _r2;
+            break;
+        case Direction::W:
+            mu.r1West = _r1;
+            mu.r2West = _r2;
+            break;
+        case Direction::E:
+            mu.r1East = _r1;
+            mu.r2East = _r2;
+            break;
+    }
+    boundary(dir, bc, val);
 }
 
 template <class C> void Wing::boundary(const Lagrange::CurveInterpolant* dir, const BC bc, const double _r1, const double _r2, const C val)
@@ -79,7 +126,7 @@ void Wing::muBoundarySouth(const size_t i)
                 double dT = boost::math::chebyshev_t_prime(p, x1(i));
                 for (size_t q = 0; q < ny; q++)
                     A(i, p+q*nx) = h_2s1_south(i)*dT*pow(-1, q)
-                                 + h_2s2_south(i)*T *pow(-1, q)*pow(q, 2);
+                                 + h_2s2_south(i)*T *pow(-1, q+1)*pow(q, 2);
             }
             b(i) = mu.south(i);
             break;
@@ -91,7 +138,7 @@ void Wing::muBoundarySouth(const size_t i)
                 for (size_t q = 0; q < ny; q++)
                     A(i, p+q*nx) = mu.r1South*T*pow(-1, q)
                                  + mu.r2South*(h_2s1_south(i)*dT*pow(-1, q)
-                                 +             h_2s2_south(i)*T *pow(-1, q)*pow(q, 2));
+                                 +             h_2s2_south(i)*T *pow(-1, q+1)*pow(q, 2));
             }
             b(i) = mu.south(i);
             break;
@@ -162,7 +209,7 @@ void Wing::muBoundaryWest(const size_t j)
                 double  T = boost::math::chebyshev_t(q, x2(j));
                 double dT = boost::math::chebyshev_t_prime(q, x2(j));
                 for (size_t p = 0; p < nx; p++)
-                    A(k, p+q*nx) = h_1s1_west(j)*pow(-1, p)*pow(p, 2) * T
+                    A(k, p+q*nx) = h_1s1_west(j)*pow(-1, p+1)*pow(p, 2) * T
                                  + h_1s2_west(j)*pow(-1, p) * dT;
             }
             b(k) = mu.west(j);
@@ -173,8 +220,8 @@ void Wing::muBoundaryWest(const size_t j)
                 double  T = boost::math::chebyshev_t(q, x2(j));
                 double dT = boost::math::chebyshev_t_prime(q, x2(j));
                 for (size_t p = 0; p < nx; p++)
-                    A(k, p+q*nx) = mu.r1West*pow(-1, p)*T
-                                 + mu.r2West*(h_1s1_west(j)*pow(-1, p)*pow(p, 2) * T
+                    A(k, p+q*nx) = mu.r1West*pow(-1, p) * T
+                                 + mu.r2West*(h_1s1_west(j)*pow(-1, p+1)*pow(p, 2) * T
                                  +            h_1s2_west(j)*pow(-1, p) * dT);
             }
             b(k) = mu.west(j);
@@ -226,7 +273,19 @@ void Wing::muBoundaryEast(const size_t j)
     }
 }
 
+template void Wing::boundary<int>(const Direction, const BC, const int);
+template void Wing::boundary<size_t>(const Direction, const BC, const size_t);
+template void Wing::boundary<double>(const Direction, const BC, const double);
+template void Wing::boundary<arma::vec>(const Direction, const BC, const arma::vec);
+template void Wing::boundary<int>(const Direction, const BC, const double, const double, const int);
+template void Wing::boundary<size_t>(const Direction, const BC, const double, const double, const size_t);
+template void Wing::boundary<double>(const Direction, const BC, const double, const double, const double);
+template void Wing::boundary<arma::vec>(const Direction, const BC, const double, const double, const arma::vec);
 template void Wing::boundary<int>(const Lagrange::CurveInterpolant*, const BC, const int);
 template void Wing::boundary<size_t>(const Lagrange::CurveInterpolant*, const BC, const size_t);
 template void Wing::boundary<double>(const Lagrange::CurveInterpolant*, const BC, const double);
 template void Wing::boundary<arma::vec>(const Lagrange::CurveInterpolant*, const BC, const arma::vec);
+template void Wing::boundary<int>(const Lagrange::CurveInterpolant*, const BC, const double, const double, const int);
+template void Wing::boundary<size_t>(const Lagrange::CurveInterpolant*, const BC, const double, const double, const size_t);
+template void Wing::boundary<double>(const Lagrange::CurveInterpolant*, const BC, const double, const double, const double);
+template void Wing::boundary<arma::vec>(const Lagrange::CurveInterpolant*, const BC, const double, const double, const arma::vec);

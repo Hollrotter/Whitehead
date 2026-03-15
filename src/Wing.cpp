@@ -34,6 +34,21 @@ void Wing::pitch(arma::vec _alpha)
     dcp.zeros(nx, ny, con);
 }
 
+void Wing::checkMesh()
+{
+    std::println("Checking for negative volumes...");
+    bool negativeVolumes = false;
+    arma::mat detJ = J(0, 0)%J(1, 1) - J(0, 1)%J(1, 0);
+    for (size_t i = 0; i < nx; i++)
+        for (size_t j = 0; j < ny; j++)
+            if (detJ(i, j) < 0)
+                negativeVolumes = true;
+    if (negativeVolumes == false)
+        std::println("No negative volumes found!");
+    else
+        std::println("Negative volumes were found!");
+}
+
 void Wing::linear()
 {
     analysis = Analysis::linear;
@@ -79,13 +94,28 @@ void Wing::linearSolve()
         muBoundaryNorth(i);
     }
     // BC south-west corner (i = 0, j = 0)
-    muBoundarySouth(0);
+    if (chi[0]->curveType == CurveType::Interface && chi[3]->curveType == CurveType::Boundary)
+        muBoundaryWest(0);
+    else
+        muBoundarySouth(0);
+
     // BC north-west corner (i = 0, j = ny-1)
-    muBoundaryWest(ny-1);
+    if (chi[2]->curveType == CurveType::Boundary  && chi[3]->curveType == CurveType::Interface)
+        muBoundaryNorth(0);
+    else
+        muBoundaryWest(ny-1);
+
     // BC south-east corner (i = nx-1, j = 0)
-    muBoundaryEast(0);
+    if (chi[0]->curveType == CurveType::Boundary  && chi[1]->curveType == CurveType::Interface)
+        muBoundarySouth(nx-1);
+    else
+        muBoundaryEast(0);
+
     // BC north-east corner (i = nx-1, j = ny-1)
-    muBoundaryNorth(nx-1);
+    if (chi[2]->curveType == CurveType::Interface && chi[1]->curveType == CurveType::Boundary)
+        muBoundaryEast(ny-1);
+    else
+        muBoundaryNorth(nx-1);
 
     arma::lu(L, U, P, A);
 }
@@ -105,8 +135,8 @@ void Wing::postprocessing()
     arma::mat detJ = J11%J22 - J12%J21;
     arma::mat J11_inv = J22/detJ;
     arma::mat J12_inv =-J12/detJ;
-    for (size_t j = 1; j < ny-1; j++) // Loop over Collocation Points in 2-direction
-        for (size_t i = 1; i < nx-1; i++) // Loop over Collocation Points in 1-direction
+    for (size_t j = 0; j < ny; j++) // Loop over Collocation Points in 2-direction
+        for (size_t i = 0; i < nx; i++) // Loop over Collocation Points in 1-direction
             for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
             {
                 double T2 = boost::math::chebyshev_t(q, x2(j));

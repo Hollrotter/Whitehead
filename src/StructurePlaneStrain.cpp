@@ -6,19 +6,7 @@ void Structure::planeStrain()
     int count = 0;
     arma::field<arma::vec> Vntarget(interfaces.size()), Vnsource(interfaces.size());
     arma::field<arma::vec> Vttarget(interfaces.size()), Vtsource(interfaces.size());
-    for (size_t k = 0; k < interfaces.size(); k++)
-    {
-        size_t nn;
-        switch (interfaces[k].sourceCurve)
-        {
-            case 0: case 2:
-                nn = membranes[interfaces[k].sourceDomain]->nx;
-                break;
-            case 1: case 3:
-                nn = membranes[interfaces[k].sourceDomain]->ny;
-                break;
-        }
-    }
+
     do
     {
         std::cout << "Iteration " << count << '/' << iterations << '\n';
