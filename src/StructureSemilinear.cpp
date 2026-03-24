@@ -4,7 +4,7 @@ void Structure::semilinear()
 {
     analysis = Analysis::semilinear;
     bool converged = false;
-    int count = 0;
+    int count = 1;
     arma::field<arma::vec> Ztarget(interfaces.size()), Zsource(interfaces.size());
 
     arma::vec iter_old(membranes.size());

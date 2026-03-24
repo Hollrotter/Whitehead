@@ -28,22 +28,21 @@ int main()
             Lagrange::CurveInterpolant chi7(p5, p6, nx);
 
             Wing w1({&chi1, &chi2, &chi3, &chi4});
-            Wing w2({&chi1, &chi5, &chi7, &chi6});
+            Wing w2({&chi7, &chi6, &chi1, &chi5});
 
             Aerodynamics a({&w1, &w2});
-            a.setgamma0(0.55);
+            a.setgamma0(0.1);
             a.pitch(2);
 
-            // w1.boundary(&chi1, BC::Dirichlet);
-            w1.boundary(&chi2, BC::Dirichlet);
+            w1.boundary(&chi2, BC::Neumann);
             w1.boundary(&chi3, BC::Dirichlet);
             w1.boundary(&chi4, BC::Dirichlet);
 
             w2.boundary(&chi7, BC::Dirichlet);
-            w2.boundary(&chi6, BC::Dirichlet);
+            w2.boundary(&chi6, BC::Neumann);
             w2.boundary(&chi5, BC::Dirichlet);
 
-            a.setIterations(100);
+            a.setIterations(5);
             a.linear();
 
             a.output("plot/Data/Aerodynamics/flat");

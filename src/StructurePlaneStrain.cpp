@@ -3,7 +3,7 @@
 void Structure::planeStrain()
 {
     bool converged = false;
-    int count = 0;
+    int count = 1;
     arma::field<arma::vec> Vntarget(interfaces.size()), Vnsource(interfaces.size());
     arma::field<arma::vec> Vttarget(interfaces.size()), Vtsource(interfaces.size());
 

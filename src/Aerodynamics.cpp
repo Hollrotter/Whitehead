@@ -35,7 +35,7 @@ void Aerodynamics::nonlinear()
 void Aerodynamics::solve()
 {
     bool converged = false;
-    int count = 0;
+    int count = 1;
     arma::field<arma::vec> muTarget(interfaces.size()), muSource(interfaces.size());
 
     do
@@ -76,7 +76,7 @@ void Aerodynamics::solve()
                     arma::vec h_2s1 = wings[interface.sourceDomain]->h_2s1_south;
                     arma::vec h_2s2 = wings[interface.sourceDomain]->h_2s2_south;
                     gamma = gamma0*mean(h_2s2);
-                    sourceMU = gamma*MU.col(0) + (h_2s1%dMUd1.col(0) + h_2s2%dMUd2.col(0));
+                    sourceMU = gamma*MU.col(0) + h_2s1%dMUd1.col(0) + h_2s2%dMUd2.col(0);
                     break;
                 }
                 case 1: // East
@@ -100,7 +100,7 @@ void Aerodynamics::solve()
                     arma::rowvec h_1s1 = wings[interface.sourceDomain]->h_1s1_west;
                     arma::rowvec h_1s2 = wings[interface.sourceDomain]->h_1s2_west;
                     gamma = gamma0*mean(h_1s1);
-                    sourceMU = (gamma*MU.row(0) + (h_1s1%dMUd1.row(0) + h_1s2%dMUd2.row(0))).t();
+                    sourceMU = (gamma*MU.row(0) + h_1s1%dMUd1.row(0) + h_1s2%dMUd2.row(0)).t();
                     break;
                 }
             }
@@ -143,7 +143,7 @@ void Aerodynamics::solve()
                     arma::vec h_2s1 = wings[interface.targetDomain]->h_2s1_south;
                     arma::vec h_2s2 = wings[interface.targetDomain]->h_2s2_south;
                     gamma = gamma0*mean(h_2s2);
-                    targetMU = gamma*MU.col(0) + (h_2s1%dMUd1.col(0) + h_2s2%dMUd2.col(0));
+                    targetMU = gamma*MU.col(0) + h_2s1%dMUd1.col(0) + h_2s2%dMUd2.col(0);
                     break;
                 }
                 case 1: // East
@@ -167,7 +167,7 @@ void Aerodynamics::solve()
                     arma::rowvec h_1s1 = wings[interface.targetDomain]->h_1s1_west;
                     arma::rowvec h_1s2 = wings[interface.targetDomain]->h_1s2_west;
                     gamma = gamma0*mean(h_1s1);
-                    targetMU = (gamma*MU.row(0) + (h_1s1%dMUd1.row(0) + h_1s2%dMUd2.row(0))).t();
+                    targetMU = (gamma*MU.row(0) + h_1s1%dMUd1.row(0) + h_1s2%dMUd2.row(0)).t();
                     break;
                 }
             }

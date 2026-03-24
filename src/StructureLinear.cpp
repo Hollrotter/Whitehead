@@ -4,7 +4,7 @@ void Structure::linear()
 {
     analysis = Analysis::linear;
     bool converged = false;
-    int count = 0;
+    int count = 1;
     arma::field<arma::vec> Ztarget(interfaces.size()), Zsource(interfaces.size());
 
     do

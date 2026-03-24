@@ -29,7 +29,7 @@ void Structure::nonlinear()
             membranes[k]->p2 = p20(k)*substep/substeps;
         }
         bool converged = false;
-        int count = 0;
+        int count = 1;
         do
         {
             std::cout << "Iteration " << count << '/' << iterations << '\n';
