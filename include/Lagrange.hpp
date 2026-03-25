@@ -2,6 +2,7 @@
 #include "Chebyshev.hpp"
 #include "Point.hpp"
 
+class Airfoil;
 class Membrane;
 class Wing;
 class Structure;
@@ -42,7 +43,10 @@ namespace Lagrange
         }
     public:
         CurveInterpolant() = default;
+        // Constructor assuming a gauss Lobatto distribution of the nodes along the curve
         CurveInterpolant(arma::vec _x, arma::vec _y) : x(_x), y(_y), nodes(parametrize()) {}
+        // Constructor to set an arbitrary node distribution by inserting s
+        CurveInterpolant(arma::vec _x, arma::vec _y, arma::vec s) : x(_x), y(_y), nodes(parametrize(s)) {}
         CurveInterpolant(Point p1, Point p2, size_t n) : x((p2.X()-p1.X())*(Chebyshev::gaussLobatto(n)+1)/2 + p1.X()),
                                                          y((p2.Y()-p1.Y())*(Chebyshev::gaussLobatto(n)+1)/2 + p1.Y()), nodes(Chebyshev::gaussLobatto(n)) {};
         CurveInterpolant(Point p1, Point p2, Point pm, double r, size_t n) : CurveInterpolant(arc(p1, p2, pm, r, n)) {};
@@ -66,12 +70,14 @@ namespace Lagrange
         {
             return nodes;
         }
+        friend class ::Airfoil;
         friend class ::Membrane;
         friend class ::Wing;
         friend class ::Structure;
         friend class ::Aerodynamics;
     private:
         arma::vec parametrize();
+        arma::vec parametrize(arma::vec s);
     };
     std::pair<arma::mat, arma::mat> TransfiniteQuadMap(const std::array<CurveInterpolant*, 4> chi);
     std::pair<arma::mat, arma::mat> TransfiniteQuadMap(const arma::vec &x1, const arma::vec &x2, const std::array<CurveInterpolant*, 4> chi);

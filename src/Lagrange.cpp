@@ -217,8 +217,12 @@ arma::mat Lagrange::interpolation2D(const arma::mat Tx, const arma::mat Ty, cons
 
 arma::vec Lagrange::CurveInterpolant::parametrize()
 {
+    return parametrize(Chebyshev::gaussLobatto(x.size()));
+}
+
+arma::vec Lagrange::CurveInterpolant::parametrize(arma::vec s)
+{
     size_t n = x.size();
-    arma::vec s = Chebyshev::gaussLobatto(n);
     arma::vec t(n, arma::fill::zeros);
     arma::mat D = Chebyshev::derivativeMatrix(s, Derivative::first);
     arma::vec dxds = D*x;

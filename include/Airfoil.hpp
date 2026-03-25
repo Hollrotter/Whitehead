@@ -1,5 +1,6 @@
 #pragma once
-#include "Chebyshev.hpp"
+#include "Lagrange.hpp"
+#include "fastgl.h"
 
 class Airfoil
 {
@@ -7,8 +8,10 @@ class Airfoil
     double qdyn = 1; // Dynamic pressure
     arma::vec alpha; // Pitch
     size_t nx = 1;
-    arma::vec xi = cos(arma::datum::pi*(2*arma::regspace(1, nx) - 1)/(2*nx));
+    Lagrange::CurveInterpolant* chi;
+    arma::vec xi = Chebyshev::gauss(nx);
     arma::vec x = c/2*(1 + xi); // x-Coordinates of nodes
+    arma::vec z = arma::zeros(nx);
     size_t con = 1; // Number of configurations
     arma::mat gamma_hat;
     arma::mat dcp; // Difference of non-dimensional pressure
@@ -21,9 +24,17 @@ class Airfoil
     arma::mat b = arma::zeros(nx, con);
     arma::mat nC; // Normal vector of the airfoil
     Analysis analysis = Analysis::linear; // Analysis type (linear or nonlinear)
+    Airfoil fromLagrangeCurveInterpolant(Lagrange::CurveInterpolant* _chi)
+    {
+        arma::vec _xi = Chebyshev::gauss(_chi->getNodes().size());
+        auto [_x, _z] = _chi->evaluate(_xi);
+        return {_x, _z, _chi};
+    }
 public:
     Airfoil() = default;
     Airfoil(double _c, size_t _nx) : c(_c), nx(_nx) {}
+    Airfoil(arma::vec _x, arma::vec _z, Lagrange::CurveInterpolant* _chi) : x(_x), z(_z), chi(_chi), c(_x.back()-_x.front()), nx(_x.size()) {};
+    Airfoil(Lagrange::CurveInterpolant* _chi) : Airfoil(fromLagrangeCurveInterpolant(_chi)) {}
     // Set dynamic pressure
     void dynamicPressure(double);
     // Set pitch in degree
