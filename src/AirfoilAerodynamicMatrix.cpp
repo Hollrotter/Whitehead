@@ -12,10 +12,10 @@ void Airfoil::aerodynamicMatrix()
         {
             for (size_t i = 0; i < nx-1; i++)
             {
-                A(i, 0) = log((1 - xi(i))/(1 + xi(i)));
-                A(i, 1) = 2 + xi(i)*A(i, 0);
+                A(i, 0) = log((1 + xi(i))/(1 - xi(i)));
+                A(i, 1) = 2 - xi(i)*A(i, 0);
                 for (size_t j = 2; j < nx; j++)
-                    A(i, j) = 2*(Chebyshev::integral(j-1) + xi(i)*A(i, j-1)) - A(i, j-2);
+                    A(i, j) = 2*(Chebyshev::integral(j-1) - xi(i)*A(i, j-1)) - A(i, j-2);
                 b.row(i) =-arma::datum::tau*alpha.t();
             }
             A.row(nx-1).ones();
@@ -24,9 +24,6 @@ void Airfoil::aerodynamicMatrix()
         case Analysis::nonlinear:
         {
             size_t mx = 2;
-            std::vector<fastgl::QuadPair> gl_n(nx);
-            for (size_t n = 0; n < nx; n++)
-                gl_n[n] = fastgl::GLPair(nx, n+1);
             std::vector<fastgl::QuadPair> gl_m(mx);
             for (size_t m = 0; m < mx; m++)
                 gl_m[m] = fastgl::GLPair(mx, m+1);
@@ -60,36 +57,41 @@ void Airfoil::aerodynamicMatrix()
                     arma::vec::fixed<2> I_r(arma::fill::zeros);
                     for (size_t m = 0; m < mx; m++)
                     {
-                        double rho = (xi_max - xi_min)/2*(1 - gl_m[m].x());
+                        double rho = (xi_max - xi_min)/2*(1 - gl_m[m].x()) + xi_min;
                         I_r += gl_m[m].weight * (F0 + F1*rho + F2*pow(rho, 2));
                     }
                     arma::vec::fixed<2> q = I_r * (xi_max - xi_min)/2;
-                    q += F_1*log((1-xi(i))/(1+xi(i))) * (xi_max - xi_min)/2;
+                    double eta = 2*(xi(i) - xi_min)/(xi_max - xi_min) - 1;
+                    q += F_1*log((1-eta)/(1+eta)) * (xi_max - xi_min)/2;
                     if (i > 0)
                     {
-                        arma::vec::fixed<2> I;
-                        for (size_t n = 0; n < nx; n++)
+                        arma::vec::fixed<2> I(arma::fill::zeros);
+                        for (size_t n = 0; n < nx-i-2; n++)
                         {
-                            auto [x_n, z_n] = chi->evaluate((1+gl_n[n].x())/2*(1-xi_max));
-                            arma::vec::fixed<2> r ={z(i)-z_n, x_n-x(i)};
+                            fastgl::QuadPair gl = fastgl::GLPair(nx-i-2, n+1);
+                            double xi_gl = (1 - gl.x())/2*(xi_min + 1) - 1;
+                            auto [x_n, z_n] = chi->evaluate(xi_gl);
+                            arma::vec::fixed<2> r = {z(i)-z_n, x_n-x(i)};
                             double r2 = dot(r, r);
-                            double T = boost::math::chebyshev_t(j, (1+gl_n[n].x())/2*(1-xi_max));
-                            I += gl_n[n].weight * T * r/r2;
+                            double T = boost::math::chebyshev_t(j, xi_gl);
+                            I += gl.weight * T * r/r2;
                         }
-                        q += I * (1-xi_max)/2;
+                        q += I * (xi_min+1)/2;
                     }
                     if (i < nx-1)
                     {
-                        arma::vec::fixed<2> I;
-                        for (size_t n = 0; n < nx; n++)
+                        arma::vec::fixed<2> I(arma::fill::zeros);
+                        for (size_t n = 0; n < i+2; n++)
                         {
-                            auto [x_n, z_n] = chi->evaluate((1+gl_n[n].x())/2*(xi_min-1));
+                            fastgl::QuadPair gl = fastgl::GLPair(i+2, n+1);
+                            double xi_gl = (1 - gl.x())/2*(1 - xi_max) + xi_max;
+                            auto [x_n, z_n] = chi->evaluate(xi_gl);
                             arma::vec::fixed<2> r = {z(i)-z_n, x_n-x(i)};
                             double r2 = dot(r, r);
-                            double T = boost::math::chebyshev_t(j, (1+gl_n[n].x())/2*(xi_min-1));
-                            I += gl_n[n].weight * T * r/r2;
+                            double T = boost::math::chebyshev_t(j, xi_gl);
+                            I += gl.weight * T * r/r2;
                         }
-                        q += I * (xi_min-1)/2;
+                        q += I * (1-xi_max)/2;
                     }
                     A(i, j) = dot(nC.col(i), q);
                 }
