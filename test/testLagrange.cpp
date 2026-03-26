@@ -2,7 +2,7 @@
 
 int main()
 {
-    switch (5)
+    switch (4)
     {
         case 0: // Interpolation 1D
         {
@@ -137,7 +137,19 @@ int main()
             file.close();
             break;
         }
-        case 4: // Transfinite Interpolation
+        case 4: // Parametrization by arc length with Chebyshev gauss nodes
+        {
+            size_t n = 10;
+            arma::vec s = Chebyshev::gauss(n);
+            arma::vec x = s;
+            arma::vec y = 0.1*(1-pow(s, 2));
+
+            Lagrange::CurveInterpolant chi(x, y, s);
+            s.t().print();
+            chi.getNodes().t().print();
+            break;
+        }
+        case 5: // Transfinite Interpolation
         {
             size_t n = 10;
             size_t m = 5;
@@ -163,7 +175,7 @@ int main()
             file.close();
             break;
         }
-        case 5: // Derivative Matrix
+        case 6: // Derivative Matrix
         {
             size_t n = 50;
             arma::vec x = Chebyshev::gauss(n);

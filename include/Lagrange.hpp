@@ -1,6 +1,7 @@
 #pragma once
 #include "Chebyshev.hpp"
 #include "Point.hpp"
+#include "fastgl.h"
 
 class Airfoil;
 class Membrane;

@@ -6,7 +6,7 @@ lib/MembraneSemilinear.o lib/MembraneNonlinear.o lib/MembraneStructuralMatrix.o 
 STRUCTURE = lib/Structure.o lib/StructureLinear.o lib/StructureSemilinear.o lib/StructureNonlinear.o \
 lib/StructurePlaneStrain.o
 CHEBYSHEV = lib/Chebyshev.o lib/ChebyshevFFT.o lib/ChebyshevPolynomial.o
-LAGRANGE = lib/Lagrange.o
+LAGRANGE = lib/Lagrange.o lib/CurveInterpolant.o
 METRIC = lib/Christoffel.o lib/Metric.o lib/MetricCo.o lib/Jacobian.o
 SPLINE = lib/B_Spline.o lib/setQR.o lib/Splinefit.o lib/SplinefitDiff.o
 DVM = lib/Camber.o lib/DVM.o lib/DVMAerodynamicMatrix.o
@@ -50,6 +50,9 @@ lib/ChebyshevPolynomial.o: src/ChebyshevPolynomial.cpp
 
 lib/Christoffel.o: src/Christoffel.cpp
 	$(OPTIONS) src/Christoffel.cpp $(INCLUDE) $(LDLIBS) -o lib/Christoffel.o
+
+lib/CurveInterpolant.o: src/CurveInterpolant.cpp
+	$(OPTIONS) src/CurveInterpolant.cpp $(INCLUDE) $(LDLIBS) -o lib/CurveInterpolant.o
 
 lib/DVM.o: src/DVM.cpp
 	$(OPTIONS) src/DVM.cpp $(INCLUDE) $(LDLIBS) -o lib/DVM.o

@@ -215,56 +215,6 @@ arma::mat Lagrange::interpolation2D(const arma::mat Tx, const arma::mat Ty, cons
     return Z;
 }
 
-arma::vec Lagrange::CurveInterpolant::parametrize()
-{
-    return parametrize(Chebyshev::gaussLobatto(x.size()));
-}
-
-arma::vec Lagrange::CurveInterpolant::parametrize(arma::vec s)
-{
-    size_t n = x.size();
-    arma::vec t(n, arma::fill::zeros);
-    arma::mat D = Chebyshev::derivativeMatrix(s, Derivative::first);
-    arma::vec dxds = D*x;
-    arma::vec dyds = D*y;
-
-    arma::vec I = sqrt(pow(dxds, 2) + pow(dyds, 2));
-    D.row(0).eye();
-    I(0) = 0;
-    arma::vec int_I_dx = solve(D, I);
-    double L = int_I_dx(n-1);
-
-    arma::vec w = barycentricWeights(n);
-    t(0) =-1;
-    double I2 = sqrt(pow(interpolantDerivative(-1, s, x, w), 2)
-                   + pow(interpolantDerivative(-1, s, y, w), 2));
-    double I1;
-    for (size_t i = 1; i < n-1; i++)
-    {
-        t(i) = t(i-1) + s(i) - s(i-1);
-        for (size_t q = 0; q < 1000; q++)
-        {
-            double dxdt = interpolantDerivative((t(i)+t(i-1))/2, s, x, w);
-            double dydt = interpolantDerivative((t(i)+t(i-1))/2, s, y, w);
-
-            double Im = sqrt(pow(dxdt, 2) + pow(dydt, 2));
-
-            dxdt = interpolantDerivative(t(i), s, x, w);
-            dydt = interpolantDerivative(t(i), s, y, w);
-
-            I1 = sqrt(pow(dxdt, 2) + pow(dydt, 2));
-
-            double f = L/2*(s(i) - s(i-1)) - (t(i) - t(i-1))*(I1 + 4*Im + I2)/6;
-            t(i) += 0.1*f/I1;
-            if (fabs(f) < 1e-10)
-                break;
-        }
-        I2 = I1;
-    }
-    t.back() = 1;
-    return t;
-}
-
 std::pair<arma::mat, arma::mat> Lagrange::TransfiniteQuadMap(const std::array<CurveInterpolant*, 4> chi)
 {
     arma::vec x1 = Chebyshev::gaussLobatto(chi[0]->getNodes().size());

@@ -1,7 +1,6 @@
 #pragma once
 #include "TensorField.hpp"
 #include "Metric.hpp"
-#include "fastgl.h"
 
 class Wing
 {

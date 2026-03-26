@@ -2,7 +2,7 @@
 
 int main()
 {
-    switch (0)
+    switch (1)
     {
         case 0: // Flat plate
         {
@@ -33,9 +33,10 @@ int main()
             double c = 2;
             size_t n = 10;
             double h = 0.1;
-            arma::vec x = c/2*(1+Chebyshev::gauss(n));
-            arma::vec z = h*(1-pow(x, 2));
-            Lagrange::CurveInterpolant chi(x, z);
+            arma::vec s = Chebyshev::gauss(n);
+            arma::vec x = c/2*(1+s);
+            arma::vec z = h*(1-pow(s, 2));
+            Lagrange::CurveInterpolant chi(x, z, s);
             Airfoil airfoil(&chi);
             airfoil.pitch(2);
             airfoil.nonlinear();

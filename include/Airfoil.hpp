@@ -1,6 +1,5 @@
 #pragma once
 #include "Lagrange.hpp"
-#include "fastgl.h"
 
 class Airfoil
 {
