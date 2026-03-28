@@ -43,12 +43,12 @@ int main()
         }
         case 1: // A test for the nonlinear DVM
         {
-            double c = 2.0;
-            double h = 1;
+            double c = 1.0;
+            double h = .1;
             Camber cam([&](double xc){ return 4*h*xc*(1 -   xc); },
                        [&](double xc){ return 4*h/c *(1 - 2*xc); });
             DVM dvm(c, 100, cam);
-            dvm.pitch(5);
+            dvm.pitch(0);
             dvm.dynamicPressure(1.225/2*15*15);
             dvm.aerodynamics(Analysis::nonlinear);
             dvm.dvm();

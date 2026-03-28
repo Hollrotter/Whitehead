@@ -39,7 +39,10 @@ void Airfoil::nonlinear()
     analysis = Analysis::nonlinear;
     aerodynamicMatrix();
     arma::mat Q = join_horiz(cos(alpha), sin(alpha));
-    gamma_hat = solve(A, arma::datum::tau*(Q*nC).t());
+    b.row(0).zeros();
+    for (size_t i = 1; i < nx; i++)
+        b.row(i) =-arma::datum::tau*(Q*nC.col(i)).t();
+    gamma_hat = solve(A, b);
     postprocessing();
 }
 
@@ -78,6 +81,9 @@ void Airfoil::linearSolve()
 
 void Airfoil::linearEval()
 {
+    b.row(0).zeros();
+    for (size_t i = 1; i < nx; i++)
+        b.row(i) =-arma::datum::tau*alpha.t();
     gamma_hat = solve(trimatu(U), solve(trimatl(L), P*b));
     postprocessing();
 }

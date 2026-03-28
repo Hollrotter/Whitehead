@@ -11,7 +11,7 @@ METRIC = lib/Christoffel.o lib/Metric.o lib/MetricCo.o lib/Jacobian.o
 SPLINE = lib/B_Spline.o lib/setQR.o lib/Splinefit.o lib/SplinefitDiff.o
 DVM = lib/Camber.o lib/DVM.o lib/DVMAerodynamicMatrix.o
 VLM = lib/VLM.o lib/VLMAerodynamicMatrix.o lib/Vortex.o
-AIRFOIL = lib/Airfoil.o lib/AirfoilAerodynamicMatrix.o
+AIRFOIL = lib/Airfoil.o lib/AirfoilAerodynamicMatrix.o lib/AirfoilKernel.o
 WING = lib/Wing.o lib/WingAerodynamicMatrix.o lib/WingBoundary.o
 AERODYNAMICS = lib/Aerodynamics.o
 MISC = lib/misc.o lib/fastgl.o
@@ -32,6 +32,9 @@ lib/Airfoil.o: src/Airfoil.cpp
 
 lib/AirfoilAerodynamicMatrix.o: src/AirfoilAerodynamicMatrix.cpp
 	$(OPTIONS) src/AirfoilAerodynamicMatrix.cpp $(INCLUDE) $(LDLIBS) -o lib/AirfoilAerodynamicMatrix.o
+
+lib/AirfoilKernel.o: src/AirfoilKernel.cpp
+	$(OPTIONS) src/AirfoilKernel.cpp $(INCLUDE) $(LDLIBS) -o lib/AirfoilKernel.o
 
 lib/B_Spline.o: src/B_Spline.cpp
 	$(OPTIONS) src/B_Spline.cpp $(INCLUDE) $(LDLIBS) -o lib/B_Spline.o
