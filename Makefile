@@ -198,5 +198,8 @@ cleanAirfoil:
 cleanWing:
 	-rm $(WING)
 
+cleanAerodynamics:
+	-rm $(AERODYNAMICS)
+
 cleanMisc:
 	-rm $(MISC)

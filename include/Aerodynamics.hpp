@@ -10,6 +10,7 @@ class Aerodynamics
     double residualTarget = 1e-10;
     Analysis analysis = Analysis::linear;
     double gamma0 = 2;
+    arma::field<arma::cube> bw;
 public:
     Aerodynamics() = default;
     Aerodynamics(std::vector<Wing*> _wings) : wings(_wings)

@@ -76,7 +76,6 @@ void Wing::aerodynamicMatrix()
                     arma::vec rho_tilde = externalContour(x_left, x_right, y_lower, y_upper, eta_1, eta_2, theta);
 
                     size_t k1 = i+j*nx;
-                    b.row(k1) =-4*arma::datum::pi*alpha; // Must be corrected later!
 
                     double J0 = detJ(i, j);
                     arma::vec J1 = dJdxi_1(i, j)*cT + dJdxi_2(i, j)*sT;

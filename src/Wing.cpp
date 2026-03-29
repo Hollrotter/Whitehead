@@ -29,6 +29,9 @@ void Wing::pitch(arma::vec _alpha)
 {
     alpha = arma::datum::pi/180*_alpha;
     con = alpha.size();
+    for (size_t j = 1; j < ny-1; j++)
+        for (size_t i = 1; i < nx-1; i++)
+            b.row(i+j*nx) =-4*arma::datum::pi*alpha; // Must be corrected later!
     lift.zeros(con);
     moment.zeros(con);
     dcp.zeros(nx, ny, con);
@@ -135,6 +138,8 @@ void Wing::postprocessing()
     arma::mat detJ = J11%J22 - J12%J21;
     arma::mat J11_inv = J22/detJ;
     arma::mat J12_inv =-J12/detJ;
+    mu.zeros();
+    dcp.zeros();
     for (size_t j = 0; j < ny; j++) // Loop over Collocation Points in 2-direction
         for (size_t i = 0; i < nx; i++) // Loop over Collocation Points in 1-direction
             for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction

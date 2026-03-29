@@ -31,7 +31,6 @@ int main()
             Wing w2({&chi7, &chi6, &chi1, &chi5});
 
             Aerodynamics a({&w1, &w2});
-            a.setgamma0(0.1);
             a.pitch(2);
 
             w1.boundary(&chi2, BC::Neumann);
@@ -42,7 +41,7 @@ int main()
             w2.boundary(&chi6, BC::Neumann);
             w2.boundary(&chi5, BC::Dirichlet);
 
-            a.setIterations(5);
+            a.setIterations(100);
             a.linear();
 
             a.output("plot/Data/Aerodynamics/flat");
