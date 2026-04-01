@@ -151,7 +151,46 @@ void Wing::postprocessing()
                     double T1 = boost::math::chebyshev_t(p, x1(i));
                     double dT1dx1 = boost::math::chebyshev_t_prime(p, x1(i));
                     mu(i, j)       += mu_hat(p+q*nx, 0)  * T1 * T2;
-                    dcp.tube(i, j) += mu_hat.row(p+q*nx) * (J11_inv(i, j)*dT1dx1*T2 + J12_inv(i, j)*T1*dT2dx2);
+                    dcp.tube(i, j) += 2*mu_hat.row(p+q*nx) * (J11_inv(i, j)*dT1dx1*T2 + J12_inv(i, j)*T1*dT2dx2);
                 }
             }
+    area = 0;
+    lift.zeros();
+    moment.zeros();
+    std::vector<fastgl::QuadPair> gl_x(nx), gl_y(ny);
+    arma::vec x1_gl(nx), x2_gl(ny);
+    for (size_t i = 0; i < nx; i++)
+    {
+        gl_x[i] = fastgl::GLPair(nx, i+1);
+        x1_gl(i) =-gl_x[i].x();
+    }
+    for (size_t j = 0; j < ny; j++)
+    {
+        gl_y[j] = fastgl::GLPair(ny, j+1);
+        x2_gl(j) =-gl_y[j].x();
+    }
+    auto [x_gl, y_gl] = Lagrange::TransfiniteQuadMap(x1_gl, x2_gl, chi);
+    auto [dx_gldx1, dx_gldx2, dy_gldx1, dy_gldx2] = Lagrange::TransfiniteQuadMetrics(x1_gl, x2_gl, chi);
+    for (size_t j = 0; j < ny; j++)
+        for (size_t i = 0; i < nx; i++)
+        {
+            double detJ = dx_gldx1(i, j)*dy_gldx2(i, j) - dx_gldx2(i, j)*dy_gldx1(i, j);
+            double J11_inv = dy_gldx2(i, j)/detJ;
+            double J12_inv =-dx_gldx2(i, j)/detJ;
+            arma::vec DCP(con, arma::fill::zeros);
+            for (size_t q = 0; q < ny; q++)
+            {
+                double T2 = boost::math::chebyshev_t(q, x2_gl(j));
+                double dT2dx2 = boost::math::chebyshev_t_prime(q, x2_gl(j));
+                for (size_t p = 0; p < nx; p++)
+                {
+                    double T1 = boost::math::chebyshev_t(p, x1_gl(i));
+                    double dT1dx1 = boost::math::chebyshev_t_prime(p, x1_gl(i));
+                    DCP += 2*mu_hat.row(p+q*nx) * (J11_inv*dT1dx1*T2 + J12_inv*T1*dT2dx2);
+                }
+            }
+            area   += gl_x[i].weight * gl_y[j].weight * detJ;
+            lift   += gl_x[i].weight * gl_y[j].weight * DCP * detJ;
+            moment -= gl_x[i].weight * gl_y[j].weight * DCP * detJ * x_gl(i, j);
+        }
 }

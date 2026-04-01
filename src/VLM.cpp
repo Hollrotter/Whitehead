@@ -205,6 +205,7 @@ void VLM::vlmNonlinear()
  */
 void VLM::postprocessing(arma::mat &g)
 {
+    area = 0;
     lift.zeros();
     moment.zeros();
             switch(analysis)

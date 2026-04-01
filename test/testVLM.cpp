@@ -25,11 +25,13 @@ int main()
             wing(cam);
             wing.vlm();
 
-            arma::vec cL = wing.get_lift()   / (b*c);
-            arma::vec cM = wing.get_moment() / (b*c*c);
+            double area  = 2*wing.get_area();
+            arma::vec cL = wing.get_lift()   / area;
+            arma::vec cM = wing.get_moment() / area/c;
 
-            std::cout << "cL    = " << cL.t()    << "\n";
-            std::cout << "cM    = " << cM.t()    << "\n";
+            std::cout << "A  = "    << area   << '\n';
+            std::cout << "cL    = " << cL.t() << '\n';
+            std::cout << "cM    = " << cM.t() << '\n';
 
             wing.output("plot/Data/VLM/vlm");
             break;
@@ -56,10 +58,10 @@ int main()
             arma::vec cL = wing.get_lift()   / A;
             arma::vec cM = wing.get_moment() / (A*c1);
 
-            std::cout << "A     = " << A      << "\n";
-            std::cout << "alpha = " << alpha  << "\n";
-            std::cout << "cL    = " << cL.t() << "\n";
-            std::cout << "cM    = " << cM.t() << "\n";
+            std::cout << "A     = " << A      << '\n';
+            std::cout << "alpha = " << alpha  << '\n';
+            std::cout << "cL    = " << cL.t() << '\n';
+            std::cout << "cM    = " << cM.t() << '\n';
 
             wing.output("plot/Data/VLM/rigging");
             break;
@@ -93,11 +95,11 @@ int main()
             arma::vec cM = wing.get_moment() / (A*cr);
             auto dcLda = arma::diff(cL)/arma::diff(alpha);
 
-            std::cout << "A     = " << A         << "\n";
-            std::cout << "alpha = " << alpha.t() << "\n";
-            std::cout << "cL    = " << cL.t()    << "\n";
-            std::cout << "cM    = " << cM.t()    << "\n";
-            std::cout << "dcLda = " << dcLda     << "\n";
+            std::cout << "A     = " << A         << '\n';
+            std::cout << "alpha = " << alpha.t() << '\n';
+            std::cout << "cL    = " << cL.t()    << '\n';
+            std::cout << "cM    = " << cM.t()    << '\n';
+            std::cout << "dcLda = " << dcLda     << '\n';
 
             wing.output("plot/Data/VLM/z");
             break;
@@ -130,11 +132,11 @@ int main()
             arma::vec cM = wing.get_moment() / (A*c);
             arma::vec dcLda = 180/arma::datum::pi*arma::diff(cL)/arma::diff(alpha);
 
-            std::cout << "A  = "      << A         << "\n";
-            std::cout << "\u03B1  = " << alpha.t() << "\n";
-            std::cout << "cL =  "     << cL.t()    << "\n";
-            std::cout << "cM =  "     << cM.t()    << "\n";
-            std::cout << "dcLda = "   << dcLda     << "\n";
+            std::cout << "A  = "      << A         << '\n';
+            std::cout << "\u03B1  = " << alpha.t() << '\n';
+            std::cout << "cL =  "     << cL.t()    << '\n';
+            std::cout << "cM =  "     << cM.t()    << '\n';
+            std::cout << "dcLda = "   << dcLda     << '\n';
 
             wing.output("plot/Data/VLM/EllipticalWing");
             break;

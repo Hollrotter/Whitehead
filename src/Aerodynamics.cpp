@@ -12,12 +12,7 @@ void Aerodynamics::checkMesh()
 void Aerodynamics::output(const std::string filename)
 {
     for (size_t k = 0; k < wings.size(); k++)
-    {
-        std::string file_k = filename;
-        file_k.append("_");
-        file_k.append(std::to_string(k));
-        wings[k]->output(file_k);
-    }
+        wings[k]->output(filename+"_"+std::to_string(k));
 }
 
 void Aerodynamics::linear()
