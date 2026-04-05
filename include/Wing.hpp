@@ -7,6 +7,7 @@ class Wing
     std::array<Lagrange::CurveInterpolant*, 4> chi;
     arma::mat x = arma::zeros(2, 2); // x-coordinates of nodes
     arma::mat y = arma::zeros(2, 2); // y-coordinates of nodes
+    arma::mat z = arma::zeros(2, 2); // y-coordinates of nodes
     size_t nx = x.n_rows; // Number of nodes in x-Direction
     size_t ny = y.n_cols; // Number of nodes in y-Direction
     size_t nxy = nx*ny; // Product of nx and ny
@@ -48,11 +49,18 @@ class Wing
         auto [_x, _y] = Lagrange::TransfiniteQuadMap(_chi);
         return {_x, _y, _chi};
     }
+    Wing fromTransfiniteQuadMap(arma::mat _z, std::array<Lagrange::CurveInterpolant*, 4> _chi)
+    {
+        auto [_x, _y] = Lagrange::TransfiniteQuadMap(_chi);
+        return {_x, _y, _z, _chi};
+    }
 public:
     Wing() = default;
     Wing(arma::mat _x, arma::mat _y) : x(_x), y(_y) {}
     Wing(arma::mat _x, arma::mat _y, std::array<Lagrange::CurveInterpolant*, 4> _chi) : x(_x), y(_y), chi(_chi) {}
+    Wing(arma::mat _x, arma::mat _y, arma::mat _z, std::array<Lagrange::CurveInterpolant*, 4> _chi) : x(_x), y(_y), z(_z), chi(_chi) {}
     Wing(std::array<Lagrange::CurveInterpolant*, 4> _chi) : Wing(fromTransfiniteQuadMap(_chi)) {}
+    Wing(arma::mat _z, std::array<Lagrange::CurveInterpolant*, 4> _chi) : Wing(fromTransfiniteQuadMap(_z, _chi)) {}
     // Sets the dynamic pressure
     void dynamicPressure(double);
     // Sets the pitch in degree

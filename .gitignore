@@ -4,3 +4,15 @@ test/.vscode/
 test/plot/Data/*
 test/plot/png/*
 test/test
+Validation/.vscode/
+Validation/plot/Data/
+Validation/plot/png/
+Validation/plot/svg/
+Validation/Validation
+Validation/Lilienthal.cpp
+Validation/plot/Gnuplot/Lilienthal_mesh.plt
+Verification/.vscode/
+Verification/plot/Data/
+Verification/plot/png/
+Verification/plot/svg/
+Verification/Verification

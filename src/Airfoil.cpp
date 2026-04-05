@@ -32,6 +32,7 @@ void Airfoil::linear()
     analysis = Analysis::linear;
     linearSolve();
     linearEval();
+    postprocessing();
 }
 
 void Airfoil::nonlinear()
@@ -85,5 +86,4 @@ void Airfoil::linearEval()
     for (size_t i = 1; i < nx; i++)
         b.row(i) =-arma::datum::tau*alpha.t();
     gamma_hat = solve(trimatu(U), solve(trimatl(L), P*b));
-    postprocessing();
 }
