@@ -138,7 +138,7 @@ int main()
             Lagrange::CurveInterpolant chi4(p4, p1, ny);
 
             arma::mat z = 0.2 * cos(arma::datum::pi/2* Chebyshev::gaussLobatto(nx))
-                               * cos(arma::datum::pi/4*(Chebyshev::gaussLobatto(ny)+1)).t();
+                              * cos(arma::datum::pi/4*(Chebyshev::gaussLobatto(ny)+1)).t();
             Wing w(z, {&chi1, &chi2, &chi3, &chi4});
 
             w.pitch(5);
@@ -150,13 +150,13 @@ int main()
 
             w.nonlinear();
 
-            // double area = 2*w.get_area();
-            // arma::vec cL = w.get_lift()   / area;
-            // arma::vec cM = w.get_moment() / area/l;
+            double area = 2*w.get_area();
+            arma::vec cL = w.get_lift()   / area;
+            arma::vec cM = w.get_moment() / area/l;
 
-            // std::cout << "A  = " << area   << '\n';
-            // std::cout << "cL = " << cL.t() << '\n';
-            // std::cout << "cM = " << cM.t() << '\n';
+            std::cout << "A  = " << area   << '\n';
+            std::cout << "cL = " << cL.t() << '\n';
+            std::cout << "cM = " << cM.t() << '\n';
 
             w.output("plot/Data/Wing/nonlinear");
             break;

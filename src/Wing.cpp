@@ -258,7 +258,7 @@ void Wing::postprocessing()
         x2_gl(j) =-gl_y[j].x();
     }
     auto [x_gl, y_gl] = Lagrange::TransfiniteQuadMap(x1_gl, x2_gl, chi);
-    auto [dx_gldx1, dx_gldx2, dy_gldx1, dy_gldx2] = Lagrange::TransfiniteQuadMetrics(x1_gl, x2_gl, chi);
+    auto [dxdx1_gl, dxdx2_gl, dydx1_gl, dydx2_gl] = Lagrange::TransfiniteQuadMetrics(x1_gl, x2_gl, chi);
 
     switch (analysis)
     {
@@ -267,9 +267,9 @@ void Wing::postprocessing()
             for (size_t j = 0; j < ny; j++)
                 for (size_t i = 0; i < nx; i++)
                 {
-                    double detJ = dx_gldx1(i, j)*dy_gldx2(i, j) - dx_gldx2(i, j)*dy_gldx1(i, j);
-                    double J11_inv = dy_gldx2(i, j)/detJ;
-                    double J21_inv =-dy_gldx1(i, j)/detJ;
+                    double detJ = dxdx1_gl(i, j)*dydx2_gl(i, j) - dxdx2_gl(i, j)*dydx1_gl(i, j);
+                    double J11_inv = dydx2_gl(i, j)/detJ;
+                    double J21_inv =-dydx1_gl(i, j)/detJ;
                     arma::vec DCP(con, arma::fill::zeros);
                     for (size_t q = 0; q < ny; q++)
                     {
@@ -290,6 +290,58 @@ void Wing::postprocessing()
         }
         case Analysis::nonlinear:
         {
+            arma::mat F(3, con);
+            arma::mat M(3, con);
+            arma::mat Q = join_horiz(cos(alpha), arma::zeros(con), sin(alpha));
+            arma::mat Tx = Lagrange::interpolationMatrix(x1, x1_gl);
+            arma::mat Ty = Lagrange::interpolationMatrix(x2, x2_gl);
+            arma::mat z_gl = Lagrange::interpolation2D(Tx, Ty, z, x1_gl, x2_gl);
+            arma::mat D1_gl = Lagrange::derivativeMatrix(x1_gl);
+            arma::mat D2_gl = Lagrange::derivativeMatrix(x2_gl);
+            arma::mat dzdx1_gl = D1_gl*z_gl;
+            arma::mat dzdx2_gl = z_gl*D2_gl.t();
+            arma::field<arma::mat> J_gl = {{dxdx1_gl, dxdx2_gl}, {dydx1_gl, dydx2_gl}};
+            arma::cube e_c_gl = MetricCo(J_gl);
+            arma::cube ec_gl  = MetricContra(e_c_gl);
+            arma::mat e_11_gl = e_c_gl.slice(0);
+            arma::mat e_12_gl = e_c_gl.slice(1);
+            arma::mat e_22_gl = e_c_gl.slice(2);
+            arma::mat e11_gl  =  ec_gl.slice(0);
+            arma::mat e12_gl  =  ec_gl.slice(1);
+            arma::mat e22_gl  =  ec_gl.slice(2);
+            arma::mat e_gl = e_11_gl%e_22_gl - pow(e_12_gl, 2);
+            arma::mat sqrt_a = sqrt(e_gl%(1 + e11_gl%pow(dzdx1_gl, 2) + 2*e12_gl%dzdx1_gl%dzdx2_gl + e22_gl%pow(dzdx2_gl, 2)));
+            for (size_t j = 0; j < ny; j++)
+                for (size_t i = 0; i < nx; i++)
+                {
+                    arma::vec::fixed<3> n_gl = arma::vec::fixed<3>({dydx1_gl(i, j)*dzdx2_gl(i, j)-dzdx1_gl(i, j)*dydx2_gl(i, j),
+                                                                    dzdx1_gl(i, j)*dxdx2_gl(i, j)-dxdx1_gl(i, j)*dzdx2_gl(i, j),
+                                                                    dxdx1_gl(i, j)*dydx2_gl(i, j)-dydx1_gl(i, j)*dxdx2_gl(i, j)})/sqrt_a(i, j);
+                    arma::mat::fixed<3, 2> J_red = {{dydx2_gl(i, j)*n_gl(2) - n_gl(1)*dzdx2_gl(i, j),-(dydx1_gl(i, j)*n_gl(2) - n_gl(1)*dzdx1_gl(i, j))},
+                                                    {-(dxdx2_gl(i, j)*n_gl(2) - n_gl(0)*dzdx2_gl(i, j)),dxdx1_gl(i, j)*n_gl(2) - n_gl(0)*dzdx1_gl(i, j)},
+                                                    {dxdx2_gl(i, j)*n_gl(1) - n_gl(0)*dydx2_gl(i, j),-(dxdx1_gl(i, j)*n_gl(1) - n_gl(0)*dydx1_gl(i, j))}};
+                    arma::vec::fixed<3> q_mu(arma::fill::zeros);
+                    for (size_t q = 0; q < ny; q++)
+                    {
+                        double T2 = boost::math::chebyshev_t(q, x2_gl(j));
+                        double dT2dx2 = boost::math::chebyshev_t_prime(q, x2_gl(j));
+                        for (size_t p = 0; p < nx; p++)
+                        {
+                            double T1 = boost::math::chebyshev_t(p, x1_gl(i));
+                            double dT1dx1 = boost::math::chebyshev_t_prime(p, x1_gl(i));
+                            arma::vec::fixed<2> dmudxi = {dT1dx1*T2, T1*dT2dx2};
+                            arma::vec::fixed<3> gradmu = J_red*dmudxi;
+                            q_mu += mu_hat(p+q*nx, 0) * gradmu;
+                        }
+                    }
+                    arma::vec DCP = 2*Q*q_mu;
+                    arma::vec r = {x_gl(i, j), y_gl(i, j), z_gl(i, j)};
+                    area += gl_x[i].weight * gl_y[j].weight * sqrt_a(i, j);
+                    F    += gl_x[i].weight * gl_y[j].weight * n_gl * DCP;
+                    M    -= gl_x[i].weight * gl_y[j].weight * cross(n_gl * DCP, r);
+                }
+            lift   = F.row(2)*cos(alpha) - F.row(0)*sin(alpha);
+            moment = M.row(1);
             break;
         }
     }
