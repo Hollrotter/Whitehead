@@ -27,34 +27,34 @@ int main()
             Lagrange::CurveInterpolant chi7(p3, p6, n3);
 
             Membrane m1({&chi1, &chi2, &chi3, &chi4});
-
-            m1.boundary(Field::z,   &chi1, BC::Neumann);
-            m1.boundary(Field::v1,  &chi1, BC::Neumann);
-            m1.boundary(Field::v2,  &chi1, BC::Dirichlet);
-
-            m1.boundary(Field::z,   &chi3, BC::Dirichlet);
-            m1.boundary(Field::n12, &chi3, BC::Dirichlet);
-            m1.boundary(Field::n22, &chi3, BC::Dirichlet, 1);
-
-            m1.boundary(Field::z,   &chi4, BC::Neumann);
-            m1.boundary(Field::v1,  &chi4, BC::Dirichlet);
-            m1.boundary(Field::v2,  &chi4, BC::Neumann);
-
             Membrane m2({&chi5, &chi6, &chi7, &chi2});
 
-            m2.boundary(Field::z,   &chi5, BC::Neumann);
-            m2.boundary(Field::v1,  &chi5, BC::Neumann);
-            m2.boundary(Field::v2,  &chi5, BC::Dirichlet);
-
-            m2.boundary(Field::z,   &chi6, BC::Dirichlet);
-            m2.boundary(Field::n11, &chi6, BC::Dirichlet, 1);
-            m2.boundary(Field::n12, &chi6, BC::Dirichlet);
-
-            m2.boundary(Field::z,   &chi7, BC::Dirichlet);
-            m2.boundary(Field::n12, &chi7, BC::Dirichlet);
-            m2.boundary(Field::n22, &chi7, BC::Dirichlet, 1);
-
             Structure s({&m1, &m2});
+
+            s.boundary(Field::z,   &chi1, BC::Neumann);
+            s.boundary(Field::v1,  &chi1, BC::Neumann);
+            s.boundary(Field::v2,  &chi1, BC::Dirichlet);
+
+            s.boundary(Field::z,   &chi3, BC::Dirichlet);
+            s.boundary(Field::n12, &chi3, BC::Dirichlet);
+            s.boundary(Field::n22, &chi3, BC::Dirichlet, 1);
+
+            s.boundary(Field::z,   &chi4, BC::Neumann);
+            s.boundary(Field::v1,  &chi4, BC::Dirichlet);
+            s.boundary(Field::v2,  &chi4, BC::Neumann);
+
+            s.boundary(Field::z,   &chi5, BC::Neumann);
+            s.boundary(Field::v1,  &chi5, BC::Neumann);
+            s.boundary(Field::v2,  &chi5, BC::Dirichlet);
+
+            s.boundary(Field::z,   &chi6, BC::Dirichlet);
+            s.boundary(Field::n11, &chi6, BC::Dirichlet, 1);
+            s.boundary(Field::n12, &chi6, BC::Dirichlet);
+
+            s.boundary(Field::z,   &chi7, BC::Dirichlet);
+            s.boundary(Field::n12, &chi7, BC::Dirichlet);
+            s.boundary(Field::n22, &chi7, BC::Dirichlet, 1);
+
             s.setgamma0(2.25);
             s.load(0.1);
 
@@ -117,27 +117,27 @@ int main()
             Membrane m1({&chi1, &chi2, &chi3, &chi4});
             Membrane m2({&chi5, &chi4, &chi7, &chi6});
 
-            m1.boundary(Field::z,   &chi2, BC::Neumann);
-            m1.boundary(Field::n11, &chi2, BC::Dirichlet);
-            m1.boundary(Field::n12, &chi2, BC::Dirichlet);
-            m1.boundary(Field::z,   &chi1, BC::Neumann);
-            m1.boundary(Field::v2,  &chi1, BC::Dirichlet);
-            m1.boundary(Field::v1,  &chi1, BC::Neumann);
-            m1.boundary(Field::z,   &chi3, BC::Neumann);
-            m1.boundary(Field::v2,  &chi3, BC::Dirichlet);
-            m1.boundary(Field::v1,  &chi3, BC::Neumann);
-
-            m2.boundary(Field::z,   &chi6, BC::Dirichlet);
-            m2.boundary(Field::n12, &chi6, BC::Dirichlet);
-            m2.boundary(Field::n11, &chi6, BC::Dirichlet, 1);
-            m2.boundary(Field::z,   &chi5, BC::Neumann);
-            m2.boundary(Field::v2,  &chi5, BC::Dirichlet);
-            m2.boundary(Field::v1,  &chi5, BC::Neumann);
-            m2.boundary(Field::z,   &chi7, BC::Neumann);
-            m2.boundary(Field::v2,  &chi7, BC::Dirichlet);
-            m2.boundary(Field::v1,  &chi7, BC::Neumann);
-
             Structure s({&m1, &m2});
+
+            s.boundary(Field::z,   &chi2, BC::Neumann);
+            s.boundary(Field::n11, &chi2, BC::Dirichlet);
+            s.boundary(Field::n12, &chi2, BC::Dirichlet);
+            s.boundary(Field::z,   &chi1, BC::Neumann);
+            s.boundary(Field::v2,  &chi1, BC::Dirichlet);
+            s.boundary(Field::v1,  &chi1, BC::Neumann);
+            s.boundary(Field::z,   &chi3, BC::Neumann);
+            s.boundary(Field::v2,  &chi3, BC::Dirichlet);
+            s.boundary(Field::v1,  &chi3, BC::Neumann);
+
+            s.boundary(Field::z,   &chi6, BC::Dirichlet);
+            s.boundary(Field::n12, &chi6, BC::Dirichlet);
+            s.boundary(Field::n11, &chi6, BC::Dirichlet, 1);
+            s.boundary(Field::z,   &chi5, BC::Neumann);
+            s.boundary(Field::v2,  &chi5, BC::Dirichlet);
+            s.boundary(Field::v1,  &chi5, BC::Neumann);
+            s.boundary(Field::z,   &chi7, BC::Neumann);
+            s.boundary(Field::v2,  &chi7, BC::Dirichlet);
+            s.boundary(Field::v1,  &chi7, BC::Neumann);
 
             // s.inPlane11(100);
             // s.inPlane12(0);
@@ -179,31 +179,31 @@ int main()
             Membrane m1({&chi1, &chi7, &chi5, &chi3});
             Membrane m2({&chi2, &chi4, &chi6, &chi7});
 
-            m1.boundary(Field::z,   &chi1, BC::Neumann);
-            m1.boundary(Field::n12, &chi1, BC::Dirichlet);
-            m1.boundary(Field::n22, &chi1, BC::Dirichlet);
-
-            m1.boundary(Field::z,   &chi3, BC::Neumann);
-            m1.boundary(Field::v2,  &chi3, BC::Neumann);
-            m1.boundary(Field::v1,  &chi3, BC::Dirichlet);
-
-            m1.boundary(Field::z,   &chi5, BC::Dirichlet);
-            m1.boundary(Field::n22, &chi5, BC::Dirichlet, 1);
-            m1.boundary(Field::n12, &chi5, BC::Dirichlet);
-
-            m2.boundary(Field::z,   &chi2, BC::Neumann);
-            m2.boundary(Field::n12, &chi2, BC::Dirichlet);
-            m2.boundary(Field::n22, &chi2, BC::Dirichlet);
-            
-            m2.boundary(Field::z,   &chi4, BC::Neumann);
-            m2.boundary(Field::v2,  &chi4, BC::Neumann);
-            m2.boundary(Field::v1,  &chi4, BC::Dirichlet);
-
-            m2.boundary(Field::z,   &chi6, BC::Dirichlet);
-            m2.boundary(Field::n22, &chi6, BC::Dirichlet, 1);
-            m2.boundary(Field::n12, &chi6, BC::Dirichlet);
-
             Structure s({&m1, &m2});
+
+            s.boundary(Field::z,   &chi1, BC::Neumann);
+            s.boundary(Field::n12, &chi1, BC::Dirichlet);
+            s.boundary(Field::n22, &chi1, BC::Dirichlet);
+
+            s.boundary(Field::z,   &chi3, BC::Neumann);
+            s.boundary(Field::v2,  &chi3, BC::Neumann);
+            s.boundary(Field::v1,  &chi3, BC::Dirichlet);
+
+            s.boundary(Field::z,   &chi5, BC::Dirichlet);
+            s.boundary(Field::n22, &chi5, BC::Dirichlet, 1);
+            s.boundary(Field::n12, &chi5, BC::Dirichlet);
+
+            s.boundary(Field::z,   &chi2, BC::Neumann);
+            s.boundary(Field::n12, &chi2, BC::Dirichlet);
+            s.boundary(Field::n22, &chi2, BC::Dirichlet);
+            
+            s.boundary(Field::z,   &chi4, BC::Neumann);
+            s.boundary(Field::v2,  &chi4, BC::Neumann);
+            s.boundary(Field::v1,  &chi4, BC::Dirichlet);
+
+            s.boundary(Field::z,   &chi6, BC::Dirichlet);
+            s.boundary(Field::n22, &chi6, BC::Dirichlet, 1);
+            s.boundary(Field::n12, &chi6, BC::Dirichlet);  
 
             s.load(1);
             // s.inPlane11(1);
@@ -272,27 +272,27 @@ int main()
             Membrane m3({&chi11, &chi8,  &chi5,  &chi9});
             Membrane m4({&chi12, &chi10, &chi6,  &chi8});
 
-            m1.boundary(Field::n12, &chi1,  BC::Dirichlet);
-            m1.boundary(Field::n22, &chi1,  BC::Dirichlet);
-            m1.boundary(Field::v2,  &chi3,  BC::Neumann);
-            m1.boundary(Field::v1,  &chi3,  BC::Dirichlet);
-
-            m2.boundary(Field::n12, &chi2,  BC::Dirichlet);
-            m2.boundary(Field::n22, &chi2,  BC::Dirichlet);
-            m2.boundary(Field::v2,  &chi4,  BC::Neumann);
-            m2.boundary(Field::v1,  &chi4,  BC::Dirichlet);
-
-            m3.boundary(Field::v2,  &chi9,  BC::Neumann);
-            m3.boundary(Field::v1,  &chi9,  BC::Dirichlet);
-            m3.boundary(Field::n12, &chi5,  BC::Dirichlet);
-            m3.boundary(Field::n22, &chi5,  BC::Dirichlet);
-
-            m4.boundary(Field::v2,  &chi10, BC::Neumann);
-            m4.boundary(Field::v1,  &chi10, BC::Dirichlet);
-            m4.boundary(Field::n12, &chi6,  BC::Dirichlet, P);
-            m4.boundary(Field::n22, &chi6,  BC::Dirichlet);
-
             Structure s({&m1, &m2, &m3, &m4});
+
+            s.boundary(Field::n12, &chi1,  BC::Dirichlet);
+            s.boundary(Field::n22, &chi1,  BC::Dirichlet);
+            s.boundary(Field::v2,  &chi3,  BC::Neumann);
+            s.boundary(Field::v1,  &chi3,  BC::Dirichlet);
+
+            s.boundary(Field::n12, &chi2,  BC::Dirichlet);
+            s.boundary(Field::n22, &chi2,  BC::Dirichlet);
+            s.boundary(Field::v2,  &chi4,  BC::Neumann);
+            s.boundary(Field::v1,  &chi4,  BC::Dirichlet);
+
+            s.boundary(Field::v2,  &chi9,  BC::Neumann);
+            s.boundary(Field::v1,  &chi9,  BC::Dirichlet);
+            s.boundary(Field::n12, &chi5,  BC::Dirichlet);
+            s.boundary(Field::n22, &chi5,  BC::Dirichlet);
+
+            s.boundary(Field::v2,  &chi10, BC::Neumann);
+            s.boundary(Field::v1,  &chi10, BC::Dirichlet);
+            s.boundary(Field::n12, &chi6,  BC::Dirichlet, P);
+            s.boundary(Field::n22, &chi6,  BC::Dirichlet);
 
             s.youngsModulus(E*t);
             s.poissonsRatio(nu);
@@ -343,35 +343,35 @@ int main()
             Membrane m3({&chi8,  &chi9,  &chi10, &chi2});
             Membrane m4({&chi10, &chi11, &chi12, &chi5});
 
-            m1.boundary(Field::v2,  &chi1,  BC::Dirichlet);
-            m1.boundary(Field::v1,  &chi1,  BC::Neumann);
-            m1.boundary(Field::z,   &chi1,  BC::Neumann);
-            m1.boundary(Field::v2,  &chi4,  BC::Neumann);
-            m1.boundary(Field::v1,  &chi4,  BC::Dirichlet);
-            m1.boundary(Field::z,   &chi4,  BC::Neumann);
-
-            m2.boundary(Field::v1,  &chi7,  BC::Dirichlet);
-            m2.boundary(Field::v2,  &chi7,  BC::Neumann);
-            m2.boundary(Field::z,   &chi7,  BC::Neumann);
-            m2.boundary(Field::n12, &chi6,  BC::Dirichlet);
-            m2.boundary(Field::n22, &chi6,  BC::Dirichlet, 1);
-            m2.boundary(Field::z,   &chi6,  BC::Dirichlet);
-
-            m3.boundary(Field::n11, &chi9,  BC::Dirichlet, 1);
-            m3.boundary(Field::n12, &chi9,  BC::Dirichlet);
-            m3.boundary(Field::z,   &chi9,  BC::Dirichlet);
-            m3.boundary(Field::v1,  &chi8,  BC::Neumann);
-            m3.boundary(Field::v2,  &chi8,  BC::Dirichlet);
-            m3.boundary(Field::z,   &chi8,  BC::Neumann);
-
-            m4.boundary(Field::n12, &chi11, BC::Dirichlet);
-            m4.boundary(Field::n11, &chi11, BC::Dirichlet, 1);
-            m4.boundary(Field::z,   &chi11, BC::Dirichlet);
-            m4.boundary(Field::n22, &chi12, BC::Dirichlet, 1);
-            m4.boundary(Field::n12, &chi12, BC::Dirichlet);
-            m4.boundary(Field::z,   &chi12, BC::Dirichlet);
-
             Structure s({&m4, &m3, &m2, &m1});
+
+            s.boundary(Field::v2,  &chi1,  BC::Dirichlet);
+            s.boundary(Field::v1,  &chi1,  BC::Neumann);
+            s.boundary(Field::z,   &chi1,  BC::Neumann);
+            s.boundary(Field::v2,  &chi4,  BC::Neumann);
+            s.boundary(Field::v1,  &chi4,  BC::Dirichlet);
+            s.boundary(Field::z,   &chi4,  BC::Neumann);
+
+            s.boundary(Field::v1,  &chi7,  BC::Dirichlet);
+            s.boundary(Field::v2,  &chi7,  BC::Neumann);
+            s.boundary(Field::z,   &chi7,  BC::Neumann);
+            s.boundary(Field::n12, &chi6,  BC::Dirichlet);
+            s.boundary(Field::n22, &chi6,  BC::Dirichlet, 1);
+            s.boundary(Field::z,   &chi6,  BC::Dirichlet);
+
+            s.boundary(Field::n11, &chi9,  BC::Dirichlet, 1);
+            s.boundary(Field::n12, &chi9,  BC::Dirichlet);
+            s.boundary(Field::z,   &chi9,  BC::Dirichlet);
+            s.boundary(Field::v1,  &chi8,  BC::Neumann);
+            s.boundary(Field::v2,  &chi8,  BC::Dirichlet);
+            s.boundary(Field::z,   &chi8,  BC::Neumann);
+
+            s.boundary(Field::n12, &chi11, BC::Dirichlet);
+            s.boundary(Field::n11, &chi11, BC::Dirichlet, 1);
+            s.boundary(Field::z,   &chi11, BC::Dirichlet);
+            s.boundary(Field::n22, &chi12, BC::Dirichlet, 1);
+            s.boundary(Field::n12, &chi12, BC::Dirichlet);
+            s.boundary(Field::z,   &chi12, BC::Dirichlet);
 
             s.load(1);
 
@@ -422,34 +422,34 @@ int main()
             Membrane m2({&chi3, &chi5, &chi6,  &chi7});
             Membrane m3({&chi8, &chi9, &chi10, &chi2});
 
-            m1.boundary(Field::v2,  &chi1,  BC::Dirichlet);
-            m1.boundary(Field::v1,  &chi1,  BC::Neumann);
-            m1.boundary(Field::z,   &chi1,  BC::Neumann);
-            m1.boundary(Field::v2,  &chi4,  BC::Neumann);
-            m1.boundary(Field::v1,  &chi4,  BC::Dirichlet);
-            m1.boundary(Field::z,   &chi4,  BC::Neumann);
-
-            m2.boundary(Field::v1,  &chi7,  BC::Dirichlet);
-            m2.boundary(Field::v2,  &chi7,  BC::Neumann);
-            m2.boundary(Field::z,   &chi7,  BC::Neumann);
-            m2.boundary(Field::n12, &chi6,  BC::Dirichlet);
-            m2.boundary(Field::n22, &chi6,  BC::Dirichlet, 1);
-            m2.boundary(Field::z,   &chi6,  BC::Dirichlet);
-            m2.boundary(Field::n11, &chi5,  BC::Dirichlet, 1);
-            m2.boundary(Field::n12, &chi5,  BC::Dirichlet);
-            m2.boundary(Field::z,   &chi5,  BC::Dirichlet);
-
-            m3.boundary(Field::n12, &chi10, BC::Dirichlet);
-            m3.boundary(Field::n22, &chi10, BC::Dirichlet, 1);
-            m3.boundary(Field::z,   &chi10, BC::Dirichlet);
-            m3.boundary(Field::n11, &chi9,  BC::Dirichlet, 1);
-            m3.boundary(Field::n12, &chi9,  BC::Dirichlet);
-            m3.boundary(Field::z,   &chi9,  BC::Dirichlet);
-            m3.boundary(Field::v1,  &chi8,  BC::Neumann);
-            m3.boundary(Field::v2,  &chi8,  BC::Dirichlet);
-            m3.boundary(Field::z,   &chi8,  BC::Neumann);
-
             Structure s({&m1, &m2, &m3});
+
+            s.boundary(Field::v2,  &chi1,  BC::Dirichlet);
+            s.boundary(Field::v1,  &chi1,  BC::Neumann);
+            s.boundary(Field::z,   &chi1,  BC::Neumann);
+            s.boundary(Field::v2,  &chi4,  BC::Neumann);
+            s.boundary(Field::v1,  &chi4,  BC::Dirichlet);
+            s.boundary(Field::z,   &chi4,  BC::Neumann);
+
+            s.boundary(Field::v1,  &chi7,  BC::Dirichlet);
+            s.boundary(Field::v2,  &chi7,  BC::Neumann);
+            s.boundary(Field::z,   &chi7,  BC::Neumann);
+            s.boundary(Field::n12, &chi6,  BC::Dirichlet);
+            s.boundary(Field::n22, &chi6,  BC::Dirichlet, 1);
+            s.boundary(Field::z,   &chi6,  BC::Dirichlet);
+            s.boundary(Field::n11, &chi5,  BC::Dirichlet, 1);
+            s.boundary(Field::n12, &chi5,  BC::Dirichlet);
+            s.boundary(Field::z,   &chi5,  BC::Dirichlet);
+
+            s.boundary(Field::n12, &chi10, BC::Dirichlet);
+            s.boundary(Field::n22, &chi10, BC::Dirichlet, 1);
+            s.boundary(Field::z,   &chi10, BC::Dirichlet);
+            s.boundary(Field::n11, &chi9,  BC::Dirichlet, 1);
+            s.boundary(Field::n12, &chi9,  BC::Dirichlet);
+            s.boundary(Field::z,   &chi9,  BC::Dirichlet);
+            s.boundary(Field::v1,  &chi8,  BC::Neumann);
+            s.boundary(Field::v2,  &chi8,  BC::Dirichlet);
+            s.boundary(Field::z,   &chi8,  BC::Neumann);
 
             // s.inPlane11(100);
             // s.inPlane12(0);
@@ -495,29 +495,29 @@ int main()
             Membrane m2({&chi5, &chi8, &chi7, &chi2});
             Membrane m3({&chi3, &chi7, &chi9, &chi6});
 
-            m1.boundary(Field::z,   &chi1, BC::Neumann);
-            m1.boundary(Field::z,   &chi4, BC::Neumann);
-            m2.boundary(Field::z,   &chi5, BC::Neumann);
-            m2.boundary(Field::z,   &chi8, BC::Dirichlet);
-            m3.boundary(Field::z,   &chi6, BC::Neumann);
-            m3.boundary(Field::z,   &chi9, BC::Dirichlet);
- 
-            m1.boundary(Field::v1,  &chi1, BC::Neumann);
-            m1.boundary(Field::v1,  &chi4, BC::Dirichlet);
-            m2.boundary(Field::v1,  &chi5, BC::Neumann);
-            m3.boundary(Field::v1,  &chi6, BC::Dirichlet);
- 
-            m1.boundary(Field::v2,  &chi1, BC::Dirichlet);
-            m1.boundary(Field::v2,  &chi4, BC::Neumann);
-            m2.boundary(Field::v2,  &chi5, BC::Dirichlet);
-            m3.boundary(Field::v2,  &chi6, BC::Neumann);
-
-            m2.boundary(Field::n11, &chi8, BC::Dirichlet, 10);
-            m2.boundary(Field::n12, &chi8, BC::Dirichlet);
-            m3.boundary(Field::n12, &chi9, BC::Dirichlet);
-            m3.boundary(Field::n22, &chi9, BC::Dirichlet, 10);
-
             Structure s({&m1, &m2, &m3});
+
+            s.boundary(Field::z,   &chi1, BC::Neumann);
+            s.boundary(Field::z,   &chi4, BC::Neumann);
+            s.boundary(Field::z,   &chi5, BC::Neumann);
+            s.boundary(Field::z,   &chi8, BC::Dirichlet);
+            s.boundary(Field::z,   &chi6, BC::Neumann);
+            s.boundary(Field::z,   &chi9, BC::Dirichlet);
+ 
+            s.boundary(Field::v1,  &chi1, BC::Neumann);
+            s.boundary(Field::v1,  &chi4, BC::Dirichlet);
+            s.boundary(Field::v1,  &chi5, BC::Neumann);
+            s.boundary(Field::v1,  &chi6, BC::Dirichlet);
+ 
+            s.boundary(Field::v2,  &chi1, BC::Dirichlet);
+            s.boundary(Field::v2,  &chi4, BC::Neumann);
+            s.boundary(Field::v2,  &chi5, BC::Dirichlet);
+            s.boundary(Field::v2,  &chi6, BC::Neumann);
+
+            s.boundary(Field::n11, &chi8, BC::Dirichlet, 10);
+            s.boundary(Field::n12, &chi8, BC::Dirichlet);
+            s.boundary(Field::n12, &chi9, BC::Dirichlet);
+            s.boundary(Field::n22, &chi9, BC::Dirichlet, 10);
 
             s.load(1);
             s.setIterations(200);

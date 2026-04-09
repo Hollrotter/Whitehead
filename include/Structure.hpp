@@ -71,6 +71,16 @@ public:
     {
         iterations = itt;
     }
+    void boundary(const Field field, const Lagrange::CurveInterpolant* dir, const BC bc)
+    {
+        boundary(field, dir, bc, 0);
+    }
+    template <class C> void boundary(const Field, const Lagrange::CurveInterpolant*, const BC, const C);
+    void boundary(const Field field, const Lagrange::CurveInterpolant* dir, const BC bc, const double _r1, const double _r2)
+    {
+        boundary(field, dir, bc, _r1, _r2, 0);
+    }
+    template <class C> void boundary(const Field, const Lagrange::CurveInterpolant*, const BC, const double, const double, const C);
     void planeStrain();
     void linear();
     void semilinear();

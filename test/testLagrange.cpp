@@ -152,10 +152,6 @@ int main()
         case 5: // Parametrization of circular arc
         {
             size_t n = 100;
-            // Point p1(-1951.554976, 426.7099779);
-            // Point p2(-1904.725097, 537.1300038);
-            // Point p0(-1310.960017, 365.6850196);
-            // double r = 1000;
             Point p0(0, 0);
             Point p1(1, 0);
             Point p2( sqrt(2)/2, sqrt(2)/2);

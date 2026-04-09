@@ -33,13 +33,12 @@ int main()
             Aerodynamics a({&w1, &w2});
             a.pitch(2);
 
-            w1.boundary(&chi2, BC::Neumann);
-            w1.boundary(&chi3, BC::Dirichlet);
-            w1.boundary(&chi4, BC::Dirichlet);
-
-            w2.boundary(&chi7, BC::Dirichlet);
-            w2.boundary(&chi6, BC::Neumann);
-            w2.boundary(&chi5, BC::Dirichlet);
+            a.boundary(&chi2, BC::Neumann);
+            a.boundary(&chi3, BC::Dirichlet);
+            a.boundary(&chi4, BC::Dirichlet);
+            a.boundary(&chi5, BC::Dirichlet);
+            a.boundary(&chi6, BC::Neumann);
+            a.boundary(&chi7, BC::Dirichlet);
 
             a.setIterations(100);
             a.linear();

@@ -33,29 +33,29 @@ int main()
     Membrane m2({&chi5, &chi8, &chi7, &chi2});
     Membrane m3({&chi3, &chi7, &chi9, &chi6});
 
-    m1.boundary(Field::z,   &chi1, BC::Neumann);
-    m1.boundary(Field::z,   &chi4, BC::Neumann);
-    m2.boundary(Field::z,   &chi5, BC::Neumann);
-    m2.boundary(Field::z,   &chi8, BC::Dirichlet);
-    m3.boundary(Field::z,   &chi6, BC::Neumann);
-    m3.boundary(Field::z,   &chi9, BC::Dirichlet);
-
-    m1.boundary(Field::v1,  &chi1, BC::Neumann);
-    m1.boundary(Field::v1,  &chi4, BC::Dirichlet);
-    m2.boundary(Field::v1,  &chi5, BC::Neumann);
-    m3.boundary(Field::v1,  &chi6, BC::Dirichlet);
-
-    m1.boundary(Field::v2,  &chi1, BC::Dirichlet);
-    m1.boundary(Field::v2,  &chi4, BC::Neumann);
-    m2.boundary(Field::v2,  &chi5, BC::Dirichlet);
-    m3.boundary(Field::v2,  &chi6, BC::Neumann);
-
-    m2.boundary(Field::n11, &chi8, BC::Dirichlet, 0.005*D);
-    m2.boundary(Field::n12, &chi8, BC::Dirichlet);
-    m3.boundary(Field::n12, &chi9, BC::Dirichlet);
-    m3.boundary(Field::n22, &chi9, BC::Dirichlet, 0.005*D);
-
     Structure s({&m1, &m2, &m3});
+
+    s.boundary(Field::z,   &chi1, BC::Neumann);
+    s.boundary(Field::z,   &chi4, BC::Neumann);
+    s.boundary(Field::z,   &chi5, BC::Neumann);
+    s.boundary(Field::z,   &chi8, BC::Dirichlet);
+    s.boundary(Field::z,   &chi6, BC::Neumann);
+    s.boundary(Field::z,   &chi9, BC::Dirichlet);
+
+    s.boundary(Field::v1,  &chi1, BC::Neumann);
+    s.boundary(Field::v1,  &chi4, BC::Dirichlet);
+    s.boundary(Field::v1,  &chi5, BC::Neumann);
+    s.boundary(Field::v1,  &chi6, BC::Dirichlet);
+
+    s.boundary(Field::v2,  &chi1, BC::Dirichlet);
+    s.boundary(Field::v2,  &chi4, BC::Neumann);
+    s.boundary(Field::v2,  &chi5, BC::Dirichlet);
+    s.boundary(Field::v2,  &chi6, BC::Neumann);
+
+    s.boundary(Field::n11, &chi8, BC::Dirichlet, 0.005*D);
+    s.boundary(Field::n12, &chi8, BC::Dirichlet);
+    s.boundary(Field::n12, &chi9, BC::Dirichlet);
+    s.boundary(Field::n22, &chi9, BC::Dirichlet, 0.005*D);
 
     arma::vec x = join_vert(m1.X().col(0), m2.X().col(0));
     arma::vec z = join_vert(m1.Z().col(0), m2.Z().col(0));
@@ -83,15 +83,15 @@ int main()
     s.load(0.01*D/a);
     s.semilinear();
 
-    m2.boundary(Field::n11, &chi8, BC::None);
-    m2.boundary(Field::n12, &chi8, BC::None);
-    m3.boundary(Field::n12, &chi9, BC::None);
-    m3.boundary(Field::n22, &chi9, BC::None);
+    s.boundary(Field::n11, &chi8, BC::None);
+    s.boundary(Field::n12, &chi8, BC::None);
+    s.boundary(Field::n12, &chi9, BC::None);
+    s.boundary(Field::n22, &chi9, BC::None);
 
-    m2.boundary(Field::v1, &chi8, BC::Dirichlet);
-    m2.boundary(Field::v2, &chi8, BC::Dirichlet);
-    m3.boundary(Field::v1, &chi9, BC::Dirichlet);
-    m3.boundary(Field::v2, &chi9, BC::Dirichlet);
+    s.boundary(Field::v1, &chi8, BC::Dirichlet);
+    s.boundary(Field::v2, &chi8, BC::Dirichlet);
+    s.boundary(Field::v1, &chi9, BC::Dirichlet);
+    s.boundary(Field::v2, &chi9, BC::Dirichlet);
 
     s.setIterations(100);
 

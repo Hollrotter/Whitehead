@@ -19,44 +19,48 @@ Lagrange::CurveInterpolant Lagrange::CurveInterpolant::arc(Point p1, Point p2, P
     else
         p0 = pm2;
 
-    double cos_phi1 = (p1.X()-p0.X())/r;
-    double cos_phi2 = (p2.X()-p0.X())/r;
-    double sin_phi1 = (p1.Y()-p0.Y())/r;
-    double sin_phi2 = (p2.Y()-p0.Y())/r;
+    double cos_phi1 = std::max(-1., std::min(1., (p1.X()-p0.X())/r));
+    double cos_phi2 = std::max(-1., std::min(1., (p2.X()-p0.X())/r));
+    double sin_phi1 = std::max(-1., std::min(1., (p1.Y()-p0.Y())/r));
+    double sin_phi2 = std::max(-1., std::min(1., (p2.Y()-p0.Y())/r));
 
-    arma::vec cos_phi(n), sin_phi(n);
+    double phi1, phi2;
     if (almostEqual(cos_phi1, cos_phi2))
     {
-        double phi1, phi2;
         if (p1.X() > p0.X())
-            phi1 = asin((p1.Y()-p0.Y())/r);
+            phi1 = asin(sin_phi1);
         else
-            phi1 = arma::datum::pi - asin((p1.Y()-p0.Y())/r);
+            phi1 = arma::datum::pi - asin(sin_phi1);
         if (p2.X() > p0.X())
-            phi2 = asin((p2.Y()-p0.Y())/r);
+            phi2 = asin(sin_phi2);
         else
-            phi2 = arma::datum::pi - asin((p2.Y()-p0.Y())/r);
-        arma::vec phi = phi1 + (phi2-phi1)/2*(1+Chebyshev::gaussLobatto(n));
-        cos_phi = cos(phi);
+            phi2 = arma::datum::pi - asin(sin_phi2);
     }
     else
-        cos_phi = cos(acos(cos_phi1) + (acos(cos_phi2)-acos(cos_phi1))/2*(1+Chebyshev::gaussLobatto(n)));
+    {
+        phi1 = acos(cos_phi1);
+        phi2 = acos(cos_phi2);
+    }
+    arma::vec phi = phi1 + (phi2-phi1)/2*(1+Chebyshev::gaussLobatto(n));
+    arma::vec cos_phi = cos(phi);
     if (almostEqual(sin_phi1, sin_phi2))
     {
-        double phi1, phi2;
         if (p1.Y() > p0.Y())
-            phi1 = acos((p1.X()-p0.X())/r);
+            phi1 = acos(cos_phi1);
         else
-            phi1 = arma::datum::pi + acos((p1.X()-p0.X())/r);
+            phi1 = arma::datum::pi + acos(cos_phi1);
         if (p2.Y() > p0.Y())
-            phi2 = acos((p2.X()-p0.X())/r);
+            phi2 = acos(cos_phi2);
         else
-            phi2 = arma::datum::pi + acos((p2.X()-p0.X())/r);
-        arma::vec phi = phi1 + (phi2-phi1)/2*(1+Chebyshev::gaussLobatto(n));
-        sin_phi = sin(phi);
+            phi2 = arma::datum::pi + acos(cos_phi2);
     }
     else
-        sin_phi = sin(asin(sin_phi1) + (asin(sin_phi2)-asin(sin_phi1))/2*(1+Chebyshev::gaussLobatto(n)));
+    {
+        phi1 = asin(sin_phi1);
+        phi2 = asin(sin_phi2);
+    }
+    phi = phi1 + (phi2-phi1)/2*(1+Chebyshev::gaussLobatto(n));
+    arma::vec sin_phi = sin(phi);
 
     arma::vec x = r*cos_phi + p0.X();
     arma::vec y = r*sin_phi + p0.Y();

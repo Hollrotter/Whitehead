@@ -49,6 +49,16 @@ public:
     {
         iterations = itt;
     }
+    void boundary(const Lagrange::CurveInterpolant* dir, const BC bc)
+    {
+        boundary(dir, bc, 0);
+    }
+    template <class C> void boundary(const Lagrange::CurveInterpolant*, const BC, const C);
+    void boundary(const Lagrange::CurveInterpolant* dir, const BC bc, const double _r1, const double _r2)
+    {
+        boundary(dir, bc, _r1, _r2, 0);
+    }
+    template <class C> void boundary(const Lagrange::CurveInterpolant*, const BC, const double, const double, const C);
     void linear();
     void nonlinear();
     void output(const std::string);

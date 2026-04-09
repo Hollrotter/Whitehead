@@ -55,33 +55,34 @@ int main()
     Membrane m4({&chi7,  &chi15, &chi11, &chi9 });
     Membrane m5({&chi10, &chi12, &chi13, &chi14});
 
-    m1.boundary(Field::n22, &chi1,  BC::Dirichlet);
-    m1.boundary(Field::n12, &chi1,  BC::Dirichlet);
-    m1.boundary(Field::v2,  &chi3,  BC::Neumann);
-    m1.boundary(Field::v1,  &chi3,  BC::Dirichlet);
-
-    m2.boundary(Field::n22, &chi2,  BC::Dirichlet);
-    m2.boundary(Field::n12, &chi2,  BC::Dirichlet);
-    m2.boundary(Field::v2,  &chi5,  BC::Neumann);
-    m2.boundary(Field::v1,  &chi5,  BC::Dirichlet);
-
-    m3.boundary(Field::v2,  &chi8,  BC::Neumann);
-    m3.boundary(Field::v1,  &chi8,  BC::Dirichlet);
-    m3.boundary(Field::z,   &chi8,  BC::Neumann);
-
-    m4.boundary(Field::v2,  &chi9,  BC::Neumann);
-    m4.boundary(Field::v1,  &chi9,  BC::Dirichlet);
-    m4.boundary(Field::n22, &chi11, BC::Dirichlet);
-    m4.boundary(Field::n12, &chi11, BC::Dirichlet);
-
-    m5.boundary(Field::v2,  &chi12, BC::Neumann);
-    m5.boundary(Field::v1,  &chi12, BC::Dirichlet);
-    m5.boundary(Field::n22, &chi13, BC::Dirichlet, P);
-    m5.boundary(Field::n12, &chi13, BC::Dirichlet);
-    m5.boundary(Field::n12, &chi14, BC::Dirichlet);
-    m5.boundary(Field::n11, &chi14, BC::Dirichlet);
-
     Structure s({&m1, &m2, &m3, &m4, &m5});
+
+    s.boundary(Field::n22, &chi1,  BC::Dirichlet);
+    s.boundary(Field::n12, &chi1,  BC::Dirichlet);
+    s.boundary(Field::v2,  &chi3,  BC::Neumann);
+    s.boundary(Field::v1,  &chi3,  BC::Dirichlet);
+
+    s.boundary(Field::n22, &chi2,  BC::Dirichlet);
+    s.boundary(Field::n12, &chi2,  BC::Dirichlet);
+    s.boundary(Field::v2,  &chi5,  BC::Neumann);
+    s.boundary(Field::v1,  &chi5,  BC::Dirichlet);
+
+    s.boundary(Field::v2,  &chi8,  BC::Neumann);
+    s.boundary(Field::v1,  &chi8,  BC::Dirichlet);
+    s.boundary(Field::z,   &chi8,  BC::Neumann);
+
+    s.boundary(Field::v2,  &chi9,  BC::Neumann);
+    s.boundary(Field::v1,  &chi9,  BC::Dirichlet);
+    s.boundary(Field::n22, &chi11, BC::Dirichlet);
+    s.boundary(Field::n12, &chi11, BC::Dirichlet);
+
+    s.boundary(Field::v2,  &chi12, BC::Neumann);
+    s.boundary(Field::v1,  &chi12, BC::Dirichlet);
+    s.boundary(Field::n22, &chi13, BC::Dirichlet, P);
+    s.boundary(Field::n12, &chi13, BC::Dirichlet);
+    s.boundary(Field::n12, &chi14, BC::Dirichlet);
+    s.boundary(Field::n11, &chi14, BC::Dirichlet);
+
     s.setgamma0(1);
     s.youngsModulus(E*t);
     s.poissonsRatio(nu);
