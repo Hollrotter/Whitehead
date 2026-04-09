@@ -2,7 +2,7 @@
 
 int main()
 {
-    switch (4)
+    switch (5)
     {
         case 0: // Interpolation 1D
         {
@@ -149,7 +149,53 @@ int main()
             chi.getNodes().t().print();
             break;
         }
-        case 5: // Transfinite Interpolation
+        case 5: // Parametrization of circular arc
+        {
+            size_t n = 100;
+            // Point p1(-1951.554976, 426.7099779);
+            // Point p2(-1904.725097, 537.1300038);
+            // Point p0(-1310.960017, 365.6850196);
+            // double r = 1000;
+            Point p0(0, 0);
+            Point p1(1, 0);
+            Point p2( sqrt(2)/2, sqrt(2)/2);
+            Point p3(0, 1);
+            Point p4(-sqrt(2)/2, sqrt(2)/2);
+            Point p5(-1,0);
+            Point p6(-sqrt(2)/2,-sqrt(2)/2);
+            Point p7(0,-1);
+            Point p8( sqrt(2)/2,-sqrt(2)/2);
+            double r = 1;
+            Lagrange::CurveInterpolant chi1(p1, p3, p0, r, n);
+            Lagrange::CurveInterpolant chi2(p2, p4, p0, r, n);
+            Lagrange::CurveInterpolant chi3(p3, p5, p0, r, n);
+            Lagrange::CurveInterpolant chi4(p4, p6, p0, r, n);
+            Lagrange::CurveInterpolant chi5(p5, p7, p0, r, n);
+            Lagrange::CurveInterpolant chi6(p6, p8, p0, r, n);
+            Lagrange::CurveInterpolant chi7(p7, p1, p0, r, n);
+            Lagrange::CurveInterpolant chi8(p8, p2, p0, r, n);
+            auto [x1, y1] = chi1.evaluate(chi1.getNodes());
+            auto [x2, y2] = chi2.evaluate(chi2.getNodes());
+            auto [x3, y3] = chi3.evaluate(chi3.getNodes());
+            auto [x4, y4] = chi4.evaluate(chi4.getNodes());
+            auto [x5, y5] = chi5.evaluate(chi5.getNodes());
+            auto [x6, y6] = chi6.evaluate(chi6.getNodes());
+            auto [x7, y7] = chi7.evaluate(chi7.getNodes());
+            auto [x8, y8] = chi8.evaluate(chi8.getNodes());
+            std::ofstream file("plot/Data/Lagrange/CircularArc");
+            for (size_t i = 0; i < n; i++)
+                file << x1(i) << ' ' << y1(i) << ' '
+                     << x2(i) << ' ' << y2(i) << ' '
+                     << x3(i) << ' ' << y3(i) << ' '
+                     << x4(i) << ' ' << y4(i) << ' '
+                     << x5(i) << ' ' << y5(i) << ' '
+                     << x6(i) << ' ' << y6(i) << ' '
+                     << x7(i) << ' ' << y7(i) << ' '
+                     << x8(i) << ' ' << y8(i) <<'\n';
+            file.close();
+            break;
+        }
+        case 6: // Transfinite Interpolation
         {
             size_t n = 10;
             size_t m = 5;
@@ -175,7 +221,7 @@ int main()
             file.close();
             break;
         }
-        case 6: // Derivative Matrix
+        case 7: // Derivative Matrix
         {
             size_t n = 50;
             arma::vec x = Chebyshev::gauss(n);

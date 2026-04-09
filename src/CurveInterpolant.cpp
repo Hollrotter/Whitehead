@@ -1,5 +1,68 @@
 #include "Lagrange.hpp"
 
+Lagrange::CurveInterpolant Lagrange::CurveInterpolant::arc(Point p1, Point p2, Point p0, double r, size_t n)
+{
+    Point pm = (p1+p2)/2;
+    Point p12 = p1-p2;
+    p12.perpendicular();
+    double dp12 = distance(p1, p2);
+    double discriminant = pow(r/dp12, 2) - 0.25;
+    if (discriminant < 0)
+    {
+        std::println("Radius too small!");
+        exit(EXIT_FAILURE);
+    }
+    Point pm1 = pm + p12*sqrt(discriminant);
+    Point pm2 = pm - p12*sqrt(discriminant);
+    if (distance(pm1, p0) < distance(pm2, p0))
+        p0 = pm1;
+    else
+        p0 = pm2;
+
+    double cos_phi1 = (p1.X()-p0.X())/r;
+    double cos_phi2 = (p2.X()-p0.X())/r;
+    double sin_phi1 = (p1.Y()-p0.Y())/r;
+    double sin_phi2 = (p2.Y()-p0.Y())/r;
+
+    arma::vec cos_phi(n), sin_phi(n);
+    if (almostEqual(cos_phi1, cos_phi2))
+    {
+        double phi1, phi2;
+        if (p1.X() > p0.X())
+            phi1 = asin((p1.Y()-p0.Y())/r);
+        else
+            phi1 = arma::datum::pi - asin((p1.Y()-p0.Y())/r);
+        if (p2.X() > p0.X())
+            phi2 = asin((p2.Y()-p0.Y())/r);
+        else
+            phi2 = arma::datum::pi - asin((p2.Y()-p0.Y())/r);
+        arma::vec phi = phi1 + (phi2-phi1)/2*(1+Chebyshev::gaussLobatto(n));
+        cos_phi = cos(phi);
+    }
+    else
+        cos_phi = cos(acos(cos_phi1) + (acos(cos_phi2)-acos(cos_phi1))/2*(1+Chebyshev::gaussLobatto(n)));
+    if (almostEqual(sin_phi1, sin_phi2))
+    {
+        double phi1, phi2;
+        if (p1.Y() > p0.Y())
+            phi1 = acos((p1.X()-p0.X())/r);
+        else
+            phi1 = arma::datum::pi + acos((p1.X()-p0.X())/r);
+        if (p2.Y() > p0.Y())
+            phi2 = acos((p2.X()-p0.X())/r);
+        else
+            phi2 = arma::datum::pi + acos((p2.X()-p0.X())/r);
+        arma::vec phi = phi1 + (phi2-phi1)/2*(1+Chebyshev::gaussLobatto(n));
+        sin_phi = sin(phi);
+    }
+    else
+        sin_phi = sin(asin(sin_phi1) + (asin(sin_phi2)-asin(sin_phi1))/2*(1+Chebyshev::gaussLobatto(n)));
+
+    arma::vec x = r*cos_phi + p0.X();
+    arma::vec y = r*sin_phi + p0.Y();
+    return {x, y, r};
+}
+
 arma::vec Lagrange::CurveInterpolant::parametrize()
 {
     return parametrize(Chebyshev::gaussLobatto(x.size()));

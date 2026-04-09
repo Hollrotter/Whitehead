@@ -33,15 +33,7 @@ namespace Lagrange
         arma::vec w = barycentricWeights(nodes);
         CurveType curveType = CurveType::Boundary;
         CurveInterpolant(arma::vec _x, arma::vec _y, double r) : x(_x), y(_y), nodes(Chebyshev::gaussLobatto(x.size())) {}
-        CurveInterpolant arc(Point p1, Point p2, Point pm, double r, size_t n)
-        {
-            double phi1 = atan(p1.Y()/p1.X());
-            double phi2 = atan(p2.Y()/p2.X());
-            arma::vec phi = phi1 + (phi2-phi1)*(1+Chebyshev::gaussLobatto(n))/2;
-            arma::vec x = r*cos(phi) + pm.X();
-            arma::vec y = r*sin(phi) + pm.Y();
-            return {x, y, r};
-        }
+        CurveInterpolant arc(Point p1, Point p2, Point pm, double r, size_t n);
     public:
         CurveInterpolant() = default;
         // Constructor assuming a gauss Lobatto distribution of the nodes along the curve
