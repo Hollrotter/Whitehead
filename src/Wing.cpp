@@ -303,14 +303,8 @@ void Wing::postprocessing()
             arma::field<arma::mat> J_gl = {{dxdx1_gl, dxdx2_gl}, {dydx1_gl, dydx2_gl}};
             arma::cube e_c_gl = MetricCo(J_gl);
             arma::cube ec_gl  = MetricContra(e_c_gl);
-            arma::mat e_11_gl = e_c_gl.slice(0);
-            arma::mat e_12_gl = e_c_gl.slice(1);
-            arma::mat e_22_gl = e_c_gl.slice(2);
-            arma::mat e11_gl  =  ec_gl.slice(0);
-            arma::mat e12_gl  =  ec_gl.slice(1);
-            arma::mat e22_gl  =  ec_gl.slice(2);
-            arma::mat e_gl = e_11_gl%e_22_gl - pow(e_12_gl, 2);
-            arma::mat sqrt_a = sqrt(e_gl%(1 + e11_gl%pow(dzdx1_gl, 2) + 2*e12_gl%dzdx1_gl%dzdx2_gl + e22_gl%pow(dzdx2_gl, 2)));
+            arma::mat e_gl = e_c_gl.slice(0)%e_c_gl.slice(2) - pow(e_c_gl.slice(1), 2);
+            arma::mat sqrt_a = sqrt(e_gl%(1 + ec_gl.slice(0)%pow(dzdx1_gl, 2) + 2*ec_gl.slice(1)%dzdx1_gl%dzdx2_gl + ec_gl.slice(2)%pow(dzdx2_gl, 2)));
             for (size_t j = 0; j < ny; j++)
                 for (size_t i = 0; i < nx; i++)
                 {

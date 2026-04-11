@@ -142,6 +142,50 @@ void Wing::muBoundarySouth(const size_t i)
             }
             b(i) = mu.south(i);
             break;
+        case BC::Derivative_x:
+            if (analysis == Analysis::linear)
+            {
+                arma::vec detJ = J(0, 0).col(0)%J(1, 1).col(0) - J(0, 1).col(0)%J(0, 1).col(0);
+                arma::vec J11_inv = J(1, 1).col(0)/detJ;
+                arma::vec J21_inv =-J(1, 0).col(0)/detJ;
+                for (size_t p = 0; p < nx; p++)
+                {
+                    double  T = boost::math::chebyshev_t(p, x1(i));
+                    double dT = boost::math::chebyshev_t_prime(p, x1(i));
+                    for (size_t q = 0; q < ny; q++)
+                        A(i, p+q*nx) = J11_inv(i)*dT*pow(-1, q)
+                                     + J21_inv(i)*T *pow(-1, q+1)*pow(q, 2);
+                }
+            }
+            else
+            {
+                std::println("Derivative_x not yet implemented for nonlinear analysis!");
+                exit(EXIT_FAILURE);
+            }
+            b(i) = mu.south(i);
+            break;
+        case BC::Derivative_y:
+            if (analysis == Analysis::linear)
+            {
+                arma::vec detJ = J(0, 0).col(0)%J(1, 1).col(0) - J(0, 1).col(0)%J(0, 1).col(0);
+                arma::vec J12_inv =-J(0, 1).col(0)/detJ;
+                arma::vec J22_inv = J(0, 0).col(0)/detJ;
+                for (size_t p = 0; p < nx; p++)
+                {
+                    double  T = boost::math::chebyshev_t(p, x1(i));
+                    double dT = boost::math::chebyshev_t_prime(p, x1(i));
+                    for (size_t q = 0; q < ny; q++)
+                        A(i, p+q*nx) = J12_inv(i)*dT*pow(-1, q)
+                                     + J22_inv(i)*T *pow(-1, q+1)*pow(q, 2);
+                }
+            }
+            else
+            {
+                std::println("Derivative_y not yet implemented for nonlinear analysis!");
+                exit(EXIT_FAILURE);
+            }
+            b(i) = mu.south(i);
+            break;
         case BC::None:
             break;
     }
@@ -181,6 +225,50 @@ void Wing::muBoundaryNorth(const size_t i)
                     A(k, p+q*nx) = mu.r1North*T
                                  + mu.r2North*(h_2s1_north(i)*dT
                                  +             h_2s2_north(i)*T * pow(q, 2));
+            }
+            b(k) = mu.north(i);
+            break;
+        case BC::Derivative_x:
+            if (analysis == Analysis::linear)
+            {
+                arma::vec detJ = J(0, 0).col(ny-1)%J(1, 1).col(ny-1) - J(0, 1).col(ny-1)%J(0, 1).col(ny-1);
+                arma::vec J11_inv = J(1, 1).col(ny-1)/detJ;
+                arma::vec J21_inv =-J(1, 0).col(ny-1)/detJ;
+                for (size_t p = 0; p < nx; p++)
+                {
+                    double  T = boost::math::chebyshev_t(p, x1(i));
+                    double dT = boost::math::chebyshev_t_prime(p, x1(i));
+                    for (size_t q = 0; q < ny; q++)
+                        A(k, p+q*nx) = J11_inv(i)*dT
+                                     + J21_inv(i)*T * pow(q, 2);
+                }
+            }
+            else
+            {
+                std::println("Derivative_x not yet implemented for nonlinear analysis!");
+                exit(EXIT_FAILURE);
+            }
+            b(k) = mu.north(i);
+            break;
+        case BC::Derivative_y:
+            if (analysis == Analysis::linear)
+            {
+                arma::vec detJ = J(0, 0).col(ny-1)%J(1, 1).col(ny-1) - J(0, 1).col(ny-1)%J(0, 1).col(ny-1);
+                arma::vec J12_inv =-J(0, 1).col(ny-1)/detJ;
+                arma::vec J22_inv = J(0, 0).col(ny-1)/detJ;
+                for (size_t p = 0; p < nx; p++)
+                {
+                    double  T = boost::math::chebyshev_t(p, x1(i));
+                    double dT = boost::math::chebyshev_t_prime(p, x1(i));
+                    for (size_t q = 0; q < ny; q++)
+                        A(k, p+q*nx) = J12_inv(i)*dT
+                                     + J22_inv(i)*T * pow(q, 2);
+                }
+            }
+            else
+            {
+                std::println("Derivative_y not yet implemented for nonlinear analysis!");
+                exit(EXIT_FAILURE);
             }
             b(k) = mu.north(i);
             break;
@@ -226,6 +314,50 @@ void Wing::muBoundaryWest(const size_t j)
             }
             b(k) = mu.west(j);
             break;
+        case BC::Derivative_x:
+            if (analysis == Analysis::linear)
+            {
+                arma::rowvec detJ = J(0, 0).row(0)%J(1, 1).row(0) - J(0, 1).row(0)%J(0, 1).row(0);
+                arma::rowvec J11_inv = J(1, 1).row(0)/detJ;
+                arma::rowvec J21_inv =-J(1, 0).row(0)/detJ;
+                for (size_t q = 0; q < ny; q++)
+                {
+                    double  T = boost::math::chebyshev_t(q, x2(j));
+                    double dT = boost::math::chebyshev_t_prime(q, x2(j));
+                    for (size_t p = 0; p < nx; p++)
+                        A(k, p+q*nx) = J11_inv(j)*pow(-1, p+1)*pow(p, 2) * T
+                                     + J21_inv(j)*pow(-1, p) * dT;
+                }
+            }
+            else
+            {
+                std::println("Derivative_x not yet implemented for nonlinear analysis!");
+                exit(EXIT_FAILURE);
+            }
+            b(k) = mu.west(j);
+            break;
+        case BC::Derivative_y:
+            if (analysis == Analysis::linear)
+            {
+                arma::rowvec detJ = J(0, 0).row(0)%J(1, 1).row(0) - J(0, 1).row(0)%J(0, 1).row(0);
+                arma::rowvec J12_inv =-J(0, 1).row(0)/detJ;
+                arma::rowvec J22_inv = J(0, 0).row(0)/detJ;
+                for (size_t q = 0; q < ny; q++)
+                {
+                    double  T = boost::math::chebyshev_t(q, x2(j));
+                    double dT = boost::math::chebyshev_t_prime(q, x2(j));
+                    for (size_t p = 0; p < nx; p++)
+                        A(k, p+q*nx) = J12_inv(j)*pow(-1, p+1)*pow(p, 2) * T
+                                     + J22_inv(j)*pow(-1, p) * dT;
+                }
+            }
+            else
+            {
+                std::println("Derivative_x not yet implemented for nonlinear analysis!");
+                exit(EXIT_FAILURE);
+            }
+            b(k) = mu.west(j);
+            break;
         case BC::None:
             break;
     }
@@ -265,6 +397,50 @@ void Wing::muBoundaryEast(const size_t j)
                     A(k, p+q*nx) = mu.r1East*T
                                  + mu.r2East*(h_1s1_east(j)*pow(p, 2)*T
                                  +            h_1s2_east(j)*dT);
+            }
+            b(k) = mu.east(j);
+            break;
+        case BC::Derivative_x:
+            if (analysis == Analysis::linear)
+            {
+                arma::rowvec detJ = J(0, 0).row(nx-1)%J(1, 1).row(nx-1) - J(0, 1).row(nx-1)%J(0, 1).row(nx-1);
+                arma::rowvec J11_inv = J(1, 1).row(nx-1)/detJ;
+                arma::rowvec J21_inv =-J(1, 0).row(nx-1)/detJ;
+                for (size_t q = 0; q < ny; q++)
+                {
+                    double  T = boost::math::chebyshev_t(q, x2(j));
+                    double dT = boost::math::chebyshev_t_prime(q, x2(j));
+                    for (size_t p = 0; p < nx; p++)
+                        A(k, p+q*nx) = J11_inv(j)*pow(p, 2)*T
+                                     + J21_inv(j)*dT;
+                }
+            }
+            else
+            {
+                std::println("Derivative_x not yet implemented for nonlinear analysis!");
+                exit(EXIT_FAILURE);
+            }
+            b(k) = mu.east(j);
+            break;
+        case BC::Derivative_y:
+            if (analysis == Analysis::linear)
+            {
+                arma::rowvec detJ = J(0, 0).row(nx-1)%J(1, 1).row(nx-1) - J(0, 1).row(nx-1)%J(0, 1).row(nx-1);
+                arma::rowvec J12_inv =-J(0, 1).row(nx-1)/detJ;
+                arma::rowvec J22_inv = J(0, 0).row(nx-1)/detJ;
+                for (size_t q = 0; q < ny; q++)
+                {
+                    double  T = boost::math::chebyshev_t(q, x2(j));
+                    double dT = boost::math::chebyshev_t_prime(q, x2(j));
+                    for (size_t p = 0; p < nx; p++)
+                        A(k, p+q*nx) = J12_inv(j)*pow(p, 2)*T
+                                     + J22_inv(j)*dT;
+                }
+            }
+            else
+            {
+                std::println("Derivative_x not yet implemented for nonlinear analysis!");
+                exit(EXIT_FAILURE);
             }
             b(k) = mu.east(j);
             break;

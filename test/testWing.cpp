@@ -112,9 +112,17 @@ int main()
             w.boundary(Direction::S, BC::Neumann);
             w.boundary(Direction::N, BC::Dirichlet);
             w.boundary(Direction::W, BC::Dirichlet);
-            w.boundary(Direction::E, BC::Neumann);
+            w.boundary(Direction::E, BC::Derivative_x);
 
             w.linear();
+
+            double area = w.get_area();
+            arma::vec cL = w.get_lift()   / area;
+            arma::vec cM = w.get_moment() / area/c;
+
+            std::cout << "A  = " << area   << '\n';
+            std::cout << "cL = " << cL.t() << '\n';
+            std::cout << "cM = " << cM.t() << '\n';
 
             w.output("plot/Data/Wing/EllipticalWing");
             break;

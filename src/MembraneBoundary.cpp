@@ -158,6 +158,9 @@ void Membrane::zBoundary(const BC bc, const double val, const size_t i, const si
             break;
         case BC::None:
             break;
+        default:
+            std::println("A boundary condition was chosen, that is not implemented for membranes!");
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -199,6 +202,9 @@ void Membrane::v1BoundaryWestEast(const BC bc, const double val, const size_t i,
         }
         case BC::None:
             break;
+        default:
+            std::println("A boundary condition was chosen, that is not implemented for membranes!");
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -206,38 +212,41 @@ void Membrane::v2BoundaryWestEast(const BC bc, const double val, const size_t i,
                                     const double r1, const double r2, const double h_1s1, const double h_1s2, const double h_2s2)
 {
     size_t k = i + j*nx;
-        switch (bc)
+    switch (bc)
+    {
+        case BC::Dirichlet:
+            bv(k+nxy) = val;
+            A.row(k+nxy).zeros();
+            A(k+nxy, k+nxy) = h_2s2;
+            break;
+        case BC::Neumann:
         {
-            case BC::Dirichlet:
-                bv(k+nxy) = val;
-                A.row(k+nxy).zeros();
-                A(k+nxy, k+nxy) = h_2s2;
-                break;
-            case BC::Neumann:
-            {
-                bv(k+nxy) = val;
-                double c1 = h_2s2*h_1s1;
-                double c2 = h_2s2*h_1s2;
-                A.row(k+nxy).zeros();
-                A.row(k+nxy).cols(nxy, 2*nxy-1) = c1*DD1.row(k) + c2*DD2.row(k);
-                A(k+nxy, k)     -= c1*gam(i, j, 1) + c2*gam(i, j, 2);
-                A(k+nxy, k+nxy) -= c1*gam(i, j, 4) + c2*gam(i, j, 5);
-                break;
-            }
-            case BC::Robin:
-            {
-                bv(k+nxy) = val;
-                double c1 = h_2s2*h_1s1;
-                double c2 = h_2s2*h_1s2;
-                A.row(k+nxy).zeros();
-                A.row(k+nxy).cols(nxy, 2*nxy-1) = r2*(c1*DD1.row(k) + c2*DD2.row(k));
-                A(k+nxy, k)     -=            r2*(c1*gam(i, j, 1) + c2*gam(i, j, 2));
-                A(k+nxy, k+nxy) += r1*h_2s2 - r2*(c1*gam(i, j, 4) + c2*gam(i, j, 5));
-                break;
-            }
-            case BC::None:
-                break;
+            bv(k+nxy) = val;
+            double c1 = h_2s2*h_1s1;
+            double c2 = h_2s2*h_1s2;
+            A.row(k+nxy).zeros();
+            A.row(k+nxy).cols(nxy, 2*nxy-1) = c1*DD1.row(k) + c2*DD2.row(k);
+            A(k+nxy, k)     -= c1*gam(i, j, 1) + c2*gam(i, j, 2);
+            A(k+nxy, k+nxy) -= c1*gam(i, j, 4) + c2*gam(i, j, 5);
+            break;
         }
+        case BC::Robin:
+        {
+            bv(k+nxy) = val;
+            double c1 = h_2s2*h_1s1;
+            double c2 = h_2s2*h_1s2;
+            A.row(k+nxy).zeros();
+            A.row(k+nxy).cols(nxy, 2*nxy-1) = r2*(c1*DD1.row(k) + c2*DD2.row(k));
+            A(k+nxy, k)     -=            r2*(c1*gam(i, j, 1) + c2*gam(i, j, 2));
+            A(k+nxy, k+nxy) += r1*h_2s2 - r2*(c1*gam(i, j, 4) + c2*gam(i, j, 5));
+            break;
+        }
+        case BC::None:
+            break;
+        default:
+            std::println("A boundary condition was chosen, that is not implemented for membranes!");
+            exit(EXIT_FAILURE);
+    }
 }
 
 void Membrane::v1BoundarySouthNorth(const BC bc, const double val, const size_t i, const size_t j, arma::mat &A, arma::vec &bv,
@@ -275,6 +284,9 @@ void Membrane::v1BoundarySouthNorth(const BC bc, const double val, const size_t 
         }
         case BC::None:
             break;
+        default:
+            std::println("A boundary condition was chosen, that is not implemented for membranes!");
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -316,6 +328,9 @@ void Membrane::v2BoundarySouthNorth(const BC bc, const double val, const size_t 
         }
         case BC::None:
             break;
+        default:
+            std::println("A boundary condition was chosen, that is not implemented for membranes!");
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -341,6 +356,9 @@ void Membrane::n11BoundaryLinear(const BC bc, const double val, const size_t i, 
             exit(EXIT_FAILURE);
         case BC::None:
             break;
+        default:
+            std::println("A boundary condition was chosen, that is not implemented for membranes!");
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -370,6 +388,9 @@ void Membrane::n12BoundaryLinear(const BC bc, const double val, const size_t i, 
             exit(EXIT_FAILURE);
         case BC::None:
             break;
+        default:
+            std::println("A boundary condition was chosen, that is not implemented for membranes!");
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -400,6 +421,9 @@ void Membrane::n21BoundaryLinear(const BC bc, const double val, const size_t i, 
             exit(EXIT_FAILURE);
         case BC::None:
             break;
+        default:
+            std::println("A boundary condition was chosen, that is not implemented for membranes!");
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -426,6 +450,9 @@ void Membrane::n22BoundaryLinear(const BC bc, const double val, const size_t i, 
             exit(EXIT_FAILURE);
         case BC::None:
             break;
+        default:
+            std::println("A boundary condition was chosen, that is not implemented for membranes!");
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -451,6 +478,9 @@ void Membrane::zBoundarySemilinear(const BC bc, const double val, const size_t i
             break;
         case BC::None:
             break;
+        default:
+            std::println("A boundary condition was chosen, that is not implemented for membranes!");
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -479,6 +509,9 @@ void Membrane::zBoundaryNonlinear(const BC bc, const double val, const size_t i,
             break;
         case BC::None:
             break;
+        default:
+            std::println("A boundary condition was chosen, that is not implemented for membranes!");
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -522,6 +555,9 @@ void Membrane::v1BoundaryWestEastNonlinear(const BC bc, const double val, const 
         }
         case BC::None:
             break;
+        default:
+            std::println("A boundary condition was chosen, that is not implemented for membranes!");
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -560,6 +596,9 @@ void Membrane::v2BoundaryWestEastNonlinear(const BC bc, const double val, const 
         }
         case BC::None:
             break;
+        default:
+            std::println("A boundary condition was chosen, that is not implemented for membranes!");
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -599,6 +638,9 @@ void Membrane::v1BoundarySouthNorthNonlinear(const BC bc, const double val, cons
         }
         case BC::None:
             break;
+        default:
+            std::println("A boundary condition was chosen, that is not implemented for membranes!");
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -642,6 +684,9 @@ void Membrane::v2BoundarySouthNorthNonlinear(const BC bc, const double val, cons
         }
         case BC::None:
             break;
+        default:
+            std::println("A boundary condition was chosen, that is not implemented for membranes!");
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -675,6 +720,9 @@ void Membrane::n11BoundaryNonlinear(const BC bc, const double val, const size_t 
             exit(EXIT_FAILURE);
         case BC::None:
             break;
+        default:
+            std::println("A boundary condition was chosen, that is not implemented for membranes!");
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -711,6 +759,9 @@ void Membrane::n12BoundaryNonlinear(const BC bc, const double val, const size_t 
             exit(EXIT_FAILURE);
         case BC::None:
             break;
+        default:
+            std::println("A boundary condition was chosen, that is not implemented for membranes!");
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -748,6 +799,9 @@ void Membrane::n21BoundaryNonlinear(const BC bc, const double val, const size_t 
             exit(EXIT_FAILURE);
         case BC::None:
             break;
+        default:
+            std::println("A boundary condition was chosen, that is not implemented for membranes!");
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -781,6 +835,9 @@ void Membrane::n22BoundaryNonlinear(const BC bc, const double val, const size_t 
             exit(EXIT_FAILURE);
         case BC::None:
             break;
+        default:
+            std::println("A boundary condition was chosen, that is not implemented for membranes!");
+            exit(EXIT_FAILURE);
     }
 }
 

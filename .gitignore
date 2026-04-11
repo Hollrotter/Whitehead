@@ -10,6 +10,7 @@ Validation/plot/png/
 Validation/plot/svg/
 Validation/Validation
 Validation/Lilienthal.cpp
+Validation/plot/Gnuplot/Lilienthal.plt
 Validation/plot/Gnuplot/Lilienthal_mesh.plt
 Verification/.vscode/
 Verification/plot/Data/

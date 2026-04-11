@@ -11,9 +11,11 @@ enum class Analysis
 // Boundary type
 enum class BC
 {
-    Dirichlet, // Boundary condition with predescribed value
-    Neumann, // Boundary condition with predescribed derivative/gradient
+    Dirichlet, // Boundary condition with precribed value
+    Neumann, // Boundary condition with precribed derivative/gradient
     Robin, // Mixed boundary condition
+    Derivative_x, // Boundary conidtion with prescribed derivative in x-direction
+    Derivative_y, // Boundary condition with prescribed derivative in y-direction
     None // No boundary condition
 };
 

@@ -34,26 +34,26 @@ void Aerodynamics::linear()
         for (size_t tD = 0; tD < wings.size(); tD++)
             if (sD != tD)
             {
-                bw(tD, sD).set_size(wings[sD]->nx*wings[sD]->ny, wings[sD]->nx*wings[sD]->ny, wings[sD]->con);
+                std::vector<fastgl::QuadPair> gl_x(wings[sD]->nx), gl_y(wings[sD]->ny);
+                arma::vec x1_gl(wings[sD]->nx), x2_gl(wings[sD]->ny);
+                for (size_t ii = 0; ii < wings[sD]->nx; ii++)
+                {
+                    gl_x[ii] = fastgl::GLPair(wings[sD]->nx, ii+1);
+                    x1_gl(ii) =-gl_x[ii].x();
+                }
+                for (size_t jj = 0; jj < wings[sD]->ny; jj++)
+                {
+                    gl_y[jj] = fastgl::GLPair(wings[sD]->ny, jj+1);
+                    x2_gl(jj) =-gl_y[jj].x();
+                }
+                auto [x_gl, y_gl] = Lagrange::TransfiniteQuadMap(x1_gl, x2_gl, wings[sD]->chi);
+                auto [dx_gldx1, dx_gldx2, dy_gldx1, dy_gldx2] = Lagrange::TransfiniteQuadMetrics(x1_gl, x2_gl, wings[sD]->chi);
+                auto [xC, yC] = Lagrange::TransfiniteQuadMap(wings[tD]->xi_1, wings[tD]->xi_2, wings[tD]->chi);
+                bw(tD, sD).set_size(wings[tD]->nxy, wings[sD]->nxy, wings[sD]->con);
                 for (size_t j = 1; j < wings[tD]->ny-1; j++) // Loop over Collocation Points in 2-direction of target
                     for (size_t i = 1; i < wings[tD]->nx-1; i++) // Loop over Collocation Points in 1-direction of target
                     {
-                        size_t k1 = i + j*wings[tD]->nx;
-                        auto [xC, yC] = Lagrange::TransfiniteQuadMap(wings[tD]->xi_1, wings[tD]->xi_2, wings[tD]->chi);
-                        std::vector<fastgl::QuadPair> gl_x(wings[sD]->nx), gl_y(wings[sD]->ny);
-                        arma::vec x1_gl(wings[sD]->nx), x2_gl(wings[sD]->ny);
-                        for (size_t ii = 0; ii < wings[sD]->nx; ii++)
-                        {
-                            gl_x[ii] = fastgl::GLPair(wings[sD]->nx, ii+1);
-                            x1_gl(ii) =-gl_x[ii].x();
-                        }
-                        for (size_t jj = 0; jj < wings[sD]->ny; jj++)
-                        {
-                            gl_y[jj] = fastgl::GLPair(wings[sD]->ny, jj+1);
-                            x2_gl(jj) =-gl_y[jj].x();
-                        }
-                        auto [x_gl, y_gl] = Lagrange::TransfiniteQuadMap(x1_gl, x2_gl, wings[sD]->chi);
-                        auto [dx_gldx1, dx_gldx2, dy_gldx1, dy_gldx2] = Lagrange::TransfiniteQuadMetrics(x1_gl, x2_gl, wings[sD]->chi);
+                        size_t k1 = i + j*wings[tD]->nx; 
                         arma::mat J_gl = dx_gldx1%dy_gldx2 - dx_gldx2%dy_gldx1;
                         for (size_t jj = 0; jj < wings[sD]->ny; jj++) // Loop over Legendre nodes 2-direction of source
                             for (size_t ii = 0; ii < wings[sD]->nx; ii++) // Loop over Legendre nodes 1-direction of source
@@ -62,7 +62,7 @@ void Aerodynamics::linear()
                                 double r3 = pow(norm(r), 3);
                                 for (size_t q = 0; q < wings[sD]->ny; q++) // Loop over Chebyshev Polynomial 2-direction of source
                                     for (size_t p = 0; p < wings[sD]->nx; p++) // Loop over Chebyshev Polynomial 1-direction of source
-                                        bw(tD, sD)(i+j*wings[tD]->nx, p+q*wings[sD]->ny, 0) -= gl_x[ii].weight * gl_y[jj].weight * J_gl(ii, jj) / r3
+                                        bw(tD, sD)(i+j*wings[tD]->nx, p+q*wings[sD]->nx, 0) -= gl_x[ii].weight * gl_y[jj].weight * J_gl(ii, jj) / r3
                                             *(r(0)*boost::math::chebyshev_t_prime(p, x1_gl(ii)) * boost::math::chebyshev_t(q, x2_gl(jj))
                                             + r(1)*boost::math::chebyshev_t(p, x1_gl(ii)) * boost::math::chebyshev_t_prime(q, x2_gl(jj)));
                             }
@@ -305,7 +305,7 @@ void Aerodynamics::solve()
         converged = true;
         for (size_t k = 0; k < interfaces.size(); k++)
         {
-            printf("Interface %lu\n", k+1);
+            printf("Interface %lu: ", k+1);
             double res = arma::norm(muTarget(k) - muSource(k))/arma::norm(muTarget(k) + muSource(k));
             printf("Residual %4.2e\n", res);
             if (res > residualTarget)
