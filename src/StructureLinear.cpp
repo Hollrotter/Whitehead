@@ -20,7 +20,6 @@ void Structure::linear()
             arma::mat dZd1 = D1*Z;
             arma::mat dZd2 = Z*D2.t();
             double gamma;
-            arma::vec sourceZ;
             switch (interface.sourceCurve)
             {
                 case 0: // South
@@ -28,7 +27,22 @@ void Structure::linear()
                     arma::vec h_2s1 = membranes[interface.sourceDomain]->h_2s1_south;
                     arma::vec h_2s2 = membranes[interface.sourceDomain]->h_2s2_south;
                     gamma = gamma0*mean(h_2s2);
-                    sourceZ = gamma*Z.col(0) + h_2s1%dZd1.col(0) + h_2s2%dZd2.col(0);
+                    arma::vec sourceZ = gamma*Z.col(0) + h_2s1%dZd1.col(0) + h_2s2%dZd2.col(0);
+                    switch (interface.targetCurve)
+                    {
+                        case 0: // South
+                            membranes[interface.targetDomain]->boundary(Field::z, targetDirection, BC::Robin, gamma,-1, arma::vec(reverse(sourceZ)));
+                            break;
+                        case 1: // East
+                            membranes[interface.targetDomain]->boundary(Field::z, targetDirection, BC::Robin, gamma, 1, arma::vec(reverse(sourceZ)));
+                            break;
+                        case 2: // North
+                            membranes[interface.targetDomain]->boundary(Field::z, targetDirection, BC::Robin, gamma, 1, sourceZ);
+                            break;
+                        case 3: // West
+                            membranes[interface.targetDomain]->boundary(Field::z, targetDirection, BC::Robin, gamma,-1, sourceZ);
+                            break;
+                    }
                     break;
                 }
                 case 1: // East
@@ -37,7 +51,22 @@ void Structure::linear()
                     arma::rowvec h_1s1 = membranes[interface.sourceDomain]->h_1s1_east;
                     arma::rowvec h_1s2 = membranes[interface.sourceDomain]->h_1s2_east;
                     gamma = gamma0*mean(h_1s1);
-                    sourceZ = (gamma*Z.row(nx-1) - (h_1s1%dZd1.row(nx-1) + h_1s2%dZd2.row(nx-1))).t();
+                    arma::vec sourceZ = (gamma*Z.row(nx-1) - (h_1s1%dZd1.row(nx-1) + h_1s2%dZd2.row(nx-1))).t();
+                    switch (interface.targetCurve)
+                    {
+                        case 0: // South
+                            membranes[interface.targetDomain]->boundary(Field::z, targetDirection, BC::Robin, gamma,-1, arma::vec(reverse(sourceZ)));
+                            break;
+                        case 1: // East
+                            membranes[interface.targetDomain]->boundary(Field::z, targetDirection, BC::Robin, gamma, 1, arma::vec(reverse(sourceZ)));
+                            break;
+                        case 2: // North
+                            membranes[interface.targetDomain]->boundary(Field::z, targetDirection, BC::Robin, gamma, 1, sourceZ);
+                            break;
+                        case 3: // West
+                            membranes[interface.targetDomain]->boundary(Field::z, targetDirection, BC::Robin, gamma,-1, sourceZ);
+                            break;
+                    }
                     break;
                 }
                 case 2: // North
@@ -46,7 +75,22 @@ void Structure::linear()
                     arma::vec h_2s1 = membranes[interface.sourceDomain]->h_2s1_north;
                     arma::vec h_2s2 = membranes[interface.sourceDomain]->h_2s2_north;
                     gamma = gamma0*mean(h_2s2);
-                    sourceZ = gamma*Z.col(ny-1) - (h_2s1%dZd1.col(ny-1) + h_2s2%dZd2.col(ny-1));
+                    arma::vec sourceZ = gamma*Z.col(ny-1) - (h_2s1%dZd1.col(ny-1) + h_2s2%dZd2.col(ny-1));
+                    switch (interface.targetCurve)
+                    {
+                        case 0: // South
+                            membranes[interface.targetDomain]->boundary(Field::z, targetDirection, BC::Robin, gamma,-1, sourceZ);
+                            break;
+                        case 1: // East
+                            membranes[interface.targetDomain]->boundary(Field::z, targetDirection, BC::Robin, gamma, 1, sourceZ);
+                            break;
+                        case 2: // North
+                            membranes[interface.targetDomain]->boundary(Field::z, targetDirection, BC::Robin, gamma, 1, arma::vec(reverse(sourceZ)));
+                            break;
+                        case 3: // West
+                            membranes[interface.targetDomain]->boundary(Field::z, targetDirection, BC::Robin, gamma,-1, arma::vec(reverse(sourceZ)));
+                            break;
+                    }
                     break;
                 }
                 case 3: // West
@@ -54,25 +98,30 @@ void Structure::linear()
                     arma::rowvec h_1s1 = membranes[interface.sourceDomain]->h_1s1_west;
                     arma::rowvec h_1s2 = membranes[interface.sourceDomain]->h_1s2_west;
                     gamma = gamma0*mean(h_1s1);
-                    sourceZ = (gamma*Z.row(0) + h_1s1%dZd1.row(0) + h_1s2%dZd2.row(0)).t();
+                    arma::vec sourceZ = (gamma*Z.row(0) + h_1s1%dZd1.row(0) + h_1s2%dZd2.row(0)).t();
+                    switch (interface.targetCurve)
+                    {
+                        case 0: // South
+                            membranes[interface.targetDomain]->boundary(Field::z, targetDirection, BC::Robin, gamma,-1, sourceZ);
+                            break;
+                        case 1: // East
+                            membranes[interface.targetDomain]->boundary(Field::z, targetDirection, BC::Robin, gamma, 1, sourceZ);
+                            break;
+                        case 2: // North
+                            membranes[interface.targetDomain]->boundary(Field::z, targetDirection, BC::Robin, gamma, 1, arma::vec(reverse(sourceZ)));
+                            break;
+                        case 3: // West
+                            membranes[interface.targetDomain]->boundary(Field::z, targetDirection, BC::Robin, gamma,-1, arma::vec(reverse(sourceZ)));
+                            break;
+                    }
                     break;
                 }
-            }
-            switch (interface.targetCurve)
-            {
-                case 0: case 3: // South and West
-                    membranes[interface.targetDomain]->boundary(Field::z, targetDirection, BC::Robin, gamma,-1, sourceZ);
-                    break;
-                case 1: case 2: // East and North
-                    membranes[interface.targetDomain]->boundary(Field::z, targetDirection, BC::Robin, gamma, 1, sourceZ);
-                    break;
             }
             D1   = membranes[interface.targetDomain]->D1;
             D2   = membranes[interface.targetDomain]->D2;
             Z    = membranes[interface.targetDomain]->z;
             dZd1 = D1*Z;
             dZd2 = Z*D2.t();
-            arma::vec targetZ;
             switch (interface.targetCurve)
             {
                 case 0: // South
@@ -80,7 +129,22 @@ void Structure::linear()
                     arma::vec h_2s1 = membranes[interface.targetDomain]->h_2s1_south;
                     arma::vec h_2s2 = membranes[interface.targetDomain]->h_2s2_south;
                     gamma = gamma0*mean(h_2s2);
-                    targetZ = gamma*Z.col(0) + h_2s1%dZd1.col(0) + h_2s2%dZd2.col(0);
+                    arma::vec targetZ = gamma*Z.col(0) + h_2s1%dZd1.col(0) + h_2s2%dZd2.col(0);
+                    switch (interface.sourceCurve)
+                    {
+                        case 0: // South
+                            membranes[interface.sourceDomain]->boundary(Field::z, sourceDirection, BC::Robin, gamma,-1, arma::vec(reverse(targetZ)));
+                            break;
+                        case 1: // East
+                            membranes[interface.sourceDomain]->boundary(Field::z, sourceDirection, BC::Robin, gamma, 1, arma::vec(reverse(targetZ)));
+                            break;
+                        case 2: // North
+                            membranes[interface.sourceDomain]->boundary(Field::z, sourceDirection, BC::Robin, gamma, 1, targetZ);
+                            break;
+                        case 3: // West
+                            membranes[interface.sourceDomain]->boundary(Field::z, sourceDirection, BC::Robin, gamma,-1, targetZ);
+                            break;
+                    }
                     break;
                 }
                 case 1: // East
@@ -89,7 +153,22 @@ void Structure::linear()
                     arma::rowvec h_1s1 = membranes[interface.targetDomain]->h_1s1_east;
                     arma::rowvec h_1s2 = membranes[interface.targetDomain]->h_1s2_east;
                     gamma = gamma0*mean(h_1s1);
-                    targetZ = (gamma*Z.row(nx-1) - (h_1s1%dZd1.row(nx-1) + h_1s2%dZd2.row(nx-1))).t();
+                    arma::vec targetZ = (gamma*Z.row(nx-1) - (h_1s1%dZd1.row(nx-1) + h_1s2%dZd2.row(nx-1))).t();
+                    switch (interface.sourceCurve)
+                    {
+                        case 0: // South
+                            membranes[interface.sourceDomain]->boundary(Field::z, sourceDirection, BC::Robin, gamma,-1, arma::vec(reverse(targetZ)));
+                            break;
+                        case 1: // East
+                            membranes[interface.sourceDomain]->boundary(Field::z, sourceDirection, BC::Robin, gamma, 1, arma::vec(reverse(targetZ)));
+                            break;
+                        case 2: // North
+                            membranes[interface.sourceDomain]->boundary(Field::z, sourceDirection, BC::Robin, gamma, 1, targetZ);
+                            break;
+                        case 3: // West
+                            membranes[interface.sourceDomain]->boundary(Field::z, sourceDirection, BC::Robin, gamma,-1, targetZ);
+                            break;
+                    }
                     break;
                 }
                 case 2: // North
@@ -98,7 +177,22 @@ void Structure::linear()
                     arma::vec h_2s1 = membranes[interface.targetDomain]->h_2s1_north;
                     arma::vec h_2s2 = membranes[interface.targetDomain]->h_2s2_north;
                     gamma = gamma0*mean(h_2s2);
-                    targetZ = gamma*Z.col(ny-1) - (h_2s1%dZd1.col(ny-1) + h_2s2%dZd2.col(ny-1));
+                    arma::vec targetZ = gamma*Z.col(ny-1) - (h_2s1%dZd1.col(ny-1) + h_2s2%dZd2.col(ny-1));
+                    switch (interface.sourceCurve)
+                    {
+                        case 0: // South
+                            membranes[interface.sourceDomain]->boundary(Field::z, sourceDirection, BC::Robin, gamma,-1, targetZ);
+                            break;
+                        case 1: // East
+                            membranes[interface.sourceDomain]->boundary(Field::z, sourceDirection, BC::Robin, gamma, 1, targetZ);
+                            break;
+                        case 2: // North
+                            membranes[interface.sourceDomain]->boundary(Field::z, sourceDirection, BC::Robin, gamma, 1, arma::vec(reverse(targetZ)));
+                            break;
+                        case 3: // West
+                            membranes[interface.sourceDomain]->boundary(Field::z, sourceDirection, BC::Robin, gamma,-1, arma::vec(reverse(targetZ)));
+                            break;
+                    }
                     break;
                 }
                 case 3: // West
@@ -106,18 +200,24 @@ void Structure::linear()
                     arma::rowvec h_1s1 = membranes[interface.targetDomain]->h_1s1_west;
                     arma::rowvec h_1s2 = membranes[interface.targetDomain]->h_1s2_west;
                     gamma = gamma0*mean(h_1s1);
-                    targetZ = (gamma*Z.row(0) + h_1s1%dZd1.row(0) + h_1s2%dZd2.row(0)).t();
+                    arma::vec targetZ = (gamma*Z.row(0) + h_1s1%dZd1.row(0) + h_1s2%dZd2.row(0)).t();
+                    switch (interface.sourceCurve)
+                    {
+                        case 0: // South
+                            membranes[interface.sourceDomain]->boundary(Field::z, sourceDirection, BC::Robin, gamma,-1, targetZ);
+                            break;
+                        case 1: // East
+                            membranes[interface.sourceDomain]->boundary(Field::z, sourceDirection, BC::Robin, gamma, 1, targetZ);
+                            break;
+                        case 2: // North
+                            membranes[interface.sourceDomain]->boundary(Field::z, sourceDirection, BC::Robin, gamma, 1, arma::vec(reverse(targetZ)));
+                            break;
+                        case 3: // West
+                            membranes[interface.sourceDomain]->boundary(Field::z, sourceDirection, BC::Robin, gamma,-1, arma::vec(reverse(targetZ)));
+                            break;
+                    }
                     break;
                 }
-            }
-            switch (interface.sourceCurve)
-            {
-                case 0: case 3: // South and West
-                    membranes[interface.sourceDomain]->boundary(Field::z, sourceDirection, BC::Robin, gamma,-1, targetZ);
-                    break;
-                case 1: case 2: // East and North
-                    membranes[interface.sourceDomain]->boundary(Field::z, sourceDirection, BC::Robin, gamma, 1, targetZ);
-                    break;
             }
         }
         #pragma omp parallel for
@@ -131,23 +231,31 @@ void Structure::linear()
                 case 0: // South
                 {
                     Ztarget(k) = membranes[interfaces[k].targetDomain]->z.col(0);
+                    if (interfaces[k].sourceCurve == 0 || interfaces[k].sourceCurve == 1)
+                        Ztarget(k) = reverse(Ztarget(k));
                     break;
                 }
                 case 1: // East
                 {
                     size_t nx = membranes[interfaces[k].targetDomain]->nx;
                     Ztarget(k) = membranes[interfaces[k].targetDomain]->z.row(nx-1).t();
+                    if (interfaces[k].sourceCurve == 0 || interfaces[k].sourceCurve == 1)
+                        Ztarget(k) = reverse(Ztarget(k));
                     break;
                 }
                 case 2: // North
                 {
                     size_t ny = membranes[interfaces[k].targetDomain]->ny;
                     Ztarget(k) = membranes[interfaces[k].targetDomain]->z.col(ny-1);
+                    if (interfaces[k].sourceCurve == 2 || interfaces[k].sourceCurve == 3)
+                        Ztarget(k) = reverse(Ztarget(k));
                     break;
                 }
                 case 3: // West
                 {
                     Ztarget(k) = membranes[interfaces[k].targetDomain]->z.row(0).t();
+                    if (interfaces[k].sourceCurve == 2 || interfaces[k].sourceCurve == 3)
+                        Ztarget(k) = reverse(Ztarget(k));
                     break;
                 }
             }
@@ -180,7 +288,7 @@ void Structure::linear()
         converged = true;
         for (size_t k = 0; k < interfaces.size(); k++)
         {
-            printf("Interface %lu\n", k+1);
+            printf("Interface %lu: ", k+1);
             double res = arma::norm(Ztarget(k) - Zsource(k))/arma::norm(Ztarget(k) + Zsource(k));
             printf("Residual %4.2e\n", res);
             if (res > residualTarget)

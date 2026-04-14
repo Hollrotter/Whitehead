@@ -125,8 +125,7 @@ void Wing::muBoundarySouth(const size_t i)
                 double  T = boost::math::chebyshev_t(p, x1(i));
                 double dT = boost::math::chebyshev_t_prime(p, x1(i));
                 for (size_t q = 0; q < ny; q++)
-                    A(i, p+q*nx) = h_2s1_south(i)*dT*pow(-1, q)
-                                 + h_2s2_south(i)*T *pow(-1, q+1)*pow(q, 2);
+                    A(i, p+q*nx) = h_2s1_south(i)*dT*pow(-1, q) + h_2s2_south(i)*T*pow(-1, q+1)*pow(q, 2);
             }
             b(i) = mu.south(i);
             break;
@@ -137,8 +136,7 @@ void Wing::muBoundarySouth(const size_t i)
                 double dT = boost::math::chebyshev_t_prime(p, x1(i));
                 for (size_t q = 0; q < ny; q++)
                     A(i, p+q*nx) = mu.r1South*T*pow(-1, q)
-                                 + mu.r2South*(h_2s1_south(i)*dT*pow(-1, q)
-                                 +             h_2s2_south(i)*T *pow(-1, q+1)*pow(q, 2));
+                                 + mu.r2South*(h_2s1_south(i)*dT*pow(-1, q) + h_2s2_south(i)*T*pow(-1, q+1)*pow(q, 2));
             }
             b(i) = mu.south(i);
             break;
@@ -153,8 +151,7 @@ void Wing::muBoundarySouth(const size_t i)
                     double  T = boost::math::chebyshev_t(p, x1(i));
                     double dT = boost::math::chebyshev_t_prime(p, x1(i));
                     for (size_t q = 0; q < ny; q++)
-                        A(i, p+q*nx) = J11_inv(i)*dT*pow(-1, q)
-                                     + J21_inv(i)*T *pow(-1, q+1)*pow(q, 2);
+                        A(i, p+q*nx) = J11_inv(i)*dT*pow(-1, q) + J21_inv(i)*T*pow(-1, q+1)*pow(q, 2);
                 }
             }
             else
@@ -175,8 +172,7 @@ void Wing::muBoundarySouth(const size_t i)
                     double  T = boost::math::chebyshev_t(p, x1(i));
                     double dT = boost::math::chebyshev_t_prime(p, x1(i));
                     for (size_t q = 0; q < ny; q++)
-                        A(i, p+q*nx) = J12_inv(i)*dT*pow(-1, q)
-                                     + J22_inv(i)*T *pow(-1, q+1)*pow(q, 2);
+                        A(i, p+q*nx) = J12_inv(i)*dT*pow(-1, q) + J22_inv(i)*T*pow(-1, q+1)*pow(q, 2);
                 }
             }
             else
@@ -211,8 +207,7 @@ void Wing::muBoundaryNorth(const size_t i)
                 double  T = boost::math::chebyshev_t(p, x1(i));
                 double dT = boost::math::chebyshev_t_prime(p, x1(i));
                 for (size_t q = 0; q < ny; q++)
-                    A(k, p+q*nx) = h_2s1_north(i)*dT
-                                 + h_2s2_north(i)*T * pow(q, 2);
+                    A(k, p+q*nx) = h_2s1_north(i)*dT + h_2s2_north(i)*T*pow(q, 2);
             }
             b(k) = mu.north(i);
             break;
@@ -222,9 +217,7 @@ void Wing::muBoundaryNorth(const size_t i)
                 double  T = boost::math::chebyshev_t(p, x1(i));
                 double dT = boost::math::chebyshev_t_prime(p, x1(i));
                 for (size_t q = 0; q < ny; q++)
-                    A(k, p+q*nx) = mu.r1North*T
-                                 + mu.r2North*(h_2s1_north(i)*dT
-                                 +             h_2s2_north(i)*T * pow(q, 2));
+                    A(k, p+q*nx) = mu.r1North*T + mu.r2North*(h_2s1_north(i)*dT + h_2s2_north(i)*T*pow(q, 2));
             }
             b(k) = mu.north(i);
             break;
@@ -239,8 +232,7 @@ void Wing::muBoundaryNorth(const size_t i)
                     double  T = boost::math::chebyshev_t(p, x1(i));
                     double dT = boost::math::chebyshev_t_prime(p, x1(i));
                     for (size_t q = 0; q < ny; q++)
-                        A(k, p+q*nx) = J11_inv(i)*dT
-                                     + J21_inv(i)*T * pow(q, 2);
+                        A(k, p+q*nx) = J11_inv(i)*dT + J21_inv(i)*T*pow(q, 2);
                 }
             }
             else
@@ -261,8 +253,7 @@ void Wing::muBoundaryNorth(const size_t i)
                     double  T = boost::math::chebyshev_t(p, x1(i));
                     double dT = boost::math::chebyshev_t_prime(p, x1(i));
                     for (size_t q = 0; q < ny; q++)
-                        A(k, p+q*nx) = J12_inv(i)*dT
-                                     + J22_inv(i)*T * pow(q, 2);
+                        A(k, p+q*nx) = J12_inv(i)*dT + J22_inv(i)*T*pow(q, 2);
                 }
             }
             else
@@ -297,8 +288,7 @@ void Wing::muBoundaryWest(const size_t j)
                 double  T = boost::math::chebyshev_t(q, x2(j));
                 double dT = boost::math::chebyshev_t_prime(q, x2(j));
                 for (size_t p = 0; p < nx; p++)
-                    A(k, p+q*nx) = h_1s1_west(j)*pow(-1, p+1)*pow(p, 2) * T
-                                 + h_1s2_west(j)*pow(-1, p) * dT;
+                    A(k, p+q*nx) = h_1s1_west(j)*pow(-1, p+1)*pow(p, 2)*T + h_1s2_west(j)*pow(-1, p)*dT;
             }
             b(k) = mu.west(j);
             break;
@@ -309,8 +299,7 @@ void Wing::muBoundaryWest(const size_t j)
                 double dT = boost::math::chebyshev_t_prime(q, x2(j));
                 for (size_t p = 0; p < nx; p++)
                     A(k, p+q*nx) = mu.r1West*pow(-1, p) * T
-                                 + mu.r2West*(h_1s1_west(j)*pow(-1, p+1)*pow(p, 2) * T
-                                 +            h_1s2_west(j)*pow(-1, p) * dT);
+                                 + mu.r2West*(h_1s1_west(j)*pow(-1, p+1)*pow(p, 2)*T + h_1s2_west(j)*pow(-1, p)*dT);
             }
             b(k) = mu.west(j);
             break;
@@ -325,8 +314,7 @@ void Wing::muBoundaryWest(const size_t j)
                     double  T = boost::math::chebyshev_t(q, x2(j));
                     double dT = boost::math::chebyshev_t_prime(q, x2(j));
                     for (size_t p = 0; p < nx; p++)
-                        A(k, p+q*nx) = J11_inv(j)*pow(-1, p+1)*pow(p, 2) * T
-                                     + J21_inv(j)*pow(-1, p) * dT;
+                        A(k, p+q*nx) = J11_inv(j)*pow(-1, p+1)*pow(p, 2)*T + J21_inv(j)*pow(-1, p)*dT;
                 }
             }
             else
@@ -347,8 +335,7 @@ void Wing::muBoundaryWest(const size_t j)
                     double  T = boost::math::chebyshev_t(q, x2(j));
                     double dT = boost::math::chebyshev_t_prime(q, x2(j));
                     for (size_t p = 0; p < nx; p++)
-                        A(k, p+q*nx) = J12_inv(j)*pow(-1, p+1)*pow(p, 2) * T
-                                     + J22_inv(j)*pow(-1, p) * dT;
+                        A(k, p+q*nx) = J12_inv(j)*pow(-1, p+1)*pow(p, 2)*T + J22_inv(j)*pow(-1, p)*dT;
                 }
             }
             else
@@ -383,8 +370,7 @@ void Wing::muBoundaryEast(const size_t j)
                 double  T = boost::math::chebyshev_t(q, x2(j));
                 double dT = boost::math::chebyshev_t_prime(q, x2(j));
                 for (size_t p = 0; p < nx; p++)
-                    A(k, p+q*nx) = h_1s1_east(j)*pow(p, 2)*T
-                                 + h_1s2_east(j)*dT;
+                    A(k, p+q*nx) = h_1s1_east(j)*pow(p, 2)*T + h_1s2_east(j)*dT;
             }
             b(k) = mu.east(j);
             break;
@@ -394,9 +380,7 @@ void Wing::muBoundaryEast(const size_t j)
                 double  T = boost::math::chebyshev_t(q, x2(j));
                 double dT = boost::math::chebyshev_t_prime(q, x2(j));
                 for (size_t p = 0; p < nx; p++)
-                    A(k, p+q*nx) = mu.r1East*T
-                                 + mu.r2East*(h_1s1_east(j)*pow(p, 2)*T
-                                 +            h_1s2_east(j)*dT);
+                    A(k, p+q*nx) = mu.r1East*T + mu.r2East*(h_1s1_east(j)*pow(p, 2)*T + h_1s2_east(j)*dT);
             }
             b(k) = mu.east(j);
             break;
@@ -411,8 +395,7 @@ void Wing::muBoundaryEast(const size_t j)
                     double  T = boost::math::chebyshev_t(q, x2(j));
                     double dT = boost::math::chebyshev_t_prime(q, x2(j));
                     for (size_t p = 0; p < nx; p++)
-                        A(k, p+q*nx) = J11_inv(j)*pow(p, 2)*T
-                                     + J21_inv(j)*dT;
+                        A(k, p+q*nx) = J11_inv(j)*pow(p, 2)*T + J21_inv(j)*dT;
                 }
             }
             else
@@ -433,8 +416,7 @@ void Wing::muBoundaryEast(const size_t j)
                     double  T = boost::math::chebyshev_t(q, x2(j));
                     double dT = boost::math::chebyshev_t_prime(q, x2(j));
                     for (size_t p = 0; p < nx; p++)
-                        A(k, p+q*nx) = J12_inv(j)*pow(p, 2)*T
-                                     + J22_inv(j)*dT;
+                        A(k, p+q*nx) = J12_inv(j)*pow(p, 2)*T + J22_inv(j)*dT;
                 }
             }
             else

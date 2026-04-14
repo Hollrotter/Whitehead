@@ -33,7 +33,7 @@ int main()
 
             w.linear();
 
-            double area = 2*w.get_area();
+            double area = w.get_area();
             arma::vec cL = w.get_lift()   / area;
             arma::vec cM = w.get_moment() / area/l;
 

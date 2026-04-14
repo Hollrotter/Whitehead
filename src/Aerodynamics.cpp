@@ -62,9 +62,13 @@ void Aerodynamics::linear()
                                 double r3 = pow(norm(r), 3);
                                 for (size_t q = 0; q < wings[sD]->ny; q++) // Loop over Chebyshev Polynomial 2-direction of source
                                     for (size_t p = 0; p < wings[sD]->nx; p++) // Loop over Chebyshev Polynomial 1-direction of source
-                                        bw(tD, sD)(i+j*wings[tD]->nx, p+q*wings[sD]->nx, 0) -= gl_x[ii].weight * gl_y[jj].weight * J_gl(ii, jj) / r3
-                                            *(r(0)*boost::math::chebyshev_t_prime(p, x1_gl(ii)) * boost::math::chebyshev_t(q, x2_gl(jj))
-                                            + r(1)*boost::math::chebyshev_t(p, x1_gl(ii)) * boost::math::chebyshev_t_prime(q, x2_gl(jj)));
+                                    {
+                                        double T1 = boost::math::chebyshev_t_prime(p, x1_gl(ii)) * boost::math::chebyshev_t(q, x2_gl(jj));
+                                        double T2 = boost::math::chebyshev_t(p, x1_gl(ii)) * boost::math::chebyshev_t_prime(q, x2_gl(jj));
+                                        bw(tD, sD)(i+j*wings[tD]->nx, p+q*wings[sD]->nx, 0) -= gl_x[ii].weight * gl_y[jj].weight / r3
+                                            *(r(0)*(dy_gldx2(ii, jj)*T1 - dy_gldx1(ii, jj)*T2)
+                                            - r(1)*(dx_gldx2(ii, jj)*T1 - dx_gldx1(ii, jj)*T2));
+                                    }
                             }
                     }
             }
@@ -115,7 +119,6 @@ void Aerodynamics::solve()
                         }
                     }
             double gamma;
-            arma::vec sourceMU;
             switch (interface.sourceCurve)
             {
                 case 0: // South
@@ -123,7 +126,22 @@ void Aerodynamics::solve()
                     arma::vec h_2s1 = wings[interface.sourceDomain]->h_2s1_south;
                     arma::vec h_2s2 = wings[interface.sourceDomain]->h_2s2_south;
                     gamma = gamma0*mean(h_2s2);
-                    sourceMU = gamma*MU.col(0) + h_2s1%dMUd1.col(0) + h_2s2%dMUd2.col(0);
+                    arma::vec sourceMU = gamma*MU.col(0) + h_2s1%dMUd1.col(0) + h_2s2%dMUd2.col(0);
+                    switch (interface.targetCurve)
+                    {
+                        case 0: // South
+                            wings[interface.targetDomain]->boundary(targetDirection, BC::Robin, gamma,-1, arma::vec(reverse(sourceMU)));
+                            break;
+                        case 1: // East
+                            wings[interface.targetDomain]->boundary(targetDirection, BC::Robin, gamma, 1, arma::vec(reverse(sourceMU)));
+                            break;
+                        case 2: // North
+                            wings[interface.targetDomain]->boundary(targetDirection, BC::Robin, gamma, 1, sourceMU);
+                            break;
+                        case 3: // West
+                            wings[interface.targetDomain]->boundary(targetDirection, BC::Robin, gamma,-1, sourceMU);
+                            break;
+                    }
                     break;
                 }
                 case 1: // East
@@ -131,7 +149,22 @@ void Aerodynamics::solve()
                     arma::rowvec h_1s1 = wings[interface.sourceDomain]->h_1s1_east;
                     arma::rowvec h_1s2 = wings[interface.sourceDomain]->h_1s2_east;
                     gamma = gamma0*mean(h_1s1);
-                    sourceMU = (gamma*MU.row(nx-1) - (h_1s1%dMUd1.row(nx-1) + h_1s2%dMUd2.row(nx-1))).t();
+                    arma::vec sourceMU = (gamma*MU.row(nx-1) - (h_1s1%dMUd1.row(nx-1) + h_1s2%dMUd2.row(nx-1))).t();
+                    switch (interface.targetCurve)
+                    {
+                        case 0: // South
+                            wings[interface.targetDomain]->boundary(targetDirection, BC::Robin, gamma,-1, arma::vec(reverse(sourceMU)));
+                            break;
+                        case 1: // East
+                            wings[interface.targetDomain]->boundary(targetDirection, BC::Robin, gamma, 1, arma::vec(reverse(sourceMU)));
+                            break;
+                        case 2: // North
+                            wings[interface.targetDomain]->boundary(targetDirection, BC::Robin, gamma, 1, sourceMU);
+                            break;
+                        case 3: // West
+                            wings[interface.targetDomain]->boundary(targetDirection, BC::Robin, gamma,-1, sourceMU);
+                            break;
+                    }
                     break;
                 }
                 case 2: // North
@@ -139,7 +172,22 @@ void Aerodynamics::solve()
                     arma::vec h_2s1 = wings[interface.sourceDomain]->h_2s1_north;
                     arma::vec h_2s2 = wings[interface.sourceDomain]->h_2s2_north;
                     gamma = gamma0*mean(h_2s2);
-                    sourceMU = gamma*MU.col(ny-1) - (h_2s1%dMUd1.col(ny-1) + h_2s2%dMUd2.col(ny-1));
+                    arma::vec sourceMU = gamma*MU.col(ny-1) - (h_2s1%dMUd1.col(ny-1) + h_2s2%dMUd2.col(ny-1));
+                    switch (interface.targetCurve)
+                    {
+                        case 0: // South
+                            wings[interface.targetDomain]->boundary(targetDirection, BC::Robin, gamma,-1, sourceMU);
+                            break;
+                        case 1: // East
+                            wings[interface.targetDomain]->boundary(targetDirection, BC::Robin, gamma, 1, sourceMU);
+                            break;
+                        case 2: // North
+                            wings[interface.targetDomain]->boundary(targetDirection, BC::Robin, gamma, 1, arma::vec(reverse(sourceMU)));
+                            break;
+                        case 3: // West
+                            wings[interface.targetDomain]->boundary(targetDirection, BC::Robin, gamma,-1, arma::vec(reverse(sourceMU)));
+                            break;
+                    }
                     break;
                 }
                 case 3: // West
@@ -147,24 +195,30 @@ void Aerodynamics::solve()
                     arma::rowvec h_1s1 = wings[interface.sourceDomain]->h_1s1_west;
                     arma::rowvec h_1s2 = wings[interface.sourceDomain]->h_1s2_west;
                     gamma = gamma0*mean(h_1s1);
-                    sourceMU = (gamma*MU.row(0) + h_1s1%dMUd1.row(0) + h_1s2%dMUd2.row(0)).t();
+                    arma::vec sourceMU = (gamma*MU.row(0) + h_1s1%dMUd1.row(0) + h_1s2%dMUd2.row(0)).t();
+                    switch (interface.targetCurve)
+                    {
+                        case 0: // South
+                            wings[interface.targetDomain]->boundary(targetDirection, BC::Robin, gamma,-1, sourceMU);
+                            break;
+                        case 1: // East
+                            wings[interface.targetDomain]->boundary(targetDirection, BC::Robin, gamma, 1, sourceMU);
+                            break;
+                        case 2: // North
+                            wings[interface.targetDomain]->boundary(targetDirection, BC::Robin, gamma, 1, arma::vec(reverse(sourceMU)));
+                            break;
+                        case 3: // West
+                            wings[interface.targetDomain]->boundary(targetDirection, BC::Robin, gamma,-1, arma::vec(reverse(sourceMU)));
+                            break;
+                    }
                     break;
                 }
             }
-            switch (interface.targetCurve)
-            {
-                case 0: case 3: // South and West
-                    wings[interface.targetDomain]->boundary(targetDirection, BC::Robin, gamma,-1, sourceMU);
-                    break;
-                case 1: case 2: // East and North
-                    wings[interface.targetDomain]->boundary(targetDirection, BC::Robin, gamma, 1, sourceMU);
-                    break;
-            }
-            nx = wings[interface.targetDomain]->nx;
-            ny = wings[interface.targetDomain]->ny;
-            x1 = wings[interface.targetDomain]->x1;
-            x2 = wings[interface.targetDomain]->x2;
-            MU = wings[interface.targetDomain]->mu;
+            nx     = wings[interface.targetDomain]->nx;
+            ny     = wings[interface.targetDomain]->ny;
+            x1     = wings[interface.targetDomain]->x1;
+            x2     = wings[interface.targetDomain]->x2;
+            MU     = wings[interface.targetDomain]->mu;
             mu_hat = wings[interface.targetDomain]->mu_hat;
             dMUd1.zeros(nx, ny);
             dMUd2.zeros(nx, ny);
@@ -182,7 +236,6 @@ void Aerodynamics::solve()
                             dMUd2(i, j) += mu_hat(p+q*nx, 0) * T1 * dT2dx2;
                         }
                     }
-            arma::vec targetMU;
             switch (interface.targetCurve)
             {
                 case 0: // South
@@ -190,7 +243,22 @@ void Aerodynamics::solve()
                     arma::vec h_2s1 = wings[interface.targetDomain]->h_2s1_south;
                     arma::vec h_2s2 = wings[interface.targetDomain]->h_2s2_south;
                     gamma = gamma0*mean(h_2s2);
-                    targetMU = gamma*MU.col(0) + h_2s1%dMUd1.col(0) + h_2s2%dMUd2.col(0);
+                    arma::vec targetMU = gamma*MU.col(0) + h_2s1%dMUd1.col(0) + h_2s2%dMUd2.col(0);
+                    switch (interface.sourceCurve)
+                    {
+                        case 0: // South
+                            wings[interface.sourceDomain]->boundary(sourceDirection, BC::Robin, gamma,-1, arma::vec(reverse(targetMU)));
+                            break;
+                        case 1: // East
+                            wings[interface.sourceDomain]->boundary(sourceDirection, BC::Robin, gamma, 1, arma::vec(reverse(targetMU)));
+                            break;
+                        case 2: // North
+                            wings[interface.sourceDomain]->boundary(sourceDirection, BC::Robin, gamma, 1, targetMU);
+                            break;
+                        case 3: // West
+                            wings[interface.sourceDomain]->boundary(sourceDirection, BC::Robin, gamma,-1, targetMU);
+                            break;
+                    }
                     break;
                 }
                 case 1: // East
@@ -198,7 +266,22 @@ void Aerodynamics::solve()
                     arma::rowvec h_1s1 = wings[interface.targetDomain]->h_1s1_east;
                     arma::rowvec h_1s2 = wings[interface.targetDomain]->h_1s2_east;
                     gamma = gamma0*mean(h_1s1);
-                    targetMU = (gamma*MU.row(nx-1) - (h_1s1%dMUd1.row(nx-1) + h_1s2%dMUd2.row(nx-1))).t();
+                    arma::vec targetMU = (gamma*MU.row(nx-1) - (h_1s1%dMUd1.row(nx-1) + h_1s2%dMUd2.row(nx-1))).t();
+                    switch (interface.sourceCurve)
+                    {
+                        case 0: // South
+                            wings[interface.sourceDomain]->boundary(sourceDirection, BC::Robin, gamma,-1, arma::vec(reverse(targetMU)));
+                            break;
+                        case 1: // East
+                            wings[interface.sourceDomain]->boundary(sourceDirection, BC::Robin, gamma, 1, arma::vec(reverse(targetMU)));
+                            break;
+                        case 2: // North
+                            wings[interface.sourceDomain]->boundary(sourceDirection, BC::Robin, gamma, 1, targetMU);
+                            break;
+                        case 3: // West
+                            wings[interface.sourceDomain]->boundary(sourceDirection, BC::Robin, gamma,-1, targetMU);
+                            break;
+                    }
                     break;
                 }
                 case 2: // North
@@ -206,7 +289,22 @@ void Aerodynamics::solve()
                     arma::vec h_2s1 = wings[interface.targetDomain]->h_2s1_north;
                     arma::vec h_2s2 = wings[interface.targetDomain]->h_2s2_north;
                     gamma = gamma0*mean(h_2s2);
-                    targetMU = gamma*MU.col(ny-1) - (h_2s1%dMUd1.col(ny-1) + h_2s2%dMUd2.col(ny-1));
+                    arma::vec targetMU = gamma*MU.col(ny-1) - (h_2s1%dMUd1.col(ny-1) + h_2s2%dMUd2.col(ny-1));
+                    switch (interface.sourceCurve)
+                    {
+                        case 0: // South
+                            wings[interface.sourceDomain]->boundary(sourceDirection, BC::Robin, gamma,-1, targetMU);
+                            break;
+                        case 1: // East
+                            wings[interface.sourceDomain]->boundary(sourceDirection, BC::Robin, gamma, 1, targetMU);
+                            break;
+                        case 2: // North
+                            wings[interface.sourceDomain]->boundary(sourceDirection, BC::Robin, gamma, 1, arma::vec(reverse(targetMU)));
+                            break;
+                        case 3: // West
+                            wings[interface.sourceDomain]->boundary(sourceDirection, BC::Robin, gamma,-1, arma::vec(reverse(targetMU)));
+                            break;
+                    }
                     break;
                 }
                 case 3: // West
@@ -214,18 +312,24 @@ void Aerodynamics::solve()
                     arma::rowvec h_1s1 = wings[interface.targetDomain]->h_1s1_west;
                     arma::rowvec h_1s2 = wings[interface.targetDomain]->h_1s2_west;
                     gamma = gamma0*mean(h_1s1);
-                    targetMU = (gamma*MU.row(0) + h_1s1%dMUd1.row(0) + h_1s2%dMUd2.row(0)).t();
+                    arma::vec targetMU = (gamma*MU.row(0) + h_1s1%dMUd1.row(0) + h_1s2%dMUd2.row(0)).t();
+                    switch (interface.sourceCurve)
+                    {
+                        case 0: // South
+                            wings[interface.sourceDomain]->boundary(sourceDirection, BC::Robin, gamma,-1, targetMU);
+                            break;
+                        case 1: // East
+                            wings[interface.sourceDomain]->boundary(sourceDirection, BC::Robin, gamma, 1, targetMU);
+                            break;
+                        case 2: // North
+                            wings[interface.sourceDomain]->boundary(sourceDirection, BC::Robin, gamma, 1, arma::vec(reverse(targetMU)));
+                            break;
+                        case 3: // West
+                            wings[interface.sourceDomain]->boundary(sourceDirection, BC::Robin, gamma,-1, arma::vec(reverse(targetMU)));
+                            break;
+                    }
                     break;
                 }
-            }
-            switch (interface.sourceCurve)
-            {
-                case 0: case 3: // South and West
-                    wings[interface.sourceDomain]->boundary(sourceDirection, BC::Robin, gamma,-1, targetMU);
-                    break;
-                case 1: case 2: // East and North
-                    wings[interface.sourceDomain]->boundary(sourceDirection, BC::Robin, gamma, 1, targetMU);
-                    break;
             }
         }
         // Calculate the influence of the wing surfaces on each other
@@ -255,23 +359,31 @@ void Aerodynamics::solve()
                 case 0: // South
                 {
                     muTarget(k) = wings[interfaces[k].targetDomain]->mu.col(0);
+                    if (interfaces[k].sourceCurve == 0 || interfaces[k].sourceCurve == 1)
+                        muTarget(k) = reverse(muTarget(k));
                     break;
                 }
                 case 1: // East
                 {
                     size_t nx = wings[interfaces[k].targetDomain]->nx;
                     muTarget(k) = wings[interfaces[k].targetDomain]->mu.row(nx-1).t();
+                    if (interfaces[k].sourceCurve == 0 || interfaces[k].sourceCurve == 1)
+                        muTarget(k) = reverse(muTarget(k));
                     break;
                 }
                 case 2: // North
                 {
                     size_t ny = wings[interfaces[k].targetDomain]->ny;
                     muTarget(k) = wings[interfaces[k].targetDomain]->mu.col(ny-1);
+                    if (interfaces[k].sourceCurve == 2 || interfaces[k].sourceCurve == 3)
+                        muTarget(k) = reverse(muTarget(k));
                     break;
                 }
                 case 3: // West
                 {
                     muTarget(k) = wings[interfaces[k].targetDomain]->mu.row(0).t();
+                    if (interfaces[k].sourceCurve == 2 || interfaces[k].sourceCurve == 3)
+                        muTarget(k) = reverse(muTarget(k));
                     break;
                 }
             }

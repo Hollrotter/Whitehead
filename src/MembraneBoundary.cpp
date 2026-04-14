@@ -457,7 +457,7 @@ void Membrane::n22BoundaryLinear(const BC bc, const double val, const size_t i, 
 }
 
 void Membrane::zBoundarySemilinear(const BC bc, const double val, const size_t i, const size_t j, arma::mat &A, arma::vec &b,
-                                     const double r1, const double r2, const double z_1, const double z_2, const double h1, const double h2)
+                                   const double r1, const double r2, const double z_1, const double z_2, const double h1, const double h2)
 {
     size_t k = i + j*nx;
     switch (bc)

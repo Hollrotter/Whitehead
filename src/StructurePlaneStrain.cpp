@@ -327,6 +327,11 @@ void Structure::planeStrain()
                     arma::vec h_2s2 = membranes[interfaces[k].targetDomain]->h_2s2_south;
                     Vttarget(k) = h_1s1%V1.col(0);
                     Vntarget(k) = h_2s1%V1.col(0) + h_2s2%V2.col(0);
+                    if (interfaces[k].sourceCurve == 0 || interfaces[k].sourceCurve == 1)
+                    {
+                        Vttarget(k) = reverse(Vttarget(k));
+                        Vntarget(k) = reverse(Vntarget(k));
+                    }
                     break;
                 }
                 case 1: // East
@@ -337,6 +342,11 @@ void Structure::planeStrain()
                     arma::rowvec h_2s2 = membranes[interfaces[k].targetDomain]->h_2s2_east;
                     Vntarget(k) = (h_1s1%V1.row(nx-1) + h_1s2%V2.row(nx-1)).t();
                     Vttarget(k) = (h_2s2%V2.row(nx-1)).t();
+                    if (interfaces[k].sourceCurve == 0 || interfaces[k].sourceCurve == 1)
+                    {
+                        Vttarget(k) = reverse(Vttarget(k));
+                        Vntarget(k) = reverse(Vntarget(k));
+                    }
                     break;
                 }
                 case 2: // North
@@ -347,6 +357,11 @@ void Structure::planeStrain()
                     arma::vec h_2s2 = membranes[interfaces[k].targetDomain]->h_2s2_north;
                     Vttarget(k) = h_1s1%V1.col(ny-1);
                     Vntarget(k) = h_2s1%V1.col(ny-1) + h_2s2%V2.col(ny-1);
+                    if (interfaces[k].sourceCurve == 2 || interfaces[k].sourceCurve == 3)
+                    {
+                        Vttarget(k) = reverse(Vttarget(k));
+                        Vntarget(k) = reverse(Vntarget(k));
+                    }
                     break;
                 }
                 case 3: // West
@@ -356,6 +371,11 @@ void Structure::planeStrain()
                     arma::rowvec h_2s2 = membranes[interfaces[k].targetDomain]->h_2s2_west;
                     Vntarget(k) = (h_1s1%V1.row(0) + h_1s2%V2.row(0)).t();
                     Vttarget(k) = (h_2s2%V2.row(0)).t();
+                    if (interfaces[k].sourceCurve == 2 || interfaces[k].sourceCurve == 3)
+                    {
+                        Vttarget(k) = reverse(Vttarget(k));
+                        Vntarget(k) = reverse(Vntarget(k));
+                    }
                     break;
                 }
             }
