@@ -21,17 +21,24 @@ class Wing
     size_t con = 1; // Number of configurations
     double qdyn = 1; // Dynamic pressure
     arma::vec alpha = arma::zeros(con); // Pitch
-    arma::field<arma::mat> J = Jacobian(chi);
+    size_t n_theta = 50;
+    size_t m_rho = 2;
+    std::tuple<arma::mat, arma::mat> xyC = Lagrange::TransfiniteQuadMap(xi_1, xi_2, chi);
+    arma::mat xC = std::get<0>(xyC);
+    arma::mat yC = std::get<1>(xyC);
+    arma::field<arma::mat> J = Jacobian(x1, x2, chi);
     arma::cube e_c = MetricCo(J); // Covariant metric tensor of the surface
     arma::cube ec  = MetricContra(e_c); // Contravariant metric tensor of the surface
-    arma::rowvec h_1s1_east = sqrt(ec.slice(0).row(nx-1));
-    arma::rowvec h_1s2_east = ec.slice(1).row(nx-1)/sqrt(ec.slice(0).row(nx-1));
-    arma::rowvec h_1s1_west = sqrt(ec.slice(0).row(0));
-    arma::rowvec h_1s2_west = ec.slice(1).row(0)/sqrt(ec.slice(0).row(0));
-    arma::vec h_2s2_south = sqrt(ec.slice(2).col(0));
-    arma::vec h_2s1_south = ec.slice(1).col(0)/sqrt(ec.slice(2).col(0));
-    arma::vec h_2s2_north = sqrt(ec.slice(2).col(ny-1));
-    arma::vec h_2s1_north = ec.slice(1).col(ny-1)/sqrt(ec.slice(2).col(ny-1));
+    std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::vec, arma::rowvec, arma::rowvec>
+        h = Lagrange::covariantScaleFactors(xi_1, xi_2, chi);
+    arma::vec    h_2s2_south = std::get<0>(h);
+    arma::vec    h_2s1_south = std::get<1>(h);
+    arma::rowvec h_1s1_east  = std::get<2>(h);
+    arma::rowvec h_1s2_east  = std::get<3>(h);
+    arma::vec    h_2s2_north = std::get<4>(h);
+    arma::vec    h_2s1_north = std::get<5>(h);
+    arma::rowvec h_1s1_west  = std::get<6>(h);
+    arma::rowvec h_1s2_west  = std::get<7>(h);
     arma::mat A = arma::zeros(nxy, nxy); // Aerodynamic Matrix
     arma::mat L; // Lower triangular matrix
     arma::mat U; // Upper triangular matrix
@@ -118,6 +125,8 @@ public:
     friend class Aerodynamics;
 private:
     arma::vec externalContour(double, double, double, double, double, double, arma::vec);
+    void regularIntegralLinear(size_t, double, double, size_t, size_t, double, double, double, double);
+    void regularIntegralNonlinear(size_t, double, double, double, size_t, size_t, double, double, double, double);
     // Calculating the Aerodynamic Matrix for the Panel Method
     void aerodynamicMatrix();
     void muBoundarySouth(const size_t);

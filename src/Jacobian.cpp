@@ -57,3 +57,9 @@ arma::field<arma::mat> Jacobian(std::array<Lagrange::CurveInterpolant*, 4> chi)
 	auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(chi);
 	return {{dxdx1, dxdx2}, {dydx1, dydx2}};
 }
+
+arma::field<arma::mat> Jacobian(arma::vec &x1, arma::vec &x2, std::array<Lagrange::CurveInterpolant*, 4> chi)
+{
+	auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(x1, x2, chi);
+	return {{dxdx1, dxdx2}, {dydx1, dydx2}};
+}

@@ -57,16 +57,17 @@ int main()
              */
 
             size_t n = 15;
+            size_t m = 15;
 
-            Point p1(-1,-1);
-            Point p2( 1,-1);
-            Point p3( 1, 1);
-            Point p4(-1, 1);
+            Point p1(-1,-2);
+            Point p2( 1,-2);
+            Point p3( 1, 2);
+            Point p4(-1, 2);
 
             Lagrange::CurveInterpolant chi1(p1, p2, n);
-            Lagrange::CurveInterpolant chi2(p2, p3, n);
+            Lagrange::CurveInterpolant chi2(p2, p3, m);
             Lagrange::CurveInterpolant chi3(p3, p4, n);
-            Lagrange::CurveInterpolant chi4(p4, p1, n);
+            Lagrange::CurveInterpolant chi4(p4, p1, m);
 
             std::array<Wing, 4> w({Wing({&chi1, &chi2, &chi3, &chi4}),
                                    Wing({&chi2, &chi3, &chi4, &chi1}),
@@ -109,10 +110,10 @@ int main()
 
             w.pitch(5);
 
-            w.boundary(Direction::S, BC::Neumann);
-            w.boundary(Direction::N, BC::Dirichlet);
-            w.boundary(Direction::W, BC::Dirichlet);
-            w.boundary(Direction::E, BC::Derivative_x);
+            w.boundary(&chi1, BC::Neumann);
+            w.boundary(&chi2, BC::Derivative_x);
+            w.boundary(&chi3, BC::Dirichlet);
+            w.boundary(&chi4, BC::Dirichlet);
 
             w.linear();
 

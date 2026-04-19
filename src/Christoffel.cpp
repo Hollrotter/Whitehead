@@ -9,7 +9,7 @@
  * @param D2 
  * @return arma::cube 
  */
-arma::cube Christoffel(arma::cube &g_c, arma::cube &gc, arma::mat &D1, arma::mat &D2)
+arma::cube Christoffel(const arma::cube &g_c, const arma::cube &gc, const arma::mat &D1, const arma::mat &D2)
 {
 	arma::mat dg11d1, dg11d2, dg12d1, dg12d2, dg22d1, dg22d2;
 	try

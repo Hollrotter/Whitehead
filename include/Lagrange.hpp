@@ -75,5 +75,10 @@ namespace Lagrange
     std::pair<arma::mat, arma::mat> TransfiniteQuadMap(const std::array<CurveInterpolant*, 4> chi);
     std::pair<arma::mat, arma::mat> TransfiniteQuadMap(const arma::vec &x1, const arma::vec &x2, const std::array<CurveInterpolant*, 4> chi);
     std::tuple<arma::mat, arma::mat, arma::mat, arma::mat> TransfiniteQuadMetrics(const std::array<CurveInterpolant*, 4> chi);
+    std::tuple<double, double, double, double> TransfiniteQuadMetrics(const double &x1, const double &x2, const std::array<CurveInterpolant*, 4> chi);
     std::tuple<arma::mat, arma::mat, arma::mat, arma::mat> TransfiniteQuadMetrics(const arma::vec &x1, const arma::vec &x2, const std::array<CurveInterpolant*, 4> chi);
+    std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::vec, arma::rowvec, arma::rowvec>
+        covariantScaleFactors(const std::array<CurveInterpolant*, 4> chi);
+    std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::vec, arma::rowvec, arma::rowvec>
+        covariantScaleFactors(const arma::vec &x1, const arma::vec &x2, const std::array<CurveInterpolant*, 4> chi);
 }

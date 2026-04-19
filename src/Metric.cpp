@@ -42,7 +42,7 @@ std::tuple<arma::cube, arma::cube> Metric(const arma::field<arma::mat> J)
  * @param g 
  * @return arma::cube 
  */
-arma::cube MetricContra(arma::cube &g)
+arma::cube MetricContra(const arma::cube &g)
 {
 	arma::cube gc(g.n_rows, g.n_cols, 3);
 

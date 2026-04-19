@@ -115,12 +115,12 @@ void Wing::nonlinear()
 void Wing::output(std::string filename)
 {
     std::ofstream file(filename);
-    for (size_t m = 0; m < nx; m++, file << '\n')
-        for (size_t n = 0; n < ny; n++, file << '\n')
+    for (size_t i = 0; i < nx; i++, file << '\n')
+        for (size_t j = 0; j < ny; j++, file << '\n')
         {
-            file << x(m, n) << ' ' << y(m, n);
-            for (size_t i = 0; i < con; i++)
-                file << ' ' << dcp(m, n, i);
+            file << x(i, j) << ' ' << y(i, j);
+            for (size_t k = 0; k < con; k++)
+                file << ' ' << dcp(i, j, k);
         }
     file.close();
 }

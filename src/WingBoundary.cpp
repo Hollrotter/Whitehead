@@ -113,7 +113,7 @@ void Wing::muBoundarySouth(const size_t i)
         case BC::Dirichlet:
             for (size_t p = 0; p < nx; p++)
             {
-                double T = boost::math::chebyshev_t(p, x1(i));
+                double T = boost::math::chebyshev_t(p, xi_1(i));
                 for (size_t q = 0; q < ny; q++)
                     A(i, p+q*nx) = T * pow(-1, q);
             }
@@ -122,8 +122,8 @@ void Wing::muBoundarySouth(const size_t i)
         case BC::Neumann:
             for (size_t p = 0; p < nx; p++)
             {
-                double  T = boost::math::chebyshev_t(p, x1(i));
-                double dT = boost::math::chebyshev_t_prime(p, x1(i));
+                double  T = boost::math::chebyshev_t(p, xi_1(i));
+                double dT = boost::math::chebyshev_t_prime(p, xi_1(i));
                 for (size_t q = 0; q < ny; q++)
                     A(i, p+q*nx) = h_2s1_south(i)*dT*pow(-1, q) + h_2s2_south(i)*T*pow(-1, q+1)*pow(q, 2);
             }
@@ -132,8 +132,8 @@ void Wing::muBoundarySouth(const size_t i)
         case BC::Robin:
             for (size_t p = 0; p < nx; p++)
             {
-                double  T = boost::math::chebyshev_t(p, x1(i));
-                double dT = boost::math::chebyshev_t_prime(p, x1(i));
+                double  T = boost::math::chebyshev_t(p, xi_1(i));
+                double dT = boost::math::chebyshev_t_prime(p, xi_1(i));
                 for (size_t q = 0; q < ny; q++)
                     A(i, p+q*nx) = mu.r1South*T*pow(-1, q)
                                  + mu.r2South*(h_2s1_south(i)*dT*pow(-1, q) + h_2s2_south(i)*T*pow(-1, q+1)*pow(q, 2));
@@ -143,15 +143,16 @@ void Wing::muBoundarySouth(const size_t i)
         case BC::Derivative_x:
             if (analysis == Analysis::linear)
             {
-                arma::vec detJ = J(0, 0).col(0)%J(1, 1).col(0) - J(0, 1).col(0)%J(0, 1).col(0);
-                arma::vec J11_inv = J(1, 1).col(0)/detJ;
-                arma::vec J21_inv =-J(1, 0).col(0)/detJ;
+                auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(xi_1(i), -1, chi);
+                double detJ = dxdx1*dydx2 - dxdx2*dydx1;
+                double J11_inv = dydx2/detJ;
+                double J21_inv =-dydx1/detJ;
                 for (size_t p = 0; p < nx; p++)
                 {
-                    double  T = boost::math::chebyshev_t(p, x1(i));
-                    double dT = boost::math::chebyshev_t_prime(p, x1(i));
+                    double  T = boost::math::chebyshev_t(p, xi_1(i));
+                    double dT = boost::math::chebyshev_t_prime(p, xi_1(i));
                     for (size_t q = 0; q < ny; q++)
-                        A(i, p+q*nx) = J11_inv(i)*dT*pow(-1, q) + J21_inv(i)*T*pow(-1, q+1)*pow(q, 2);
+                        A(i, p+q*nx) = J11_inv*dT*pow(-1, q) + J21_inv*T*pow(-1, q+1)*pow(q, 2);
                 }
             }
             else
@@ -164,15 +165,16 @@ void Wing::muBoundarySouth(const size_t i)
         case BC::Derivative_y:
             if (analysis == Analysis::linear)
             {
-                arma::vec detJ = J(0, 0).col(0)%J(1, 1).col(0) - J(0, 1).col(0)%J(0, 1).col(0);
-                arma::vec J12_inv =-J(0, 1).col(0)/detJ;
-                arma::vec J22_inv = J(0, 0).col(0)/detJ;
+                auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(xi_1(i), -1, chi);
+                double detJ = dxdx1*dydx2 - dxdx2*dydx1;
+                double J12_inv =-dxdx2/detJ;
+                double J22_inv = dxdx1/detJ;
                 for (size_t p = 0; p < nx; p++)
                 {
-                    double  T = boost::math::chebyshev_t(p, x1(i));
-                    double dT = boost::math::chebyshev_t_prime(p, x1(i));
+                    double  T = boost::math::chebyshev_t(p, xi_1(i));
+                    double dT = boost::math::chebyshev_t_prime(p, xi_1(i));
                     for (size_t q = 0; q < ny; q++)
-                        A(i, p+q*nx) = J12_inv(i)*dT*pow(-1, q) + J22_inv(i)*T*pow(-1, q+1)*pow(q, 2);
+                        A(i, p+q*nx) = J12_inv*dT*pow(-1, q) + J22_inv*T*pow(-1, q+1)*pow(q, 2);
                 }
             }
             else
@@ -195,7 +197,7 @@ void Wing::muBoundaryNorth(const size_t i)
         case BC::Dirichlet:
             for (size_t p = 0; p < nx; p++)
             {
-                double T = boost::math::chebyshev_t(p, x1(i));
+                double T = boost::math::chebyshev_t(p, xi_1(i));
                 for (size_t q = 0; q < ny; q++)
                     A(k, p+q*nx) = T;
             }
@@ -204,8 +206,8 @@ void Wing::muBoundaryNorth(const size_t i)
         case BC::Neumann:
             for (size_t p = 0; p < nx; p++)
             {
-                double  T = boost::math::chebyshev_t(p, x1(i));
-                double dT = boost::math::chebyshev_t_prime(p, x1(i));
+                double  T = boost::math::chebyshev_t(p, xi_1(i));
+                double dT = boost::math::chebyshev_t_prime(p, xi_1(i));
                 for (size_t q = 0; q < ny; q++)
                     A(k, p+q*nx) = h_2s1_north(i)*dT + h_2s2_north(i)*T*pow(q, 2);
             }
@@ -214,8 +216,8 @@ void Wing::muBoundaryNorth(const size_t i)
         case BC::Robin:
             for (size_t p = 0; p < nx; p++)
             {
-                double  T = boost::math::chebyshev_t(p, x1(i));
-                double dT = boost::math::chebyshev_t_prime(p, x1(i));
+                double  T = boost::math::chebyshev_t(p, xi_1(i));
+                double dT = boost::math::chebyshev_t_prime(p, xi_1(i));
                 for (size_t q = 0; q < ny; q++)
                     A(k, p+q*nx) = mu.r1North*T + mu.r2North*(h_2s1_north(i)*dT + h_2s2_north(i)*T*pow(q, 2));
             }
@@ -224,15 +226,16 @@ void Wing::muBoundaryNorth(const size_t i)
         case BC::Derivative_x:
             if (analysis == Analysis::linear)
             {
-                arma::vec detJ = J(0, 0).col(ny-1)%J(1, 1).col(ny-1) - J(0, 1).col(ny-1)%J(0, 1).col(ny-1);
-                arma::vec J11_inv = J(1, 1).col(ny-1)/detJ;
-                arma::vec J21_inv =-J(1, 0).col(ny-1)/detJ;
+                auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(xi_1(i), 1, chi);
+                double detJ = dxdx1*dydx2 - dxdx2*dydx1;
+                double J11_inv = dydx2/detJ;
+                double J21_inv =-dydx1/detJ;
                 for (size_t p = 0; p < nx; p++)
                 {
-                    double  T = boost::math::chebyshev_t(p, x1(i));
-                    double dT = boost::math::chebyshev_t_prime(p, x1(i));
+                    double  T = boost::math::chebyshev_t(p, xi_1(i));
+                    double dT = boost::math::chebyshev_t_prime(p, xi_1(i));
                     for (size_t q = 0; q < ny; q++)
-                        A(k, p+q*nx) = J11_inv(i)*dT + J21_inv(i)*T*pow(q, 2);
+                        A(k, p+q*nx) = J11_inv*dT + J21_inv*T*pow(q, 2);
                 }
             }
             else
@@ -245,15 +248,16 @@ void Wing::muBoundaryNorth(const size_t i)
         case BC::Derivative_y:
             if (analysis == Analysis::linear)
             {
-                arma::vec detJ = J(0, 0).col(ny-1)%J(1, 1).col(ny-1) - J(0, 1).col(ny-1)%J(0, 1).col(ny-1);
-                arma::vec J12_inv =-J(0, 1).col(ny-1)/detJ;
-                arma::vec J22_inv = J(0, 0).col(ny-1)/detJ;
+                auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(xi_1(i), 1, chi);
+                double detJ = dxdx1*dydx2 - dxdx2*dydx1;
+                double J12_inv =-dxdx2/detJ;
+                double J22_inv = dxdx1/detJ;
                 for (size_t p = 0; p < nx; p++)
                 {
-                    double  T = boost::math::chebyshev_t(p, x1(i));
-                    double dT = boost::math::chebyshev_t_prime(p, x1(i));
+                    double  T = boost::math::chebyshev_t(p, xi_1(i));
+                    double dT = boost::math::chebyshev_t_prime(p, xi_1(i));
                     for (size_t q = 0; q < ny; q++)
-                        A(k, p+q*nx) = J12_inv(i)*dT + J22_inv(i)*T*pow(q, 2);
+                        A(k, p+q*nx) = J12_inv*dT + J22_inv*T*pow(q, 2);
                 }
             }
             else
@@ -276,7 +280,7 @@ void Wing::muBoundaryWest(const size_t j)
         case BC::Dirichlet:
             for (size_t q = 0; q < ny; q++)
             {
-                double T = boost::math::chebyshev_t(q, x2(j));
+                double T = boost::math::chebyshev_t(q, xi_2(j));
                 for (size_t p = 0; p < nx; p++)
                     A(k, p+q*nx) = pow(-1, p) * T;
             }
@@ -285,8 +289,8 @@ void Wing::muBoundaryWest(const size_t j)
         case BC::Neumann:
             for (size_t q = 0; q < ny; q++)
             {
-                double  T = boost::math::chebyshev_t(q, x2(j));
-                double dT = boost::math::chebyshev_t_prime(q, x2(j));
+                double  T = boost::math::chebyshev_t(q, xi_2(j));
+                double dT = boost::math::chebyshev_t_prime(q, xi_2(j));
                 for (size_t p = 0; p < nx; p++)
                     A(k, p+q*nx) = h_1s1_west(j)*pow(-1, p+1)*pow(p, 2)*T + h_1s2_west(j)*pow(-1, p)*dT;
             }
@@ -295,8 +299,8 @@ void Wing::muBoundaryWest(const size_t j)
         case BC::Robin:
             for (size_t q = 0; q < ny; q++)
             {
-                double  T = boost::math::chebyshev_t(q, x2(j));
-                double dT = boost::math::chebyshev_t_prime(q, x2(j));
+                double  T = boost::math::chebyshev_t(q, xi_2(j));
+                double dT = boost::math::chebyshev_t_prime(q, xi_2(j));
                 for (size_t p = 0; p < nx; p++)
                     A(k, p+q*nx) = mu.r1West*pow(-1, p) * T
                                  + mu.r2West*(h_1s1_west(j)*pow(-1, p+1)*pow(p, 2)*T + h_1s2_west(j)*pow(-1, p)*dT);
@@ -306,15 +310,16 @@ void Wing::muBoundaryWest(const size_t j)
         case BC::Derivative_x:
             if (analysis == Analysis::linear)
             {
-                arma::rowvec detJ = J(0, 0).row(0)%J(1, 1).row(0) - J(0, 1).row(0)%J(0, 1).row(0);
-                arma::rowvec J11_inv = J(1, 1).row(0)/detJ;
-                arma::rowvec J21_inv =-J(1, 0).row(0)/detJ;
+                auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(-1, xi_2(j), chi);
+                double detJ = dxdx1*dydx2 - dxdx2*dydx1;
+                double J11_inv = dydx2/detJ;
+                double J21_inv =-dydx1/detJ;
                 for (size_t q = 0; q < ny; q++)
                 {
-                    double  T = boost::math::chebyshev_t(q, x2(j));
-                    double dT = boost::math::chebyshev_t_prime(q, x2(j));
+                    double  T = boost::math::chebyshev_t(q, xi_2(j));
+                    double dT = boost::math::chebyshev_t_prime(q, xi_2(j));
                     for (size_t p = 0; p < nx; p++)
-                        A(k, p+q*nx) = J11_inv(j)*pow(-1, p+1)*pow(p, 2)*T + J21_inv(j)*pow(-1, p)*dT;
+                        A(k, p+q*nx) = J11_inv*pow(-1, p+1)*pow(p, 2)*T + J21_inv*pow(-1, p)*dT;
                 }
             }
             else
@@ -327,15 +332,16 @@ void Wing::muBoundaryWest(const size_t j)
         case BC::Derivative_y:
             if (analysis == Analysis::linear)
             {
-                arma::rowvec detJ = J(0, 0).row(0)%J(1, 1).row(0) - J(0, 1).row(0)%J(0, 1).row(0);
-                arma::rowvec J12_inv =-J(0, 1).row(0)/detJ;
-                arma::rowvec J22_inv = J(0, 0).row(0)/detJ;
+                auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(-1, xi_2(j), chi);
+                double detJ = dxdx1*dydx2 - dxdx2*dydx1;
+                double J12_inv =-dxdx2/detJ;
+                double J22_inv = dxdx1/detJ;
                 for (size_t q = 0; q < ny; q++)
                 {
-                    double  T = boost::math::chebyshev_t(q, x2(j));
-                    double dT = boost::math::chebyshev_t_prime(q, x2(j));
+                    double  T = boost::math::chebyshev_t(q, xi_2(j));
+                    double dT = boost::math::chebyshev_t_prime(q, xi_2(j));
                     for (size_t p = 0; p < nx; p++)
-                        A(k, p+q*nx) = J12_inv(j)*pow(-1, p+1)*pow(p, 2)*T + J22_inv(j)*pow(-1, p)*dT;
+                        A(k, p+q*nx) = J12_inv*pow(-1, p+1)*pow(p, 2)*T + J22_inv*pow(-1, p)*dT;
                 }
             }
             else
@@ -358,7 +364,7 @@ void Wing::muBoundaryEast(const size_t j)
         case BC::Dirichlet:   
             for (size_t q = 0; q < ny; q++)
             {
-                double T = boost::math::chebyshev_t(q, x2(j));
+                double T = boost::math::chebyshev_t(q, xi_2(j));
                 for (size_t p = 0; p < nx; p++)
                     A(k, p+q*nx) = T;
             }
@@ -367,8 +373,8 @@ void Wing::muBoundaryEast(const size_t j)
         case BC::Neumann:
             for (size_t q = 0; q < ny; q++)
             {
-                double  T = boost::math::chebyshev_t(q, x2(j));
-                double dT = boost::math::chebyshev_t_prime(q, x2(j));
+                double  T = boost::math::chebyshev_t(q, xi_2(j));
+                double dT = boost::math::chebyshev_t_prime(q, xi_2(j));
                 for (size_t p = 0; p < nx; p++)
                     A(k, p+q*nx) = h_1s1_east(j)*pow(p, 2)*T + h_1s2_east(j)*dT;
             }
@@ -377,8 +383,8 @@ void Wing::muBoundaryEast(const size_t j)
         case BC::Robin:
             for (size_t q = 0; q < ny; q++)
             {
-                double  T = boost::math::chebyshev_t(q, x2(j));
-                double dT = boost::math::chebyshev_t_prime(q, x2(j));
+                double  T = boost::math::chebyshev_t(q, xi_2(j));
+                double dT = boost::math::chebyshev_t_prime(q, xi_2(j));
                 for (size_t p = 0; p < nx; p++)
                     A(k, p+q*nx) = mu.r1East*T + mu.r2East*(h_1s1_east(j)*pow(p, 2)*T + h_1s2_east(j)*dT);
             }
@@ -387,15 +393,16 @@ void Wing::muBoundaryEast(const size_t j)
         case BC::Derivative_x:
             if (analysis == Analysis::linear)
             {
-                arma::rowvec detJ = J(0, 0).row(nx-1)%J(1, 1).row(nx-1) - J(0, 1).row(nx-1)%J(0, 1).row(nx-1);
-                arma::rowvec J11_inv = J(1, 1).row(nx-1)/detJ;
-                arma::rowvec J21_inv =-J(1, 0).row(nx-1)/detJ;
+                auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(1, xi_2(j), chi);
+                double detJ = dxdx1*dydx2 - dxdx2*dydx1;
+                double J11_inv = dydx2/detJ;
+                double J21_inv =-dydx1/detJ;
                 for (size_t q = 0; q < ny; q++)
                 {
-                    double  T = boost::math::chebyshev_t(q, x2(j));
-                    double dT = boost::math::chebyshev_t_prime(q, x2(j));
+                    double  T = boost::math::chebyshev_t(q, xi_2(j));
+                    double dT = boost::math::chebyshev_t_prime(q, xi_2(j));
                     for (size_t p = 0; p < nx; p++)
-                        A(k, p+q*nx) = J11_inv(j)*pow(p, 2)*T + J21_inv(j)*dT;
+                        A(k, p+q*nx) = J11_inv*pow(p, 2)*T + J21_inv*dT;
                 }
             }
             else
@@ -408,15 +415,16 @@ void Wing::muBoundaryEast(const size_t j)
         case BC::Derivative_y:
             if (analysis == Analysis::linear)
             {
-                arma::rowvec detJ = J(0, 0).row(nx-1)%J(1, 1).row(nx-1) - J(0, 1).row(nx-1)%J(0, 1).row(nx-1);
-                arma::rowvec J12_inv =-J(0, 1).row(nx-1)/detJ;
-                arma::rowvec J22_inv = J(0, 0).row(nx-1)/detJ;
+                auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(1, xi_2(j), chi);
+                double detJ = dxdx1*dydx2 - dxdx2*dydx1;
+                double J12_inv =-dxdx2/detJ;
+                double J22_inv = dxdx1/detJ;
                 for (size_t q = 0; q < ny; q++)
                 {
-                    double  T = boost::math::chebyshev_t(q, x2(j));
-                    double dT = boost::math::chebyshev_t_prime(q, x2(j));
+                    double  T = boost::math::chebyshev_t(q, xi_2(j));
+                    double dT = boost::math::chebyshev_t_prime(q, xi_2(j));
                     for (size_t p = 0; p < nx; p++)
-                        A(k, p+q*nx) = J12_inv(j)*pow(p, 2)*T + J22_inv(j)*dT;
+                        A(k, p+q*nx) = J12_inv*pow(p, 2)*T + J22_inv*dT;
                 }
             }
             else
