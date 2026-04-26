@@ -74,8 +74,8 @@ void Membrane::nonlinear()
         for (size_t q = 0; q < iter; q++)
         {
             printf("Iteration %lu/%lu\n", q+1, iter);
-            double pMAX = max(max(arma::abs(pressure)));
-            double pRMS = sqrt(sum(sum(pressure%pressure)));
+            double pMAX = loaded ? max(max(arma::abs(pressure)))     : 1;
+            double pRMS = loaded ? sqrt(sum(sum(pressure%pressure))) : 1;
 
             arma::mat z_11 = D11*z;
             arma::mat z_12 = D1*z*D2_t;

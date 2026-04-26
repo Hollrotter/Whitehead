@@ -87,6 +87,7 @@ class Membrane
     size_t iter = 100; // Max. # of iterations for nonlinear solution (default: 1000)
     double residualTarget = 1e-10; // Target residual for nonlinear solution
     size_t substeps = 1;
+    bool loaded = false;
     Analysis analysis = Analysis::linear;
     arma::mat DD1   = ddx();
     arma::mat DD2   = ddy();
@@ -126,15 +127,9 @@ public:
     // Calculates prestrain and pretension (not properly tested)
     void planeStrain();
     // Apply a constant load
-    void load(const double f)
-    {
-        p.fill(f);
-    }
+    void load(const double f);
     // Apply a distributed load defined by matrix
-    void load(const arma::mat f)
-    {
-        p = f;
-    }
+    void load(const arma::mat f);
     // Apply a distributed load defined as a function p = f(x, y)
     void load(const std::function<double(double, double)>);
     void inPlane1(const arma::mat _p1)
@@ -384,6 +379,38 @@ public:
     // Set boundary condition with constants for Robin boundary condition
     template <class C> void boundary(const Field, const Direction, const BC, const double, const double, const C);
     template <class C> void boundary(const Field, const Lagrange::CurveInterpolant*, const BC, const double, const double, const C);
+    template <class C> void boundary(const Direction dir, const Field field, const BC bc)
+    {
+        boundary(field, dir, bc, 0);
+    }
+    template <class C> void boundary(const Lagrange::CurveInterpolant* dir, const Field field, const BC bc)
+    {
+        boundary(field, dir, bc, 0);
+    }
+    template <class C> void boundary(const Direction dir, const Field field, const BC bc, const C c)
+    {
+        boundary(field, dir, bc, c);
+    }
+    template <class C> void boundary(const Lagrange::CurveInterpolant* dir, const Field field, const BC bc, const C c)
+    {
+        boundary(field, dir, bc, c);
+    }
+    void boundary(const Direction dir, const Field field, const BC bc, const double _r1, const double _r2)
+    {
+        boundary(field, dir, bc, _r1, _r2, 0);
+    }
+    void boundary(const Lagrange::CurveInterpolant* dir, const Field field, const BC bc, const double _r1, const double _r2)
+    {
+        boundary(field, dir, bc, _r1, _r2, 0);
+    }
+    template <class C> void boundary(const Direction dir, const Field field, const BC bc, const double _r1, const double _r2, const C c)
+    {
+        boundary(field, dir, bc, _r1, _r2, c);
+    }
+    template <class C> void boundary(const Lagrange::CurveInterpolant* dir, const Field field, const BC bc, const double _r1, const double _r2, const C c)
+    {
+        boundary(field, dir, bc, _r1, _r2, c);
+    }
     // Linear analysis
     void linear();
     // Semilinear analysis
@@ -401,6 +428,10 @@ public:
     void principalStrains(std::string, std::string, std::string);
     // Output y, x and a chosen field to chosen file
     void output(const std::string, const Field);
+    void output(const Field field, const std::string filename)
+    {
+        output(filename, field);
+    }
     double operator()(const size_t, const size_t, const Field);
     double operator()(const Field field, const size_t i, const size_t j)
     {

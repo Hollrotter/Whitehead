@@ -81,6 +81,55 @@ public:
         boundary(field, dir, bc, _r1, _r2, 0);
     }
     template <class C> void boundary(const Field, const Lagrange::CurveInterpolant*, const BC, const double, const double, const C);
+
+    void boundary(const Field field, const BC bc, const Lagrange::CurveInterpolant* dir)
+    {
+        boundary(field, dir, bc, 0);
+    }
+    template <class C> void boundary(const Field field, const BC bc, const Lagrange::CurveInterpolant* dir, const C c)
+    {
+        boundary(field, dir, bc, c);
+    }
+    void boundary(const Field field, const BC bc, const Lagrange::CurveInterpolant* dir, const double _r1, const double _r2)
+    {
+        boundary(field, dir, bc, _r1, _r2, 0);
+    }
+    template <class C> void boundary(const Field field, const BC bc, const Lagrange::CurveInterpolant* dir, const double _r1, const double _r2, const C c)
+    {
+        boundary(field, dir, bc, _r1, _r2, c);
+    }
+    void boundary(const Lagrange::CurveInterpolant* dir, const Field field, const BC bc)
+    {
+        boundary(field, dir, bc, 0);
+    }
+    template <class C> void boundary(const Lagrange::CurveInterpolant* dir, const Field field, const BC bc, const C c)
+    {
+        boundary(field, dir, bc, c);
+    }
+    void boundary(const Lagrange::CurveInterpolant* dir, const Field field, const BC bc, const double _r1, const double _r2)
+    {
+        boundary(field, dir, bc, _r1, _r2, 0);
+    }
+    template <class C> void boundary(const Lagrange::CurveInterpolant* dir, const Field field, const BC bc, const double _r1, const double _r2, const C c)
+    {
+        boundary(field, dir, bc, _r1, _r2, c);
+    }
+    void boundary(const Lagrange::CurveInterpolant* dir, const BC bc, const Field field)
+    {
+        boundary(field, dir, bc, 0);
+    }
+    template <class C> void boundary(const Lagrange::CurveInterpolant* dir, const BC bc, const Field field, const C c)
+    {
+        boundary(field, dir, bc, c);
+    }
+    void boundary(const Lagrange::CurveInterpolant* dir, const BC bc, const Field field, const double _r1, const double _r2)
+    {
+        boundary(field, dir, bc, _r1, _r2, 0);
+    }
+    template <class C> void boundary(const Lagrange::CurveInterpolant* dir, const BC bc, const Field field, const double _r1, const double _r2, const C c)
+    {
+        boundary(field, dir, bc, _r1, _r2, c);
+    }
     void planeStrain();
     void linear();
     void semilinear();
@@ -88,4 +137,8 @@ public:
     void principalStresses(const std::string, const std::string);
     void principalStrains(const std::string, const std::string, const std::string);
     void output(const std::string, const Field);
+    void output(const Field field, const std::string filename)
+    {
+        output(filename, field);
+    }
 };

@@ -47,6 +47,18 @@ void Membrane::checkMesh()
         std::println("Negative volumes were found!");
 }
 
+void Membrane::load(const double f)
+{
+    p.fill(f);
+    loaded = true;
+}
+
+void Membrane::load(const arma::mat f)
+{
+    p = f;
+    loaded = true;
+}
+
 /**
  * @brief 
  * 
@@ -58,6 +70,7 @@ void Membrane::load(const std::function<double(double, double)> f)
     for (size_t j = 0; j < ny; j++)
         for (size_t i = 0; i < nx; i++)
             p(i, j) = f(x(i, j), y(i, j));
+    loaded = true;
 }
 
 void Membrane::inPlaneTensorial(const arma::vec _p1, const arma::vec _p2)

@@ -20,8 +20,8 @@ void Membrane::semilinear()
             printf("Iteration %lu/%lu\n", q+1, iter);
             arma::vec Z  = vectorise(arma::mat(z));
             arma::vec P  = vectorise(pressure);
-            double pMAX = max(arma::abs(P));
-            double pRMS = sqrt(sum(P%P));
+            double pMAX = loaded ? max(arma::abs(P)) : 1;
+            double pRMS = loaded ? sqrt(sum(P%P))    : 1;
             arma::vec z_1 = DD1*Z;
             arma::vec z_2 = DD2*Z;
             arma::vec sae = sqrt(1 + E11%z_1%z_1 + 2*E12%z_1%z_2 + E22%z_2%z_2);
