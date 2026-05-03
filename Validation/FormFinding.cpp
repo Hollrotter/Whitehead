@@ -62,7 +62,7 @@ int main()
 
             m.nonlinear();
 
-            m.output(Field::z,   "plot/Data/FormFinding");
+            m.output(Field::z, "plot/Data/FormFinding");
 
             break;
         }
@@ -122,7 +122,7 @@ int main()
 
             membrane.nonlinear();
 
-            membrane.output(Field::z,   "plot/Data/FormFinding");
+            membrane.output(Field::z, "plot/Data/FormFinding");
 
             break;
         }
@@ -311,7 +311,7 @@ int main()
 
             // s.nonlinear();
 
-            s.output(Field::z,   "plot/Data/FormFinding");
+            s.output(Field::z, "plot/Data/FormFinding");
 
             break;
         }
@@ -376,7 +376,7 @@ int main()
 
             m.nonlinear();
 
-            m.output(Field::z,   "plot/Data/FormFinding");
+            m.output(Field::z, "plot/Data/FormFinding");
 
             break;
         }
@@ -441,7 +441,7 @@ int main()
 
             m.nonlinear();
 
-            m.output(Field::z,   "plot/Data/FormFinding");
+            m.output(Field::z, "plot/Data/FormFinding");
 
             break;
         }
@@ -506,7 +506,7 @@ int main()
 
             m.nonlinear();
 
-            m.output(Field::z,   "plot/Data/FormFinding");
+            m.output(Field::z, "plot/Data/FormFinding");
 
             break;
         }
@@ -591,7 +591,8 @@ int main()
 
             s.nonlinear();
 
-            s.output(Field::z,   "plot/Data/FormFinding");
+            s.output(Field::z, "plot/Data/FormFinding");
+            s.principalStrains("plot/Data/FormFinding_vx", "plot/Data/FormFinding_gx", "plot/Data/FormFinding_g1");
 
             break;
         }

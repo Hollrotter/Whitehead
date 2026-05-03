@@ -743,7 +743,7 @@ void Aerodynamics::solve()
         for (size_t k = 0; k < interfaces.size(); k++)
         {
             printf("Interface %lu: ", k+1);
-            double res = arma::norm(muTarget(k) - muSource(k));
+            double res = fabs(1 - arma::norm(muSource(k).subvec(1, muSource(k).size()-2))/arma::norm(muTarget(k).subvec(1, muTarget(k).size()-2)));
             printf("Residual %4.2e\n", res);
             if (res > residualTarget)
                 converged = false;

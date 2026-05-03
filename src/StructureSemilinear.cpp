@@ -336,7 +336,7 @@ void Structure::semilinear()
         for (size_t k = 0; k < interfaces.size(); k++)
         {
             printf("Interface %lu\n", k+1);
-            double res = arma::norm(Ztarget(k) - Zsource(k));
+            double res = fabs(1 - arma::norm(Zsource(k).subvec(1, Zsource(k).size()-2))/arma::norm(Ztarget(k).subvec(1, Ztarget(k).size()-2)));
             printf("Residual %4.2e\n", res);
             if (res > residualTarget)
                 converged = false;

@@ -17,7 +17,7 @@ void Structure::nonlinear()
     }
     arma::field<arma::vec> Vntarget(interfaces.size()), Vnsource(interfaces.size());
     arma::field<arma::vec> Vttarget(interfaces.size()), Vtsource(interfaces.size());
-    arma::field<arma::vec> Ztarget(interfaces.size()),  Zsource(interfaces.size());
+    arma::field<arma::vec>  Ztarget(interfaces.size()),  Zsource(interfaces.size());
 
     for (size_t substep = 1; substep <= substeps; substep++)
     {
@@ -633,9 +633,9 @@ void Structure::nonlinear()
             for (size_t k = 0; k < interfaces.size(); k++)
             {
                 printf("Interface %lu\n", k+1);
-                double res1 = arma::norm(Vntarget(k) - Vnsource(k));
-                double res2 = arma::norm(Vttarget(k) - Vtsource(k));
-                double res3 = arma::norm(Ztarget(k)  - Zsource(k));
+                double res1 = fabs(1 - arma::norm(Vnsource(k).subvec(1, Vnsource(k).size()-2))/arma::norm(Vntarget(k).subvec(1, Vntarget(k).size()-2)));
+                double res2 = fabs(1 - arma::norm(Vtsource(k).subvec(1, Vtsource(k).size()-2))/arma::norm(Vttarget(k).subvec(1, Vttarget(k).size()-2)));
+                double res3 = fabs(1 - arma::norm( Zsource(k).subvec(1,  Zsource(k).size()-2))/arma::norm( Ztarget(k).subvec(1,  Ztarget(k).size()-2)));
                 printf("Residual normal  %4.2e\n", res1);
                 printf("Residual tangent %4.2e\n", res2);
                 printf("Residual z       %4.2e\n", res3);
