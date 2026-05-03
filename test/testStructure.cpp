@@ -55,7 +55,6 @@ int main()
             s.boundary(Field::n12, &chi7, BC::Dirichlet);
             s.boundary(Field::n22, &chi7, BC::Dirichlet, 1);
 
-            s.setgamma0(2.25);
             s.load(0.1);
 
             // s.inPlane11(10);

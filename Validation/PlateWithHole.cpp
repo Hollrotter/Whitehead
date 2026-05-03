@@ -69,7 +69,6 @@ int main()
 
     s.boundary(Field::v2,  &chi8,  BC::Neumann);
     s.boundary(Field::v1,  &chi8,  BC::Dirichlet);
-    s.boundary(Field::z,   &chi8,  BC::Neumann);
 
     s.boundary(Field::v2,  &chi9,  BC::Neumann);
     s.boundary(Field::v1,  &chi9,  BC::Dirichlet);
@@ -83,10 +82,8 @@ int main()
     s.boundary(Field::n12, &chi14, BC::Dirichlet);
     s.boundary(Field::n11, &chi14, BC::Dirichlet);
 
-    s.setgamma0(1);
     s.youngsModulus(E*t);
     s.poissonsRatio(nu);
-    s.setIterations(500);
     
     s.planeStrain();
 

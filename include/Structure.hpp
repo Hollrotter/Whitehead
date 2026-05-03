@@ -6,33 +6,55 @@ class Structure
 {
     std::vector<Membrane*> membranes;
     std::vector<Interface> interfaces;
-    size_t iterations = 1000;
+    size_t iterations = 100;
     double residualTarget = 1e-10;
     size_t substeps = 1;
     Analysis analysis = Analysis::linear;
-    double gamma0 = 2;
+    double lambda0 = 2;
 public:
     Structure() = default;
-    Structure(std::vector<Membrane*> _membranes) : membranes(_membranes)
-    {
-        for (size_t sD = 0; sD < membranes.size()-1; sD++)
-            for (size_t sC = 0; sC < 4; sC++)
-                for (size_t tD = sD+1; tD < membranes.size(); tD++)
-                    for (size_t tC = 0; tC < 4; tC++)
-                        if (membranes[sD]->chi[sC] == membranes[tD]->chi[tC])
-                        {
-                            interfaces.push_back(Interface(sD, tD, sC, tC));
-                            membranes[sD]->chi[sC]->curveType = CurveType::Interface;
-                        }
-    };
+    Structure(std::vector<Membrane*>);
     // Sets the number of substeps for nonlinear analysis (default: substeps = 1)
     void substepControl(const double _substeps)
     {
         substeps = _substeps;
     }
-    void setgamma0(double g)
+    void setlambda(double l)
     {
-        gamma0 = g;
+        lambda0 = l;
+        for (Interface &interface:interfaces)
+        {
+            switch (interface.sourceCurve)
+            {
+                case 0: // South
+                    interface.lambdaSource = lambda0*mean(membranes[interface.sourceDomain]->h_2s2_south);
+                    break;
+                case 1: // East
+                    interface.lambdaSource = lambda0*mean(membranes[interface.sourceDomain]->h_1s1_east);
+                    break;
+                case 2: // North
+                    interface.lambdaSource = lambda0*mean(membranes[interface.sourceDomain]->h_2s2_north);
+                    break;
+                case 3: // West
+                    interface.lambdaSource = lambda0*mean(membranes[interface.sourceDomain]->h_1s1_west);
+                    break;
+            }
+            switch (interface.targetCurve)
+            {
+                case 0: // South
+                    interface.lambdaTarget = lambda0*mean(membranes[interface.targetDomain]->h_2s2_south);
+                    break;
+                case 1: // East
+                    interface.lambdaTarget = lambda0*mean(membranes[interface.targetDomain]->h_1s1_east);
+                    break;
+                case 2: // North
+                    interface.lambdaTarget = lambda0*mean(membranes[interface.targetDomain]->h_2s2_north);
+                    break;
+                case 3: // West
+                    interface.lambdaTarget = lambda0*mean(membranes[interface.targetDomain]->h_1s1_west);
+                    break;
+            }
+        }
     }
     void youngsModulus(const double _Et)
     {
