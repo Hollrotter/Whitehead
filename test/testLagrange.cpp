@@ -2,12 +2,12 @@
 
 int main()
 {
-    switch (5)
+    switch (0)
     {
         case 0: // Interpolation 1D
         {
             size_t n = 17; // Number of interpolation nodes
-            size_t N = 100; // Number of evaluation nodes
+            size_t N = 500; // Number of evaluation nodes
             arma::vec x = Chebyshev::gaussLobatto(n);
             arma::vec X = arma::linspace(-1, 1, N);
             arma::mat T = Lagrange::interpolationMatrix(x, X);
@@ -21,6 +21,10 @@ int main()
             for (size_t i = 0; i < N; i++)
                 file_2 << X(i) << ' ' << F(i) << '\n';
             file_2.close();
+            std::ofstream file_3("plot/Data/Lagrange/interpolation1D_3");
+            for (size_t i = 0; i < N; i++)
+                file_3 << X(i) << ' ' << fabs(F(i)-10*sin(15*X(i))/(15*X(i))) << '\n';
+            file_3.close();
             break;
         }
         case 1: // Interpolation 2D

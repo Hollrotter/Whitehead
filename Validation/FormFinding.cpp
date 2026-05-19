@@ -534,7 +534,7 @@ int main()
             Membrane m2({&chi2, &chi3, &chi4, &chi7});
 
             Structure s({&m1, &m2});
-            s.setIterations(200);
+            s.setIterations(100);
 
             s.boundary(Field::v1,  &chi1, BC::Neumann);
             s.boundary(Field::v1,  &chi2, BC::Neumann);
@@ -593,6 +593,67 @@ int main()
 
             s.output(Field::z, "plot/Data/FormFinding");
             s.principalStrains("plot/Data/FormFinding_vx", "plot/Data/FormFinding_gx", "plot/Data/FormFinding_g1");
+
+            arma::mat data;
+            data.load(arma::csv_name("TwinHypar.csv", arma::csv_opts::no_header));
+
+            size_t nx = 70;
+            size_t ny = 70;
+
+            arma::mat X = arma::reshape(data.col(1), 700, 700);
+            arma::mat Y = arma::reshape(data.col(2), 700, 700);
+            arma::mat Z = arma::reshape(data.col(3), 700, 700);
+
+            arma::mat X_left  = X.cols(  0, 349);
+            arma::mat X_right = X.cols(350, 699);
+
+            arma::mat Y_left  = Y.cols(  0, 349);
+            arma::mat Y_right = Y.cols(350, 699);
+
+            arma::mat Z_left  = Z.cols(  0, 349);
+            arma::mat Z_right = Z.cols(350, 699);
+
+            arma::uvec dx = arma::linspace<arma::uvec>(0, 699, ny);
+            arma::uvec dy = arma::linspace<arma::uvec>(0, 349, nx);
+
+            arma::mat x_left  = X_left.submat(dx, dy);
+            arma::mat x_right = X_right.submat(dx, dy);
+
+            arma::mat y_left  = Y_left.submat(dx, dy);
+            arma::mat y_right = Y_right.submat(dx, dy);
+
+            arma::mat z_left  = Z_left.submat(dx, dy);
+            arma::mat z_right = Z_right.submat(dx, dy);
+
+            arma::vec x1 = Chebyshev::gaussLobatto(n);
+            arma::vec x2 = Chebyshev::gaussLobatto(m);
+
+            arma::vec xi_1_left  = (x_left.row(0).t()  + 15) / 15;
+            arma::vec xi_1_right = (x_right.row(0).t() - 15) / 15;
+
+            arma::vec xi_2_left  = y_left.col(0)  / 15;
+            arma::vec xi_2_right = y_right.col(0) / 15;
+
+            arma::mat Tx_left  = Lagrange::interpolationMatrix(x1, xi_1_left);
+            arma::mat Tx_right = Lagrange::interpolationMatrix(x1, xi_1_right);
+
+            arma::mat Ty_left  = Lagrange::interpolationMatrix(x2, xi_2_left);
+            arma::mat Ty_right = Lagrange::interpolationMatrix(x2, xi_2_right);
+
+            arma::mat z_left_m  = Lagrange::interpolation2D(Tx_left,  Ty_left,  m1.Z(), xi_1_left,  xi_2_left);
+            arma::mat z_right_m = Lagrange::interpolation2D(Tx_right, Ty_right, m2.Z(), xi_1_right, xi_2_right);
+
+            std::ofstream fileLeft("plot/Data/FormFindingDifferenceLeft");
+            for (size_t i = 0; i < z_left_m.n_rows; i++, fileLeft<<'\n')
+                for (size_t j = 0; j < z_left_m.n_cols; j++, fileLeft<<'\n')
+                    fileLeft << x_left(i, j) << ' ' << y_left(i, j) << ' ' << z_left(i, j)-z_left_m(i, j);
+            fileLeft.close();
+
+            std::ofstream fileRight("plot/Data/FormFindingDifferenceRight");
+            for (size_t i = 0; i < z_right_m.n_rows; i++, fileRight<<'\n')
+                for (size_t j = 0; j < z_right_m.n_cols; j++, fileRight<<'\n')
+                    fileRight << x_right(i, j) << ' ' << y_right(i, j) << ' ' << z_right(i, j)-z_right_m(i, j);
+            fileRight.close();
 
             break;
         }

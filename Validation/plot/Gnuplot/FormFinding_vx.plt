@@ -1,6 +1,6 @@
 set terminal png size 600, 450
 
-set output '../png/FormFinding.png'
+set output '../png/FormFinding_vx.png'
 
 # set xrange [-.5:.5]
 # set yrange [-.5:.5]
@@ -20,7 +20,7 @@ set palette maxcolor 100
 
 set xlabel 'x/m'
 set ylabel 'y/m'
-set zlabel 'z/m'
+set zlabel 'v_x/m'
 
 set ticslevel 0.0
 set xtics -30,10,30
@@ -31,14 +31,5 @@ set xtics offset 0,-0.5
 
 set pm3d interpolate 10,10 corners2color mean
 
-#splot '../Data/FormFinding' notitle with pm3d
-
-splot '../Data/FormFinding_0' notitle with pm3d,\
-      '../Data/FormFinding_1' notitle with pm3d#,\
-#       '../Data/FormFinding_2' notitle with pm3d,\
-#       '../Data/FormFinding_3' notitle with pm3d,\
-#       '../Data/FormFinding_4' notitle with pm3d,\
-#       '../Data/FormFinding_5' notitle with pm3d,\
-#       '../Data/FormFinding_6' notitle with pm3d,\
-#       '../Data/FormFinding_7' notitle with pm3d,\
-#       '../Data/FormFinding_8' notitle with pm3d
+splot '../Data/FormFinding_vx_0' u 1:2:3 notitle with pm3d,\
+      '../Data/FormFinding_vx_1' u 1:2:3 notitle with pm3d
