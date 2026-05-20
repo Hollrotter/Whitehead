@@ -29,7 +29,7 @@ class VLM
     arma::vec lift   = arma::zeros(con); // Lift in N
     arma::vec moment = arma::zeros(con); // Moment in Nm
     arma::vec ar = arma::zeros(ny+1, 1); // Rigging (implemented for linear analysis only)
-    Symmetry sym = Symmetry::none; // Symmetry (no symmetry or symmetry in y direction)
+    Symmetry sym = Symmetry::none; // Symmetry (no symmetry or symmetry in the y-direction)
     Analysis analysis = Analysis::linear; // Analysis type (linear or nonlinear)
 public:
     VLM() = default;

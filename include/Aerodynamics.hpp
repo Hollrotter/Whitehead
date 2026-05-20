@@ -8,6 +8,7 @@ class Aerodynamics
     std::vector<Interface> interfaces;
     size_t iterations = 100;
     double residualTarget = 1e-10;
+    Symmetry sym = Symmetry::none;
     Analysis analysis = Analysis::linear;
     double lambda0 = 2;
     arma::field<arma::cube> bw;
@@ -33,6 +34,11 @@ public:
     {
         std::for_each(wings.begin(), wings.end(), [&](auto& w) { w->pitch(_alpha); } );
     }
+    // Define a symmetry
+    void symmetry(Symmetry _sym)
+    {
+        sym = _sym;
+    }
     void checkMesh();
     void setIterations(const size_t itt)
     {
@@ -51,6 +57,10 @@ public:
     void linear();
     void nonlinear();
     void output(const std::string);
+    void operator()(Symmetry _sym)
+    {
+        sym = _sym;
+    }
 private:
     void solve();
 };

@@ -50,6 +50,7 @@ class Wing
     double area = 0; // Wing area
     arma::vec lift   = arma::zeros(con); // Lift in N
     arma::vec moment = arma::zeros(con); // Moment in Nm
+    Symmetry sym = Symmetry::none; // Symmetry (no symmetry or symmetry in the y-direction)
     Analysis analysis = Analysis::linear; // Analysis type (linear or nonlinear)
     Wing fromTransfiniteQuadMap(std::array<Lagrange::CurveInterpolant*, 4> _chi)
     {
@@ -77,6 +78,11 @@ public:
     }
     // Sets the pitch for multiple configurations
     void pitch(arma::vec);
+    // Define a symmetry
+    void symmetry(Symmetry _sym)
+    {
+        sym = _sym;
+    }
     void checkMesh();
     void linear();
     void nonlinear();
@@ -122,6 +128,10 @@ public:
     template <class C> void boundary(const Lagrange::CurveInterpolant*, const BC, const double, const double, const C);
     // Output x, y and dcp for surface plots
     void output(std::string);
+    void operator()(Symmetry _sym)
+    {
+        sym = _sym;
+    }
     friend class Aerodynamics;
 private:
     arma::vec externalContour(double, double, double, double, double, double, arma::vec);

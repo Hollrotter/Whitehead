@@ -24,6 +24,7 @@ Validation/plot/Gnuplot/MAV_s12.plt
 Validation/plot/Gnuplot/MAV_s22.plt
 Validation/plot/Gnuplot/MAV_mesh.plt
 Validation/Lilienthal.cpp
+Validation/Whitehead.cpp
 Validation/plot/Gnuplot/Lilienthal.plt
 Validation/plot/Gnuplot/Lilienthal_mesh.plt
 Verification/.vscode/

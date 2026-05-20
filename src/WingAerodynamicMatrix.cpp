@@ -73,26 +73,26 @@ void Wing::regularIntegralNonlinear(size_t k, double xC, double yC, double zC, s
     arma::mat z_gl = Lagrange::interpolation2D(Tx, Ty, z, x1_gl, x2_gl);
     arma::mat D1_gl = Lagrange::derivativeMatrix(x1_gl);
     arma::mat D2_gl = Lagrange::derivativeMatrix(x2_gl);
-    arma::mat dzdx1_gl = D1_gl*z_gl;
-    arma::mat dzdx2_gl = z_gl*D2_gl.t();
+    arma::mat dz_gldx1 = D1_gl*z_gl;
+    arma::mat dz_gldx2 = z_gl*D2_gl.t();
     auto [x_gl, y_gl] = Lagrange::TransfiniteQuadMap(x1_gl, x2_gl, chi);
-    auto [dxdx1_gl, dxdx2_gl, dydx1_gl, dydx2_gl] = Lagrange::TransfiniteQuadMetrics(x1_gl, x2_gl, chi);
-    arma::field<arma::mat> J_gl = {{dxdx1_gl, dxdx2_gl}, {dydx1_gl, dydx2_gl}};
+    auto [dx_gldx1, dx_gldx2, dy_gldx1, dy_gldx2] = Lagrange::TransfiniteQuadMetrics(x1_gl, x2_gl, chi);
+    arma::field<arma::mat> J_gl = {{dx_gldx1, dx_gldx2}, {dy_gldx1, dy_gldx2}};
     arma::cube e_c_gl = MetricCo(J_gl);
     arma::cube ec_gl  = MetricContra(e_c_gl);
     arma::mat e_gl = e_c_gl.slice(0)%e_c_gl.slice(2) - pow(e_c_gl.slice(1), 2);
-    arma::mat sqrt_a = sqrt(e_gl%(1 + ec_gl.slice(0)%pow(dzdx1_gl, 2) + 2*ec_gl.slice(1)%dzdx1_gl%dzdx2_gl + ec_gl.slice(2)%pow(dzdx2_gl, 2)));
+    arma::mat sqrt_a = sqrt(e_gl%(1 + ec_gl.slice(0)%pow(dz_gldx1, 2) + 2*ec_gl.slice(1)%dz_gldx1%dz_gldx2 + ec_gl.slice(2)%pow(dz_gldx2, 2)));
     for (size_t ii = 0; ii < nx_ii; ii++)
         for (size_t jj = 0; jj < ny_jj; jj++)
         {
             arma::vec::fixed<3> r = {x_gl(ii, jj) - xC, y_gl(ii, jj) - yC, z_gl(ii, jj) - zC};
             double r3 = pow(norm(r), 3);
-            arma::vec::fixed<3> n_gl = arma::vec::fixed<3>({dydx1_gl(ii, jj)*dzdx2_gl(ii, jj)-dzdx1_gl(ii, jj)*dydx2_gl(ii, jj),
-                                                            dzdx1_gl(ii, jj)*dxdx2_gl(ii, jj)-dxdx1_gl(ii, jj)*dzdx2_gl(ii, jj),
-                                                            dxdx1_gl(ii, jj)*dydx2_gl(ii, jj)-dydx1_gl(ii, jj)*dxdx2_gl(ii, jj)})/sqrt_a(ii, jj);
-            arma::mat::fixed<3, 2> J_red = {{dydx2_gl(ii, jj)*n_gl(2) - n_gl(1)*dzdx2_gl(ii, jj),-(dydx1_gl(ii, jj)*n_gl(2) - n_gl(1)*dzdx1_gl(ii, jj))},
-                                            {-(dxdx2_gl(ii, jj)*n_gl(2) - n_gl(0)*dzdx2_gl(ii, jj)),dxdx1_gl(ii, jj)*n_gl(2) - n_gl(0)*dzdx1_gl(ii, jj)},
-                                            {dxdx2_gl(ii, jj)*n_gl(1) - n_gl(0)*dydx2_gl(ii, jj),-(dxdx1_gl(ii, jj)*n_gl(1) - n_gl(0)*dydx1_gl(ii, jj))}};
+            arma::vec::fixed<3> n_gl = arma::vec::fixed<3>({dy_gldx1(ii, jj)*dz_gldx2(ii, jj)-dz_gldx1(ii, jj)*dy_gldx2(ii, jj),
+                                                            dz_gldx1(ii, jj)*dx_gldx2(ii, jj)-dx_gldx1(ii, jj)*dz_gldx2(ii, jj),
+                                                            dx_gldx1(ii, jj)*dy_gldx2(ii, jj)-dy_gldx1(ii, jj)*dx_gldx2(ii, jj)})/sqrt_a(ii, jj);
+            arma::mat::fixed<3, 2> J_red = {{dy_gldx2(ii, jj)*n_gl(2) - n_gl(1)*dz_gldx2(ii, jj),-(dy_gldx1(ii, jj)*n_gl(2) - n_gl(1)*dz_gldx1(ii, jj))},
+                                            {-(dx_gldx2(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx2(ii, jj)),dx_gldx1(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx1(ii, jj)},
+                                            {dx_gldx2(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx2(ii, jj),-(dx_gldx1(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx1(ii, jj))}};
             for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                 for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                 {
@@ -101,7 +101,7 @@ void Wing::regularIntegralNonlinear(size_t k, double xC, double yC, double zC, s
                     arma::vec::fixed<2> dmudxi = {T_1, T_2};
                     arma::vec::fixed<3> gradmu = J_red*dmudxi;
                     arma::vec::fixed<3> gamma_gl = cross(gradmu, n_gl);
-                    arma::vec q_mu = gl_x[ii].weight * gl_y[jj].weight * cross(gamma_gl, r)/r3 * (xp - xm)/2 * (yp - ym)/2;
+                    arma::vec q_mu = gl_x[ii].weight * gl_y[jj].weight * cross(gamma_gl, r)/r3 * (xp - xm) * (yp - ym)/4;
                     A(k, p+q*nx) += dot(q_mu, nC.row(k));
                 }
         }
@@ -237,6 +237,49 @@ void Wing::aerodynamicMatrix()
                     if (i < nx-1)
                         regularIntegralLinear(k1, xC(i, j), yC(i, j), nx+2-i, j+2, x_right, 1, -1, y_upper);
                 }
+            }
+            if (sym == Symmetry::y)
+            {
+                std::vector<fastgl::QuadPair> gl_x(nx), gl_y(ny);
+                arma::vec x1_gl(nx), x2_gl(ny);
+                for (size_t ii = 0; ii < nx; ii++)
+                {
+                    gl_x[ii] = fastgl::GLPair(nx, ii+1);
+                    x1_gl(ii) =-gl_x[ii].x();
+                }
+                for (size_t jj = 0; jj < ny; jj++)
+                {
+                    gl_y[jj] = fastgl::GLPair(ny, jj+1);
+                    x2_gl(jj) =-gl_y[jj].x();
+                }
+                auto [x_gl, y_gl] = Lagrange::TransfiniteQuadMap(x1_gl, x2_gl, chi);
+                auto [dx_gldx1, dx_gldx2, dy_gldx1, dy_gldx2] = Lagrange::TransfiniteQuadMetrics(x1_gl, x2_gl, chi);
+                y_gl     =-y_gl;
+                dy_gldx1 =-dy_gldx1;
+                dy_gldx2 =-dy_gldx2;
+                for (size_t j = 1; j < ny-1; j++) // Loop over Collocation Points in 2-direction
+                    for (size_t i = 1; i < nx-1; i++) // Loop over Collocation Points in 1-direction
+                        for (size_t ii = 0; ii < nx; ii++)
+                            for (size_t jj = 0; jj < ny; jj++)
+                            {
+                                arma::vec::fixed<2> r = {x_gl(ii, jj) - xC(i, j), y_gl(ii, jj) - yC(i, j)};
+                                double r3 = pow(norm(r), 3);
+                                for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+                                {
+                                    double T2     = boost::math::chebyshev_t(q, x2_gl(jj));
+                                    double dT2dx2 = boost::math::chebyshev_t_prime(q, x2_gl(jj));
+                                    for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                                    {
+                                        double T1     = boost::math::chebyshev_t(p, x1_gl(ii));
+                                        double dT1dx1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
+                                        double dmudx1 = dT1dx1 * T2;
+                                        double dmudx2 = T1 * dT2dx2;
+                                        A(i+j*nx, p+q*nx) += gl_x[ii].weight*gl_y[jj].weight/r3
+                                                    *(r(0)*(dy_gldx2(ii, jj)*dmudx1 - dy_gldx1(ii, jj)*dmudx2)
+                                                    - r(1)*(dx_gldx2(ii, jj)*dmudx1 - dx_gldx1(ii, jj)*dmudx2));
+                                    }
+                                }
+                            }
             }
             break;
         }
@@ -402,6 +445,63 @@ void Wing::aerodynamicMatrix()
                     if (i < nx-1)
                         regularIntegralNonlinear(k1, xC(i, j), yC(i, j), zC(i, j), nx+2-i, j+2, x_right, 1, -1, y_upper);
                 }
+            }
+            if (sym == Symmetry::y)
+            {
+                std::vector<fastgl::QuadPair> gl_x(nx), gl_y(ny);
+                arma::vec x1_gl(nx), x2_gl(ny);
+                for (size_t ii = 0; ii < nx; ii++)
+                {
+                    gl_x[ii] = fastgl::GLPair(nx, ii+1);
+                    x1_gl(ii) =-gl_x[ii].x();
+                }
+                for (size_t jj = 0; jj < ny; jj++)
+                {
+                    gl_y[jj] = fastgl::GLPair(ny, jj+1);
+                    x2_gl(jj) =-gl_y[jj].x();
+                }
+                arma::mat Tx = Lagrange::interpolationMatrix(x1, x1_gl);
+                arma::mat Ty = Lagrange::interpolationMatrix(x2, x2_gl);
+                arma::mat z_gl = Lagrange::interpolation2D(Tx, Ty, z, x1_gl, x2_gl);
+                arma::mat D1_gl = Lagrange::derivativeMatrix(x1_gl);
+                arma::mat D2_gl = Lagrange::derivativeMatrix(x2_gl);
+                arma::mat dz_gldx1 = D1_gl*z_gl;
+                arma::mat dz_gldx2 = z_gl*D2_gl.t();
+                auto [x_gl, y_gl] = Lagrange::TransfiniteQuadMap(x1_gl, x2_gl, chi);
+                auto [dx_gldx1, dx_gldx2, dy_gldx1, dy_gldx2] = Lagrange::TransfiniteQuadMetrics(x1_gl, x2_gl, chi);
+                y_gl     =-y_gl;
+                dy_gldx1 =-dy_gldx1;
+                dy_gldx2 =-dy_gldx2;
+                arma::field<arma::mat> J_gl = {{dx_gldx1, dx_gldx2}, {dy_gldx1, dy_gldx2}};
+                arma::cube e_c_gl = MetricCo(J_gl);
+                arma::cube ec_gl  = MetricContra(e_c_gl);
+                arma::mat e_gl = e_c_gl.slice(0)%e_c_gl.slice(2) - pow(e_c_gl.slice(1), 2);
+                arma::mat sqrt_a = sqrt(e_gl%(1 + ec_gl.slice(0)%pow(dz_gldx1, 2) + 2*ec_gl.slice(1)%dz_gldx1%dz_gldx2 + ec_gl.slice(2)%pow(dz_gldx2, 2)));
+                for (size_t j = 1; j < ny-1; j++) // Loop over Collocation Points in 2-direction
+                    for (size_t i = 1; i < nx-1; i++) // Loop over Collocation Points in 1-direction
+                        for (size_t ii = 0; ii < nx; ii++)
+                            for (size_t jj = 0; jj < ny; jj++)
+                            {
+                                arma::vec::fixed<3> r = {x_gl(ii, jj) - xC(i, j), y_gl(ii, jj) - yC(i, j), z_gl(ii, jj) - zC(i, j)};
+                                double r3 = pow(norm(r), 3);
+                                arma::vec::fixed<3> n_gl = arma::vec::fixed<3>({dy_gldx1(ii, jj)*dz_gldx2(ii, jj)-dz_gldx1(ii, jj)*dy_gldx2(ii, jj),
+                                                                                dz_gldx1(ii, jj)*dx_gldx2(ii, jj)-dx_gldx1(ii, jj)*dz_gldx2(ii, jj),
+                                                                                dx_gldx1(ii, jj)*dy_gldx2(ii, jj)-dy_gldx1(ii, jj)*dx_gldx2(ii, jj)})/sqrt_a(ii, jj);
+                                arma::mat::fixed<3, 2> J_red = {{dy_gldx2(ii, jj)*n_gl(2) - n_gl(1)*dz_gldx2(ii, jj),-(dy_gldx1(ii, jj)*n_gl(2) - n_gl(1)*dz_gldx1(ii, jj))},
+                                                                {-(dx_gldx2(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx2(ii, jj)),dx_gldx1(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx1(ii, jj)},
+                                                                {dx_gldx2(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx2(ii, jj),-(dx_gldx1(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx1(ii, jj))}};
+                                for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+                                    for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                                    {
+                                        double T_1 = boost::math::chebyshev_t_prime(p, x1_gl(ii)) * boost::math::chebyshev_t(q, x2_gl(jj));
+                                        double T_2 = boost::math::chebyshev_t(p, x1_gl(ii)) * boost::math::chebyshev_t_prime(q, x2_gl(jj));
+                                        arma::vec::fixed<2> dmudxi = {T_1, T_2};
+                                        arma::vec::fixed<3> gradmu = J_red*dmudxi;
+                                        arma::vec::fixed<3> gamma_gl = cross(gradmu, n_gl);
+                                        arma::vec q_mu = gl_x[ii].weight * gl_y[jj].weight * cross(gamma_gl, r)/r3;
+                                        A(i+j*nx, p+q*nx) += dot(q_mu, nC.row(i+j*nx));
+                                    }
+                            }
             }
             break;
         }
