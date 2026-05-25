@@ -56,6 +56,9 @@ public:
     template <class C> void boundary(const Lagrange::CurveInterpolant*, const BC, const double, const double, const C);
     void linear();
     void nonlinear();
+    arma::vec get_lift();
+    arma::vec get_moment();
+    double get_area();
     void output(const std::string);
     void operator()(Symmetry _sym)
     {

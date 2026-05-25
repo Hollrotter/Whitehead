@@ -31,26 +31,24 @@ void Wing::regularIntegralLinear(size_t k, double xC, double yC, size_t nx_ii, s
     }
     auto [x_gl, y_gl] = Lagrange::TransfiniteQuadMap(x1_gl, x2_gl, chi);
     auto [dx_gldx1, dx_gldx2, dy_gldx1, dy_gldx2] = Lagrange::TransfiniteQuadMetrics(x1_gl, x2_gl, chi);
-    for (size_t ii = 0; ii < nx_ii; ii++)
-        for (size_t jj = 0; jj < ny_jj; jj++)
+    for (size_t jj = 0; jj < ny_jj; jj++)
+        for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
         {
-            arma::vec::fixed<2> r = {x_gl(ii, jj) - xC, y_gl(ii, jj) - yC};
-            double r3 = pow(norm(r), 3);
-            for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
-            {
-                double T2     = boost::math::chebyshev_t(q, x2_gl(jj));
-                double dT2dx2 = boost::math::chebyshev_t_prime(q, x2_gl(jj));
+            double  t2 = boost::math::chebyshev_t(q, x2_gl(jj));
+            double dt2 = boost::math::chebyshev_t_prime(q, x2_gl(jj));
+            for (size_t ii = 0; ii < nx_ii; ii++)
                 for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                 {
-                    double T1     = boost::math::chebyshev_t(p, x1_gl(ii));
-                    double dT1dx1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
-                    double dmudx1 = dT1dx1 * T2;
-                    double dmudx2 = T1 * dT2dx2;
+                    double  t1 = boost::math::chebyshev_t(p, x1_gl(ii));
+                    double dt1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
+                    double dmudx1 = dt1 *  t2;
+                    double dmudx2 =  t1 * dt2;
+                    arma::vec::fixed<2> r = {x_gl(ii, jj) - xC, y_gl(ii, jj) - yC};
+                    double r3 = pow(norm(r), 3);
                     A(k, p+q*nx) += gl_x[ii].weight*gl_y[jj].weight/r3*(xp - xm)*(yp - ym)/4
-                                 *(r(0)*(dy_gldx2(ii, jj)*dmudx1 - dy_gldx1(ii, jj)*dmudx2)
-                                 - r(1)*(dx_gldx2(ii, jj)*dmudx1 - dx_gldx1(ii, jj)*dmudx2));
+                                    *(r(0)*(dy_gldx2(ii, jj)*dmudx1 - dy_gldx1(ii, jj)*dmudx2)
+                                    - r(1)*(dx_gldx2(ii, jj)*dmudx1 - dx_gldx1(ii, jj)*dmudx2));
                 }
-            }
         }
 }
 
@@ -94,16 +92,20 @@ void Wing::regularIntegralNonlinear(size_t k, double xC, double yC, double zC, s
                                             {-(dx_gldx2(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx2(ii, jj)),dx_gldx1(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx1(ii, jj)},
                                             {dx_gldx2(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx2(ii, jj),-(dx_gldx1(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx1(ii, jj))}};
             for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+            {
+                double  t2 = boost::math::chebyshev_t(q, x2_gl(jj));
+                double dt2 = boost::math::chebyshev_t_prime(q, x2_gl(jj));
                 for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                 {
-                    double T_1 = boost::math::chebyshev_t_prime(p, x1_gl(ii)) * boost::math::chebyshev_t(q, x2_gl(jj));
-                    double T_2 = boost::math::chebyshev_t(p, x1_gl(ii)) * boost::math::chebyshev_t_prime(q, x2_gl(jj));
-                    arma::vec::fixed<2> dmudxi = {T_1, T_2};
+                    double  t1 = boost::math::chebyshev_t(p, x1_gl(ii));
+                    double dt1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
+                    arma::vec::fixed<2> dmudxi = {dt1 * t2, t1 * dt2};
                     arma::vec::fixed<3> gradmu = J_red*dmudxi;
                     arma::vec::fixed<3> gamma_gl = cross(gradmu, n_gl);
                     arma::vec q_mu = gl_x[ii].weight * gl_y[jj].weight * cross(gamma_gl, r)/r3 * (xp - xm) * (yp - ym)/4;
                     A(k, p+q*nx) += dot(q_mu, nC.row(k));
                 }
+            }
         }
 }
 
@@ -141,14 +143,10 @@ void Wing::aerodynamicMatrix()
         {
             for (size_t j = 1; j < ny-1; j++) // Loop over Collocation Points in 2-direction
             {
-                double eta_2 = xi_2(j);
-
                 double y_lower = j>1    ? xi_2(j-1) :-1;
                 double y_upper = j<ny-2 ? xi_2(j+1) : 1;
                 for (size_t i = 1; i < nx-1; i++) // Loop over Collocation Points in 1-direction
                 {
-                    double eta_1 = xi_1(i);
-
                     arma::vec::fixed<2> dXdxi_1 = {dxdxi_1(i, j), dydxi_1(i, j)};
                     arma::vec::fixed<2> dXdxi_2 = {dxdxi_2(i, j), dydxi_2(i, j)};
 
@@ -159,25 +157,21 @@ void Wing::aerodynamicMatrix()
                     double x_left  = i>1    ? xi_1(i-1) :-1;
                     double x_right = i<nx-2 ? xi_1(i+1) : 1;
 
-                    arma::vec rho_tilde = externalContour(x_left, x_right, y_lower, y_upper, eta_1, eta_2, theta);
+                    arma::vec rho_tilde = externalContour(x_left, x_right, y_lower, y_upper, xi_1(i), xi_2(j), theta);
 
                     size_t k1 = i+j*nx;
                     
                     for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                     {
-                        double T2 = boost::math::chebyshev_t(q, eta_2);
-                        double dT2dx2  = boost::math::chebyshev_t_prime(q, eta_2);
-                        double d2T2dx2dx2 = q<2 ? 0 : q/4.*((q+1)*boost::math::chebyshev_t(q-2, eta_2) - 2*q*T2 + (q-1)*boost::math::chebyshev_t(q+2, eta_2))/pow(1-pow(eta_2, 2), 2);
+                        double d2T2 = q<2 ? 0 : q/4.*((q+1)*boost::math::chebyshev_t(q-2, xi_2(j)) - 2*q*T2(j, q) + (q-1)*boost::math::chebyshev_t(q+2, xi_2(j)))/pow(1-pow(xi_2(j), 2), 2);
                         for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                         {
-                            double T1 = boost::math::chebyshev_t(p, eta_1);
-                            double dT1dx1  = boost::math::chebyshev_t_prime(p, eta_1);
-                            double d2T1dx1dx1 = p<2 ? 0 : p/4.*((p+1)*boost::math::chebyshev_t(p-2, eta_1) - 2*p*T1 + (p-1)*boost::math::chebyshev_t(p+2, eta_1))/pow(1-pow(eta_1, 2), 2);
-                            double T_1 = dT1dx1 * T2;
-                            double T_2 = T1 * dT2dx2;
-                            double T_11 = d2T1dx1dx1 * T2;
-                            double T_12 = dT1dx1 * dT2dx2;
-                            double T_22 = T1 * d2T2dx2dx2;
+                            double d2T1 = p<2 ? 0 : p/4.*((p+1)*boost::math::chebyshev_t(p-2, xi_1(i)) - 2*p*T1(i, p) + (p-1)*boost::math::chebyshev_t(p+2, xi_1(i)))/pow(1-pow(xi_1(i), 2), 2);
+                            double T_1  = dT1(i, p) *  T2(j, q);
+                            double T_2  =  T1(i, p) * dT2(j, q);
+                            double T_11 =      d2T1 *  T2(j, q);
+                            double T_12 = dT1(i, p) * dT2(j, q);
+                            double T_22 =  T1(i, p) * d2T2;
                             double gammax =-(dxdxi_2(i, j)*T_1 - dxdxi_1(i, j)*T_2);
                             double gammay =-(dydxi_2(i, j)*T_1 - dydxi_1(i, j)*T_2);
                             double dgammaxdxi_1 =-(d2xdxi_1dxi_2(i, j)*T_1 - d2xdxi_12(i, j)*T_2 + dxdxi_2(i, j)*T_11 - dxdxi_1(i, j)*T_12);
@@ -230,11 +224,11 @@ void Wing::aerodynamicMatrix()
                     size_t k1 = i + j*nx;
                     if (j > 1)
                         regularIntegralLinear(k1, xC(i, j), yC(i, j), i+2, j+2, -1, x_right, -1, y_lower);
-                    if (j < ny-1)
+                    if (j < ny-2)
                         regularIntegralLinear(k1, xC(i, j), yC(i, j), nx+2-i, ny+2-j, x_left, 1, y_upper, 1);
                     if (i > 1)
                         regularIntegralLinear(k1, xC(i, j), yC(i, j), i+2, ny+2-j, -1, x_left, y_lower, 1);
-                    if (i < nx-1)
+                    if (i < nx-2)
                         regularIntegralLinear(k1, xC(i, j), yC(i, j), nx+2-i, j+2, x_right, 1, -1, y_upper);
                 }
             }
@@ -257,58 +251,40 @@ void Wing::aerodynamicMatrix()
                 y_gl     =-y_gl;
                 dy_gldx1 =-dy_gldx1;
                 dy_gldx2 =-dy_gldx2;
-                for (size_t j = 1; j < ny-1; j++) // Loop over Collocation Points in 2-direction
-                    for (size_t i = 1; i < nx-1; i++) // Loop over Collocation Points in 1-direction
+                for (size_t jj = 0; jj < ny; jj++)
+                    for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+                    {
+                        double  t2 = boost::math::chebyshev_t(q, x2_gl(jj));
+                        double dt2 = boost::math::chebyshev_t_prime(q, x2_gl(jj));
                         for (size_t ii = 0; ii < nx; ii++)
-                            for (size_t jj = 0; jj < ny; jj++)
+                            for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                             {
-                                arma::vec::fixed<2> r = {x_gl(ii, jj) - xC(i, j), y_gl(ii, jj) - yC(i, j)};
-                                double r3 = pow(norm(r), 3);
-                                for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
-                                {
-                                    double T2     = boost::math::chebyshev_t(q, x2_gl(jj));
-                                    double dT2dx2 = boost::math::chebyshev_t_prime(q, x2_gl(jj));
-                                    for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                                double  t1 = boost::math::chebyshev_t(p, x1_gl(ii));
+                                double dt1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
+                                double dmudx1 = dt1 *  t2;
+                                double dmudx2 =  t1 * dt2;
+                                for (size_t j = 1; j < ny-1; j++) // Loop over Collocation Points in 2-direction
+                                    for (size_t i = 1; i < nx-1; i++) // Loop over Collocation Points in 1-direction
                                     {
-                                        double T1     = boost::math::chebyshev_t(p, x1_gl(ii));
-                                        double dT1dx1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
-                                        double dmudx1 = dT1dx1 * T2;
-                                        double dmudx2 = T1 * dT2dx2;
+                                        arma::vec::fixed<2> r = {x_gl(ii, jj) - xC(i, j), y_gl(ii, jj) - yC(i, j)};
+                                        double r3 = pow(norm(r), 3);
                                         A(i+j*nx, p+q*nx) += gl_x[ii].weight*gl_y[jj].weight/r3
                                                     *(r(0)*(dy_gldx2(ii, jj)*dmudx1 - dy_gldx1(ii, jj)*dmudx2)
                                                     - r(1)*(dx_gldx2(ii, jj)*dmudx1 - dx_gldx1(ii, jj)*dmudx2));
                                     }
-                                }
                             }
+                    }
             }
             break;
         }
         case Analysis::nonlinear:
         {
-            arma::mat Tx = Lagrange::interpolationMatrix(x1, xi_1);
-            arma::mat Ty = Lagrange::interpolationMatrix(x2, xi_2);
-            arma::mat zC = Lagrange::interpolation2D(Tx, Ty, z, xi_1, xi_2);
             arma::mat dzdxi_1 = D1*zC;
             arma::mat dzdxi_2 = zC*D2.t();
             arma::mat d2zdxi_12 = D1*dzdxi_1;
             arma::mat d2zdxi_1dxi_2 = D1*dzdxi_2;
             arma::mat d2zdxi_22 = dzdxi_2*D2.t();
 
-            for (size_t j = 0; j < ny; j++)
-                for (size_t i = 0; i < nx; i++)
-                {
-                    double e_11 = e_c(i, j, 0);
-                    double e_12 = e_c(i, j, 1);
-                    double e_22 = e_c(i, j, 2);
-                    double e11  =  ec(i, j, 0);
-                    double e12  =  ec(i, j, 1);
-                    double e22  =  ec(i, j, 2);
-                    double e = e_11*e_22 - pow(e_12, 2);
-                    double sqrt_a = sqrt(e*(1 + e11*pow(dzdxi_1(i, j), 2) + 2*e12*dzdxi_1(i, j)*dzdxi_2(i, j) + e22*pow(dzdxi_2(i, j), 2)));
-                    nC.row(i+j*nx) = arma::rowvec::fixed<3>({dydxi_1(i, j)*dzdxi_2(i, j)-dzdxi_1(i, j)*dydxi_2(i, j),
-                                                             dzdxi_1(i, j)*dxdxi_2(i, j)-dxdxi_1(i, j)*dzdxi_2(i, j),
-                                                             dxdxi_1(i, j)*dydxi_2(i, j)-dydxi_1(i, j)*dxdxi_2(i, j)})/sqrt_a;
-                }
             arma::mat dnxdxi_1 = D1*reshape(nC.col(0), nx, ny);
             arma::mat dnxdxi_2 = reshape(nC.col(0), nx, ny)*D2.t();
             arma::mat dnydxi_1 = D1*reshape(nC.col(1), nx, ny);
@@ -317,15 +293,12 @@ void Wing::aerodynamicMatrix()
             arma::mat dnzdxi_2 = reshape(nC.col(2), nx, ny)*D2.t();
             for (size_t j = 1; j < ny-1; j++) // Loop over Collocation Points in 2-direction
             {
-                double eta_2 = xi_2(j);
-
                 double y_lower = j>1    ? xi_2(j-1) :-1;
                 double y_upper = j<ny-2 ? xi_2(j+1) : 1;
 
                 for (size_t i = 1; i < nx-1; i++) // Loop over Collocation Points in 1-direction
                 {
                     size_t k1 = i+j*nx;
-                    double eta_1 = xi_1(i);
                     arma::vec::fixed<3> dXdxi_1 = {dxdxi_1(i, j), dydxi_1(i, j), dzdxi_1(i, j)};
                     arma::vec::fixed<3> dXdxi_2 = {dxdxi_2(i, j), dydxi_2(i, j), dzdxi_2(i, j)};
                     arma::vec::fixed<3> d2Xdxi_12 = {d2xdxi_12(i, j), d2ydxi_12(i, j), d2zdxi_12(i, j)};
@@ -335,23 +308,19 @@ void Wing::aerodynamicMatrix()
                     double x_left  = i>1    ? xi_1(i-1) :-1;
                     double x_right = i<nx-2 ? xi_1(i+1) : 1;
 
-                    arma::vec rho_tilde = externalContour(x_left, x_right, y_lower, y_upper, eta_1, eta_2, theta); 
+                    arma::vec rho_tilde = externalContour(x_left, x_right, y_lower, y_upper, xi_1(i), xi_2(j), theta); 
 
                     for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                     {
-                        double T2 = boost::math::chebyshev_t(q, eta_2);
-                        double dT2dx2  = boost::math::chebyshev_t_prime(q, eta_2);
-                        double d2T2dx2dx2 = q<2? 0 : q/4.*((q+1)*boost::math::chebyshev_t(q-2, eta_2) - 2*q*T2 + (q-1)*boost::math::chebyshev_t(q+2, eta_2))/pow(1-pow(eta_2, 2), 2);
+                        double d2T2 = q<2 ? 0 : q/4.*((q+1)*boost::math::chebyshev_t(q-2, xi_2(j)) - 2*q*T2(j, q) + (q-1)*boost::math::chebyshev_t(q+2, xi_2(j)))/pow(1-pow(xi_2(j), 2), 2);
                         for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                         {
-                            double T1 = boost::math::chebyshev_t(p, eta_1);
-                            double dT1dx1  = boost::math::chebyshev_t_prime(p, eta_1);
-                            double d2T1dx1dx1 = p<2 ? 0 : p/4.*((p+1)*boost::math::chebyshev_t(p-2, eta_1) - 2*p*T1 + (p-1)*boost::math::chebyshev_t(p+2, eta_1))/pow(1-pow(eta_1, 2), 2);
-                            double T_1 = dT1dx1 * T2;
-                            double T_2 = T1 * dT2dx2;
-                            double T_11 = d2T1dx1dx1 * T2;
-                            double T_12 = dT1dx1 * dT2dx2;
-                            double T_22 = T1 * d2T2dx2dx2;
+                            double d2T1 = p<2 ? 0 : p/4.*((p+1)*boost::math::chebyshev_t(p-2, xi_1(i)) - 2*p*T1(i, p) + (p-1)*boost::math::chebyshev_t(p+2, xi_1(i)))/pow(1-pow(xi_1(i), 2), 2);
+                            double T_1 = dT1(i, p) * T2(j, q);
+                            double T_2 = T1(i, p) * dT2(j, q);
+                            double T_11 = d2T1 * T2(j, q);
+                            double T_12 = dT1(i, p) * dT2(j, q);
+                            double T_22 = T1(i, p) * d2T2;
                             double dmudx = (dydxi_2(i, j)*nC(k1, 2) - nC(k1, 1)*dzdxi_2(i, j))*T_1
                                          - (dydxi_1(i, j)*nC(k1, 2) - nC(k1, 1)*dzdxi_1(i, j))*T_2;
                             double dmudy = (dxdxi_1(i, j)*nC(k1, 2) - nC(k1, 0)*dzdxi_1(i, j))*T_2
@@ -438,11 +407,11 @@ void Wing::aerodynamicMatrix()
                     size_t k1 = i + j*nx;
                     if (j > 1)
                         regularIntegralNonlinear(k1, xC(i, j), yC(i, j), zC(i, j), i+2, j+2, -1, x_right, -1, y_lower);
-                    if (j < ny-1)
+                    if (j < ny-2)
                         regularIntegralNonlinear(k1, xC(i, j), yC(i, j), zC(i, j), nx+2-i, ny+2-j, x_left, 1, y_upper, 1);
                     if (i > 1)
                         regularIntegralNonlinear(k1, xC(i, j), yC(i, j), zC(i, j), i+2, ny+2-j, -1, x_left, y_lower, 1);
-                    if (i < nx-1)
+                    if (i < nx-2)
                         regularIntegralNonlinear(k1, xC(i, j), yC(i, j), zC(i, j), nx+2-i, j+2, x_right, 1, -1, y_upper);
                 }
             }
@@ -491,16 +460,22 @@ void Wing::aerodynamicMatrix()
                                                                 {-(dx_gldx2(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx2(ii, jj)),dx_gldx1(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx1(ii, jj)},
                                                                 {dx_gldx2(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx2(ii, jj),-(dx_gldx1(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx1(ii, jj))}};
                                 for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+                                {
+                                    double  t2 = boost::math::chebyshev_t(q, x2_gl(jj));
+                                    double dt2 = boost::math::chebyshev_t_prime(q, x2_gl(jj));
                                     for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                                     {
-                                        double T_1 = boost::math::chebyshev_t_prime(p, x1_gl(ii)) * boost::math::chebyshev_t(q, x2_gl(jj));
-                                        double T_2 = boost::math::chebyshev_t(p, x1_gl(ii)) * boost::math::chebyshev_t_prime(q, x2_gl(jj));
+                                        double  t1 = boost::math::chebyshev_t(p, x1_gl(ii));
+                                        double dt1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
+                                        double T_1 = dt1 * t2;
+                                        double T_2 =  t1 * dt2;
                                         arma::vec::fixed<2> dmudxi = {T_1, T_2};
                                         arma::vec::fixed<3> gradmu = J_red*dmudxi;
                                         arma::vec::fixed<3> gamma_gl = cross(gradmu, n_gl);
                                         arma::vec q_mu = gl_x[ii].weight * gl_y[jj].weight * cross(gamma_gl, r)/r3;
                                         A(i+j*nx, p+q*nx) += dot(q_mu, nC.row(i+j*nx));
                                     }
+                                }
                             }
             }
             break;

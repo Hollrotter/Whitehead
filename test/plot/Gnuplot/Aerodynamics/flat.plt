@@ -1,7 +1,6 @@
 set terminal png background rgb 'black' size 2000, 1000
 
 set output '../../png/Aerodynamics/flat.png'
-set zrange [0:1]
 set cbrange [0:1]
 set ticslevel 0.0
 # set palette defined (0 "black", 0.01 "#000080", 0.25 "#0080ff", 1 "white")
@@ -25,5 +24,5 @@ set border lc rgb 'gray'
 set view map
 set pm3d interpolate 10,10 corners2color mean
 
-splot '../../Data/Aerodynamics/flat_1' u 2:1:3 notitle with pm3d,\
-      '../../Data/Aerodynamics/flat_0' u 2:1:3 notitle with pm3d
+splot '../../Data/Aerodynamics/flat_1' u 2:1:5 notitle with pm3d,\
+      '../../Data/Aerodynamics/flat_0' u 2:1:5 notitle with pm3d

@@ -7,15 +7,19 @@ class Wing
     std::array<Lagrange::CurveInterpolant*, 4> chi;
     arma::mat x = arma::zeros(2, 2); // x-coordinates of nodes
     arma::mat y = arma::zeros(2, 2); // y-coordinates of nodes
-    arma::mat z = arma::zeros(2, 2); // y-coordinates of nodes
     size_t nx = x.n_rows; // Number of nodes in x-Direction
     size_t ny = y.n_cols; // Number of nodes in y-Direction
+    arma::mat z = arma::zeros(nx, ny); // z-coordinates of nodes
     size_t nxy = nx*ny; // Product of nx and ny
     TensorField mu{nx, ny}; // Doublet distribution
     arma::vec x1   = Chebyshev::gaussLobatto(nx);
     arma::vec x2   = Chebyshev::gaussLobatto(ny);
     arma::vec xi_1 = Chebyshev::gauss(nx); // Collocation points 1-coordinates
     arma::vec xi_2 = Chebyshev::gauss(ny); // Collocation points 2-coordinates
+    arma::mat  T1 = Chebyshev::Polynomial(xi_1);
+    arma::mat  T2 = Chebyshev::Polynomial(xi_2);
+    arma::mat dT1 = Chebyshev::derivative(xi_1);
+    arma::mat dT2 = Chebyshev::derivative(xi_2);
     arma::mat D1 = Lagrange::derivativeMatrix(xi_1);
     arma::mat D2 = Lagrange::derivativeMatrix(xi_2);
     size_t con = 1; // Number of configurations
@@ -26,6 +30,9 @@ class Wing
     std::tuple<arma::mat, arma::mat> xyC = Lagrange::TransfiniteQuadMap(xi_1, xi_2, chi);
     arma::mat xC = std::get<0>(xyC);
     arma::mat yC = std::get<1>(xyC);
+    arma::mat Tx = Lagrange::interpolationMatrix(x1, xi_1);
+    arma::mat Ty = Lagrange::interpolationMatrix(x2, xi_2);
+    arma::mat zC = Lagrange::interpolation2D(Tx, Ty, z, xi_1, xi_2);
     arma::field<arma::mat> J = Jacobian(x1, x2, chi);
     arma::cube e_c = MetricCo(J); // Covariant metric tensor of the surface
     arma::cube ec  = MetricContra(e_c); // Contravariant metric tensor of the surface
@@ -44,7 +51,7 @@ class Wing
     arma::mat U; // Upper triangular matrix
     arma::mat P; // Permutation matrix
     arma::mat b = arma::zeros(nxy, con);
-    arma::mat nC; // Unit normal vector of the wing
+    arma::mat nC = calculateNormal(); // Unit normal vector of the wing
     arma::mat mu_hat = arma::zeros(nxy, con); // Amplitudes of doublet distribution
     arma::cube dcp = arma::zeros(nx, ny, con); // Difference of non-dimensional pressure
     double area = 0; // Wing area
@@ -134,6 +141,7 @@ public:
     }
     friend class Aerodynamics;
 private:
+    arma::mat calculateNormal();
     arma::vec externalContour(double, double, double, double, double, double, arma::vec);
     void regularIntegralLinear(size_t, double, double, size_t, size_t, double, double, double, double);
     void regularIntegralNonlinear(size_t, double, double, double, size_t, size_t, double, double, double, double);

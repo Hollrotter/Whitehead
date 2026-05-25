@@ -45,3 +45,31 @@ arma::mat Chebyshev::Polynomial(const arma::vec u, const arma::vec x)
 		T.col(k) = Polynomial(k, x);
 	return T;
 }
+
+arma::mat Chebyshev::Polynomial(const arma::vec x)
+{
+	return Polynomial(x, x);
+}
+
+arma::vec Chebyshev::derivative(const size_t k, const arma::vec x)
+{
+	arma::vec dT(x.size());
+	#pragma omp parallel for
+	for (size_t i = 0; i < x.size(); i++)
+		dT(i) = boost::math::chebyshev_t_prime(k, x(i));
+	return dT;
+}
+
+arma::mat Chebyshev::derivative(const arma::vec u, const arma::vec x)
+{
+	arma::mat dT(x.size(), u.size());
+	#pragma omp parallel for
+	for (size_t k = 0; k < u.size(); k++)
+		dT.col(k) = derivative(k, x);
+	return dT;
+}
+
+arma::mat Chebyshev::derivative(const arma::vec x)
+{
+	return derivative(x, x);
+}

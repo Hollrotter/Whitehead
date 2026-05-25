@@ -92,7 +92,7 @@ int main()
 			 * 2. The own implementation (following Kopriva (2009))
 			 * Two results:
 			 * 1. Running the loop for Boost in parallel made it slower
-			 * 2. Boost faster for small node numbers (at least n < 30).
+			 * 2. Boost is faster for small node numbers (at least n < 30).
 			 * Our implementation will get faster at some node number.
 			*/
 

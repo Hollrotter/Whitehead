@@ -111,79 +111,67 @@ void Wing::muBoundarySouth(const size_t i)
     switch (mu.southBC)
     {
         case BC::Dirichlet:
-            for (size_t p = 0; p < nx; p++)
+            for (size_t q = 0; q < ny; q++)
             {
-                double T = boost::math::chebyshev_t(p, xi_1(i));
-                for (size_t q = 0; q < ny; q++)
-                    A(i, p+q*nx) = T * pow(-1, q);
+                double t2 = pow(-1, q);
+                for (size_t p = 0; p < nx; p++)
+                    A(i, p+q*nx) = T1(i, p) * t2;
             }
             b(i) = mu.south(i);
             break;
         case BC::Neumann:
-            for (size_t p = 0; p < nx; p++)
+            for (size_t q = 0; q < ny; q++)
             {
-                double  T = boost::math::chebyshev_t(p, xi_1(i));
-                double dT = boost::math::chebyshev_t_prime(p, xi_1(i));
-                for (size_t q = 0; q < ny; q++)
-                    A(i, p+q*nx) = h_2s1_south(i)*dT*pow(-1, q) + h_2s2_south(i)*T*pow(-1, q+1)*pow(q, 2);
+                double  t2 = pow(-1, q);
+                double dt2 = pow(-1, q+1)*pow(q, 2);
+                for (size_t p = 0; p < nx; p++)
+                    A(i, p+q*nx) = h_2s1_south(i)*dT1(i, p)*t2 + h_2s2_south(i)*T1(i, p)*dt2;
             }
             b(i) = mu.south(i);
             break;
         case BC::Robin:
-            for (size_t p = 0; p < nx; p++)
+            for (size_t q = 0; q < ny; q++)
             {
-                double  T = boost::math::chebyshev_t(p, xi_1(i));
-                double dT = boost::math::chebyshev_t_prime(p, xi_1(i));
-                for (size_t q = 0; q < ny; q++)
-                    A(i, p+q*nx) = mu.r1South*T*pow(-1, q)
-                                 + mu.r2South*(h_2s1_south(i)*dT*pow(-1, q) + h_2s2_south(i)*T*pow(-1, q+1)*pow(q, 2));
+                double  t2 = pow(-1, q);
+                double dt2 = pow(-1, q+1)*pow(q, 2);
+                for (size_t p = 0; p < nx; p++)
+                    A(i, p+q*nx) = mu.r1South*T1(i, p) * t2
+                                 + mu.r2South*(h_2s1_south(i)*dT1(i, p)*t2 + h_2s2_south(i)*T1(i, p)*dt2);
             }
             b(i) = mu.south(i);
             break;
         case BC::Derivative_x:
-            if (analysis == Analysis::linear)
+        {
+            auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(xi_1(i), -1, chi);
+            double detJ = dxdx1*dydx2 - dxdx2*dydx1;
+            double J11_inv = dydx2/detJ;
+            double J21_inv =-dydx1/detJ;
+            for (size_t q = 0; q < ny; q++)
             {
-                auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(xi_1(i), -1, chi);
-                double detJ = dxdx1*dydx2 - dxdx2*dydx1;
-                double J11_inv = dydx2/detJ;
-                double J21_inv =-dydx1/detJ;
+                double  t2 = pow(-1, q);
+                double dt2 = pow(-1, q+1)*pow(q, 2);
                 for (size_t p = 0; p < nx; p++)
-                {
-                    double  T = boost::math::chebyshev_t(p, xi_1(i));
-                    double dT = boost::math::chebyshev_t_prime(p, xi_1(i));
-                    for (size_t q = 0; q < ny; q++)
-                        A(i, p+q*nx) = J11_inv*dT*pow(-1, q) + J21_inv*T*pow(-1, q+1)*pow(q, 2);
-                }
-            }
-            else
-            {
-                std::println("Derivative_x not yet implemented for nonlinear analysis!");
-                exit(EXIT_FAILURE);
+                    A(i, p+q*nx) = J11_inv*dT1(i, p)*t2 + J21_inv*T1(i, p)*dt2;
             }
             b(i) = mu.south(i);
             break;
+        }
         case BC::Derivative_y:
-            if (analysis == Analysis::linear)
+        {
+            auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(xi_1(i), -1, chi);
+            double detJ = dxdx1*dydx2 - dxdx2*dydx1;
+            double J12_inv =-dxdx2/detJ;
+            double J22_inv = dxdx1/detJ;
+            for (size_t q = 0; q < ny; q++)
             {
-                auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(xi_1(i), -1, chi);
-                double detJ = dxdx1*dydx2 - dxdx2*dydx1;
-                double J12_inv =-dxdx2/detJ;
-                double J22_inv = dxdx1/detJ;
+                double  t2 = pow(-1, q);
+                double dt2 = pow(-1, q+1)*pow(q, 2);
                 for (size_t p = 0; p < nx; p++)
-                {
-                    double  T = boost::math::chebyshev_t(p, xi_1(i));
-                    double dT = boost::math::chebyshev_t_prime(p, xi_1(i));
-                    for (size_t q = 0; q < ny; q++)
-                        A(i, p+q*nx) = J12_inv*dT*pow(-1, q) + J22_inv*T*pow(-1, q+1)*pow(q, 2);
-                }
-            }
-            else
-            {
-                std::println("Derivative_y not yet implemented for nonlinear analysis!");
-                exit(EXIT_FAILURE);
+                    A(i, p+q*nx) = J12_inv*dT1(i, p)*t2 + J22_inv*T1(i, p)*dt2;
             }
             b(i) = mu.south(i);
             break;
+        }
         case BC::None:
             break;
     }
@@ -195,78 +183,59 @@ void Wing::muBoundaryNorth(const size_t i)
     switch (mu.northBC)
     {
         case BC::Dirichlet:
-            for (size_t p = 0; p < nx; p++)
-            {
-                double T = boost::math::chebyshev_t(p, xi_1(i));
-                for (size_t q = 0; q < ny; q++)
-                    A(k, p+q*nx) = T;
-            }
+            for (size_t q = 0; q < ny; q++)
+                for (size_t p = 0; p < nx; p++) 
+                    A(k, p+q*nx) = T1(i, p);
             b(k) = mu.north(i);
             break;
         case BC::Neumann:
-            for (size_t p = 0; p < nx; p++)
+            for (size_t q = 0; q < ny; q++)
             {
-                double  T = boost::math::chebyshev_t(p, xi_1(i));
-                double dT = boost::math::chebyshev_t_prime(p, xi_1(i));
-                for (size_t q = 0; q < ny; q++)
-                    A(k, p+q*nx) = h_2s1_north(i)*dT + h_2s2_north(i)*T*pow(q, 2);
+                double dt2 = pow(q, 2);
+                for (size_t p = 0; p < nx; p++)
+                    A(k, p+q*nx) = h_2s1_north(i)*dT1(i, p) + h_2s2_north(i)*T1(i, p)*dt2;
             }
             b(k) = mu.north(i);
             break;
         case BC::Robin:
-            for (size_t p = 0; p < nx; p++)
+            for (size_t q = 0; q < ny; q++)
             {
-                double  T = boost::math::chebyshev_t(p, xi_1(i));
-                double dT = boost::math::chebyshev_t_prime(p, xi_1(i));
-                for (size_t q = 0; q < ny; q++)
-                    A(k, p+q*nx) = mu.r1North*T + mu.r2North*(h_2s1_north(i)*dT + h_2s2_north(i)*T*pow(q, 2));
+                double dt2 = pow(q, 2);
+                for (size_t p = 0; p < nx; p++)
+                    A(k, p+q*nx) = mu.r1North*T1(i, p) + mu.r2North*(h_2s1_north(i)*dT1(i, p) + h_2s2_north(i)*T1(i, p)*dt2);
             }
             b(k) = mu.north(i);
             break;
         case BC::Derivative_x:
-            if (analysis == Analysis::linear)
+        {
+            auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(xi_1(i), 1, chi);
+            double detJ = dxdx1*dydx2 - dxdx2*dydx1;
+            double J11_inv = dydx2/detJ;
+            double J21_inv =-dydx1/detJ;
+            for (size_t q = 0; q < ny; q++)
             {
-                auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(xi_1(i), 1, chi);
-                double detJ = dxdx1*dydx2 - dxdx2*dydx1;
-                double J11_inv = dydx2/detJ;
-                double J21_inv =-dydx1/detJ;
+                double dt2 = pow(q, 2);
                 for (size_t p = 0; p < nx; p++)
-                {
-                    double  T = boost::math::chebyshev_t(p, xi_1(i));
-                    double dT = boost::math::chebyshev_t_prime(p, xi_1(i));
-                    for (size_t q = 0; q < ny; q++)
-                        A(k, p+q*nx) = J11_inv*dT + J21_inv*T*pow(q, 2);
-                }
-            }
-            else
-            {
-                std::println("Derivative_x not yet implemented for nonlinear analysis!");
-                exit(EXIT_FAILURE);
+                    A(k, p+q*nx) = J11_inv*dT1(i, p) + J21_inv*T1(i, p)*dt2;
             }
             b(k) = mu.north(i);
             break;
+        }
         case BC::Derivative_y:
-            if (analysis == Analysis::linear)
+        {
+            auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(xi_1(i), 1, chi);
+            double detJ = dxdx1*dydx2 - dxdx2*dydx1;
+            double J12_inv =-dxdx2/detJ;
+            double J22_inv = dxdx1/detJ;
+            for (size_t q = 0; q < ny; q++)
             {
-                auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(xi_1(i), 1, chi);
-                double detJ = dxdx1*dydx2 - dxdx2*dydx1;
-                double J12_inv =-dxdx2/detJ;
-                double J22_inv = dxdx1/detJ;
+                double dt2 = pow(q, 2);
                 for (size_t p = 0; p < nx; p++)
-                {
-                    double  T = boost::math::chebyshev_t(p, xi_1(i));
-                    double dT = boost::math::chebyshev_t_prime(p, xi_1(i));
-                    for (size_t q = 0; q < ny; q++)
-                        A(k, p+q*nx) = J12_inv*dT + J22_inv*T*pow(q, 2);
-                }
-            }
-            else
-            {
-                std::println("Derivative_y not yet implemented for nonlinear analysis!");
-                exit(EXIT_FAILURE);
+                    A(k, p+q*nx) = J12_inv*dT1(i, p) + J22_inv*T1(i, p)*dt2;
             }
             b(k) = mu.north(i);
             break;
+        }
         case BC::None:
             break;
     }
@@ -278,79 +247,67 @@ void Wing::muBoundaryWest(const size_t j)
     switch (mu.westBC)
     {
         case BC::Dirichlet:
-            for (size_t q = 0; q < ny; q++)
+            for (size_t p = 0; p < nx; p++)
             {
-                double T = boost::math::chebyshev_t(q, xi_2(j));
-                for (size_t p = 0; p < nx; p++)
-                    A(k, p+q*nx) = pow(-1, p) * T;
+                double t1 = pow(-1, p);
+                for (size_t q = 0; q < ny; q++)
+                    A(k, p+q*nx) = t1 * T2(j, q);
             }
             b(k) = mu.west(j);
             break;
         case BC::Neumann:
-            for (size_t q = 0; q < ny; q++)
+            for (size_t p = 0; p < nx; p++)
             {
-                double  T = boost::math::chebyshev_t(q, xi_2(j));
-                double dT = boost::math::chebyshev_t_prime(q, xi_2(j));
-                for (size_t p = 0; p < nx; p++)
-                    A(k, p+q*nx) = h_1s1_west(j)*pow(-1, p+1)*pow(p, 2)*T + h_1s2_west(j)*pow(-1, p)*dT;
+                double  t1 = pow(-1, p);
+                double dt1 = pow(-1, p+1)*pow(p, 2);
+                for (size_t q = 0; q < ny; q++)
+                    A(k, p+q*nx) = h_1s1_west(j)*dt1*T2(j, q) + h_1s2_west(j)*t1*dT2(j, q);
             }
             b(k) = mu.west(j);
             break;
         case BC::Robin:
-            for (size_t q = 0; q < ny; q++)
+            for (size_t p = 0; p < nx; p++)
             {
-                double  T = boost::math::chebyshev_t(q, xi_2(j));
-                double dT = boost::math::chebyshev_t_prime(q, xi_2(j));
-                for (size_t p = 0; p < nx; p++)
-                    A(k, p+q*nx) = mu.r1West*pow(-1, p) * T
-                                 + mu.r2West*(h_1s1_west(j)*pow(-1, p+1)*pow(p, 2)*T + h_1s2_west(j)*pow(-1, p)*dT);
+                double  t2 = pow(-1, p);
+                double dt2 = pow(-1, p+1)*pow(p, 2);
+                for (size_t q = 0; q < ny; q++)
+                    A(k, p+q*nx) = mu.r1West*pow(-1, p) * T2(j, q)
+                                 + mu.r2West*(h_1s1_west(j)*dt2*T2(j, q) + h_1s2_west(j)*t2*dT2(j, q));
             }
             b(k) = mu.west(j);
             break;
         case BC::Derivative_x:
-            if (analysis == Analysis::linear)
+        {
+            auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(-1, xi_2(j), chi);
+            double detJ = dxdx1*dydx2 - dxdx2*dydx1;
+            double J11_inv = dydx2/detJ;
+            double J21_inv =-dydx1/detJ;
+            for (size_t p = 0; p < nx; p++)
             {
-                auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(-1, xi_2(j), chi);
-                double detJ = dxdx1*dydx2 - dxdx2*dydx1;
-                double J11_inv = dydx2/detJ;
-                double J21_inv =-dydx1/detJ;
+                double  t1 = pow(-1, p);
+                double dt1 = pow(-1, p+1)*pow(p, 2);
                 for (size_t q = 0; q < ny; q++)
-                {
-                    double  T = boost::math::chebyshev_t(q, xi_2(j));
-                    double dT = boost::math::chebyshev_t_prime(q, xi_2(j));
-                    for (size_t p = 0; p < nx; p++)
-                        A(k, p+q*nx) = J11_inv*pow(-1, p+1)*pow(p, 2)*T + J21_inv*pow(-1, p)*dT;
-                }
-            }
-            else
-            {
-                std::println("Derivative_x not yet implemented for nonlinear analysis!");
-                exit(EXIT_FAILURE);
+                    A(k, p+q*nx) = J11_inv*dt1*T2(j, q) + J21_inv*t1*dT2(j, q);
             }
             b(k) = mu.west(j);
             break;
+        }
         case BC::Derivative_y:
-            if (analysis == Analysis::linear)
+        {
+            auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(-1, xi_2(j), chi);
+            double detJ = dxdx1*dydx2 - dxdx2*dydx1;
+            double J12_inv =-dxdx2/detJ;
+            double J22_inv = dxdx1/detJ;
+            for (size_t p = 0; p < nx; p++)
             {
-                auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(-1, xi_2(j), chi);
-                double detJ = dxdx1*dydx2 - dxdx2*dydx1;
-                double J12_inv =-dxdx2/detJ;
-                double J22_inv = dxdx1/detJ;
+                double  t1 = pow(-1, p);
+                double dt1 = pow(-1, p+1)*pow(p, 2);
                 for (size_t q = 0; q < ny; q++)
-                {
-                    double  T = boost::math::chebyshev_t(q, xi_2(j));
-                    double dT = boost::math::chebyshev_t_prime(q, xi_2(j));
-                    for (size_t p = 0; p < nx; p++)
-                        A(k, p+q*nx) = J12_inv*pow(-1, p+1)*pow(p, 2)*T + J22_inv*pow(-1, p)*dT;
-                }
-            }
-            else
-            {
-                std::println("Derivative_x not yet implemented for nonlinear analysis!");
-                exit(EXIT_FAILURE);
+                    A(k, p+q*nx) = J12_inv*dt1*T2(j, q) + J22_inv*t1*dT2(j, q);
             }
             b(k) = mu.west(j);
             break;
+        }
         case BC::None:
             break;
     }
@@ -363,77 +320,58 @@ void Wing::muBoundaryEast(const size_t j)
     {
         case BC::Dirichlet:   
             for (size_t q = 0; q < ny; q++)
-            {
-                double T = boost::math::chebyshev_t(q, xi_2(j));
                 for (size_t p = 0; p < nx; p++)
-                    A(k, p+q*nx) = T;
-            }
+                    A(k, p+q*nx) = T2(j, q);
             b(k) = mu.east(j);
             break;
         case BC::Neumann:
-            for (size_t q = 0; q < ny; q++)
+            for (size_t p = 0; p < nx; p++)
             {
-                double  T = boost::math::chebyshev_t(q, xi_2(j));
-                double dT = boost::math::chebyshev_t_prime(q, xi_2(j));
-                for (size_t p = 0; p < nx; p++)
-                    A(k, p+q*nx) = h_1s1_east(j)*pow(p, 2)*T + h_1s2_east(j)*dT;
+                double dt1 = pow(p, 2);
+                for (size_t q = 0; q < ny; q++)
+                    A(k, p+q*nx) = h_1s1_east(j)*dt1*T2(j, q) + h_1s2_east(j)*dT2(j, q);
             }
             b(k) = mu.east(j);
             break;
         case BC::Robin:
-            for (size_t q = 0; q < ny; q++)
+            for (size_t p = 0; p < nx; p++)
             {
-                double  T = boost::math::chebyshev_t(q, xi_2(j));
-                double dT = boost::math::chebyshev_t_prime(q, xi_2(j));
-                for (size_t p = 0; p < nx; p++)
-                    A(k, p+q*nx) = mu.r1East*T + mu.r2East*(h_1s1_east(j)*pow(p, 2)*T + h_1s2_east(j)*dT);
+                double dt1 = pow(p, 2);
+                for (size_t q = 0; q < ny; q++)
+                    A(k, p+q*nx) = mu.r1East*T2(j, q) + mu.r2East*(h_1s1_east(j)*dt1*T2(j, q) + h_1s2_east(j)*dT2(j, q));
             }
             b(k) = mu.east(j);
             break;
         case BC::Derivative_x:
-            if (analysis == Analysis::linear)
+        {
+            auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(1, xi_2(j), chi);
+            double detJ = dxdx1*dydx2 - dxdx2*dydx1;
+            double J11_inv = dydx2/detJ;
+            double J21_inv =-dydx1/detJ;
+            for (size_t p = 0; p < nx; p++)
             {
-                auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(1, xi_2(j), chi);
-                double detJ = dxdx1*dydx2 - dxdx2*dydx1;
-                double J11_inv = dydx2/detJ;
-                double J21_inv =-dydx1/detJ;
+                double dt1 = pow(p, 2);
                 for (size_t q = 0; q < ny; q++)
-                {
-                    double  T = boost::math::chebyshev_t(q, xi_2(j));
-                    double dT = boost::math::chebyshev_t_prime(q, xi_2(j));
-                    for (size_t p = 0; p < nx; p++)
-                        A(k, p+q*nx) = J11_inv*pow(p, 2)*T + J21_inv*dT;
-                }
-            }
-            else
-            {
-                std::println("Derivative_x not yet implemented for nonlinear analysis!");
-                exit(EXIT_FAILURE);
+                    A(k, p+q*nx) = J11_inv*dt1*T2(j, q) + J21_inv*dT2(j, q);
             }
             b(k) = mu.east(j);
             break;
+        }
         case BC::Derivative_y:
-            if (analysis == Analysis::linear)
+        {
+            auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(1, xi_2(j), chi);
+            double detJ = dxdx1*dydx2 - dxdx2*dydx1;
+            double J12_inv =-dxdx2/detJ;
+            double J22_inv = dxdx1/detJ;
+            for (size_t p = 0; p < nx; p++)
             {
-                auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(1, xi_2(j), chi);
-                double detJ = dxdx1*dydx2 - dxdx2*dydx1;
-                double J12_inv =-dxdx2/detJ;
-                double J22_inv = dxdx1/detJ;
+                double dt1 = pow(p, 2);
                 for (size_t q = 0; q < ny; q++)
-                {
-                    double  T = boost::math::chebyshev_t(q, xi_2(j));
-                    double dT = boost::math::chebyshev_t_prime(q, xi_2(j));
-                    for (size_t p = 0; p < nx; p++)
-                        A(k, p+q*nx) = J12_inv*pow(p, 2)*T + J22_inv*dT;
-                }
-            }
-            else
-            {
-                std::println("Derivative_x not yet implemented for nonlinear analysis!");
-                exit(EXIT_FAILURE);
+                    A(k, p+q*nx) = J12_inv*dt1*T2(j, q) + J22_inv*dT2(j, q);
             }
             b(k) = mu.east(j);
             break;
+        }
         case BC::None:
             break;
     }

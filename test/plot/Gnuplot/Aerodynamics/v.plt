@@ -20,6 +20,6 @@ set ylabel 'x/m'
 set view map
 set pm3d interpolate 10,10 corners2color mean
 
-splot '../../Data/Aerodynamics/v_0' u 2:1:3 notitle with pm3d,\
-      '../../Data/Aerodynamics/v_1' u 2:1:3 notitle with pm3d,\
-      '../../Data/Aerodynamics/v_2' u 2:1:3 notitle with pm3d
+splot '../../Data/Aerodynamics/v_0' u 2:1:5 notitle with pm3d,\
+      '../../Data/Aerodynamics/v_1' u 2:1:5 notitle with pm3d,\
+      '../../Data/Aerodynamics/v_2' u 2:1:5 notitle with pm3d

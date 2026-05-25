@@ -13,11 +13,11 @@ set pm3d map
 
 set multiplot layout 2,2 rowsfirst
 set title "Rotated by 0°" tc rgb 'gray'
-splot '../../Data/Wing/square0' notitle with pm3d
+splot '../../Data/Wing/square0' u 1:2:5 notitle with pm3d
 set title "Rotated by 90°" tc rgb 'gray'
-splot '../../Data/Wing/square1' notitle with pm3d
+splot '../../Data/Wing/square1' u 1:2:5 notitle with pm3d
 set title "Rotated by 180°" tc rgb 'gray'
-splot '../../Data/Wing/square2' notitle with pm3d
+splot '../../Data/Wing/square2' u 1:2:5 notitle with pm3d
 set title "Rotated by 270°" tc rgb 'gray'
-splot '../../Data/Wing/square3' notitle with pm3d
+splot '../../Data/Wing/square3' u 1:2:5 notitle with pm3d
 unset multiplot

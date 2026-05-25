@@ -7,8 +7,17 @@ namespace Chebyshev
 {
     // Evaluates the Chebyshev Polynomial of order k at values x.
     arma::vec Polynomial(const size_t k, const arma::vec x);
-    // Evaluates all the Chebyshev Polynomials up to order len(u) at values x.
+    // Evaluates all the Chebyshev Polynomials up to order length(u) at values x.
     arma::mat Polynomial(const arma::vec u, const arma::vec x);
+    // Evaluates all the Chebyshev Polynomials up to order length(x) at values x.
+    arma::mat Polynomial(const arma::vec x);
+    // Evaluates the derivative of the Chebyshev Polynomial of order k at values x
+    arma::vec derivative(const size_t k, const arma::vec x);
+    // Evaluates all the derivatives of the Chebyshev Polynomials up to order length (u) at values x.
+    arma::mat derivative(const arma::vec u, const arma::vec x);
+    // Evaluates all the derivatives of the Chebyshev Polynomials up to order length (x) at values x.
+    arma::mat derivative(const arma::vec x);
+    // Evaluate the integral of the k-th Chebyshev Polynomial from -1 to 1
     inline double integral(const size_t k)
     {
         return (k%2==0) ? 2./(1.-k*k) : 0;

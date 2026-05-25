@@ -31,7 +31,7 @@ void Wing::pitch(arma::vec _alpha)
     con = alpha.size();
     for (size_t j = 1; j < ny-1; j++)
         for (size_t i = 1; i < nx-1; i++)
-            b.row(i+j*nx) =-4*arma::datum::pi*alpha; // Must be corrected later!
+            b.row(i+j*nx) =-4*arma::datum::pi*alpha;
     lift.zeros(con);
     moment.zeros(con);
     dcp.zeros(nx, ny, con);
@@ -63,7 +63,6 @@ void Wing::linear()
 void Wing::nonlinear()
 {
     analysis = Analysis::nonlinear;
-    nC.zeros(nxy, 3);
     aerodynamicMatrix();
 
     for (size_t j = 1; j < ny-1; j++)
@@ -118,11 +117,45 @@ void Wing::output(std::string filename)
     for (size_t i = 0; i < nx; i++, file << '\n')
         for (size_t j = 0; j < ny; j++, file << '\n')
         {
-            file << x(i, j) << ' ' << y(i, j);
+            file << x(i, j) << ' ' << y(i, j) << ' ' << z(i, j) << ' ' << mu(i, j);
             for (size_t k = 0; k < con; k++)
                 file << ' ' << dcp(i, j, k);
         }
     file.close();
+}
+
+arma::mat Wing::calculateNormal()
+{
+    auto [dxdxi_1, dxdxi_2, dydxi_1, dydxi_2] = Lagrange::TransfiniteQuadMetrics(xi_1, xi_2, chi);
+    arma::mat d2xdxi_12     = D1*dxdxi_1;
+    arma::mat d2xdxi_1dxi_2 = dxdxi_1*D2.t();
+    arma::mat d2xdxi_22     = dxdxi_2*D2.t();
+    arma::mat d2ydxi_12     = D1*dydxi_1;
+    arma::mat d2ydxi_1dxi_2 = D1*dydxi_2;
+    arma::mat d2ydxi_22     = dydxi_2*D2.t();
+    arma::mat dzdxi_1 = D1*zC;
+    arma::mat dzdxi_2 = zC*D2.t();
+    arma::mat d2zdxi_12 = D1*dzdxi_1;
+    arma::mat d2zdxi_1dxi_2 = D1*dzdxi_2;
+    arma::mat d2zdxi_22 = dzdxi_2*D2.t();
+
+    arma::mat normal(nxy, 3);
+    for (size_t j = 0; j < ny; j++)
+        for (size_t i = 0; i < nx; i++)
+        {
+            double e_11 = e_c(i, j, 0);
+            double e_12 = e_c(i, j, 1);
+            double e_22 = e_c(i, j, 2);
+            double e11  =  ec(i, j, 0);
+            double e12  =  ec(i, j, 1);
+            double e22  =  ec(i, j, 2);
+            double e = e_11*e_22 - pow(e_12, 2);
+            double sqrt_a = sqrt(e*(1 + e11*pow(dzdxi_1(i, j), 2) + 2*e12*dzdxi_1(i, j)*dzdxi_2(i, j) + e22*pow(dzdxi_2(i, j), 2)));
+            normal.row(i+j*nx) = arma::rowvec::fixed<3>({dydxi_1(i, j)*dzdxi_2(i, j)-dzdxi_1(i, j)*dydxi_2(i, j),
+                                                        dzdxi_1(i, j)*dxdxi_2(i, j)-dxdxi_1(i, j)*dzdxi_2(i, j),
+                                                        dxdxi_1(i, j)*dydxi_2(i, j)-dydxi_1(i, j)*dxdxi_2(i, j)})/sqrt_a;
+        }
+    return normal;
 }
 
 void Wing::linearSolve()
@@ -191,19 +224,19 @@ void Wing::postprocessing()
             arma::mat J11_inv = J22/detJ;
             arma::mat J21_inv =-J21/detJ;
             for (size_t j = 0; j < ny; j++) // Loop over nodes in 2-direction
-                for (size_t i = 0; i < nx; i++) // Loop over nodes in 1-direction
-                    for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
-                    {
-                        double T2 = boost::math::chebyshev_t(q, x2(j));
-                        double dT2dx2 = boost::math::chebyshev_t_prime(q, x2(j));
+                for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+                {
+                    double  t2 = boost::math::chebyshev_t(q, x2(j));
+                    double dt2 = boost::math::chebyshev_t_prime(q, x2(j));
+                    for (size_t i = 0; i < nx; i++) // Loop over nodes in 1-direction
                         for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                         {
-                            double T1 = boost::math::chebyshev_t(p, x1(i));
-                            double dT1dx1 = boost::math::chebyshev_t_prime(p, x1(i));
-                            mu(i, j)       += mu_hat(p+q*nx, 0)  * T1 * T2;
-                            dcp.tube(i, j) += 2*mu_hat.row(p+q*nx) * (J11_inv(i, j)*dT1dx1*T2 + J21_inv(i, j)*T1*dT2dx2);
+                            double  t1 = boost::math::chebyshev_t(p, x1(i));
+                            double dt1 = boost::math::chebyshev_t_prime(p, x1(i));
+                            mu(i, j)       += mu_hat(p+q*nx, 0)  * t1 * t2;
+                            dcp.tube(i, j) += 2*mu_hat.row(p+q*nx) * (J11_inv(i, j)*dt1*t2 + J21_inv(i, j)*t1*dt2);
                         }
-                    }
+                }
             break;
         }
         case Analysis::nonlinear:
@@ -213,16 +246,19 @@ void Wing::postprocessing()
             arma::mat dzdx1 = d1 * z;
             arma::mat dzdx2 = z * d2.t();
             arma::mat Q = join_horiz(cos(alpha), arma::zeros(con), sin(alpha));
+            arma::mat e = e_c.slice(0)%e_c.slice(2) - pow(e_c.slice(1), 2);
+            arma::mat sqrt_a = sqrt(e%(1 + ec.slice(0)%pow(dzdx1, 2) + 2*ec.slice(1)%dzdx1%dzdx2 + ec.slice(2)%pow(dzdx2, 2)));
             for (size_t j = 0; j < ny; j++) // Loop over nodes in 2-direction
                 for (size_t i = 0; i < nx; i++) // Loop over nodes in 1-direction
                 {
                     arma::vec::fixed<3> q_mu(arma::fill::zeros);
-                    arma::vec::fixed<3> n = {J21(i, j)*dzdx2(i, j)-dzdx1(i, j)*J22(i, j),
-                                             dzdx1(i, j)*J12(i, j)-J11(i, j)*dzdx2(i, j),
-                                             J11(i, j)*J22(i, j)-J21(i, j)*J12(i, j)};
+                    arma::vec::fixed<3> n = arma::vec::fixed<3>({J21(i, j)*dzdx2(i, j)-dzdx1(i, j)*J22(i, j),
+                                                                 dzdx1(i, j)*J12(i, j)-J11(i, j)*dzdx2(i, j),
+                                                                 J11(i, j)*J22(i, j)-J21(i, j)*J12(i, j)})/sqrt_a(i, j);
                     arma::mat::fixed<3, 2> J_red = {{J22(i, j)*n(2) - n(1)*dzdx2(i, j), n(1)*dzdx1(i, j) - J21(i, j)*n(2)},
                                                     {n(0)*dzdx2(i, j) - J12(i, j)*n(2), J11(i, j)*n(2) - n(0)*dzdx1(i, j)},
                                                     {J12(i, j)*n(1) - n(0)*J22(i, j), n(0)*J21(i, j) - J11(i, j)*n(1)}};
+                    J_red/=sqrt_a(i, j);
                     for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                     {
                         double T2 = boost::math::chebyshev_t(q, x2(j));
