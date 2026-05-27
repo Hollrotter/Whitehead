@@ -63,51 +63,8 @@ void Wing::linear()
 void Wing::nonlinear()
 {
     analysis = Analysis::nonlinear;
-    aerodynamicMatrix();
-
-    for (size_t j = 1; j < ny-1; j++)
-    {
-        // BC west
-        muBoundaryWest(j);
-        // BC east
-        muBoundaryEast(j);
-    }
-    for (size_t i = 1; i < nx-1; i++)
-    {
-        // BC south
-        muBoundarySouth(i);
-        // BC north
-        muBoundaryNorth(i);
-    }
-    // BC south-west corner (i = 0, j = 0)
-    if (chi[0]->curveType == CurveType::Interface && chi[3]->curveType == CurveType::Boundary)
-        muBoundaryWest(0);
-    else
-        muBoundarySouth(0);
-
-    // BC north-west corner (i = 0, j = ny-1)
-    if (chi[2]->curveType == CurveType::Boundary  && chi[3]->curveType == CurveType::Interface)
-        muBoundaryNorth(0);
-    else
-        muBoundaryWest(ny-1);
-
-    // BC south-east corner (i = nx-1, j = 0)
-    if (chi[0]->curveType == CurveType::Boundary  && chi[1]->curveType == CurveType::Interface)
-        muBoundarySouth(nx-1);
-    else
-        muBoundaryEast(0);
-
-    // BC north-east corner (i = nx-1, j = ny-1)
-    if (chi[2]->curveType == CurveType::Interface && chi[1]->curveType == CurveType::Boundary)
-        muBoundaryEast(ny-1);
-    else
-        muBoundaryNorth(nx-1);
-
-    arma::mat Q = join_horiz(cos(alpha), arma::zeros(con), sin(alpha)).t();
-    for (size_t j = 1; j < ny-1; j++)
-        for (size_t i = 1; i < nx-1; i++)
-            b.row(i+j*nx) =-2*arma::datum::tau*(nC.row(i+j*nx)*Q);
-    mu_hat = solve(A, b);
+    nonlinearSolve();
+    nonlinearEval();
     postprocessing();
 }
 
@@ -204,6 +161,61 @@ void Wing::linearSolve()
 }
 
 void Wing::linearEval()
+{
+    mu_hat = solve(trimatu(U), solve(trimatl(L), P*b));
+}
+
+void Wing::nonlinearSolve()
+{
+    aerodynamicMatrix();
+
+    for (size_t j = 1; j < ny-1; j++)
+    {
+        // BC west
+        muBoundaryWest(j);
+        // BC east
+        muBoundaryEast(j);
+    }
+    for (size_t i = 1; i < nx-1; i++)
+    {
+        // BC south
+        muBoundarySouth(i);
+        // BC north
+        muBoundaryNorth(i);
+    }
+    // BC south-west corner (i = 0, j = 0)
+    if (chi[0]->curveType == CurveType::Interface && chi[3]->curveType == CurveType::Boundary)
+        muBoundaryWest(0);
+    else
+        muBoundarySouth(0);
+
+    // BC north-west corner (i = 0, j = ny-1)
+    if (chi[2]->curveType == CurveType::Boundary  && chi[3]->curveType == CurveType::Interface)
+        muBoundaryNorth(0);
+    else
+        muBoundaryWest(ny-1);
+
+    // BC south-east corner (i = nx-1, j = 0)
+    if (chi[0]->curveType == CurveType::Boundary  && chi[1]->curveType == CurveType::Interface)
+        muBoundarySouth(nx-1);
+    else
+        muBoundaryEast(0);
+
+    // BC north-east corner (i = nx-1, j = ny-1)
+    if (chi[2]->curveType == CurveType::Interface && chi[1]->curveType == CurveType::Boundary)
+        muBoundaryEast(ny-1);
+    else
+        muBoundaryNorth(nx-1);
+
+    arma::mat Q = join_horiz(cos(alpha), arma::zeros(con), sin(alpha)).t();
+    for (size_t j = 1; j < ny-1; j++)
+        for (size_t i = 1; i < nx-1; i++)
+            b.row(i+j*nx) =-2*arma::datum::tau*(nC.row(i+j*nx)*Q);
+
+    arma::lu(L, U, P, A);
+}
+
+void Wing::nonlinearEval()
 {
     mu_hat = solve(trimatu(U), solve(trimatl(L), P*b));
 }

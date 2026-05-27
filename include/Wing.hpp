@@ -153,6 +153,8 @@ private:
     void muBoundaryEast(const size_t);
     void linearSolve();
     void linearEval();
+    void nonlinearSolve();
+    void nonlinearEval();
     // Calculate cL, cM and dcp from mu_hat
     void postprocessing();
 };

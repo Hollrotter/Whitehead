@@ -84,7 +84,7 @@ int main()
 
     s.youngsModulus(E*t);
     s.poissonsRatio(nu);
-    
+    s.setIterations(200);
     s.planeStrain();
 
     s.output("plot/Data/Kirsch_v1",  Field::v1);

@@ -2,6 +2,12 @@
 
 void Membrane::planeStrain()
 {
+    planeStrainSolve();
+    planeStrainEval();
+}
+
+void Membrane::planeStrainSolve()
+{
     size_t nxy2 = 2*nxy;
 
     arma::mat Phi111 = 3*H1111%g111() + 6*H1112%g112() + (H1122 + 2*H1221)%g122();
@@ -23,114 +29,93 @@ void Membrane::planeStrain()
                             join_horiz(d2dx2(H1112) + d2dxdy(H1122 + H1221) + d2dy2(H1222) - ddx(Phi211) - ddy(Phi212) + constant(Psi21),
                                        d2dx2(H1221) + d2dxdy(2*H1222)       + d2dy2(H2222) - ddx(Phi221) - ddy(Phi222) + constant(Psi22)));
                                        
-    arma::vec bv = join_vert(-p1,-p2)/D;
+    bv = join_vert(-p1,-p2)/D;
     
     for (size_t j = 1; j < ny-1; j++)
     {
         // BC west
 
-        v1BoundaryWestEast(v1.westBC, v1.west(j), 0, j, A, bv, v1.r1West, v1.r2West, h_1s1_west(j), h_1s2_west(j));
-        v2BoundaryWestEast(v2.westBC, v2.west(j), 0, j, A, bv, v2.r1West, v2.r2West, h_1s1_west(j), h_1s2_west(j), h_2s2_west(j));
-        n11BoundaryLinear(n11.westBC, n11.west(j), 0, j, A, bv, h_11s_west(j));
-        n12BoundaryLinear(n12.westBC, n12.west(j), 0, j, A, bv, h_11s_west(j), h_12s_west(j), h_22s_west(j));
+        v1BoundaryWestEast(v1.westBC, v1.west(j), 0, j, A, v1.r1West, v1.r2West, h_1s1_west(j), h_1s2_west(j));
+        v2BoundaryWestEast(v2.westBC, v2.west(j), 0, j, A, v2.r1West, v2.r2West, h_1s1_west(j), h_1s2_west(j), h_2s2_west(j));
+        n11BoundaryLinear(n11.westBC, n11.west(j), 0, j, A, h_11s_west(j));
+        n12BoundaryLinear(n12.westBC, n12.west(j), 0, j, A, h_11s_west(j), h_12s_west(j), h_22s_west(j));
 
         // BC east
         size_t i = nx-1;
 
-        v1BoundaryWestEast(v1.eastBC, v1.east(j), i, j, A, bv, v1.r1East, v1.r2East, h_1s1_east(j), h_1s2_east(j));
-        v2BoundaryWestEast(v2.eastBC, v2.east(j), i, j, A, bv, v2.r1East, v2.r2East, h_1s1_east(j), h_1s2_east(j), h_2s2_east(j));
-        n11BoundaryLinear(n11.eastBC, n11.east(j), i, j, A, bv, h_11s_east(j));
-        n12BoundaryLinear(n12.eastBC, n12.east(j), i, j, A, bv, h_11s_east(j), h_12s_east(j), h_22s_east(j));
+        v1BoundaryWestEast(v1.eastBC, v1.east(j), i, j, A, v1.r1East, v1.r2East, h_1s1_east(j), h_1s2_east(j));
+        v2BoundaryWestEast(v2.eastBC, v2.east(j), i, j, A, v2.r1East, v2.r2East, h_1s1_east(j), h_1s2_east(j), h_2s2_east(j));
+        n11BoundaryLinear(n11.eastBC, n11.east(j), i, j, A, h_11s_east(j));
+        n12BoundaryLinear(n12.eastBC, n12.east(j), i, j, A, h_11s_east(j), h_12s_east(j), h_22s_east(j));
     }
 
     for (size_t i = 1; i < nx-1; i++)
     {
         // BC south
 
-        v1BoundarySouthNorth(v1.southBC, v1.south(i), i, 0, A, bv, v1.r1South, v1.r2South, h_1s1_south(i), h_2s1_south(i), h_2s2_south(i));
-        v2BoundarySouthNorth(v2.southBC, v2.south(i), i, 0, A, bv, v2.r1South, v2.r2South, h_2s1_south(i), h_2s2_south(i));
-        n21BoundaryLinear(n12.southBC, n12.south(i), i, 0, A, bv, h_11s_south(i), h_21s_south(i), h_22s_south(i));
-        n22BoundaryLinear(n22.southBC, n22.south(i), i, 0, A, bv, h_22s_south(i));
+        v1BoundarySouthNorth(v1.southBC, v1.south(i), i, 0, A, v1.r1South, v1.r2South, h_1s1_south(i), h_2s1_south(i), h_2s2_south(i));
+        v2BoundarySouthNorth(v2.southBC, v2.south(i), i, 0, A, v2.r1South, v2.r2South, h_2s1_south(i), h_2s2_south(i));
+        n21BoundaryLinear(n12.southBC, n12.south(i), i, 0, A, h_11s_south(i), h_21s_south(i), h_22s_south(i));
+        n22BoundaryLinear(n22.southBC, n22.south(i), i, 0, A, h_22s_south(i));
         
         // BC north
         size_t j = ny-1;
 
-        v1BoundarySouthNorth(v1.northBC, v1.north(i), i, j, A, bv, v1.r1North, v1.r2North, h_1s1_north(i), h_2s1_north(i), h_2s2_north(i));
-        v2BoundarySouthNorth(v2.northBC, v2.north(i), i, j, A, bv, v2.r1North, v2.r2North, h_2s1_north(i), h_2s2_north(i));
-        n21BoundaryLinear(n12.northBC, n12.north(i), i, j, A, bv, h_11s_north(i), h_21s_north(i), h_22s_north(i));
-        n22BoundaryLinear(n22.northBC, n22.north(i), i, j, A, bv, h_22s_north(i));
+        v1BoundarySouthNorth(v1.northBC, v1.north(i), i, j, A, v1.r1North, v1.r2North, h_1s1_north(i), h_2s1_north(i), h_2s2_north(i));
+        v2BoundarySouthNorth(v2.northBC, v2.north(i), i, j, A, v2.r1North, v2.r2North, h_2s1_north(i), h_2s2_north(i));
+        n21BoundaryLinear(n12.northBC, n12.north(i), i, j, A, h_11s_north(i), h_21s_north(i), h_22s_north(i));
+        n22BoundaryLinear(n22.northBC, n22.north(i), i, j, A, h_22s_north(i));
     }
 
     // BC south-west corner (i = 0, j = 0)
     if (chi[0]->curveType == CurveType::Interface && chi[3]->curveType == CurveType::Boundary)
     {
-        v1BoundaryWestEast(v1.westBC, v1.west(0), 0, 0, A, bv, v1.r1West, v1.r2West, h_1s1_west(0), h_1s2_west(0));
-        v2BoundaryWestEast(v2.westBC, v2.west(0), 0, 0, A, bv, v2.r1West, v2.r2West, h_1s1_west(0), h_1s2_west(0), h_2s2_west(0));
-        n11BoundaryLinear(n11.westBC, n11.west(0), 0, 0, A, bv, h_11s_west(0));
-        n12BoundaryLinear(n12.westBC, n12.west(0), 0, 0, A, bv, h_11s_west(0), h_12s_west(0), h_22s_west(0));
-    }
-    else if (chi[0]->curveType == CurveType::Boundary && chi[3]->curveType == CurveType::Interface)
-    {
-        v1BoundarySouthNorth(v1.southBC, v1.south(0), 0, 0, A, bv, v1.r1South, v1.r2South, h_1s1_south(0), h_2s1_south(0), h_2s2_south(0));
-        v2BoundarySouthNorth(v2.southBC, v2.south(0), 0, 0, A, bv, v2.r1South, v2.r2South, h_2s1_south(0), h_2s2_south(0));
-        n21BoundaryLinear(n12.southBC, n12.south(0), 0, 0, A, bv, h_11s_south(0), h_21s_south(0), h_22s_south(0));
-        n22BoundaryLinear(n22.southBC, n22.south(0), 0, 0, A, bv, h_22s_south(0));
+        v1BoundaryWestEast(v1.westBC, v1.west(0), 0, 0, A, v1.r1West, v1.r2West, h_1s1_west(0), h_1s2_west(0));
+        v2BoundaryWestEast(v2.westBC, v2.west(0), 0, 0, A, v2.r1West, v2.r2West, h_1s1_west(0), h_1s2_west(0), h_2s2_west(0));
+        n11BoundaryLinear(n11.westBC, n11.west(0), 0, 0, A, h_11s_west(0));
+        n12BoundaryLinear(n12.westBC, n12.west(0), 0, 0, A, h_11s_west(0), h_12s_west(0), h_22s_west(0));
     }
     else
     {
-        v1BoundarySouthNorth(v1.southBC, v1.south(0), 0, 0, A, bv, v1.r1South, v1.r2South, h_1s1_south(0), h_2s1_south(0), h_2s2_south(0));
-        v2BoundarySouthNorth(v2.southBC, v2.south(0), 0, 0, A, bv, v2.r1South, v2.r2South, h_2s1_south(0), h_2s2_south(0));
-        n21BoundaryLinear(n12.southBC, n12.south(0), 0, 0, A, bv, h_11s_south(0), h_21s_south(0), h_22s_south(0));
-        n22BoundaryLinear(n22.southBC, n22.south(0), 0, 0, A, bv, h_22s_south(0));
+        v1BoundarySouthNorth(v1.southBC, v1.south(0), 0, 0, A, v1.r1South, v1.r2South, h_1s1_south(0), h_2s1_south(0), h_2s2_south(0));
+        v2BoundarySouthNorth(v2.southBC, v2.south(0), 0, 0, A, v2.r1South, v2.r2South, h_2s1_south(0), h_2s2_south(0));
+        n21BoundaryLinear(n12.southBC, n12.south(0), 0, 0, A, h_11s_south(0), h_21s_south(0), h_22s_south(0));
+        n22BoundaryLinear(n22.southBC, n22.south(0), 0, 0, A, h_22s_south(0));
     }
 
     // BC north-west corner (i = 0, j = ny-1)
     size_t j = ny-1;
     size_t k = j*nx;
-    if (chi[2]->curveType == CurveType::Interface && chi[3]->curveType == CurveType::Boundary)
+    if (chi[2]->curveType == CurveType::Boundary  && chi[3]->curveType == CurveType::Interface)
     {
-        v1BoundaryWestEast(v1.westBC, v1.west(j), 0, j, A, bv, v1.r1West, v1.r2West, h_1s1_west(j), h_1s2_west(j));
-        v2BoundaryWestEast(v2.westBC, v2.west(j), 0, j, A, bv, v2.r1West, v2.r2West, h_1s1_west(j), h_1s2_west(j), h_2s2_west(j));
-        n11BoundaryLinear(n11.westBC, n11.west(j), 0, j, A, bv, h_11s_west(j));
-        n12BoundaryLinear(n12.westBC, n12.west(j), 0, j, A, bv, h_11s_west(j), h_12s_west(j), h_22s_west(j));
-    }
-    else if (chi[2]->curveType == CurveType::Boundary  && chi[3]->curveType == CurveType::Interface)
-    {
-        v1BoundarySouthNorth(v1.northBC, v1.north(0), 0, j, A, bv, v1.r1North, v1.r2North, h_1s1_north(0), h_2s1_north(0), h_2s2_north(0));
-        v2BoundarySouthNorth(v2.northBC, v2.north(0), 0, j, A, bv, v2.r1North, v2.r2North, h_2s1_north(0), h_2s2_north(0));
-        n21BoundaryLinear(n12.northBC, n12.north(0), 0, j, A, bv, h_11s_north(0), h_21s_north(0), h_22s_north(0));
-        n22BoundaryLinear(n22.northBC, n22.north(0), 0, j, A, bv, h_22s_north(0));
+        v1BoundarySouthNorth(v1.northBC, v1.north(0), 0, j, A, v1.r1North, v1.r2North, h_1s1_north(0), h_2s1_north(0), h_2s2_north(0));
+        v2BoundarySouthNorth(v2.northBC, v2.north(0), 0, j, A, v2.r1North, v2.r2North, h_2s1_north(0), h_2s2_north(0));
+        n21BoundaryLinear(n12.northBC, n12.north(0), 0, j, A, h_11s_north(0), h_21s_north(0), h_22s_north(0));
+        n22BoundaryLinear(n22.northBC, n22.north(0), 0, j, A, h_22s_north(0));
     }
     else
     {
-        v1BoundaryWestEast(v1.westBC, v1.west(j), 0, j, A, bv, v1.r1West, v1.r2West, h_1s1_west(j), h_1s2_west(j));
-        v2BoundaryWestEast(v2.westBC, v2.west(j), 0, j, A, bv, v2.r1West, v2.r2West, h_1s1_west(j), h_1s2_west(j), h_2s2_west(j));
-        n11BoundaryLinear(n11.westBC, n11.west(j), 0, j, A, bv, h_11s_west(j));
-        n12BoundaryLinear(n12.westBC, n12.west(j), 0, j, A, bv, h_11s_west(j), h_12s_west(j), h_22s_west(j));
+        v1BoundaryWestEast(v1.westBC, v1.west(j), 0, j, A, v1.r1West, v1.r2West, h_1s1_west(j), h_1s2_west(j));
+        v2BoundaryWestEast(v2.westBC, v2.west(j), 0, j, A, v2.r1West, v2.r2West, h_1s1_west(j), h_1s2_west(j), h_2s2_west(j));
+        n11BoundaryLinear(n11.westBC, n11.west(j), 0, j, A, h_11s_west(j));
+        n12BoundaryLinear(n12.westBC, n12.west(j), 0, j, A, h_11s_west(j), h_12s_west(j), h_22s_west(j));
     }
 
     // BC south-east corner (i = nx-1, j = 0)
     size_t i = nx-1;
-    if (chi[0]->curveType == CurveType::Interface && chi[1]->curveType == CurveType::Boundary)
+    if (chi[0]->curveType == CurveType::Boundary  && chi[1]->curveType == CurveType::Interface)
     {
-        v1BoundaryWestEast(v1.eastBC, v1.east(0), i, 0, A, bv, v1.r1East, v1.r2East, h_1s1_east(0), h_1s2_east(0));
-        v2BoundaryWestEast(v2.eastBC, v2.east(0), i, 0, A, bv, v2.r1East, v2.r2East, h_1s1_east(0), h_1s2_east(0), h_2s2_east(0));
-        n11BoundaryLinear(n11.eastBC, n11.east(0), i, 0, A, bv, h_11s_east(0));
-        n12BoundaryLinear(n12.eastBC, n12.east(0), i, 0, A, bv, h_11s_east(0), h_12s_east(0), h_22s_east(0));
-    }
-    else if (chi[0]->curveType == CurveType::Boundary  && chi[1]->curveType == CurveType::Interface)
-    {
-        v1BoundarySouthNorth(v1.southBC, v1.south(i), i, 0, A, bv, v1.r1South, v1.r2South, h_1s1_south(i), h_2s1_south(i), h_2s2_south(i));
-        v2BoundarySouthNorth(v2.southBC, v2.south(i), i, 0, A, bv, v2.r1South, v2.r2South, h_2s1_south(i), h_2s2_south(i));
-        n21BoundaryLinear(n12.southBC, n12.south(i), i, 0, A, bv, h_11s_south(i), h_21s_south(i), h_22s_south(i));
-        n22BoundaryLinear(n22.southBC, n22.south(i), i, 0, A, bv, h_22s_south(i));
+        v1BoundarySouthNorth(v1.southBC, v1.south(i), i, 0, A, v1.r1South, v1.r2South, h_1s1_south(i), h_2s1_south(i), h_2s2_south(i));
+        v2BoundarySouthNorth(v2.southBC, v2.south(i), i, 0, A, v2.r1South, v2.r2South, h_2s1_south(i), h_2s2_south(i));
+        n21BoundaryLinear(n12.southBC, n12.south(i), i, 0, A, h_11s_south(i), h_21s_south(i), h_22s_south(i));
+        n22BoundaryLinear(n22.southBC, n22.south(i), i, 0, A, h_22s_south(i));
     }
     else
     {
-        v1BoundaryWestEast(v1.eastBC, v1.east(0), i, 0, A, bv, v1.r1East, v1.r2East, h_1s1_east(0), h_1s2_east(0));
-        v2BoundaryWestEast(v2.eastBC, v2.east(0), i, 0, A, bv, v2.r1East, v2.r2East, h_1s1_east(0), h_1s2_east(0), h_2s2_east(0));
-        n11BoundaryLinear(n11.eastBC, n11.east(0), i, 0, A, bv, h_11s_east(0));
-        n12BoundaryLinear(n12.eastBC, n12.east(0), i, 0, A, bv, h_11s_east(0), h_12s_east(0), h_22s_east(0));
+        v1BoundaryWestEast(v1.eastBC, v1.east(0), i, 0, A, v1.r1East, v1.r2East, h_1s1_east(0), h_1s2_east(0));
+        v2BoundaryWestEast(v2.eastBC, v2.east(0), i, 0, A, v2.r1East, v2.r2East, h_1s1_east(0), h_1s2_east(0), h_2s2_east(0));
+        n11BoundaryLinear(n11.eastBC, n11.east(0), i, 0, A, h_11s_east(0));
+        n12BoundaryLinear(n12.eastBC, n12.east(0), i, 0, A, h_11s_east(0), h_12s_east(0), h_22s_east(0));
     }
 
     // BC north-east corner (i = nx-1, j = ny-1)
@@ -139,29 +124,27 @@ void Membrane::planeStrain()
     k = i + j*nx;
     if (chi[2]->curveType == CurveType::Interface && chi[1]->curveType == CurveType::Boundary)
     {
-        v1BoundaryWestEast(v1.eastBC, v1.east(0), i, j, A, bv, v1.r1East, v1.r2East, h_1s1_east(j), h_1s2_east(j));
-        v2BoundaryWestEast(v2.eastBC, v2.east(0), i, j, A, bv, v2.r1East, v2.r2East, h_1s1_east(j), h_1s2_east(j), h_2s2_east(j));
-        n11BoundaryLinear(n11.eastBC, n11.east(0), i, j, A, bv, h_11s_east(j));
-        n12BoundaryLinear(n12.eastBC, n12.east(0), i, j, A, bv, h_11s_east(j), h_12s_east(j), h_22s_east(j));
-    }
-    else if (chi[2]->curveType == CurveType::Boundary  && chi[1]->curveType == CurveType::Interface)
-    {
-        v1BoundarySouthNorth(v1.northBC, v1.north(i), i, j, A, bv, v1.r1North, v1.r2North, h_1s1_north(i), h_2s1_north(i), h_2s2_north(i));
-        v2BoundarySouthNorth(v2.northBC, v2.north(i), i, j, A, bv, v2.r1North, v2.r2North, h_2s1_north(i), h_2s2_north(i));
-        n21BoundaryLinear(n12.northBC, n12.north(i), i, j, A, bv, h_11s_north(i), h_21s_north(i), h_22s_north(i));
-        n22BoundaryLinear(n22.northBC, n22.north(i), i, j, A, bv, h_22s_north(i));
+        v1BoundaryWestEast(v1.eastBC, v1.east(0), i, j, A, v1.r1East, v1.r2East, h_1s1_east(j), h_1s2_east(j));
+        v2BoundaryWestEast(v2.eastBC, v2.east(0), i, j, A, v2.r1East, v2.r2East, h_1s1_east(j), h_1s2_east(j), h_2s2_east(j));
+        n11BoundaryLinear(n11.eastBC, n11.east(0), i, j, A, h_11s_east(j));
+        n12BoundaryLinear(n12.eastBC, n12.east(0), i, j, A, h_11s_east(j), h_12s_east(j), h_22s_east(j));
     }
     else
     {
-        v1BoundarySouthNorth(v1.northBC, v1.north(i), i, j, A, bv, v1.r1North, v1.r2North, h_1s1_north(i), h_2s1_north(i), h_2s2_north(i));
-        v2BoundarySouthNorth(v2.northBC, v2.north(i), i, j, A, bv, v2.r1North, v2.r2North, h_2s1_north(i), h_2s2_north(i));
-        n21BoundaryLinear(n12.northBC, n12.north(i), i, j, A, bv, h_11s_north(i), h_21s_north(i), h_22s_north(i));
-        n22BoundaryLinear(n22.northBC, n22.north(i), i, j, A, bv, h_22s_north(i));
+        v1BoundarySouthNorth(v1.northBC, v1.north(i), i, j, A, v1.r1North, v1.r2North, h_1s1_north(i), h_2s1_north(i), h_2s2_north(i));
+        v2BoundarySouthNorth(v2.northBC, v2.north(i), i, j, A, v2.r1North, v2.r2North, h_2s1_north(i), h_2s2_north(i));
+        n21BoundaryLinear(n12.northBC, n12.north(i), i, j, A, h_11s_north(i), h_21s_north(i), h_22s_north(i));
+        n22BoundaryLinear(n22.northBC, n22.north(i), i, j, A, h_22s_north(i));
     }
 
-    bv = solve(A, bv);
-    v1 = arma::reshape(bv(arma::span(  0,   nxy-1)), nx, ny);
-    v2 = arma::reshape(bv(arma::span(nxy, 2*nxy-1)), nx, ny);
+    arma::lu(Lv, Uv, Pv, A);
+}
+
+void Membrane::planeStrainEval()
+{
+    arma::vec v = solve(trimatu(Uv), solve(trimatl(Lv), Pv*bv));
+    v1 = arma::reshape(v(arma::span(  0,   nxy-1)), nx, ny);
+    v2 = arma::reshape(v(arma::span(nxy, 2*nxy-1)), nx, ny);
 
     v1__1 = D1*v1     - g111()%v1 - g211()%v2;
     v1__2 = v1*D2.t() - g112()%v1 - g212()%v2;

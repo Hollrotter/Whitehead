@@ -164,7 +164,7 @@ void Membrane::zBoundary(const BC bc, const double val, const size_t i, const si
     }
 }
 
-void Membrane::v1BoundaryWestEast(const BC bc, const double val, const size_t i, const size_t j, arma::mat &A, arma::vec &bv,
+void Membrane::v1BoundaryWestEast(const BC bc, const double val, const size_t i, const size_t j, arma::mat &A,
                                   const double r1, const double r2, const double h_1s1, const double h_1s2)
 {
     size_t k = i + j*nx;
@@ -208,8 +208,8 @@ void Membrane::v1BoundaryWestEast(const BC bc, const double val, const size_t i,
     }
 }
 
-void Membrane::v2BoundaryWestEast(const BC bc, const double val, const size_t i, const size_t j, arma::mat &A, arma::vec &bv,
-                                    const double r1, const double r2, const double h_1s1, const double h_1s2, const double h_2s2)
+void Membrane::v2BoundaryWestEast(const BC bc, const double val, const size_t i, const size_t j, arma::mat &A,
+                                  const double r1, const double r2, const double h_1s1, const double h_1s2, const double h_2s2)
 {
     size_t k = i + j*nx;
     switch (bc)
@@ -249,7 +249,7 @@ void Membrane::v2BoundaryWestEast(const BC bc, const double val, const size_t i,
     }
 }
 
-void Membrane::v1BoundarySouthNorth(const BC bc, const double val, const size_t i, const size_t j, arma::mat &A, arma::vec &bv,
+void Membrane::v1BoundarySouthNorth(const BC bc, const double val, const size_t i, const size_t j, arma::mat &A,
                                     const double r1, const double r2, const double h_1s1, const double h_2s1, const double h_2s2)
 {
     size_t k = i + j*nx;
@@ -290,7 +290,7 @@ void Membrane::v1BoundarySouthNorth(const BC bc, const double val, const size_t 
     }
 }
 
-void Membrane::v2BoundarySouthNorth(const BC bc, const double val, const size_t i, const size_t j, arma::mat &A, arma::vec &bv,
+void Membrane::v2BoundarySouthNorth(const BC bc, const double val, const size_t i, const size_t j, arma::mat &A,
                                     const double r1, const double r2, const double h_2s1, const double h_2s2)
 {
     size_t k = i + j*nx;
@@ -334,7 +334,7 @@ void Membrane::v2BoundarySouthNorth(const BC bc, const double val, const size_t 
     }
 }
 
-void Membrane::n11BoundaryLinear(const BC bc, const double val, const size_t i, const size_t j, arma::mat &A, arma::vec &bv, const double h_11s)
+void Membrane::n11BoundaryLinear(const BC bc, const double val, const size_t i, const size_t j, arma::mat &A, const double h_11s)
 {
     size_t k = i + j*nx;
     switch (bc)
@@ -362,7 +362,7 @@ void Membrane::n11BoundaryLinear(const BC bc, const double val, const size_t i, 
     }
 }
 
-void Membrane::n12BoundaryLinear(const BC bc, const double val, const size_t i, const size_t j, arma::mat &A, arma::vec &bv,
+void Membrane::n12BoundaryLinear(const BC bc, const double val, const size_t i, const size_t j, arma::mat &A,
                                  const double h_11s, const double h_12s, const double h_22s)
 {
     size_t k = i + j*nx;
@@ -394,7 +394,7 @@ void Membrane::n12BoundaryLinear(const BC bc, const double val, const size_t i, 
     }
 }
 
-void Membrane::n21BoundaryLinear(const BC bc, const double val, const size_t i, const size_t j, arma::mat &A, arma::vec &bv,
+void Membrane::n21BoundaryLinear(const BC bc, const double val, const size_t i, const size_t j, arma::mat &A,
                                  const double h_11s, const double h_21s, const double h_22s)
 {
     size_t k = i + j*nx;
@@ -427,7 +427,7 @@ void Membrane::n21BoundaryLinear(const BC bc, const double val, const size_t i, 
     }
 }
 
-void Membrane::n22BoundaryLinear(const BC bc, const double val, const size_t i, const size_t j, arma::mat &A, arma::vec &bv, const double h_22s)
+void Membrane::n22BoundaryLinear(const BC bc, const double val, const size_t i, const size_t j, arma::mat &A, const double h_22s)
 {
     size_t k = i + j*nx;
     switch (bc)
@@ -562,7 +562,7 @@ void Membrane::v1BoundaryWestEastNonlinear(const BC bc, const double val, const 
 }
 
 void Membrane::v2BoundaryWestEastNonlinear(const BC bc, const double val, const size_t i, const size_t j, arma::mat &A,
-                                             const double r1, const double r2, const double h_1s1, const double h_1s2, const double h_2s2)
+                                           const double r1, const double r2, const double h_1s1, const double h_1s2, const double h_2s2)
 {
     size_t k = i + j*nx;
     switch (bc)
@@ -603,7 +603,7 @@ void Membrane::v2BoundaryWestEastNonlinear(const BC bc, const double val, const 
 }
 
 void Membrane::v1BoundarySouthNorthNonlinear(const BC bc, const double val, const size_t i, const size_t j, arma::mat &A,
-                                           const double r1, const double r2, const double h_1s1, const double h_2s1, const double h_2s2)
+                                             const double r1, const double r2, const double h_1s1, const double h_2s1, const double h_2s2)
 {
     size_t k = i + j*nx;
     switch (bc)
@@ -691,7 +691,7 @@ void Membrane::v2BoundarySouthNorthNonlinear(const BC bc, const double val, cons
 }
 
 void Membrane::n11BoundaryNonlinear(const BC bc, const double val, const size_t i, const size_t j, arma::mat &A,
-                           const double h_11s, const double z_1, const double z_2)
+                                    const double h_11s, const double z_1, const double z_2)
 {
     size_t k = i + j*nx;
     switch (bc)

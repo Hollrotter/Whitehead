@@ -6,27 +6,228 @@ void Structure::planeStrain()
     int count = 1;
     arma::field<arma::vec> Vntarget(interfaces.size()), Vnsource(interfaces.size());
     arma::field<arma::vec> Vttarget(interfaces.size()), Vtsource(interfaces.size());
-
+    for (Interface& interface:interfaces)
+    {
+        Direction targetDirection = static_cast<Direction>(interface.targetCurve);
+        Membrane *membraneTarget = membranes[interface.targetDomain];
+        switch (interface.sourceCurve)
+        {
+            case 0: // South
+            {
+                switch (interface.targetCurve)
+                {
+                    case 0: // South
+                        membraneTarget->boundary(Field::v1, targetDirection, BC::Robin,-interface.lambdaSource, 1);
+                        membraneTarget->boundary(Field::v2, targetDirection, BC::Robin,-interface.lambdaSource, 1);
+                        break;
+                    case 1: // East
+                        membraneTarget->boundary(Field::v1, targetDirection, BC::Robin, interface.lambdaSource, 1);
+                        membraneTarget->boundary(Field::v2, targetDirection, BC::Robin,-interface.lambdaSource,-1);
+                        break;
+                    case 2: // North
+                        membraneTarget->boundary(Field::v1, targetDirection, BC::Robin, interface.lambdaSource, 1);
+                        membraneTarget->boundary(Field::v2, targetDirection, BC::Robin, interface.lambdaSource, 1);
+                        break;
+                    case 3: // West
+                        membraneTarget->boundary(Field::v1, targetDirection, BC::Robin,-interface.lambdaSource, 1);
+                        membraneTarget->boundary(Field::v2, targetDirection, BC::Robin, interface.lambdaSource,-1);
+                        break;
+                }
+                break;
+            }
+            case 1: // East
+            {
+                switch (interface.targetCurve)
+                {
+                    case 0: // South
+                        membraneTarget->boundary(Field::v1, targetDirection, BC::Robin,-interface.lambdaSource, 1);
+                        membraneTarget->boundary(Field::v2, targetDirection, BC::Robin, interface.lambdaSource,-1);
+                        break;
+                    case 1: // East
+                        membraneTarget->boundary(Field::v1, targetDirection, BC::Robin,-interface.lambdaSource,-1);
+                        membraneTarget->boundary(Field::v2, targetDirection, BC::Robin,-interface.lambdaSource,-1);
+                        break;
+                    case 2: // North
+                        membraneTarget->boundary(Field::v1, targetDirection, BC::Robin, interface.lambdaSource, 1);
+                        membraneTarget->boundary(Field::v2, targetDirection, BC::Robin,-interface.lambdaSource,-1);
+                        break;
+                    case 3: // West
+                        membraneTarget->boundary(Field::v1, targetDirection, BC::Robin, interface.lambdaSource,-1);
+                        membraneTarget->boundary(Field::v2, targetDirection, BC::Robin, interface.lambdaSource,-1);
+                        break;
+                }
+                break;
+            }
+            case 2: // North
+            {
+                switch (interface.targetCurve)
+                {
+                    case 0: // South
+                        membraneTarget->boundary(Field::v1, targetDirection, BC::Robin, interface.lambdaSource,-1);
+                        membraneTarget->boundary(Field::v2, targetDirection, BC::Robin, interface.lambdaSource,-1);
+                        break;
+                    case 1: // East
+                        membraneTarget->boundary(Field::v1, targetDirection, BC::Robin,-interface.lambdaSource,-1);
+                        membraneTarget->boundary(Field::v2, targetDirection, BC::Robin, interface.lambdaSource, 1);
+                        break;
+                    case 2: // North
+                        membraneTarget->boundary(Field::v1, targetDirection, BC::Robin,-interface.lambdaSource,-1);
+                        membraneTarget->boundary(Field::v2, targetDirection, BC::Robin,-interface.lambdaSource,-1);
+                        break;
+                    case 3: // West
+                        membraneTarget->boundary(Field::v1, targetDirection, BC::Robin, interface.lambdaSource,-1);
+                        membraneTarget->boundary(Field::v2, targetDirection, BC::Robin,-interface.lambdaSource, 1);
+                        break;
+                }
+                break;
+            }
+            case 3: // West
+            {
+                switch (interface.targetCurve)
+                {
+                    case 0: // South
+                        membraneTarget->boundary(Field::v1, targetDirection, BC::Robin, interface.lambdaSource,-1);
+                        membraneTarget->boundary(Field::v2, targetDirection, BC::Robin,-interface.lambdaSource, 1);
+                        break;
+                    case 1: // East
+                        membraneTarget->boundary(Field::v1, targetDirection, BC::Robin, interface.lambdaSource, 1);
+                        membraneTarget->boundary(Field::v2, targetDirection, BC::Robin, interface.lambdaSource, 1);
+                        break;
+                    case 2: // North
+                        membraneTarget->boundary(Field::v1, targetDirection, BC::Robin,-interface.lambdaSource,-1);
+                        membraneTarget->boundary(Field::v2, targetDirection, BC::Robin, interface.lambdaSource, 1);
+                        break;
+                    case 3: // West
+                        membraneTarget->boundary(Field::v1, targetDirection, BC::Robin,-interface.lambdaSource, 1);
+                        membraneTarget->boundary(Field::v2, targetDirection, BC::Robin,-interface.lambdaSource, 1);
+                        break;
+                }
+                break;
+            }
+        }
+        Direction sourceDirection = static_cast<Direction>(interface.sourceCurve);
+        Membrane *membraneSource = membranes[interface.sourceDomain];
+        switch (interface.targetCurve)
+        {
+            case 0: // South
+            {
+                switch (interface.sourceCurve)
+                {
+                    case 0: // South
+                        membraneSource->boundary(Field::v1, sourceDirection, BC::Robin,-interface.lambdaTarget, 1);
+                        membraneSource->boundary(Field::v2, sourceDirection, BC::Robin,-interface.lambdaTarget, 1);
+                        break;
+                    case 1: // East
+                        membraneSource->boundary(Field::v1, sourceDirection, BC::Robin, interface.lambdaTarget, 1);
+                        membraneSource->boundary(Field::v2, sourceDirection, BC::Robin,-interface.lambdaTarget,-1);
+                        break;
+                    case 2: // North
+                        membraneSource->boundary(Field::v1, sourceDirection, BC::Robin, interface.lambdaTarget, 1);
+                        membraneSource->boundary(Field::v2, sourceDirection, BC::Robin, interface.lambdaTarget, 1);
+                        break;
+                    case 3: // West
+                        membraneSource->boundary(Field::v1, sourceDirection, BC::Robin,-interface.lambdaTarget, 1);
+                        membraneSource->boundary(Field::v2, sourceDirection, BC::Robin, interface.lambdaTarget,-1);
+                        break;
+                }
+                break;
+            }
+            case 1: // East
+            {
+                switch (interface.sourceCurve)
+                {
+                    case 0: // South
+                        membraneSource->boundary(Field::v1, sourceDirection, BC::Robin,-interface.lambdaTarget, 1);
+                        membraneSource->boundary(Field::v2, sourceDirection, BC::Robin, interface.lambdaTarget,-1);
+                        break;
+                    case 1: // East
+                        membraneSource->boundary(Field::v1, sourceDirection, BC::Robin,-interface.lambdaTarget,-1);
+                        membraneSource->boundary(Field::v2, sourceDirection, BC::Robin,-interface.lambdaTarget,-1);
+                        break;
+                    case 2: // North
+                        membraneSource->boundary(Field::v1, sourceDirection, BC::Robin, interface.lambdaTarget, 1);
+                        membraneSource->boundary(Field::v2, sourceDirection, BC::Robin,-interface.lambdaTarget,-1);
+                        break;
+                    case 3: // West
+                        membraneSource->boundary(Field::v1, sourceDirection, BC::Robin, interface.lambdaTarget,-1);
+                        membraneSource->boundary(Field::v2, sourceDirection, BC::Robin, interface.lambdaTarget,-1);
+                        break;
+                }
+                break;
+            }
+            case 2: // North
+            {
+                switch (interface.sourceCurve)
+                {
+                    case 0: // South
+                        membraneSource->boundary(Field::v1, sourceDirection, BC::Robin, interface.lambdaTarget,-1);
+                        membraneSource->boundary(Field::v2, sourceDirection, BC::Robin, interface.lambdaTarget,-1);
+                        break;
+                    case 1: // East
+                        membraneSource->boundary(Field::v1, sourceDirection, BC::Robin,-interface.lambdaTarget,-1);
+                        membraneSource->boundary(Field::v2, sourceDirection, BC::Robin, interface.lambdaTarget, 1);
+                        break;
+                    case 2: // North
+                        membraneSource->boundary(Field::v1, sourceDirection, BC::Robin,-interface.lambdaTarget,-1);
+                        membraneSource->boundary(Field::v2, sourceDirection, BC::Robin,-interface.lambdaTarget,-1);
+                        break;
+                    case 3: // West
+                        membraneSource->boundary(Field::v1, sourceDirection, BC::Robin, interface.lambdaTarget,-1);
+                        membraneSource->boundary(Field::v2, sourceDirection, BC::Robin,-interface.lambdaTarget, 1);
+                        break;
+                }
+                break;
+            }
+            case 3: // West
+            {
+                switch (interface.sourceCurve)
+                {
+                    case 0: // South
+                        membraneSource->boundary(Field::v1, sourceDirection, BC::Robin, interface.lambdaTarget,-1);
+                        membraneSource->boundary(Field::v2, sourceDirection, BC::Robin,-interface.lambdaTarget, 1);
+                        break;
+                    case 1: // East
+                        membraneSource->boundary(Field::v1, sourceDirection, BC::Robin, interface.lambdaTarget, 1);
+                        membraneSource->boundary(Field::v2, sourceDirection, BC::Robin, interface.lambdaTarget, 1);
+                        break;
+                    case 2: // North
+                        membraneSource->boundary(Field::v1, sourceDirection, BC::Robin,-interface.lambdaTarget,-1);
+                        membraneSource->boundary(Field::v2, sourceDirection, BC::Robin, interface.lambdaTarget, 1);
+                        break;
+                    case 3: // West
+                        membraneSource->boundary(Field::v1, sourceDirection, BC::Robin,-interface.lambdaTarget, 1);
+                        membraneSource->boundary(Field::v2, sourceDirection, BC::Robin,-interface.lambdaTarget, 1);
+                        break;
+                }
+                break;
+            }
+        }
+    }
+    #pragma omp parallel for
+    for (auto& membrane:membranes)
+        membrane->planeStrainSolve();
     do
     {
         std::cout << "Iteration " << count << '/' << iterations << '\n';
         for (Interface& interface:interfaces)
         {
-            Direction targetDirection = static_cast<Direction>(interface.targetCurve);
-            Direction sourceDirection = static_cast<Direction>(interface.sourceCurve);
-            arma::mat V1    = membranes[interface.sourceDomain]->v1;
-            arma::mat V2    = membranes[interface.sourceDomain]->v2;
-            arma::mat v1__1 = membranes[interface.sourceDomain]->v1__1;
-            arma::mat v1__2 = membranes[interface.sourceDomain]->v1__2;
-            arma::mat v2__1 = membranes[interface.sourceDomain]->v2__1;
-            arma::mat v2__2 = membranes[interface.sourceDomain]->v2__2;
+            Membrane *membraneSource = membranes[interface.sourceDomain];
+            Membrane *membraneTarget = membranes[interface.targetDomain];
+            size_t    nx    = membraneSource->nx;
+            size_t    ny    = membraneSource->ny;
+            arma::mat V1    = membraneSource->v1;
+            arma::mat V2    = membraneSource->v2;
+            arma::mat v1__1 = membraneSource->v1__1;
+            arma::mat v1__2 = membraneSource->v1__2;
+            arma::mat v2__1 = membraneSource->v2__1;
+            arma::mat v2__2 = membraneSource->v2__2;
             switch (interface.sourceCurve)
             {
                 case 0: // South
                 {
-                    arma::vec h_1s1 = membranes[interface.sourceDomain]->h_1s1_south;
-                    arma::vec h_2s1 = membranes[interface.sourceDomain]->h_2s1_south;
-                    arma::vec h_2s2 = membranes[interface.sourceDomain]->h_2s2_south;
+                    arma::vec h_1s1 = membraneSource->h_1s1_south;
+                    arma::vec h_2s1 = membraneSource->h_2s1_south;
+                    arma::vec h_2s2 = membraneSource->h_2s2_south;
                     arma::vec sourceV1 = interface.lambdaSource*h_1s1%V1.col(0)
                                        + interface.c1Source%v1__1.col(0) + interface.c2Source%v1__2.col(0);
                     arma::vec sourceV2 = interface.lambdaSource*(h_2s1%V1.col(0) + h_2s2%V2.col(0))
@@ -34,30 +235,87 @@ void Structure::planeStrain()
                     switch (interface.targetCurve)
                     {
                         case 0: // South
-                            membranes[interface.targetDomain]->boundary(Field::v1, targetDirection, BC::Robin,-interface.lambdaSource, 1, arma::vec(reverse(sourceV1)));
-                            membranes[interface.targetDomain]->boundary(Field::v2, targetDirection, BC::Robin,-interface.lambdaSource, 1, arma::vec(reverse(sourceV2)));
+                            sourceV1 = reverse(sourceV1);
+                            sourceV2 = reverse(sourceV2);
+                            for (size_t i = 1; i < nx-1; i++)
+                            {
+                                membraneTarget->bv(i)                     = sourceV1(i);
+                                membraneTarget->bv(i+membraneTarget->nxy) = sourceV2(i);
+                            }
+                            if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Interface)
+                            {
+                                membraneTarget->bv(0)                   = sourceV1(0);
+                                membraneTarget->bv(membraneTarget->nxy) = sourceV2(0);
+                            }
+                            if (membraneTarget->chi[0]->curveType == CurveType::Boundary  && membraneTarget->chi[1]->curveType == CurveType::Interface)
+                            {
+                                membraneTarget->bv(nx-1)                     = sourceV1(nx-1);
+                                membraneTarget->bv(nx-1+membraneTarget->nxy) = sourceV2(nx-1);
+                            }
                             break;
                         case 1: // East
-                            membranes[interface.targetDomain]->boundary(Field::v1, targetDirection, BC::Robin, interface.lambdaSource, 1, arma::vec(reverse(sourceV2)));
-                            membranes[interface.targetDomain]->boundary(Field::v2, targetDirection, BC::Robin,-interface.lambdaSource,-1, arma::vec(reverse(sourceV1)));
+                            std::swap(sourceV1, sourceV2);
+                            sourceV1 = reverse(sourceV1);
+                            sourceV2 = reverse(sourceV2);
+                            for (size_t j = 1; j < ny-1; j++)
+                            {
+                                membraneTarget->bv(membraneTarget->nx-1+j*membraneTarget->nx)                     = sourceV1(j);
+                                membraneTarget->bv(membraneTarget->nx-1+j*membraneTarget->nx+membraneTarget->nxy) = sourceV2(j);
+                            }
+                            if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Interface)
+                            {
+                                membraneTarget->bv(membraneTarget->nx-1)                     = sourceV1(0);
+                                membraneTarget->bv(membraneTarget->nx-1+membraneTarget->nxy) = sourceV2(0);
+                            }
+                            if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Boundary)
+                            {
+                                membraneTarget->bv(membraneTarget->nx-1+(ny-1)*membraneTarget->nx)                     = sourceV1(ny-1);
+                                membraneTarget->bv(membraneTarget->nx-1+(ny-1)*membraneTarget->nx+membraneTarget->nxy) = sourceV2(ny-1);
+                            }
                             break;
                         case 2: // North
-                            membranes[interface.targetDomain]->boundary(Field::v1, targetDirection, BC::Robin, interface.lambdaSource, 1, sourceV1);
-                            membranes[interface.targetDomain]->boundary(Field::v2, targetDirection, BC::Robin, interface.lambdaSource, 1, sourceV2);
+                            for (size_t i = 1; i < nx-1; i++)
+                            {
+                                membraneTarget->bv(i+(membraneTarget->ny-1)*nx)                     = sourceV1(i);
+                                membraneTarget->bv(i+(membraneTarget->ny-1)*nx+membraneTarget->nxy) = sourceV2(i);
+                            }
+                            if (membraneTarget->chi[2]->curveType == CurveType::Boundary  && membraneTarget->chi[3]->curveType == CurveType::Interface)
+                            {
+                                membraneTarget->bv((membraneTarget->ny-1)*nx)                     = sourceV1(0);
+                                membraneTarget->bv((membraneTarget->ny-1)*nx+membraneTarget->nxy) = sourceV2(0);
+                            }
+                            if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Interface)
+                            {
+                                membraneTarget->bv(nx-1+(membraneTarget->ny-1)*nx)                     = sourceV1(nx-1);
+                                membraneTarget->bv(nx-1+(membraneTarget->ny-1)*nx+membraneTarget->nxy) = sourceV2(nx-1);
+                            }
                             break;
                         case 3: // West
-                            membranes[interface.targetDomain]->boundary(Field::v1, targetDirection, BC::Robin,-interface.lambdaSource, 1, sourceV2);
-                            membranes[interface.targetDomain]->boundary(Field::v2, targetDirection, BC::Robin, interface.lambdaSource,-1, sourceV1);
+                            std::swap(sourceV1, sourceV2);
+                            for (size_t j = 1; j < ny-1; j++)
+                            {
+                                membraneTarget->bv(j*membraneTarget->nx)                     = sourceV1(j);
+                                membraneTarget->bv(j*membraneTarget->nx+membraneTarget->nxy) = sourceV2(j);
+                            }
+                            if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Boundary)
+                            {
+                                membraneTarget->bv(0)                   = sourceV1(0);
+                                membraneTarget->bv(membraneTarget->nxy) = sourceV2(0);
+                            }
+                            if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Interface)
+                            {
+                                membraneTarget->bv((ny-1)*membraneTarget->nx)                     = sourceV1(ny-1);
+                                membraneTarget->bv((ny-1)*membraneTarget->nx+membraneTarget->nxy) = sourceV2(ny-1);
+                            }
                             break;
                     }
                     break;
                 }
                 case 1: // East
                 {
-                    size_t nx = membranes[interface.sourceDomain]->nx;
-                    arma::rowvec h_1s1 = membranes[interface.sourceDomain]->h_1s1_east;
-                    arma::rowvec h_1s2 = membranes[interface.sourceDomain]->h_1s2_east;
-                    arma::rowvec h_2s2 = membranes[interface.sourceDomain]->h_2s2_east;
+                    arma::rowvec h_1s1 = membraneSource->h_1s1_east;
+                    arma::rowvec h_1s2 = membraneSource->h_1s2_east;
+                    arma::rowvec h_2s2 = membraneSource->h_2s2_east;
                     arma::vec sourceV1 = interface.lambdaSource*(h_1s1%V1.row(nx-1) + h_1s2%V2.row(nx-1)).t()
                                        - interface.c11Source%v1__1.row(nx-1).t() - interface.c22Source%v2__2.row(nx-1).t() - interface.c12Source%(v1__2.row(nx-1) + v2__1.row(nx-1)).t();
                     arma::vec sourceV2 = interface.lambdaSource*(h_2s2%V2.row(nx-1)).t()
@@ -65,30 +323,87 @@ void Structure::planeStrain()
                     switch (interface.targetCurve)
                     {
                         case 0: // South
-                            membranes[interface.targetDomain]->boundary(Field::v1, targetDirection, BC::Robin,-interface.lambdaSource, 1, arma::vec(reverse(sourceV2)));
-                            membranes[interface.targetDomain]->boundary(Field::v2, targetDirection, BC::Robin, interface.lambdaSource,-1, arma::vec(reverse(sourceV1)));
+                            std::swap(sourceV1, sourceV2);
+                            sourceV1 = reverse(sourceV1);
+                            sourceV2 = reverse(sourceV2);
+                            for (size_t i = 1; i < nx-1; i++)
+                            {
+                                membraneTarget->bv(i)                     = sourceV1(i);
+                                membraneTarget->bv(i+membraneTarget->nxy) = sourceV2(i);
+                            }
+                            if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Interface)
+                            {
+                                membraneTarget->bv(0)                   = sourceV1(0);
+                                membraneTarget->bv(membraneTarget->nxy) = sourceV2(0);
+                            }
+                            if (membraneTarget->chi[0]->curveType == CurveType::Boundary  && membraneTarget->chi[1]->curveType == CurveType::Interface)
+                            {
+                                membraneTarget->bv(nx-1)                     = sourceV1(nx-1);
+                                membraneTarget->bv(nx-1+membraneTarget->nxy) = sourceV2(nx-1);
+                            }
                             break;
                         case 1: // East
-                            membranes[interface.targetDomain]->boundary(Field::v1, targetDirection, BC::Robin,-interface.lambdaSource,-1, arma::vec(reverse(sourceV1)));
-                            membranes[interface.targetDomain]->boundary(Field::v2, targetDirection, BC::Robin,-interface.lambdaSource,-1, arma::vec(reverse(sourceV2)));
+                            sourceV1 = reverse(sourceV1);
+                            sourceV2 = reverse(sourceV2);
+                            for (size_t j = 1; j < ny-1; j++)
+                            {
+                                membraneTarget->bv(membraneTarget->nx-1+j*membraneTarget->nx)                     = sourceV1(j);
+                                membraneTarget->bv(membraneTarget->nx-1+j*membraneTarget->nx+membraneTarget->nxy) = sourceV2(j);
+                            }
+                            if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Interface)
+                            {
+                                membraneTarget->bv(membraneTarget->nx-1)                     = sourceV1(0);
+                                membraneTarget->bv(membraneTarget->nx-1+membraneTarget->nxy) = sourceV2(0);
+                            }
+                            if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Boundary)
+                            {
+                                membraneTarget->bv(membraneTarget->nx-1+(ny-1)*membraneTarget->nx)                     = sourceV1(ny-1);
+                                membraneTarget->bv(membraneTarget->nx-1+(ny-1)*membraneTarget->nx+membraneTarget->nxy) = sourceV2(ny-1);
+                            }
                             break;
                         case 2: // North
-                            membranes[interface.targetDomain]->boundary(Field::v1, targetDirection, BC::Robin, interface.lambdaSource, 1, sourceV2);
-                            membranes[interface.targetDomain]->boundary(Field::v2, targetDirection, BC::Robin,-interface.lambdaSource,-1, sourceV1);
+                            std::swap(sourceV1, sourceV2);
+                            for (size_t i = 1; i < nx-1; i++)
+                            {
+                                membraneTarget->bv(i+(membraneTarget->ny-1)*nx)                     = sourceV1(i);
+                                membraneTarget->bv(i+(membraneTarget->ny-1)*nx+membraneTarget->nxy) = sourceV2(i);
+                            }
+                            if (membraneTarget->chi[2]->curveType == CurveType::Boundary  && membraneTarget->chi[3]->curveType == CurveType::Interface)
+                            {
+                                membraneTarget->bv((membraneTarget->ny-1)*nx)                     = sourceV1(0);
+                                membraneTarget->bv((membraneTarget->ny-1)*nx+membraneTarget->nxy) = sourceV2(0);
+                            }
+                            if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Interface)
+                            {
+                                membraneTarget->bv(nx-1+(membraneTarget->ny-1)*nx)                     = sourceV1(nx-1);
+                                membraneTarget->bv(nx-1+(membraneTarget->ny-1)*nx+membraneTarget->nxy) = sourceV2(nx-1);
+                            }
                             break;
                         case 3: // West
-                            membranes[interface.targetDomain]->boundary(Field::v1, targetDirection, BC::Robin, interface.lambdaSource,-1, sourceV1);
-                            membranes[interface.targetDomain]->boundary(Field::v2, targetDirection, BC::Robin, interface.lambdaSource,-1, sourceV2);
+                            for (size_t j = 1; j < ny-1; j++)
+                            {
+                                membraneTarget->bv(j*membraneTarget->nx)                     = sourceV1(j);
+                                membraneTarget->bv(j*membraneTarget->nx+membraneTarget->nxy) = sourceV2(j);
+                            }
+                            if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Boundary)
+                            {
+                                membraneTarget->bv(0)                   = sourceV1(0);
+                                membraneTarget->bv(membraneTarget->nxy) = sourceV2(0);
+                            }
+                            if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Interface)
+                            {
+                                membraneTarget->bv((ny-1)*membraneTarget->nx)                     = sourceV1(ny-1);
+                                membraneTarget->bv((ny-1)*membraneTarget->nx+membraneTarget->nxy) = sourceV2(ny-1);
+                            }
                             break;
                     }
                     break;
                 }
                 case 2: // North
                 {
-                    size_t ny = membranes[interface.sourceDomain]->ny;
-                    arma::vec h_1s1 = membranes[interface.sourceDomain]->h_1s1_north;
-                    arma::vec h_2s1 = membranes[interface.sourceDomain]->h_2s1_north;
-                    arma::vec h_2s2 = membranes[interface.sourceDomain]->h_2s2_north;
+                    arma::vec h_1s1 = membraneSource->h_1s1_north;
+                    arma::vec h_2s1 = membraneSource->h_2s1_north;
+                    arma::vec h_2s2 = membraneSource->h_2s2_north;
                     arma::vec sourceV1 = interface.lambdaSource*h_1s1%V1.col(ny-1)
                                        - interface.c1Source%v1__1.col(ny-1) - interface.c2Source%v1__2.col(ny-1);
                     arma::vec sourceV2 = interface.lambdaSource*(h_2s1%V1.col(ny-1) + h_2s2%V2.col(ny-1))
@@ -96,29 +411,87 @@ void Structure::planeStrain()
                     switch (interface.targetCurve)
                     {
                         case 0: // South
-                            membranes[interface.targetDomain]->boundary(Field::v1, targetDirection, BC::Robin, interface.lambdaSource,-1, sourceV1);
-                            membranes[interface.targetDomain]->boundary(Field::v2, targetDirection, BC::Robin, interface.lambdaSource,-1, sourceV2);
+                            for (size_t i = 1; i < nx-1; i++)
+                            {
+                                membraneTarget->bv(i)                     = sourceV1(i);
+                                membraneTarget->bv(i+membraneTarget->nxy) = sourceV2(i);
+                            }
+                            if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Interface)
+                            {
+                                membraneTarget->bv(0)                   = sourceV1(0);
+                                membraneTarget->bv(membraneTarget->nxy) = sourceV2(0);
+                            }
+                            if (membraneTarget->chi[0]->curveType == CurveType::Boundary  && membraneTarget->chi[1]->curveType == CurveType::Interface)
+                            {
+                                membraneTarget->bv(nx-1)                     = sourceV1(nx-1);
+                                membraneTarget->bv(nx-1+membraneTarget->nxy) = sourceV2(nx-1);
+                            }
                             break;
                         case 1: // East
-                            membranes[interface.targetDomain]->boundary(Field::v1, targetDirection, BC::Robin,-interface.lambdaSource,-1, sourceV2);
-                            membranes[interface.targetDomain]->boundary(Field::v2, targetDirection, BC::Robin, interface.lambdaSource, 1, sourceV1);
+                            std::swap(sourceV1, sourceV2);
+                            for (size_t j = 1; j < ny-1; j++)
+                            {
+                                membraneTarget->bv(membraneTarget->nx-1+j*membraneTarget->nx)                     = sourceV1(j);
+                                membraneTarget->bv(membraneTarget->nx-1+j*membraneTarget->nx+membraneTarget->nxy) = sourceV2(j);
+                            }
+                            if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Interface)
+                            {
+                                membraneTarget->bv(membraneTarget->nx-1)                     = sourceV1(0);
+                                membraneTarget->bv(membraneTarget->nx-1+membraneTarget->nxy) = sourceV2(0);
+                            }
+                            if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Boundary)
+                            {
+                                membraneTarget->bv(membraneTarget->nx-1+(ny-1)*membraneTarget->nx)                     = sourceV1(ny-1);
+                                membraneTarget->bv(membraneTarget->nx-1+(ny-1)*membraneTarget->nx+membraneTarget->nxy) = sourceV2(ny-1);
+                            }
                             break;
                         case 2: // North
-                            membranes[interface.targetDomain]->boundary(Field::v1, targetDirection, BC::Robin,-interface.lambdaSource,-1, arma::vec(reverse(sourceV1)));
-                            membranes[interface.targetDomain]->boundary(Field::v2, targetDirection, BC::Robin,-interface.lambdaSource,-1, arma::vec(reverse(sourceV2)));
+                            sourceV1 = reverse(sourceV1);
+                            sourceV2 = reverse(sourceV2);
+                            for (size_t i = 1; i < nx-1; i++)
+                            {
+                                membraneTarget->bv(i+(membraneTarget->ny-1)*nx)                     = sourceV1(i);
+                                membraneTarget->bv(i+(membraneTarget->ny-1)*nx+membraneTarget->nxy) = sourceV2(i);
+                            }
+                            if (membraneTarget->chi[2]->curveType == CurveType::Boundary  && membraneTarget->chi[3]->curveType == CurveType::Interface)
+                            {
+                                membraneTarget->bv((membraneTarget->ny-1)*nx)                     = sourceV1(0);
+                                membraneTarget->bv((membraneTarget->ny-1)*nx+membraneTarget->nxy) = sourceV2(0);
+                            }
+                            if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Interface)
+                            {
+                                membraneTarget->bv(nx-1+(membraneTarget->ny-1)*nx)                     = sourceV1(nx-1);
+                                membraneTarget->bv(nx-1+(membraneTarget->ny-1)*nx+membraneTarget->nxy) = sourceV2(nx-1);
+                            }
                             break;
                         case 3: // West
-                            membranes[interface.targetDomain]->boundary(Field::v1, targetDirection, BC::Robin, interface.lambdaSource,-1, arma::vec(reverse(sourceV2)));
-                            membranes[interface.targetDomain]->boundary(Field::v2, targetDirection, BC::Robin,-interface.lambdaSource, 1, arma::vec(reverse(sourceV1)));
+                            std::swap(sourceV1, sourceV2);
+                            sourceV1 = reverse(sourceV1);
+                            sourceV2 = reverse(sourceV2);
+                            for (size_t j = 1; j < ny-1; j++)
+                            {
+                                membraneTarget->bv(j*membraneTarget->nx)                     = sourceV1(j);
+                                membraneTarget->bv(j*membraneTarget->nx+membraneTarget->nxy) = sourceV2(j);
+                            }
+                            if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Boundary)
+                            {
+                                membraneTarget->bv(0)                   = sourceV1(0);
+                                membraneTarget->bv(membraneTarget->nxy) = sourceV2(0);
+                            }
+                            if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Interface)
+                            {
+                                membraneTarget->bv((ny-1)*membraneTarget->nx)                     = sourceV1(ny-1);
+                                membraneTarget->bv((ny-1)*membraneTarget->nx+membraneTarget->nxy) = sourceV2(ny-1);
+                            }
                             break;
                     }
                     break;
                 }
                 case 3: // West
                 {
-                    arma::rowvec h_1s1 = membranes[interface.sourceDomain]->h_1s1_west;
-                    arma::rowvec h_1s2 = membranes[interface.sourceDomain]->h_1s2_west;
-                    arma::rowvec h_2s2 = membranes[interface.sourceDomain]->h_2s2_west;
+                    arma::rowvec h_1s1 = membraneSource->h_1s1_west;
+                    arma::rowvec h_1s2 = membraneSource->h_1s2_west;
+                    arma::rowvec h_2s2 = membraneSource->h_2s2_west;
                     arma::vec sourceV1 = interface.lambdaSource*(h_1s1%V1.row(0) + h_1s2%V2.row(0)).t()
                                        + interface.c11Source%v1__1.row(0).t() + interface.c22Source%v2__2.row(0).t() + interface.c12Source%(v1__2.row(0) + v2__1.row(0)).t();
                     arma::vec sourceV2 = interface.lambdaSource*(h_2s2%V2.row(0)).t()
@@ -126,38 +499,98 @@ void Structure::planeStrain()
                     switch (interface.targetCurve)
                     {
                         case 0: // South
-                            membranes[interface.targetDomain]->boundary(Field::v1, targetDirection, BC::Robin, interface.lambdaSource,-1, sourceV2);
-                            membranes[interface.targetDomain]->boundary(Field::v2, targetDirection, BC::Robin,-interface.lambdaSource, 1, sourceV1);
+                            std::swap(sourceV1, sourceV2);
+                            for (size_t i = 1; i < nx-1; i++)
+                            {
+                                membraneTarget->bv(i)                     = sourceV1(i);
+                                membraneTarget->bv(i+membraneTarget->nxy) = sourceV2(i);
+                            }
+                            if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Interface)
+                            {
+                                membraneTarget->bv(0)                   = sourceV1(0);
+                                membraneTarget->bv(membraneTarget->nxy) = sourceV2(0);
+                            }
+                            if (membraneTarget->chi[0]->curveType == CurveType::Boundary  && membraneTarget->chi[1]->curveType == CurveType::Interface)
+                            {
+                                membraneTarget->bv(nx-1)                     = sourceV1(nx-1);
+                                membraneTarget->bv(nx-1+membraneTarget->nxy) = sourceV2(nx-1);
+                            }
                             break;
                         case 1: // East
-                            membranes[interface.targetDomain]->boundary(Field::v1, targetDirection, BC::Robin, interface.lambdaSource, 1, sourceV1);
-                            membranes[interface.targetDomain]->boundary(Field::v2, targetDirection, BC::Robin, interface.lambdaSource, 1, sourceV2);
+                            for (size_t j = 1; j < ny-1; j++)
+                            {
+                                membraneTarget->bv(membraneTarget->nx-1+j*membraneTarget->nx)                     = sourceV1(j);
+                                membraneTarget->bv(membraneTarget->nx-1+j*membraneTarget->nx+membraneTarget->nxy) = sourceV2(j);
+                            }
+                            if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Interface)
+                            {
+                                membraneTarget->bv(membraneTarget->nx-1)                     = sourceV1(0);
+                                membraneTarget->bv(membraneTarget->nx-1+membraneTarget->nxy) = sourceV2(0);
+                            }
+                            if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Boundary)
+                            {
+                                membraneTarget->bv(membraneTarget->nx-1+(ny-1)*membraneTarget->nx)                     = sourceV1(ny-1);
+                                membraneTarget->bv(membraneTarget->nx-1+(ny-1)*membraneTarget->nx+membraneTarget->nxy) = sourceV2(ny-1);
+                            }
                             break;
                         case 2: // North
-                            membranes[interface.targetDomain]->boundary(Field::v1, targetDirection, BC::Robin,-interface.lambdaSource,-1, arma::vec(reverse(sourceV2)));
-                            membranes[interface.targetDomain]->boundary(Field::v2, targetDirection, BC::Robin, interface.lambdaSource, 1, arma::vec(reverse(sourceV1)));
+                            std::swap(sourceV1, sourceV2);
+                            sourceV1 = reverse(sourceV1);
+                            sourceV2 = reverse(sourceV2);
+                            for (size_t i = 1; i < nx-1; i++)
+                            {
+                                membraneTarget->bv(i+(membraneTarget->ny-1)*nx)                     = sourceV1(i);
+                                membraneTarget->bv(i+(membraneTarget->ny-1)*nx+membraneTarget->nxy) = sourceV2(i);
+                            }
+                            if (membraneTarget->chi[2]->curveType == CurveType::Boundary  && membraneTarget->chi[3]->curveType == CurveType::Interface)
+                            {
+                                membraneTarget->bv((membraneTarget->ny-1)*nx)                     = sourceV1(0);
+                                membraneTarget->bv((membraneTarget->ny-1)*nx+membraneTarget->nxy) = sourceV2(0);
+                            }
+                            if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Interface)
+                            {
+                                membraneTarget->bv(nx-1+(membraneTarget->ny-1)*nx)                     = sourceV1(nx-1);
+                                membraneTarget->bv(nx-1+(membraneTarget->ny-1)*nx+membraneTarget->nxy) = sourceV2(nx-1);
+                            }
                             break;
                         case 3: // West
-                            membranes[interface.targetDomain]->boundary(Field::v1, targetDirection, BC::Robin,-interface.lambdaSource, 1, arma::vec(reverse(sourceV1)));
-                            membranes[interface.targetDomain]->boundary(Field::v2, targetDirection, BC::Robin,-interface.lambdaSource, 1, arma::vec(reverse(sourceV2)));
+                            sourceV1 = reverse(sourceV1);
+                            sourceV2 = reverse(sourceV2);
+                            for (size_t j = 1; j < ny-1; j++)
+                            {
+                                membraneTarget->bv(j*membraneTarget->nx)                     = sourceV1(j);
+                                membraneTarget->bv(j*membraneTarget->nx+membraneTarget->nxy) = sourceV2(j);
+                            }
+                            if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Boundary)
+                            {
+                                membraneTarget->bv(0)                   = sourceV1(0);
+                                membraneTarget->bv(membraneTarget->nxy) = sourceV2(0);
+                            }
+                            if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Interface)
+                            {
+                                membraneTarget->bv((ny-1)*membraneTarget->nx)                     = sourceV1(ny-1);
+                                membraneTarget->bv((ny-1)*membraneTarget->nx+membraneTarget->nxy) = sourceV2(ny-1);
+                            }
                             break;
                     }
                     break;
                 }
             }
-            V1    = membranes[interface.targetDomain]->v1;
-            V2    = membranes[interface.targetDomain]->v2;
-            v1__1 = membranes[interface.targetDomain]->v1__1;
-            v1__2 = membranes[interface.targetDomain]->v1__2;
-            v2__1 = membranes[interface.targetDomain]->v2__1;
-            v2__2 = membranes[interface.targetDomain]->v2__2;
+            nx    = membraneTarget->nx;
+            ny    = membraneTarget->ny;
+            V1    = membraneTarget->v1;
+            V2    = membraneTarget->v2;
+            v1__1 = membraneTarget->v1__1;
+            v1__2 = membraneTarget->v1__2;
+            v2__1 = membraneTarget->v2__1;
+            v2__2 = membraneTarget->v2__2;
             switch (interface.targetCurve)
             {
                 case 0: // South
                 {
-                    arma::vec h_1s1 = membranes[interface.targetDomain]->h_1s1_south;
-                    arma::vec h_2s1 = membranes[interface.targetDomain]->h_2s1_south;
-                    arma::vec h_2s2 = membranes[interface.targetDomain]->h_2s2_south;
+                    arma::vec h_1s1 = membraneTarget->h_1s1_south;
+                    arma::vec h_2s1 = membraneTarget->h_2s1_south;
+                    arma::vec h_2s2 = membraneTarget->h_2s2_south;
                     arma::vec targetV1 = interface.lambdaTarget*h_1s1%V1.col(0)
                                        + interface.c1Target%v1__1.col(0) + interface.c2Target%v1__2.col(0);
                     arma::vec targetV2 = interface.lambdaTarget*(h_2s1%V1.col(0) + h_2s2%V2.col(0))
@@ -165,30 +598,87 @@ void Structure::planeStrain()
                     switch (interface.sourceCurve)
                     {
                         case 0: // South
-                            membranes[interface.sourceDomain]->boundary(Field::v1, sourceDirection, BC::Robin,-interface.lambdaTarget, 1, arma::vec(reverse(targetV1)));
-                            membranes[interface.sourceDomain]->boundary(Field::v2, sourceDirection, BC::Robin,-interface.lambdaTarget, 1, arma::vec(reverse(targetV2)));
+                            targetV1 = reverse(targetV1);
+                            targetV2 = reverse(targetV2);
+                            for (size_t i = 1; i < nx-1; i++)
+                            {
+                                membraneSource->bv(i)                     = targetV1(i);
+                                membraneSource->bv(i+membraneSource->nxy) = targetV2(i);
+                            }
+                            if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Interface)
+                            {
+                                membraneSource->bv(0)                   = targetV1(0);
+                                membraneSource->bv(membraneSource->nxy) = targetV2(0);
+                            }
+                            if (membraneSource->chi[0]->curveType == CurveType::Boundary  && membraneSource->chi[1]->curveType == CurveType::Interface)
+                            {
+                                membraneSource->bv(nx-1)                     = targetV1(nx-1);
+                                membraneSource->bv(nx-1+membraneSource->nxy) = targetV2(nx-1);
+                            }
                             break;
                         case 1: // East
-                            membranes[interface.sourceDomain]->boundary(Field::v1, sourceDirection, BC::Robin, interface.lambdaTarget, 1, arma::vec(reverse(targetV2)));
-                            membranes[interface.sourceDomain]->boundary(Field::v2, sourceDirection, BC::Robin,-interface.lambdaTarget,-1, arma::vec(reverse(targetV1)));
+                            std::swap(targetV1, targetV2);
+                            targetV1 = reverse(targetV1);
+                            targetV2 = reverse(targetV2);
+                            for (size_t j = 1; j < ny-1; j++)
+                            {
+                                membraneSource->bv(membraneSource->nx-1+j*membraneSource->nx)                     = targetV1(j);
+                                membraneSource->bv(membraneSource->nx-1+j*membraneSource->nx+membraneSource->nxy) = targetV2(j);
+                            }
+                            if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Interface)
+                            {
+                                membraneSource->bv(membraneSource->nx-1)                     = targetV1(0);
+                                membraneSource->bv(membraneSource->nx-1+membraneSource->nxy) = targetV2(0);
+                            }
+                            if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Boundary)
+                            {
+                                membraneSource->bv(membraneSource->nx-1+(ny-1)*membraneSource->nx)                     = targetV1(ny-1);
+                                membraneSource->bv(membraneSource->nx-1+(ny-1)*membraneSource->nx+membraneSource->nxy) = targetV2(ny-1);
+                            }
                             break;
                         case 2: // North
-                            membranes[interface.sourceDomain]->boundary(Field::v1, sourceDirection, BC::Robin, interface.lambdaTarget, 1, targetV1);
-                            membranes[interface.sourceDomain]->boundary(Field::v2, sourceDirection, BC::Robin, interface.lambdaTarget, 1, targetV2);
+                            for (size_t i = 1; i < nx-1; i++)
+                            {
+                                membraneSource->bv(i+(membraneSource->ny-1)*nx)                     = targetV1(i);
+                                membraneSource->bv(i+(membraneSource->ny-1)*nx+membraneSource->nxy) = targetV2(i);
+                            }
+                            if (membraneSource->chi[2]->curveType == CurveType::Boundary  && membraneSource->chi[3]->curveType == CurveType::Interface)
+                            {
+                                membraneSource->bv((membraneSource->ny-1)*nx)                     = targetV1(0);
+                                membraneSource->bv((membraneSource->ny-1)*nx+membraneSource->nxy) = targetV2(0);
+                            }
+                            if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Interface)
+                            {
+                                membraneSource->bv(nx-1+(membraneSource->ny-1)*nx)                     = targetV1(nx-1);
+                                membraneSource->bv(nx-1+(membraneSource->ny-1)*nx+membraneSource->nxy) = targetV2(nx-1);
+                            }
                             break;
                         case 3: // West
-                            membranes[interface.sourceDomain]->boundary(Field::v1, sourceDirection, BC::Robin,-interface.lambdaTarget, 1, targetV2);
-                            membranes[interface.sourceDomain]->boundary(Field::v2, sourceDirection, BC::Robin, interface.lambdaTarget,-1, targetV1);
+                            std::swap(targetV1, targetV2);
+                            for (size_t j = 1; j < ny-1; j++)
+                            {
+                                membraneSource->bv(j*membraneSource->nx)                     = targetV1(j);
+                                membraneSource->bv(j*membraneSource->nx+membraneSource->nxy) = targetV2(j);
+                            }
+                            if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Boundary)
+                            {
+                                membraneSource->bv(0)                   = targetV1(0);
+                                membraneSource->bv(membraneSource->nxy) = targetV2(0);
+                            }
+                            if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Interface)
+                            {
+                                membraneSource->bv((ny-1)*membraneSource->nx)                     = targetV1(ny-1);
+                                membraneSource->bv((ny-1)*membraneSource->nx+membraneSource->nxy) = targetV2(ny-1);
+                            }
                             break;
                     }
                     break;
                 }
                 case 1: // East
                 {
-                    size_t nx = membranes[interface.targetDomain]->nx;
-                    arma::rowvec h_1s1 = membranes[interface.targetDomain]->h_1s1_east;
-                    arma::rowvec h_1s2 = membranes[interface.targetDomain]->h_1s2_east;
-                    arma::rowvec h_2s2 = membranes[interface.targetDomain]->h_2s2_east;
+                    arma::rowvec h_1s1 = membraneTarget->h_1s1_east;
+                    arma::rowvec h_1s2 = membraneTarget->h_1s2_east;
+                    arma::rowvec h_2s2 = membraneTarget->h_2s2_east;
                     arma::vec targetV1 = interface.lambdaTarget*(h_1s1%V1.row(nx-1) + h_1s2%V2.row(nx-1)).t()
                                        - interface.c11Target%v1__1.row(nx-1).t() - interface.c22Target%v2__2.row(nx-1).t() - interface.c12Target%(v1__2.row(nx-1) + v2__1.row(nx-1)).t();
                     arma::vec targetV2 = interface.lambdaTarget*(h_2s2%V2.row(nx-1)).t()
@@ -196,30 +686,87 @@ void Structure::planeStrain()
                     switch (interface.sourceCurve)
                     {
                         case 0: // South
-                            membranes[interface.sourceDomain]->boundary(Field::v1, sourceDirection, BC::Robin,-interface.lambdaTarget, 1, arma::vec(reverse(targetV2)));
-                            membranes[interface.sourceDomain]->boundary(Field::v2, sourceDirection, BC::Robin, interface.lambdaTarget,-1, arma::vec(reverse(targetV1)));
+                            std::swap(targetV1, targetV2);
+                            targetV1 = reverse(targetV1);
+                            targetV2 = reverse(targetV2);
+                            for (size_t i = 1; i < nx-1; i++)
+                            {
+                                membraneSource->bv(i)                     = targetV1(i);
+                                membraneSource->bv(i+membraneSource->nxy) = targetV2(i);
+                            }
+                            if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Interface)
+                            {
+                                membraneSource->bv(0)                   = targetV1(0);
+                                membraneSource->bv(membraneSource->nxy) = targetV2(0);
+                            }
+                            if (membraneSource->chi[0]->curveType == CurveType::Boundary  && membraneSource->chi[1]->curveType == CurveType::Interface)
+                            {
+                                membraneSource->bv(nx-1)                     = targetV1(nx-1);
+                                membraneSource->bv(nx-1+membraneSource->nxy) = targetV2(nx-1);
+                            }
                             break;
                         case 1: // East
-                            membranes[interface.sourceDomain]->boundary(Field::v1, sourceDirection, BC::Robin,-interface.lambdaTarget,-1, arma::vec(reverse(targetV1)));
-                            membranes[interface.sourceDomain]->boundary(Field::v2, sourceDirection, BC::Robin,-interface.lambdaTarget,-1, arma::vec(reverse(targetV2)));
+                            targetV1 = reverse(targetV1);
+                            targetV2 = reverse(targetV2);
+                            for (size_t j = 1; j < ny-1; j++)
+                            {
+                                membraneSource->bv(membraneSource->nx-1+j*membraneSource->nx)                     = targetV1(j);
+                                membraneSource->bv(membraneSource->nx-1+j*membraneSource->nx+membraneSource->nxy) = targetV2(j);
+                            }
+                            if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Interface)
+                            {
+                                membraneSource->bv(membraneSource->nx-1)                     = targetV1(0);
+                                membraneSource->bv(membraneSource->nx-1+membraneSource->nxy) = targetV2(0);
+                            }
+                            if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Boundary)
+                            {
+                                membraneSource->bv(membraneSource->nx-1+(ny-1)*membraneSource->nx)                     = targetV1(ny-1);
+                                membraneSource->bv(membraneSource->nx-1+(ny-1)*membraneSource->nx+membraneSource->nxy) = targetV2(ny-1);
+                            }
                             break;
                         case 2: // North
-                            membranes[interface.sourceDomain]->boundary(Field::v1, sourceDirection, BC::Robin, interface.lambdaTarget, 1, targetV2);
-                            membranes[interface.sourceDomain]->boundary(Field::v2, sourceDirection, BC::Robin,-interface.lambdaTarget,-1, targetV1);
+                            std::swap(targetV1, targetV2);
+                            for (size_t i = 1; i < nx-1; i++)
+                            {
+                                membraneSource->bv(i+(membraneSource->ny-1)*nx)                     = targetV1(i);
+                                membraneSource->bv(i+(membraneSource->ny-1)*nx+membraneSource->nxy) = targetV2(i);
+                            }
+                            if (membraneSource->chi[2]->curveType == CurveType::Boundary  && membraneSource->chi[3]->curveType == CurveType::Interface)
+                            {
+                                membraneSource->bv((membraneSource->ny-1)*nx)                     = targetV1(0);
+                                membraneSource->bv((membraneSource->ny-1)*nx+membraneSource->nxy) = targetV2(0);
+                            }
+                            if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Interface)
+                            {
+                                membraneSource->bv(nx-1+(membraneSource->ny-1)*nx)                     = targetV1(nx-1);
+                                membraneSource->bv(nx-1+(membraneSource->ny-1)*nx+membraneSource->nxy) = targetV2(nx-1);
+                            }
                             break;
                         case 3: // West
-                            membranes[interface.sourceDomain]->boundary(Field::v1, sourceDirection, BC::Robin, interface.lambdaTarget,-1, targetV1);
-                            membranes[interface.sourceDomain]->boundary(Field::v2, sourceDirection, BC::Robin, interface.lambdaTarget,-1, targetV2);
+                            for (size_t j = 1; j < ny-1; j++)
+                            {
+                                membraneSource->bv(j*membraneSource->nx)                     = targetV1(j);
+                                membraneSource->bv(j*membraneSource->nx+membraneSource->nxy) = targetV2(j);
+                            }
+                            if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Boundary)
+                            {
+                                membraneSource->bv(0)                   = targetV1(0);
+                                membraneSource->bv(membraneSource->nxy) = targetV2(0);
+                            }
+                            if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Interface)
+                            {
+                                membraneSource->bv((ny-1)*membraneSource->nx)                     = targetV1(ny-1);
+                                membraneSource->bv((ny-1)*membraneSource->nx+membraneSource->nxy) = targetV2(ny-1);
+                            }
                             break;
                     }
                     break;
                 }
                 case 2: // North
                 {
-                    size_t ny = membranes[interface.targetDomain]->ny;
-                    arma::vec h_1s1 = membranes[interface.targetDomain]->h_1s1_north;
-                    arma::vec h_2s1 = membranes[interface.targetDomain]->h_2s1_north;
-                    arma::vec h_2s2 = membranes[interface.targetDomain]->h_2s2_north;
+                    arma::vec h_1s1 = membraneTarget->h_1s1_north;
+                    arma::vec h_2s1 = membraneTarget->h_2s1_north;
+                    arma::vec h_2s2 = membraneTarget->h_2s2_north;
                     arma::vec targetV1 = interface.lambdaTarget*h_1s1%V1.col(ny-1)
                                        - interface.c1Target%v1__1.col(ny-1) - interface.c2Target%v1__2.col(ny-1);
                     arma::vec targetV2 = interface.lambdaTarget*(h_2s1%V1.col(ny-1) + h_2s2%V2.col(ny-1))
@@ -227,29 +774,87 @@ void Structure::planeStrain()
                     switch (interface.sourceCurve)
                     {
                         case 0: // South
-                            membranes[interface.sourceDomain]->boundary(Field::v1, sourceDirection, BC::Robin, interface.lambdaTarget,-1, targetV1);
-                            membranes[interface.sourceDomain]->boundary(Field::v2, sourceDirection, BC::Robin, interface.lambdaTarget,-1, targetV2);
+                            for (size_t i = 1; i < nx-1; i++)
+                            {
+                                membraneSource->bv(i)                     = targetV1(i);
+                                membraneSource->bv(i+membraneSource->nxy) = targetV2(i);
+                            }
+                            if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Interface)
+                            {
+                                membraneSource->bv(0)                   = targetV1(0);
+                                membraneSource->bv(membraneSource->nxy) = targetV2(0);
+                            }
+                            if (membraneSource->chi[0]->curveType == CurveType::Boundary  && membraneSource->chi[1]->curveType == CurveType::Interface)
+                            {
+                                membraneSource->bv(nx-1)                     = targetV1(nx-1);
+                                membraneSource->bv(nx-1+membraneSource->nxy) = targetV2(nx-1);
+                            }
                             break;
                         case 1: // East
-                            membranes[interface.sourceDomain]->boundary(Field::v1, sourceDirection, BC::Robin,-interface.lambdaTarget,-1, targetV2);
-                            membranes[interface.sourceDomain]->boundary(Field::v2, sourceDirection, BC::Robin, interface.lambdaTarget, 1, targetV1);
+                            std::swap(targetV1, targetV2);
+                            for (size_t j = 1; j < ny-1; j++)
+                            {
+                                membraneSource->bv(membraneSource->nx-1+j*membraneSource->nx)                     = targetV1(j);
+                                membraneSource->bv(membraneSource->nx-1+j*membraneSource->nx+membraneSource->nxy) = targetV2(j);
+                            }
+                            if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Interface)
+                            {
+                                membraneSource->bv(membraneSource->nx-1)                     = targetV1(0);
+                                membraneSource->bv(membraneSource->nx-1+membraneSource->nxy) = targetV2(0);
+                            }
+                            if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Boundary)
+                            {
+                                membraneSource->bv(membraneSource->nx-1+(ny-1)*membraneSource->nx)                     = targetV1(ny-1);
+                                membraneSource->bv(membraneSource->nx-1+(ny-1)*membraneSource->nx+membraneSource->nxy) = targetV2(ny-1);
+                            }
                             break;
                         case 2: // North
-                            membranes[interface.sourceDomain]->boundary(Field::v1, sourceDirection, BC::Robin,-interface.lambdaTarget,-1, arma::vec(reverse(targetV1)));
-                            membranes[interface.sourceDomain]->boundary(Field::v2, sourceDirection, BC::Robin,-interface.lambdaTarget,-1, arma::vec(reverse(targetV2)));
+                            targetV1 = reverse(targetV1);
+                            targetV2 = reverse(targetV2);
+                            for (size_t i = 1; i < nx-1; i++)
+                            {
+                                membraneSource->bv(i+(membraneSource->ny-1)*nx)                     = targetV1(i);
+                                membraneSource->bv(i+(membraneSource->ny-1)*nx+membraneSource->nxy) = targetV2(i);
+                            }
+                            if (membraneSource->chi[2]->curveType == CurveType::Boundary  && membraneSource->chi[3]->curveType == CurveType::Interface)
+                            {
+                                membraneSource->bv((membraneSource->ny-1)*nx)                     = targetV1(0);
+                                membraneSource->bv((membraneSource->ny-1)*nx+membraneSource->nxy) = targetV2(0);
+                            }
+                            if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Interface)
+                            {
+                                membraneSource->bv(nx-1+(membraneSource->ny-1)*nx)                     = targetV1(nx-1);
+                                membraneSource->bv(nx-1+(membraneSource->ny-1)*nx+membraneSource->nxy) = targetV2(nx-1);
+                            }
                             break;
                         case 3: // West
-                            membranes[interface.sourceDomain]->boundary(Field::v1, sourceDirection, BC::Robin, interface.lambdaTarget,-1, arma::vec(reverse(targetV2)));
-                            membranes[interface.sourceDomain]->boundary(Field::v2, sourceDirection, BC::Robin,-interface.lambdaTarget, 1, arma::vec(reverse(targetV1)));
+                            std::swap(targetV1, targetV2);
+                            targetV1 = reverse(targetV1);
+                            targetV2 = reverse(targetV2);
+                            for (size_t j = 1; j < ny-1; j++)
+                            {
+                                membraneSource->bv(j*membraneSource->nx)                     = targetV1(j);
+                                membraneSource->bv(j*membraneSource->nx+membraneSource->nxy) = targetV2(j);
+                            }
+                            if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Boundary)
+                            {
+                                membraneSource->bv(0)                   = targetV1(0);
+                                membraneSource->bv(membraneSource->nxy) = targetV2(0);
+                            }
+                            if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Interface)
+                            {
+                                membraneSource->bv((ny-1)*membraneSource->nx)                     = targetV1(ny-1);
+                                membraneSource->bv((ny-1)*membraneSource->nx+membraneSource->nxy) = targetV2(ny-1);
+                            }
                             break;
                     }
                     break;
                 }
                 case 3: // West
                 {
-                    arma::rowvec h_1s1 = membranes[interface.targetDomain]->h_1s1_west;
-                    arma::rowvec h_1s2 = membranes[interface.targetDomain]->h_1s2_west;
-                    arma::rowvec h_2s2 = membranes[interface.targetDomain]->h_2s2_west;
+                    arma::rowvec h_1s1 = membraneTarget->h_1s1_west;
+                    arma::rowvec h_1s2 = membraneTarget->h_1s2_west;
+                    arma::rowvec h_2s2 = membraneTarget->h_2s2_west;
                     arma::vec targetV1 = interface.lambdaTarget*(h_1s1%V1.row(0) + h_1s2%V2.row(0)).t()
                                        + interface.c11Target%v1__1.row(0).t() + interface.c22Target%v2__2.row(0).t() + interface.c12Target%(v1__2.row(0) + v2__1.row(0)).t();
                     arma::vec targetV2 = interface.lambdaTarget*(h_2s2%V2.row(0)).t()
@@ -257,20 +862,78 @@ void Structure::planeStrain()
                     switch (interface.sourceCurve)
                     {
                         case 0: // South
-                            membranes[interface.sourceDomain]->boundary(Field::v1, sourceDirection, BC::Robin, interface.lambdaTarget,-1, targetV2);
-                            membranes[interface.sourceDomain]->boundary(Field::v2, sourceDirection, BC::Robin,-interface.lambdaTarget, 1, targetV1);
+                            std::swap(targetV1, targetV2);
+                            for (size_t i = 1; i < nx-1; i++)
+                            {
+                                membraneSource->bv(i)                     = targetV1(i);
+                                membraneSource->bv(i+membraneSource->nxy) = targetV2(i);
+                            }
+                            if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Interface)
+                            {
+                                membraneSource->bv(0)                   = targetV1(0);
+                                membraneSource->bv(membraneSource->nxy) = targetV2(0);
+                            }
+                            if (membraneSource->chi[0]->curveType == CurveType::Boundary  && membraneSource->chi[1]->curveType == CurveType::Interface)
+                            {
+                                membraneSource->bv(nx-1)                     = targetV1(nx-1);
+                                membraneSource->bv(nx-1+membraneSource->nxy) = targetV2(nx-1);
+                            }
                             break;
                         case 1: // East
-                            membranes[interface.sourceDomain]->boundary(Field::v1, sourceDirection, BC::Robin, interface.lambdaTarget, 1, targetV1);
-                            membranes[interface.sourceDomain]->boundary(Field::v2, sourceDirection, BC::Robin, interface.lambdaTarget, 1, targetV2);
+                            for (size_t j = 1; j < ny-1; j++)
+                            {
+                                membraneSource->bv(membraneSource->nx-1+j*membraneSource->nx)                     = targetV1(j);
+                                membraneSource->bv(membraneSource->nx-1+j*membraneSource->nx+membraneSource->nxy) = targetV2(j);
+                            }
+                            if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Interface)
+                            {
+                                membraneSource->bv(membraneSource->nx-1)                     = targetV1(0);
+                                membraneSource->bv(membraneSource->nx-1+membraneSource->nxy) = targetV2(0);
+                            }
+                            if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Boundary)
+                            {
+                                membraneSource->bv(membraneSource->nx-1+(ny-1)*membraneSource->nx)                     = targetV1(ny-1);
+                                membraneSource->bv(membraneSource->nx-1+(ny-1)*membraneSource->nx+membraneSource->nxy) = targetV2(ny-1);
+                            }
                             break;
                         case 2: // North
-                            membranes[interface.sourceDomain]->boundary(Field::v1, sourceDirection, BC::Robin,-interface.lambdaTarget,-1, arma::vec(reverse(targetV2)));
-                            membranes[interface.sourceDomain]->boundary(Field::v2, sourceDirection, BC::Robin, interface.lambdaTarget, 1, arma::vec(reverse(targetV1)));
+                            std::swap(targetV1, targetV2);
+                            targetV1 = reverse(targetV1);
+                            targetV2 = reverse(targetV2);
+                            for (size_t i = 1; i < nx-1; i++)
+                            {
+                                membraneSource->bv(i+(membraneSource->ny-1)*nx)                     = targetV1(i);
+                                membraneSource->bv(i+(membraneSource->ny-1)*nx+membraneSource->nxy) = targetV2(i);
+                            }
+                            if (membraneSource->chi[2]->curveType == CurveType::Boundary  && membraneSource->chi[3]->curveType == CurveType::Interface)
+                            {
+                                membraneSource->bv((membraneSource->ny-1)*nx)                     = targetV1(0);
+                                membraneSource->bv((membraneSource->ny-1)*nx+membraneSource->nxy) = targetV2(0);
+                            }
+                            if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Interface)
+                            {
+                                membraneSource->bv(nx-1+(membraneSource->ny-1)*nx)                     = targetV1(nx-1);
+                                membraneSource->bv(nx-1+(membraneSource->ny-1)*nx+membraneSource->nxy) = targetV2(nx-1);
+                            }
                             break;
                         case 3: // West
-                            membranes[interface.sourceDomain]->boundary(Field::v1, sourceDirection, BC::Robin,-interface.lambdaTarget, 1, arma::vec(reverse(targetV1)));
-                            membranes[interface.sourceDomain]->boundary(Field::v2, sourceDirection, BC::Robin,-interface.lambdaTarget, 1, arma::vec(reverse(targetV2)));
+                            targetV1 = reverse(targetV1);
+                            targetV2 = reverse(targetV2);
+                            for (size_t j = 1; j < ny-1; j++)
+                            {
+                                membraneSource->bv(j*membraneSource->nx)                     = targetV1(j);
+                                membraneSource->bv(j*membraneSource->nx+membraneSource->nxy) = targetV2(j);
+                            }
+                            if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Boundary)
+                            {
+                                membraneSource->bv(0)                   = targetV1(0);
+                                membraneSource->bv(membraneSource->nxy) = targetV2(0);
+                            }
+                            if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Interface)
+                            {
+                                membraneSource->bv((ny-1)*membraneSource->nx)                     = targetV1(ny-1);
+                                membraneSource->bv((ny-1)*membraneSource->nx+membraneSource->nxy) = targetV2(ny-1);
+                            }
                             break;
                     }
                     break;
@@ -279,106 +942,109 @@ void Structure::planeStrain()
         }
         #pragma omp parallel for
         for (auto& membrane:membranes)
-            membrane->planeStrain();
+            membrane->planeStrainEval();
         for (size_t k = 0; k < interfaces.size(); k++)
         {
-            arma::mat V1    = membranes[interfaces[k].sourceDomain]->v1;
-            arma::mat V2    = membranes[interfaces[k].sourceDomain]->v2;
-            arma::mat v1__1 = membranes[interfaces[k].sourceDomain]->v1__1;
-            arma::mat v1__2 = membranes[interfaces[k].sourceDomain]->v1__2;
-            arma::mat v2__1 = membranes[interfaces[k].sourceDomain]->v2__1;
-            arma::mat v2__2 = membranes[interfaces[k].sourceDomain]->v2__2;
-            switch (interfaces[k].sourceCurve)
+            Interface interface = interfaces[k];
+            Membrane *membraneSource = membranes[interface.sourceDomain];
+            arma::mat V1    = membraneSource->v1;
+            arma::mat V2    = membraneSource->v2;
+            arma::mat v1__1 = membraneSource->v1__1;
+            arma::mat v1__2 = membraneSource->v1__2;
+            arma::mat v2__1 = membraneSource->v2__1;
+            arma::mat v2__2 = membraneSource->v2__2;
+            switch (interface.sourceCurve)
             {
                 case 0: // South
                 {
-                    arma::vec h_1s1 = membranes[interfaces[k].sourceDomain]->h_1s1_south;
-                    arma::vec h_2s1 = membranes[interfaces[k].sourceDomain]->h_2s1_south;
-                    arma::vec h_2s2 = membranes[interfaces[k].sourceDomain]->h_2s2_south;
-                    Vtsource(k) = interfaces[k].lambdaSource*h_1s1%V1.col(0)
-                                + interfaces[k].c1Source%v1__1.col(0) + interfaces[k].c2Source%v1__2.col(0);
-                    Vnsource(k) = interfaces[k].lambdaSource*(h_2s1%V1.col(0) + h_2s2%V2.col(0))
-                                + interfaces[k].c11Source%v1__1.col(0) + interfaces[k].c22Source%v2__2.col(0) + interfaces[k].c12Source%(v1__2.col(0) + v2__1.col(0));
+                    arma::vec h_1s1 = membraneSource->h_1s1_south;
+                    arma::vec h_2s1 = membraneSource->h_2s1_south;
+                    arma::vec h_2s2 = membraneSource->h_2s2_south;
+                    Vtsource(k) = interface.lambdaSource*h_1s1%V1.col(0)
+                                + interface.c1Source%v1__1.col(0) + interface.c2Source%v1__2.col(0);
+                    Vnsource(k) = interface.lambdaSource*(h_2s1%V1.col(0) + h_2s2%V2.col(0))
+                                + interface.c11Source%v1__1.col(0) + interface.c22Source%v2__2.col(0) + interface.c12Source%(v1__2.col(0) + v2__1.col(0));
                     break;
                 }
                 case 1: // East
                 {
-                    size_t nx = membranes[interfaces[k].sourceDomain]->nx;
-                    arma::rowvec h_1s1 = membranes[interfaces[k].sourceDomain]->h_1s1_east;
-                    arma::rowvec h_1s2 = membranes[interfaces[k].sourceDomain]->h_1s2_east;
-                    arma::rowvec h_2s2 = membranes[interfaces[k].sourceDomain]->h_2s2_east;
-                    Vnsource(k) = interfaces[k].lambdaSource*(h_1s1%V1.row(nx-1) + h_1s2%V2.row(nx-1)).t()
-                                - interfaces[k].c11Source%v1__1.row(nx-1).t() - interfaces[k].c22Source%v2__2.row(nx-1).t() - interfaces[k].c12Source%(v1__2.row(nx-1) + v2__1.row(nx-1)).t();
-                    Vtsource(k) = interfaces[k].lambdaSource*(h_2s2%V2.row(nx-1)).t()
-                                - interfaces[k].c1Source%v2__1.row(nx-1).t() - interfaces[k].c2Source%v2__2.row(nx-1).t();
+                    size_t nx = membraneSource->nx;
+                    arma::rowvec h_1s1 = membraneSource->h_1s1_east;
+                    arma::rowvec h_1s2 = membraneSource->h_1s2_east;
+                    arma::rowvec h_2s2 = membraneSource->h_2s2_east;
+                    Vnsource(k) = interface.lambdaSource*(h_1s1%V1.row(nx-1) + h_1s2%V2.row(nx-1)).t()
+                                - interface.c11Source%v1__1.row(nx-1).t() - interface.c22Source%v2__2.row(nx-1).t() - interface.c12Source%(v1__2.row(nx-1) + v2__1.row(nx-1)).t();
+                    Vtsource(k) = interface.lambdaSource*(h_2s2%V2.row(nx-1)).t()
+                                - interface.c1Source%v2__1.row(nx-1).t() - interface.c2Source%v2__2.row(nx-1).t();
                     break;
                 }
                 case 2: // North
                 {
-                    size_t ny = membranes[interfaces[k].sourceDomain]->ny;
-                    arma::vec h_1s1 = membranes[interfaces[k].sourceDomain]->h_1s1_north;
-                    arma::vec h_2s1 = membranes[interfaces[k].sourceDomain]->h_2s1_north;
-                    arma::vec h_2s2 = membranes[interfaces[k].sourceDomain]->h_2s2_north;
-                    Vtsource(k) = interfaces[k].lambdaSource*h_1s1%V1.col(ny-1)
-                                - interfaces[k].c1Source%v1__1.col(ny-1) - interfaces[k].c2Source%v1__2.col(ny-1);
-                    Vnsource(k) = interfaces[k].lambdaSource*(h_2s1%V1.col(ny-1) + h_2s2%V2.col(ny-1))
-                                - interfaces[k].c11Source%v1__1.col(ny-1) - interfaces[k].c22Source%v2__2.col(ny-1) - interfaces[k].c12Source%(v1__2.col(ny-1) + v2__1.col(ny-1));
+                    size_t ny = membraneSource->ny;
+                    arma::vec h_1s1 = membraneSource->h_1s1_north;
+                    arma::vec h_2s1 = membraneSource->h_2s1_north;
+                    arma::vec h_2s2 = membraneSource->h_2s2_north;
+                    Vtsource(k) = interface.lambdaSource*h_1s1%V1.col(ny-1)
+                                - interface.c1Source%v1__1.col(ny-1) - interface.c2Source%v1__2.col(ny-1);
+                    Vnsource(k) = interface.lambdaSource*(h_2s1%V1.col(ny-1) + h_2s2%V2.col(ny-1))
+                                - interface.c11Source%v1__1.col(ny-1) - interface.c22Source%v2__2.col(ny-1) - interface.c12Source%(v1__2.col(ny-1) + v2__1.col(ny-1));
                     break;
                 }
                 case 3: // West
                 {
-                    arma::rowvec h_1s1 = membranes[interfaces[k].sourceDomain]->h_1s1_west;
-                    arma::rowvec h_1s2 = membranes[interfaces[k].sourceDomain]->h_1s2_west;
-                    arma::rowvec h_2s2 = membranes[interfaces[k].sourceDomain]->h_2s2_west;
-                    Vnsource(k) = interfaces[k].lambdaSource*(h_1s1%V1.row(0) + h_1s2%V2.row(0)).t()
-                                + interfaces[k].c11Source%v1__1.row(0).t() + interfaces[k].c22Source%v2__2.row(0).t() + interfaces[k].c12Source%(v1__2.row(0) + v2__1.row(0)).t();
-                    Vtsource(k) = interfaces[k].lambdaSource*(h_2s2%V2.row(0)).t()
-                                + interfaces[k].c1Source%v2__1.row(0).t() + interfaces[k].c2Source%v2__2.row(0).t();
+                    arma::rowvec h_1s1 = membraneSource->h_1s1_west;
+                    arma::rowvec h_1s2 = membraneSource->h_1s2_west;
+                    arma::rowvec h_2s2 = membraneSource->h_2s2_west;
+                    Vnsource(k) = interface.lambdaSource*(h_1s1%V1.row(0) + h_1s2%V2.row(0)).t()
+                                + interface.c11Source%v1__1.row(0).t() + interface.c22Source%v2__2.row(0).t() + interface.c12Source%(v1__2.row(0) + v2__1.row(0)).t();
+                    Vtsource(k) = interface.lambdaSource*(h_2s2%V2.row(0)).t()
+                                + interface.c1Source%v2__1.row(0).t() + interface.c2Source%v2__2.row(0).t();
                     break;
                 }
             }
-            V1    = membranes[interfaces[k].targetDomain]->v1;
-            V2    = membranes[interfaces[k].targetDomain]->v2;
-            v1__1 = membranes[interfaces[k].targetDomain]->v1__1;
-            v1__2 = membranes[interfaces[k].targetDomain]->v1__2;
-            v2__1 = membranes[interfaces[k].targetDomain]->v2__1;
-            v2__2 = membranes[interfaces[k].targetDomain]->v2__2;
-            switch (interfaces[k].targetCurve)
+            Membrane *membraneTarget = membranes[interface.targetDomain];
+            V1    = membraneTarget->v1;
+            V2    = membraneTarget->v2;
+            v1__1 = membraneTarget->v1__1;
+            v1__2 = membraneTarget->v1__2;
+            v2__1 = membraneTarget->v2__1;
+            v2__2 = membraneTarget->v2__2;
+            switch (interface.targetCurve)
             {
                 case 0: // South
                 {
-                    arma::vec h_1s1 = membranes[interfaces[k].targetDomain]->h_1s1_south;
-                    arma::vec h_2s1 = membranes[interfaces[k].targetDomain]->h_2s1_south;
-                    arma::vec h_2s2 = membranes[interfaces[k].targetDomain]->h_2s2_south;
-                    if (interfaces[k].sourceCurve == 0) // South
+                    arma::vec h_1s1 = membraneTarget->h_1s1_south;
+                    arma::vec h_2s1 = membraneTarget->h_2s1_south;
+                    arma::vec h_2s2 = membraneTarget->h_2s2_south;
+                    if (interface.sourceCurve == 0) // South
                     {
-                        Vttarget(k) =-interfaces[k].lambdaSource*h_1s1%V1.col(0)
-                                    + (interfaces[k].c1Target%v1__1.col(0) + interfaces[k].c2Target%v1__2.col(0));
-                        Vntarget(k) =-interfaces[k].lambdaSource*(h_2s1%V1.col(0) + h_2s2%V2.col(0))
-                                    + (interfaces[k].c11Target%v1__1.col(0) + interfaces[k].c22Target%v2__2.col(0) + interfaces[k].c12Target%(v1__2.col(0) + v2__1.col(0)));
+                        Vttarget(k) =-interface.lambdaSource*h_1s1%V1.col(0)
+                                    + (interface.c1Target%v1__1.col(0) + interface.c2Target%v1__2.col(0));
+                        Vntarget(k) =-interface.lambdaSource*(h_2s1%V1.col(0) + h_2s2%V2.col(0))
+                                    + (interface.c11Target%v1__1.col(0) + interface.c22Target%v2__2.col(0) + interface.c12Target%(v1__2.col(0) + v2__1.col(0)));
                     }
-                    else if (interfaces[k].sourceCurve == 1) // East
+                    else if (interface.sourceCurve == 1) // East
                     {
-                        Vttarget(k) =-interfaces[k].lambdaSource*h_1s1%V1.col(0)
-                                    + (interfaces[k].c1Target%v1__1.col(0) + interfaces[k].c2Target%v1__2.col(0));
-                        Vntarget(k) = interfaces[k].lambdaSource*(h_2s1%V1.col(0) + h_2s2%V2.col(0))
-                                    - (interfaces[k].c11Target%v1__1.col(0) + interfaces[k].c22Target%v2__2.col(0) + interfaces[k].c12Target%(v1__2.col(0) + v2__1.col(0)));
+                        Vttarget(k) =-interface.lambdaSource*h_1s1%V1.col(0)
+                                    + (interface.c1Target%v1__1.col(0) + interface.c2Target%v1__2.col(0));
+                        Vntarget(k) = interface.lambdaSource*(h_2s1%V1.col(0) + h_2s2%V2.col(0))
+                                    - (interface.c11Target%v1__1.col(0) + interface.c22Target%v2__2.col(0) + interface.c12Target%(v1__2.col(0) + v2__1.col(0)));
                     }
-                    else if (interfaces[k].sourceCurve == 2) // North
+                    else if (interface.sourceCurve == 2) // North
                     {
-                        Vttarget(k) = interfaces[k].lambdaSource*h_1s1%V1.col(0)
-                                    - (interfaces[k].c1Target%v1__1.col(0) + interfaces[k].c2Target%v1__2.col(0));
-                        Vntarget(k) = interfaces[k].lambdaSource*(h_2s1%V1.col(0) + h_2s2%V2.col(0))
-                                    - (interfaces[k].c11Target%v1__1.col(0) + interfaces[k].c22Target%v2__2.col(0) + interfaces[k].c12Target%(v1__2.col(0) + v2__1.col(0)));
+                        Vttarget(k) = interface.lambdaSource*h_1s1%V1.col(0)
+                                    - (interface.c1Target%v1__1.col(0) + interface.c2Target%v1__2.col(0));
+                        Vntarget(k) = interface.lambdaSource*(h_2s1%V1.col(0) + h_2s2%V2.col(0))
+                                    - (interface.c11Target%v1__1.col(0) + interface.c22Target%v2__2.col(0) + interface.c12Target%(v1__2.col(0) + v2__1.col(0)));
                     }
                     else // West
                     {
-                        Vttarget(k) = interfaces[k].lambdaSource*h_1s1%V1.col(0)
-                                    - (interfaces[k].c1Target%v1__1.col(0) + interfaces[k].c2Target%v1__2.col(0));
-                        Vntarget(k) =-interfaces[k].lambdaSource*(h_2s1%V1.col(0) + h_2s2%V2.col(0))
-                                    + interfaces[k].c11Target%v1__1.col(0) + interfaces[k].c22Target%v2__2.col(0) + interfaces[k].c12Target%(v1__2.col(0) + v2__1.col(0));
+                        Vttarget(k) = interface.lambdaSource*h_1s1%V1.col(0)
+                                    - (interface.c1Target%v1__1.col(0) + interface.c2Target%v1__2.col(0));
+                        Vntarget(k) =-interface.lambdaSource*(h_2s1%V1.col(0) + h_2s2%V2.col(0))
+                                    + interface.c11Target%v1__1.col(0) + interface.c22Target%v2__2.col(0) + interface.c12Target%(v1__2.col(0) + v2__1.col(0));
                     }
-                    if (interfaces[k].sourceCurve == 0 || interfaces[k].sourceCurve == 1)
+                    if (interface.sourceCurve == 0 || interface.sourceCurve == 1)
                     {
                         Vttarget(k) = reverse(Vttarget(k));
                         Vntarget(k) = reverse(Vntarget(k));
@@ -387,39 +1053,39 @@ void Structure::planeStrain()
                 }
                 case 1: // East
                 {
-                    size_t nx = membranes[interfaces[k].targetDomain]->nx;
-                    arma::rowvec h_1s1 = membranes[interfaces[k].targetDomain]->h_1s1_east;
-                    arma::rowvec h_1s2 = membranes[interfaces[k].targetDomain]->h_1s2_east;
-                    arma::rowvec h_2s2 = membranes[interfaces[k].targetDomain]->h_2s2_east;
-                    if (interfaces[k].sourceCurve == 0) // South
+                    size_t nx = membraneTarget->nx;
+                    arma::rowvec h_1s1 = membraneTarget->h_1s1_east;
+                    arma::rowvec h_1s2 = membraneTarget->h_1s2_east;
+                    arma::rowvec h_2s2 = membraneTarget->h_2s2_east;
+                    if (interface.sourceCurve == 0) // South
                     {
-                        Vttarget(k) =-interfaces[k].lambdaSource*(h_2s2%V2.row(nx-1)).t()
-                                    - interfaces[k].c1Target%v2__1.row(nx-1).t() - interfaces[k].c2Target%v2__2.row(nx-1).t();
-                        Vntarget(k) = interfaces[k].lambdaSource*(h_1s1%V1.row(nx-1) + h_1s2%V2.row(nx-1)).t()
-                                    + interfaces[k].c11Target%v1__1.row(nx-1).t() + interfaces[k].c22Target%v2__2.row(nx-1).t() + interfaces[k].c12Target%(v1__2.row(nx-1) + v2__1.row(nx-1)).t();
+                        Vttarget(k) =-interface.lambdaSource*(h_2s2%V2.row(nx-1)).t()
+                                    - interface.c1Target%v2__1.row(nx-1).t() - interface.c2Target%v2__2.row(nx-1).t();
+                        Vntarget(k) = interface.lambdaSource*(h_1s1%V1.row(nx-1) + h_1s2%V2.row(nx-1)).t()
+                                    + interface.c11Target%v1__1.row(nx-1).t() + interface.c22Target%v2__2.row(nx-1).t() + interface.c12Target%(v1__2.row(nx-1) + v2__1.row(nx-1)).t();
                     }
-                    else if (interfaces[k].sourceCurve == 1) // East
+                    else if (interface.sourceCurve == 1) // East
                     {
-                        Vttarget(k) =-interfaces[k].lambdaSource*(h_2s2%V2.row(nx-1)).t()
-                                    - interfaces[k].c1Target%v2__1.row(nx-1).t() - interfaces[k].c2Target%v2__2.row(nx-1).t();
-                        Vntarget(k) =-interfaces[k].lambdaSource*(h_1s1%V1.row(nx-1) + h_1s2%V2.row(nx-1)).t()
-                                    - interfaces[k].c11Target%v1__1.row(nx-1).t() - interfaces[k].c22Target%v2__2.row(nx-1).t() - interfaces[k].c12Target%(v1__2.row(nx-1) + v2__1.row(nx-1)).t();
+                        Vttarget(k) =-interface.lambdaSource*(h_2s2%V2.row(nx-1)).t()
+                                    - interface.c1Target%v2__1.row(nx-1).t() - interface.c2Target%v2__2.row(nx-1).t();
+                        Vntarget(k) =-interface.lambdaSource*(h_1s1%V1.row(nx-1) + h_1s2%V2.row(nx-1)).t()
+                                    - interface.c11Target%v1__1.row(nx-1).t() - interface.c22Target%v2__2.row(nx-1).t() - interface.c12Target%(v1__2.row(nx-1) + v2__1.row(nx-1)).t();
                     }
-                    else if (interfaces[k].sourceCurve == 2) // North
+                    else if (interface.sourceCurve == 2) // North
                     {
-                        Vttarget(k) = interfaces[k].lambdaSource*(h_2s2%V2.row(nx-1)).t()
-                                    + interfaces[k].c1Target%v2__1.row(nx-1).t() + interfaces[k].c2Target%v2__2.row(nx-1).t();
-                        Vntarget(k) =-interfaces[k].lambdaSource*(h_1s1%V1.row(nx-1) + h_1s2%V2.row(nx-1)).t()
-                                    - interfaces[k].c11Target%v1__1.row(nx-1).t() - interfaces[k].c22Target%v2__2.row(nx-1).t() - interfaces[k].c12Target%(v1__2.row(nx-1) + v2__1.row(nx-1)).t();
+                        Vttarget(k) = interface.lambdaSource*(h_2s2%V2.row(nx-1)).t()
+                                    + interface.c1Target%v2__1.row(nx-1).t() + interface.c2Target%v2__2.row(nx-1).t();
+                        Vntarget(k) =-interface.lambdaSource*(h_1s1%V1.row(nx-1) + h_1s2%V2.row(nx-1)).t()
+                                    - interface.c11Target%v1__1.row(nx-1).t() - interface.c22Target%v2__2.row(nx-1).t() - interface.c12Target%(v1__2.row(nx-1) + v2__1.row(nx-1)).t();
                     }
                     else // West
                     {
-                        Vttarget(k) = interfaces[k].lambdaSource*(h_2s2%V2.row(nx-1)).t()
-                                    + interfaces[k].c1Target%v2__1.row(nx-1).t() + interfaces[k].c2Target%v2__2.row(nx-1).t();
-                        Vntarget(k) = interfaces[k].lambdaSource*(h_1s1%V1.row(nx-1) + h_1s2%V2.row(nx-1)).t()
-                                    + interfaces[k].c11Target%v1__1.row(nx-1).t() + interfaces[k].c22Target%v2__2.row(nx-1).t() + interfaces[k].c12Target%(v1__2.row(nx-1) + v2__1.row(nx-1)).t();
+                        Vttarget(k) = interface.lambdaSource*(h_2s2%V2.row(nx-1)).t()
+                                    + interface.c1Target%v2__1.row(nx-1).t() + interface.c2Target%v2__2.row(nx-1).t();
+                        Vntarget(k) = interface.lambdaSource*(h_1s1%V1.row(nx-1) + h_1s2%V2.row(nx-1)).t()
+                                    + interface.c11Target%v1__1.row(nx-1).t() + interface.c22Target%v2__2.row(nx-1).t() + interface.c12Target%(v1__2.row(nx-1) + v2__1.row(nx-1)).t();
                     }
-                    if (interfaces[k].sourceCurve == 0 || interfaces[k].sourceCurve == 1)
+                    if (interface.sourceCurve == 0 || interface.sourceCurve == 1)
                     {
                         Vttarget(k) = reverse(Vttarget(k));
                         Vntarget(k) = reverse(Vntarget(k));
@@ -428,39 +1094,39 @@ void Structure::planeStrain()
                 }
                 case 2: // North
                 {
-                    size_t ny = membranes[interfaces[k].targetDomain]->ny;
-                    arma::vec h_1s1 = membranes[interfaces[k].targetDomain]->h_1s1_north;
-                    arma::vec h_2s1 = membranes[interfaces[k].targetDomain]->h_2s1_north;
-                    arma::vec h_2s2 = membranes[interfaces[k].targetDomain]->h_2s2_north;
-                    if (interfaces[k].sourceCurve == 0) // South
+                    size_t ny = membraneTarget->ny;
+                    arma::vec h_1s1 = membraneTarget->h_1s1_north;
+                    arma::vec h_2s1 = membraneTarget->h_2s1_north;
+                    arma::vec h_2s2 = membraneTarget->h_2s2_north;
+                    if (interface.sourceCurve == 0) // South
                     {
-                        Vttarget(k) = interfaces[k].lambdaSource*h_1s1%V1.col(ny-1)
-                                    + interfaces[k].c1Target%v1__1.col(ny-1) + interfaces[k].c2Target%v1__2.col(ny-1);
-                        Vntarget(k) = interfaces[k].lambdaSource*(h_2s1%V1.col(ny-1) + h_2s2%V2.col(ny-1))
-                                    + interfaces[k].c11Target%v1__1.col(ny-1) + interfaces[k].c22Target%v2__2.col(ny-1) + interfaces[k].c12Target%(v1__2.col(ny-1) + v2__1.col(ny-1));
+                        Vttarget(k) = interface.lambdaSource*h_1s1%V1.col(ny-1)
+                                    + interface.c1Target%v1__1.col(ny-1) + interface.c2Target%v1__2.col(ny-1);
+                        Vntarget(k) = interface.lambdaSource*(h_2s1%V1.col(ny-1) + h_2s2%V2.col(ny-1))
+                                    + interface.c11Target%v1__1.col(ny-1) + interface.c22Target%v2__2.col(ny-1) + interface.c12Target%(v1__2.col(ny-1) + v2__1.col(ny-1));
                     }
-                    else if (interfaces[k].sourceCurve == 1) // East
+                    else if (interface.sourceCurve == 1) // East
                     {
-                        Vttarget(k) = interfaces[k].lambdaSource*h_1s1%V1.col(ny-1)
-                                    + interfaces[k].c1Target%v1__1.col(ny-1) + interfaces[k].c2Target%v1__2.col(ny-1);
-                        Vntarget(k) =-interfaces[k].lambdaSource*(h_2s1%V1.col(ny-1) + h_2s2%V2.col(ny-1))
-                                    - interfaces[k].c11Target%v1__1.col(ny-1) - interfaces[k].c22Target%v2__2.col(ny-1) - interfaces[k].c12Target%(v1__2.col(ny-1) + v2__1.col(ny-1));
+                        Vttarget(k) = interface.lambdaSource*h_1s1%V1.col(ny-1)
+                                    + interface.c1Target%v1__1.col(ny-1) + interface.c2Target%v1__2.col(ny-1);
+                        Vntarget(k) =-interface.lambdaSource*(h_2s1%V1.col(ny-1) + h_2s2%V2.col(ny-1))
+                                    - interface.c11Target%v1__1.col(ny-1) - interface.c22Target%v2__2.col(ny-1) - interface.c12Target%(v1__2.col(ny-1) + v2__1.col(ny-1));
                     }
-                    else if (interfaces[k].sourceCurve == 2) // North
+                    else if (interface.sourceCurve == 2) // North
                     {
-                        Vttarget(k) =-interfaces[k].lambdaSource*h_1s1%V1.col(ny-1)
-                                    - interfaces[k].c1Target%v1__1.col(ny-1) - interfaces[k].c2Target%v1__2.col(ny-1);
-                        Vntarget(k) =-interfaces[k].lambdaSource*(h_2s1%V1.col(ny-1) + h_2s2%V2.col(ny-1))
-                                    - interfaces[k].c11Target%v1__1.col(ny-1) - interfaces[k].c22Target%v2__2.col(ny-1) - interfaces[k].c12Target%(v1__2.col(ny-1) + v2__1.col(ny-1));
+                        Vttarget(k) =-interface.lambdaSource*h_1s1%V1.col(ny-1)
+                                    - interface.c1Target%v1__1.col(ny-1) - interface.c2Target%v1__2.col(ny-1);
+                        Vntarget(k) =-interface.lambdaSource*(h_2s1%V1.col(ny-1) + h_2s2%V2.col(ny-1))
+                                    - interface.c11Target%v1__1.col(ny-1) - interface.c22Target%v2__2.col(ny-1) - interface.c12Target%(v1__2.col(ny-1) + v2__1.col(ny-1));
                     }
                     else // West
                     {
-                        Vttarget(k) =-interfaces[k].lambdaSource*h_1s1%V1.col(ny-1)
-                                    - interfaces[k].c1Target%v1__1.col(ny-1) - interfaces[k].c2Target%v1__2.col(ny-1);
-                        Vntarget(k) = interfaces[k].lambdaSource*(h_2s1%V1.col(ny-1) + h_2s2%V2.col(ny-1))
-                                    + interfaces[k].c11Target%v1__1.col(ny-1) + interfaces[k].c22Target%v2__2.col(ny-1) + interfaces[k].c12Target%(v1__2.col(ny-1) + v2__1.col(ny-1));
+                        Vttarget(k) =-interface.lambdaSource*h_1s1%V1.col(ny-1)
+                                    - interface.c1Target%v1__1.col(ny-1) - interface.c2Target%v1__2.col(ny-1);
+                        Vntarget(k) = interface.lambdaSource*(h_2s1%V1.col(ny-1) + h_2s2%V2.col(ny-1))
+                                    + interface.c11Target%v1__1.col(ny-1) + interface.c22Target%v2__2.col(ny-1) + interface.c12Target%(v1__2.col(ny-1) + v2__1.col(ny-1));
                     }
-                    if (interfaces[k].sourceCurve == 2 || interfaces[k].sourceCurve == 3)
+                    if (interface.sourceCurve == 2 || interface.sourceCurve == 3)
                     {
                         Vttarget(k) = reverse(Vttarget(k));
                         Vntarget(k) = reverse(Vntarget(k));
@@ -469,38 +1135,38 @@ void Structure::planeStrain()
                 }
                 case 3: // West
                 {
-                    arma::rowvec h_1s1 = membranes[interfaces[k].targetDomain]->h_1s1_west;
-                    arma::rowvec h_1s2 = membranes[interfaces[k].targetDomain]->h_1s2_west;
-                    arma::rowvec h_2s2 = membranes[interfaces[k].targetDomain]->h_2s2_west;
-                    if (interfaces[k].sourceCurve == 0) // South
+                    arma::rowvec h_1s1 = membraneTarget->h_1s1_west;
+                    arma::rowvec h_1s2 = membraneTarget->h_1s2_west;
+                    arma::rowvec h_2s2 = membraneTarget->h_2s2_west;
+                    if (interface.sourceCurve == 0) // South
                     {
-                        Vntarget(k) =-interfaces[k].lambdaSource*(h_1s1%V1.row(0) + h_1s2%V2.row(0)).t()
-                                    + interfaces[k].c11Target%v1__1.row(0).t() + interfaces[k].c22Target%v2__2.row(0).t() + interfaces[k].c12Target%(v1__2.row(0) + v2__1.row(0)).t();
-                        Vttarget(k) = interfaces[k].lambdaSource*(h_2s2%V2.row(0)).t()
-                                    - interfaces[k].c1Target%v2__1.row(0).t() - interfaces[k].c2Target%v2__2.row(0).t();
+                        Vntarget(k) =-interface.lambdaSource*(h_1s1%V1.row(0) + h_1s2%V2.row(0)).t()
+                                    + interface.c11Target%v1__1.row(0).t() + interface.c22Target%v2__2.row(0).t() + interface.c12Target%(v1__2.row(0) + v2__1.row(0)).t();
+                        Vttarget(k) = interface.lambdaSource*(h_2s2%V2.row(0)).t()
+                                    - interface.c1Target%v2__1.row(0).t() - interface.c2Target%v2__2.row(0).t();
                     }
-                    else if (interfaces[k].sourceCurve == 1) // East
+                    else if (interface.sourceCurve == 1) // East
                     {
-                        Vntarget(k) = interfaces[k].lambdaSource*(h_1s1%V1.row(0) + h_1s2%V2.row(0)).t()
-                                    - interfaces[k].c11Target%v1__1.row(0).t() - interfaces[k].c22Target%v2__2.row(0).t() - interfaces[k].c12Target%(v1__2.row(0) + v2__1.row(0)).t();
-                        Vttarget(k) = interfaces[k].lambdaSource*(h_2s2%V2.row(0)).t()
-                                    - interfaces[k].c1Target%v2__1.row(0).t() - interfaces[k].c2Target%v2__2.row(0).t();
+                        Vntarget(k) = interface.lambdaSource*(h_1s1%V1.row(0) + h_1s2%V2.row(0)).t()
+                                    - interface.c11Target%v1__1.row(0).t() - interface.c22Target%v2__2.row(0).t() - interface.c12Target%(v1__2.row(0) + v2__1.row(0)).t();
+                        Vttarget(k) = interface.lambdaSource*(h_2s2%V2.row(0)).t()
+                                    - interface.c1Target%v2__1.row(0).t() - interface.c2Target%v2__2.row(0).t();
                     }
-                    else if (interfaces[k].sourceCurve == 2) // North
+                    else if (interface.sourceCurve == 2) // North
                     {
-                        Vntarget(k) = interfaces[k].lambdaSource*(h_1s1%V1.row(0) + h_1s2%V2.row(0)).t()
-                                    - interfaces[k].c11Target%v1__1.row(0).t() - interfaces[k].c22Target%v2__2.row(0).t() - interfaces[k].c12Target%(v1__2.row(0) + v2__1.row(0)).t();
-                        Vttarget(k) =-interfaces[k].lambdaSource*(h_2s2%V2.row(0)).t()
-                                    + interfaces[k].c1Target%v2__1.row(0).t() + interfaces[k].c2Target%v2__2.row(0).t();
+                        Vntarget(k) = interface.lambdaSource*(h_1s1%V1.row(0) + h_1s2%V2.row(0)).t()
+                                    - interface.c11Target%v1__1.row(0).t() - interface.c22Target%v2__2.row(0).t() - interface.c12Target%(v1__2.row(0) + v2__1.row(0)).t();
+                        Vttarget(k) =-interface.lambdaSource*(h_2s2%V2.row(0)).t()
+                                    + interface.c1Target%v2__1.row(0).t() + interface.c2Target%v2__2.row(0).t();
                     }
                     else // West
                     {
-                        Vntarget(k) =-interfaces[k].lambdaSource*(h_1s1%V1.row(0) + h_1s2%V2.row(0)).t()
-                                    + interfaces[k].c11Target%v1__1.row(0).t() + interfaces[k].c22Target%v2__2.row(0).t() + interfaces[k].c12Target%(v1__2.row(0) + v2__1.row(0)).t();
-                        Vttarget(k) =-interfaces[k].lambdaSource*(h_2s2%V2.row(0)).t()
-                                    + interfaces[k].c1Target%v2__1.row(0).t() + interfaces[k].c2Target%v2__2.row(0).t();
+                        Vntarget(k) =-interface.lambdaSource*(h_1s1%V1.row(0) + h_1s2%V2.row(0)).t()
+                                    + interface.c11Target%v1__1.row(0).t() + interface.c22Target%v2__2.row(0).t() + interface.c12Target%(v1__2.row(0) + v2__1.row(0)).t();
+                        Vttarget(k) =-interface.lambdaSource*(h_2s2%V2.row(0)).t()
+                                    + interface.c1Target%v2__1.row(0).t() + interface.c2Target%v2__2.row(0).t();
                     }
-                    if (interfaces[k].sourceCurve == 2 || interfaces[k].sourceCurve == 3)
+                    if (interface.sourceCurve == 2 || interface.sourceCurve == 3)
                     {
                         Vttarget(k) = reverse(Vttarget(k));
                         Vntarget(k) = reverse(Vntarget(k));

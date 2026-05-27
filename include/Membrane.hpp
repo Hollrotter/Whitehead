@@ -84,6 +84,10 @@ class Membrane
     arma::mat U = arma::zeros(nxy, nxy); // Upper triangular matrix
     arma::mat P = arma::zeros(nxy, nxy); // Permutation matrix
     arma::vec b = arma::zeros(nxy); // Right side of linear equation system
+    arma::mat Lv = arma::zeros(2*nxy, 2*nxy); // Lower triangular matrix
+    arma::mat Uv = arma::zeros(2*nxy, 2*nxy); // Upper triangular matrix
+    arma::mat Pv = arma::zeros(2*nxy, 2*nxy); // Permutation matrix
+    arma::vec bv = arma::zeros(2*nxy); // Right side of linear equation system
     size_t iter = 100; // Max. # of iterations for nonlinear solution (default: 1000)
     double residualTarget = 1e-10; // Target residual for nonlinear solution
     size_t substeps = 1;
@@ -472,6 +476,8 @@ private:
         return arma::diagmat(arma::vectorise(H));
     }
     std::unique_ptr<TensorField> setField(const Field);
+    void planeStrainSolve();
+    void planeStrainEval();
     void structuralMatrix();
     void solve_S();
     void solve_b();
@@ -481,20 +487,20 @@ private:
     double residualLevelFunctionNonlinear(arma::vec, arma::mat&, arma::mat&, arma::mat&);
     void zBoundary(const BC, const double, const size_t, const size_t,
                    const double, const double, const double, const double);
-    void v1BoundaryWestEast(const BC, const double, const size_t, const size_t, arma::mat&, arma::vec&,
+    void v1BoundaryWestEast(const BC, const double, const size_t, const size_t, arma::mat&,
                             const double, const double, const double, const double);
-    void v2BoundaryWestEast(const BC, const double, const size_t, const size_t, arma::mat&, arma::vec&,
+    void v2BoundaryWestEast(const BC, const double, const size_t, const size_t, arma::mat&,
                             const double, const double, const double, const double, const double);
-    void v1BoundarySouthNorth(const BC, const double, const size_t, const size_t, arma::mat&, arma::vec&,
+    void v1BoundarySouthNorth(const BC, const double, const size_t, const size_t, arma::mat&,
                               const double, const double, const double, const double, const double);
-    void v2BoundarySouthNorth(const BC, const double, const size_t, const size_t, arma::mat&, arma::vec&,
+    void v2BoundarySouthNorth(const BC, const double, const size_t, const size_t, arma::mat&,
                               const double, const double, const double, const double);
-    void n11BoundaryLinear(const BC, const double, const size_t, const size_t, arma::mat&, arma::vec&, const double);
-    void n12BoundaryLinear(const BC, const double, const size_t, const size_t, arma::mat&, arma::vec&,
+    void n11BoundaryLinear(const BC, const double, const size_t, const size_t, arma::mat&, const double);
+    void n12BoundaryLinear(const BC, const double, const size_t, const size_t, arma::mat&,
                            const double, const double, const double);
-    void n21BoundaryLinear(const BC, const double, const size_t, const size_t, arma::mat&, arma::vec&,
+    void n21BoundaryLinear(const BC, const double, const size_t, const size_t, arma::mat&,
                            const double, const double, const double);
-    void n22BoundaryLinear(const BC, const double, const size_t, const size_t, arma::mat&, arma::vec&, const double);
+    void n22BoundaryLinear(const BC, const double, const size_t, const size_t, arma::mat&, const double);
     void zBoundarySemilinear(const BC, const double, const size_t, const size_t, arma::mat&, arma::vec&,
                              const double, const double, const double, const double, const double, const double);
     void zBoundaryNonlinear(const BC, const double, const size_t, const size_t, arma::mat&,
