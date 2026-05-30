@@ -115,13 +115,8 @@ void Wing::regularIntegralNonlinear(size_t k, double xC, double yC, double zC, s
  */
 void Wing::aerodynamicMatrix()
 {
-    arma::vec theta(n_theta);
-    std::vector<fastgl::QuadPair> gl_theta(n_theta);
-    for (size_t n = 0; n < n_theta; n++)
-    {
-        gl_theta[n] = fastgl::GLPair(n_theta, n+1);
-        theta(n) =-arma::datum::pi * gl_theta[n].x();
-    }
+    arma::vec theta = arma::linspace(0, arma::datum::tau, n_theta);
+    double dtheta = theta(1) - theta(0);
     std::vector<fastgl::QuadPair> gl_rho(m_rho);
     for (size_t m = 0; m < m_rho; m++)
         gl_rho[m] = fastgl::GLPair(m_rho, m+1);
@@ -182,7 +177,7 @@ void Wing::aerodynamicMatrix()
                             arma::vec gamma_1y = dgammaydxi_1*cT + dgammaydxi_2*sT;
                             double I0  = 0;
                             double I_1 = 0;
-                            for (size_t n = 0; n < n_theta; n++)
+                            for (size_t n = 0; n < n_theta-1; n++)
                             {
                                 arma::vec::fixed<2> A_t = dXdxi_1*cT(n) + dXdxi_2*sT(n);
                                 arma::vec::fixed<2> B_t = d2Xdxi_12*c2T(n) + d2Xdxi_1dxi_2*scT(n) + d2Xdxi_22*s2T(n);
@@ -205,10 +200,10 @@ void Wing::aerodynamicMatrix()
                                     I_r += gl_rho[m].weight * (F0 + F1*rho + F2*pow(rho, 2));
                                 }
                                 I_r *= rho_tilde(n)/2;
-                                I0  += gl_theta[n].weight * I_r;
-                                I_1 += gl_theta[n].weight * F_1*log(fabs(rho_tilde(n)*A_abs));
+                                I0  += I_r;
+                                I_1 += F_1*log(fabs(rho_tilde(n)*A_abs));
                             }
-                            A(k1, p+q*nx) = arma::datum::pi*(I0 + I_1);
+                            A(k1, p+q*nx) = dtheta*(I0 + I_1);
                         }
                     }
                 }
@@ -364,7 +359,7 @@ void Wing::aerodynamicMatrix()
                             arma::vec::fixed<3> I0(arma::fill::zeros);
                             arma::vec::fixed<3> I_1(arma::fill::zeros);
                             arma::vec mu1 = T_1*cT + T_2*sT;
-                            for (size_t n = 0; n < n_theta; n++)
+                            for (size_t n = 0; n < n_theta-1; n++)
                             {
                                 arma::vec::fixed<3> A_t = dXdxi_1*cT(n) + dXdxi_2*sT(n);
                                 arma::vec::fixed<3> B_t = d2Xdxi_12*c2T(n) + d2Xdxi_1dxi_2*scT(n) + d2Xdxi_22*s2T(n);
@@ -387,10 +382,10 @@ void Wing::aerodynamicMatrix()
                                     I_r += gl_rho[m].weight * (F0 + F1*rho + F2*pow(rho, 2));
                                 }
                                 I_r *= rho_tilde(n)/2;
-                                I0  += gl_theta[n].weight * I_r;
-                                I_1 += gl_theta[n].weight * F_1*log(fabs(rho_tilde(n)*A_abs));
+                                I0  += I_r;
+                                I_1 += F_1*log(fabs(rho_tilde(n)*A_abs));
                             }
-                            arma::vec::fixed<3> q_mu = arma::datum::pi*(I0 + I_1);
+                            arma::vec::fixed<3> q_mu = dtheta*(I0 + I_1);
                             A(k1, p+q*nx) = dot(q_mu, nC.row(k1));
                         }
                     }
