@@ -1,5 +1,25 @@
 #include "Wing.hpp"
 
+Wing Wing::fromTransfiniteQuadMap(std::array<Lagrange::CurveInterpolant*, 4> _chi)
+{
+    auto [_x, _y] = Lagrange::TransfiniteQuadMap(_chi);
+    arma::vec xi_1 = Chebyshev::gauss(_chi[0]->getNodes().size());
+    arma::vec xi_2 = Chebyshev::gauss(_chi[1]->getNodes().size());
+    std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::vec, arma::rowvec, arma::rowvec>
+        _h = Lagrange::covariantScaleFactors(xi_1, xi_2, _chi);
+    return {_x, _y, _chi, _h};
+}
+
+Wing Wing::fromTransfiniteQuadMap(arma::mat _z, std::array<Lagrange::CurveInterpolant*, 4> _chi)
+{
+    auto [_x, _y] = Lagrange::TransfiniteQuadMap(_chi);
+    arma::vec xi_1 = Chebyshev::gauss(_chi[0]->getNodes().size());
+    arma::vec xi_2 = Chebyshev::gauss(_chi[1]->getNodes().size());
+    std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::vec, arma::rowvec, arma::rowvec>
+        _h = Lagrange::covariantScaleFactors(xi_1, xi_2, _chi, _z);
+    return {_x, _y, _z, _chi, _h};
+}
+
 /**
  * @brief 
  * 

@@ -11,51 +11,17 @@ class Structure
     size_t substeps = 1;
     Analysis analysis = Analysis::linear;
     double lambda0 = 2;
+    Structure fromMembranes(std::vector<Membrane*>);
 public:
     Structure() = default;
-    Structure(std::vector<Membrane*>);
+    Structure(std::vector<Membrane*> _m, std::vector<Interface> _i) : membranes(_m), interfaces(_i) {};
+    Structure(std::vector<Membrane*> _m) : Structure(fromMembranes(_m)) {};
     // Sets the number of substeps for nonlinear analysis (default: substeps = 1)
     void substepControl(const double _substeps)
     {
         substeps = _substeps;
     }
-    void setlambda(double l)
-    {
-        lambda0 = l;
-        for (Interface &interface:interfaces)
-        {
-            switch (interface.sourceCurve)
-            {
-                case 0: // South
-                    interface.lambdaSource = lambda0*mean(membranes[interface.sourceDomain]->h_2s2_south);
-                    break;
-                case 1: // East
-                    interface.lambdaSource = lambda0*mean(membranes[interface.sourceDomain]->h_1s1_east);
-                    break;
-                case 2: // North
-                    interface.lambdaSource = lambda0*mean(membranes[interface.sourceDomain]->h_2s2_north);
-                    break;
-                case 3: // West
-                    interface.lambdaSource = lambda0*mean(membranes[interface.sourceDomain]->h_1s1_west);
-                    break;
-            }
-            switch (interface.targetCurve)
-            {
-                case 0: // South
-                    interface.lambdaTarget = lambda0*mean(membranes[interface.targetDomain]->h_2s2_south);
-                    break;
-                case 1: // East
-                    interface.lambdaTarget = lambda0*mean(membranes[interface.targetDomain]->h_1s1_east);
-                    break;
-                case 2: // North
-                    interface.lambdaTarget = lambda0*mean(membranes[interface.targetDomain]->h_2s2_north);
-                    break;
-                case 3: // West
-                    interface.lambdaTarget = lambda0*mean(membranes[interface.targetDomain]->h_1s1_west);
-                    break;
-            }
-        }
-    }
+    void setlambda(double);
     void youngsModulus(const double _Et)
     {
         std::for_each(membranes.begin(), membranes.end(), [&](auto& m) { m->youngsModulus(_Et); } );

@@ -1,19 +1,21 @@
 #include "Structure.hpp"
 
-Structure::Structure(std::vector<Membrane*> _membranes) : membranes(_membranes)
+Structure Structure::fromMembranes(std::vector<Membrane*> _membranes)
 {
-    for (size_t sD = 0; sD < membranes.size()-1; sD++)
+    std::vector<Interface> _interfaces;
+    for (size_t sD = 0; sD < _membranes.size()-1; sD++)
         for (size_t sC = 0; sC < 4; sC++)
-            for (size_t tD = sD+1; tD < membranes.size(); tD++)
+            for (size_t tD = sD+1; tD < _membranes.size(); tD++)
                 for (size_t tC = 0; tC < 4; tC++)
-                    if (membranes[sD]->chi[sC] == membranes[tD]->chi[tC])
+                    if (_membranes[sD]->chi[sC] == _membranes[tD]->chi[tC])
                     {
-                        interfaces.push_back(Interface(sD, tD, sC, tC));
-                        membranes[sD]->chi[sC]->curveType = CurveType::Interface;
+                        _interfaces.push_back(Interface(sD, tD, sC, tC));
+                        _membranes[sD]->chi[sC]->curveType = CurveType::Interface;
                     }
-    for (Interface& interface:interfaces)
+    double lambda0 = 2;
+    for (Interface& interface:_interfaces)
     {
-        Membrane *mSource = membranes[interface.sourceDomain];
+        Membrane *mSource = _membranes[interface.sourceDomain];
         switch (interface.sourceCurve)
         {
             case 0: // South
@@ -49,7 +51,7 @@ Structure::Structure(std::vector<Membrane*> _membranes) : membranes(_membranes)
                 interface.lambdaSource = lambda0*mean(mSource->h_1s1_west);
                 break;
         }
-        Membrane *mTarget = membranes[interface.targetDomain];
+        Membrane *mTarget = _membranes[interface.targetDomain];
         switch (interface.targetCurve)
         {
             case 0: // South
@@ -86,7 +88,46 @@ Structure::Structure(std::vector<Membrane*> _membranes) : membranes(_membranes)
                 break;
         }
     }
+    return {_membranes, _interfaces};
 };
+
+void Structure::setlambda(double l)
+{
+    lambda0 = l;
+    for (Interface &interface:interfaces)
+    {
+        switch (interface.sourceCurve)
+        {
+            case 0: // South
+                interface.lambdaSource = lambda0*mean(membranes[interface.sourceDomain]->h_2s2_south);
+                break;
+            case 1: // East
+                interface.lambdaSource = lambda0*mean(membranes[interface.sourceDomain]->h_1s1_east);
+                break;
+            case 2: // North
+                interface.lambdaSource = lambda0*mean(membranes[interface.sourceDomain]->h_2s2_north);
+                break;
+            case 3: // West
+                interface.lambdaSource = lambda0*mean(membranes[interface.sourceDomain]->h_1s1_west);
+                break;
+        }
+        switch (interface.targetCurve)
+        {
+            case 0: // South
+                interface.lambdaTarget = lambda0*mean(membranes[interface.targetDomain]->h_2s2_south);
+                break;
+            case 1: // East
+                interface.lambdaTarget = lambda0*mean(membranes[interface.targetDomain]->h_1s1_east);
+                break;
+            case 2: // North
+                interface.lambdaTarget = lambda0*mean(membranes[interface.targetDomain]->h_2s2_north);
+                break;
+            case 3: // West
+                interface.lambdaTarget = lambda0*mean(membranes[interface.targetDomain]->h_1s1_west);
+                break;
+        }
+    }
+}
 
 void Structure::checkMesh()
 {

@@ -12,13 +12,12 @@ class Aerodynamics
     Analysis analysis = Analysis::linear;
     double lambda0 = 2;
     arma::field<arma::cube> bw;
+    Aerodynamics fromWings(std::vector<Wing*>);
 public:
     Aerodynamics() = default;
-    Aerodynamics(std::vector<Wing*>);
-    void setlambda0(double g)
-    {
-        lambda0 = g;
-    }
+    Aerodynamics(std::vector<Wing*> _w, std::vector<Interface> _i) : wings(_w), interfaces(_i) {};
+    Aerodynamics(std::vector<Wing*> _w) : Aerodynamics(fromWings(_w)) {};
+    void setlambda(double);
     // Sets the dynamic pressure
     void dynamicPressure(double _qdyn)
     {

@@ -1,5 +1,12 @@
 #include "Airfoil.hpp"
 
+Airfoil Airfoil::fromLagrangeCurveInterpolant(Lagrange::CurveInterpolant* _chi)
+{
+    arma::vec _xi = Chebyshev::gauss(_chi->getNodes().size());
+    auto [_x, _z] = _chi->evaluate(_xi);
+    return {_x, _z, _chi};
+}
+
 /**
  * @brief 
  * 

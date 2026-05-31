@@ -1,16 +1,57 @@
 #include "Aerodynamics.hpp"
 
-Aerodynamics::Aerodynamics(std::vector<Wing*> _wings) : wings(_wings)
+Aerodynamics Aerodynamics::fromWings(std::vector<Wing*> _wings)
 {
-    for (size_t sD = 0; sD < wings.size()-1; sD++)
+    std::vector<Interface> _interfaces;
+    for (size_t sD = 0; sD < _wings.size()-1; sD++)
         for (size_t sC = 0; sC < 4; sC++)
-            for (size_t tD = sD+1; tD < wings.size(); tD++)
+            for (size_t tD = sD+1; tD < _wings.size(); tD++)
                 for (size_t tC = 0; tC < 4 ; tC++)
-                    if (wings[sD]->chi[sC] == wings[tD]->chi[tC])
+                    if (_wings[sD]->chi[sC] == _wings[tD]->chi[tC])
                     {
-                        interfaces.push_back(Interface(sD, tD, sC, tC));
-                        wings[sD]->chi[sC]->curveType = CurveType::Interface;
+                        _interfaces.push_back(Interface(sD, tD, sC, tC));
+                        _wings[sD]->chi[sC]->curveType = CurveType::Interface;
                     }
+    double lambda0 = 2;
+    for (Interface& interface:_interfaces)
+    {
+        switch (interface.sourceCurve)
+        {
+            case 0: // South
+                interface.lambdaSource = lambda0*mean(_wings[interface.sourceDomain]->h_2s2_south);
+                break;
+            case 1: // East
+                interface.lambdaSource = lambda0*mean(_wings[interface.sourceDomain]->h_1s1_east);
+                break;
+            case 2: // North
+                interface.lambdaSource = lambda0*mean(_wings[interface.sourceDomain]->h_2s2_north);
+                break;
+            case 3: // West
+                interface.lambdaSource = lambda0*mean(_wings[interface.sourceDomain]->h_1s1_west);
+                break;
+        }
+        switch (interface.targetCurve)
+        {
+            case 0: // South
+                interface.lambdaTarget = lambda0*mean(_wings[interface.targetDomain]->h_2s2_south);
+                break;
+            case 1: // East
+                interface.lambdaTarget = lambda0*mean(_wings[interface.targetDomain]->h_1s1_east);
+                break;
+            case 2: // North
+                interface.lambdaTarget = lambda0*mean(_wings[interface.targetDomain]->h_2s2_north);
+                break;
+            case 3: // West
+                interface.lambdaTarget = lambda0*mean(_wings[interface.targetDomain]->h_1s1_west);
+                break;
+        }
+    }
+    return {_wings, _interfaces};
+}
+
+void Aerodynamics::setlambda(double l)
+{
+    lambda0 = l;
     for (Interface& interface:interfaces)
     {
         switch (interface.sourceCurve)
@@ -215,9 +256,6 @@ void Aerodynamics::nonlinear()
                 arma::mat dz_gldx2 = z_gl*D2_gl.t();
                 auto [x_gl, y_gl] = Lagrange::TransfiniteQuadMap(x1_gl, x2_gl, wings[sD]->chi);
                 auto [dx_gldx1, dx_gldx2, dy_gldx1, dy_gldx2] = Lagrange::TransfiniteQuadMetrics(x1_gl, x2_gl, wings[sD]->chi);
-                y_gl     =-y_gl;
-                dy_gldx1 =-dy_gldx1;
-                dy_gldx2 =-dy_gldx2;
                 arma::field<arma::mat> J_gl = {{dx_gldx1, dx_gldx2}, {dy_gldx1, dy_gldx2}};
                 arma::cube e_c_gl = MetricCo(J_gl);
                 arma::cube ec_gl  = MetricContra(e_c_gl);
@@ -288,6 +326,9 @@ void Aerodynamics::nonlinear()
                     arma::mat dz_gldx2 = z_gl*D2_gl.t();
                     auto [x_gl, y_gl] = Lagrange::TransfiniteQuadMap(x1_gl, x2_gl, wings[sD]->chi);
                     auto [dx_gldx1, dx_gldx2, dy_gldx1, dy_gldx2] = Lagrange::TransfiniteQuadMetrics(x1_gl, x2_gl, wings[sD]->chi);
+                    y_gl     =-y_gl;
+                    dy_gldx1 =-dy_gldx1;
+                    dy_gldx2 =-dy_gldx2;
                     arma::field<arma::mat> J_gl = {{dx_gldx1, dx_gldx2}, {dy_gldx1, dy_gldx2}};
                     arma::cube e_c_gl = MetricCo(J_gl);
                     arma::cube ec_gl  = MetricContra(e_c_gl);

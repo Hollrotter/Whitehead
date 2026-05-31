@@ -36,8 +36,7 @@ class Wing
     arma::field<arma::mat> J = Jacobian(x1, x2, chi);
     arma::cube e_c = MetricCo(J); // Covariant metric tensor of the surface
     arma::cube ec  = MetricContra(e_c); // Contravariant metric tensor of the surface
-    std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::vec, arma::rowvec, arma::rowvec>
-        h = Lagrange::covariantScaleFactors(xi_1, xi_2, chi);
+    std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::vec, arma::rowvec, arma::rowvec> h;
     arma::vec    h_2s2_south = std::get<0>(h);
     arma::vec    h_2s1_south = std::get<1>(h);
     arma::rowvec h_1s1_east  = std::get<2>(h);
@@ -59,21 +58,15 @@ class Wing
     arma::vec moment = arma::zeros(con); // Moment in Nm
     Symmetry sym = Symmetry::none; // Symmetry (no symmetry or symmetry in the y-direction)
     Analysis analysis = Analysis::linear; // Analysis type (linear or nonlinear)
-    Wing fromTransfiniteQuadMap(std::array<Lagrange::CurveInterpolant*, 4> _chi)
-    {
-        auto [_x, _y] = Lagrange::TransfiniteQuadMap(_chi);
-        return {_x, _y, _chi};
-    }
-    Wing fromTransfiniteQuadMap(arma::mat _z, std::array<Lagrange::CurveInterpolant*, 4> _chi)
-    {
-        auto [_x, _y] = Lagrange::TransfiniteQuadMap(_chi);
-        return {_x, _y, _z, _chi};
-    }
+    Wing fromTransfiniteQuadMap(std::array<Lagrange::CurveInterpolant*, 4>);
+    Wing fromTransfiniteQuadMap(arma::mat, std::array<Lagrange::CurveInterpolant*, 4>);
 public:
     Wing() = default;
     Wing(arma::mat _x, arma::mat _y) : x(_x), y(_y) {}
-    Wing(arma::mat _x, arma::mat _y, std::array<Lagrange::CurveInterpolant*, 4> _chi) : x(_x), y(_y), chi(_chi) {}
-    Wing(arma::mat _x, arma::mat _y, arma::mat _z, std::array<Lagrange::CurveInterpolant*, 4> _chi) : x(_x), y(_y), z(_z), chi(_chi) {}
+    Wing(arma::mat _x, arma::mat _y, std::array<Lagrange::CurveInterpolant*, 4> _chi, std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::vec, arma::rowvec, arma::rowvec> _h)
+        : x(_x), y(_y), chi(_chi), h(_h) {}
+    Wing(arma::mat _x, arma::mat _y, arma::mat _z, std::array<Lagrange::CurveInterpolant*, 4> _chi, std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::vec, arma::rowvec, arma::rowvec> _h)
+        : x(_x), y(_y), z(_z), chi(_chi), h(_h) {}
     Wing(std::array<Lagrange::CurveInterpolant*, 4> _chi) : Wing(fromTransfiniteQuadMap(_chi)) {}
     Wing(arma::mat _z, std::array<Lagrange::CurveInterpolant*, 4> _chi) : Wing(fromTransfiniteQuadMap(_z, _chi)) {}
     // Sets the dynamic pressure

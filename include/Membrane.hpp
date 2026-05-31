@@ -102,11 +102,7 @@ class Membrane
     arma::mat v1__2 = arma::zeros(nx, ny);
     arma::mat v2__1 = arma::zeros(nx, ny);
     arma::mat v2__2 = arma::zeros(nx, ny);
-    Membrane fromTransfiniteQuadMap(std::array<Lagrange::CurveInterpolant*, 4> _chi)
-    {
-        auto [_x, _y] = Lagrange::TransfiniteQuadMap(_chi);
-        return {_x, _y, _chi};
-    }
+    Membrane fromTransfiniteQuadMap(std::array<Lagrange::CurveInterpolant*, 4>);
 public:
     Membrane() = default;
     // Constructor to set x and y

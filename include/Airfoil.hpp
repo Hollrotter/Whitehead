@@ -23,12 +23,7 @@ class Airfoil
     arma::mat b = arma::zeros(nx, con);
     arma::mat nC; // Normal vector of the airfoil
     Analysis analysis = Analysis::linear; // Analysis type (linear or nonlinear)
-    Airfoil fromLagrangeCurveInterpolant(Lagrange::CurveInterpolant* _chi)
-    {
-        arma::vec _xi = Chebyshev::gauss(_chi->getNodes().size());
-        auto [_x, _z] = _chi->evaluate(_xi);
-        return {_x, _z, _chi};
-    }
+    Airfoil fromLagrangeCurveInterpolant(Lagrange::CurveInterpolant*);
 public:
     Airfoil() = default;
     Airfoil(double _c, size_t _nx) : c(_c), nx(_nx) {}

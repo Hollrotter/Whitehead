@@ -1,5 +1,11 @@
 #include "Membrane.hpp"
 
+Membrane Membrane::fromTransfiniteQuadMap(std::array<Lagrange::CurveInterpolant*, 4> _chi)
+{
+    auto [_x, _y] = Lagrange::TransfiniteQuadMap(_chi);
+    return {_x, _y, _chi};
+}
+
 /**
  * @brief 
  * 

@@ -2,7 +2,7 @@
 
 int main()
 {
-    switch (0)
+    switch (2)
     {
         case 0: // Rectangle (divided at y=0)
         {
@@ -90,6 +90,51 @@ int main()
             a.linear();
 
             a.output("plot/Data/Aerodynamics/v");
+            break;
+        }
+        case 2: // Nonsmooth Surface
+        {
+            size_t nx = 10;
+            size_t ny = 15;
+
+            double l = 2;
+            double b = 4;
+
+            Point p1(0, 0);
+            Point p2(l, 0);
+            Point p3(l, b/2);
+            Point p4(0, b/2);
+            Point p5(0,-b/2);
+            Point p6(l,-b/2);
+
+            Lagrange::CurveInterpolant chi1(p1, p2, nx);
+            Lagrange::CurveInterpolant chi2(p2, p3, ny);
+            Lagrange::CurveInterpolant chi3(p3, p4, nx);
+            Lagrange::CurveInterpolant chi4(p4, p1, ny);
+            Lagrange::CurveInterpolant chi5(p1, p5, ny);
+            Lagrange::CurveInterpolant chi6(p2, p6, ny);
+            Lagrange::CurveInterpolant chi7(p5, p6, nx);
+
+            arma::mat z1 = cos(arma::datum::pi/2*Chebyshev::gaussLobatto(nx))*cos(arma::datum::pi/2*Chebyshev::gaussLobatto(ny)).t();
+            arma::mat z2 = cos(arma::datum::pi/2*Chebyshev::gaussLobatto(nx))*cos(arma::datum::pi/2*Chebyshev::gaussLobatto(ny)).t();
+
+            Wing w1(z1, {&chi1, &chi2, &chi3, &chi4});
+            Wing w2(z2, {&chi7, &chi6, &chi1, &chi5});
+
+            Aerodynamics a({&w1, &w2});
+            a.pitch(2);
+
+            a.boundary(&chi2, BC::Derivative_x);
+            a.boundary(&chi3, BC::Dirichlet);
+            a.boundary(&chi4, BC::Dirichlet);
+            a.boundary(&chi5, BC::Dirichlet);
+            a.boundary(&chi6, BC::Derivative_x);
+            a.boundary(&chi7, BC::Dirichlet);
+
+            a.setIterations(100);
+            a.nonlinear();
+
+            a.output("plot/Data/Aerodynamics/nonsmooth");
             break;
         }
     }

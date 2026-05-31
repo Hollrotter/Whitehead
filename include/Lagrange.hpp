@@ -81,4 +81,8 @@ namespace Lagrange
         covariantScaleFactors(const std::array<CurveInterpolant*, 4> chi);
     std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::vec, arma::rowvec, arma::rowvec>
         covariantScaleFactors(const arma::vec &x1, const arma::vec &x2, const std::array<CurveInterpolant*, 4> chi);
+    std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::vec, arma::rowvec, arma::rowvec>
+        covariantScaleFactors(const std::array<CurveInterpolant*, 4> chi, arma::mat &z);
+    std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::vec, arma::rowvec, arma::rowvec>
+        covariantScaleFactors(const arma::vec &x1, const arma::vec &x2, const std::array<CurveInterpolant*, 4> chi, arma::mat &z);
 }
