@@ -10,6 +10,7 @@ Validation/plot/png/
 Validation/plot/svg/
 Validation/Validation
 Validation/TwinHypar.csv
+Validation/surface.txt
 Validation/Lilienthal.cpp
 Validation/Whitehead.cpp
 Validation/plot/Gnuplot/Lilienthal.plt

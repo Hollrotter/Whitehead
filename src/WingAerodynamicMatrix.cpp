@@ -227,6 +227,131 @@ void Wing::aerodynamicMatrix()
                         regularIntegralLinear(k1, xC(i, j), yC(i, j), nx+2-i, j+2, x_right, 1, -1, y_upper);
                 }
             }
+            for (auto &w:wakes)
+                for (size_t c = 0; c < 4; c++)
+                    if (chi[c] == w->chi)
+                    {
+                        std::vector<fastgl::QuadPair> gl_x(nx), gl_y(ny);
+                        arma::vec x1_gl(nx), x2_gl(ny);
+                        for (size_t ii = 0; ii < nx; ii++)
+                        {
+                            gl_x[ii] = fastgl::GLPair(nx, ii+1);
+                            x1_gl(ii) =-gl_x[ii].x();
+                        }
+                        for (size_t jj = 0; jj < ny; jj++)
+                        {
+                            gl_y[jj] = fastgl::GLPair(ny, jj+1);
+                            x2_gl(jj) =-gl_y[jj].x();
+                        }
+                        if (c == 0) // South
+                        {
+                            for (size_t ii = 0; ii < nx; ii++)
+                            {
+                                double xw = x(ii, 0);
+                                double yw = y(ii, 0);
+                                for (size_t p = 0; p < nx; p++)
+                                {
+                                    double dt1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
+                                    for (size_t jj = 0; jj < ny; jj++)
+                                    {
+                                        double xW = xw + (1 - x2_gl(jj))/(1 + x2_gl(jj))/2;
+                                        for (size_t q = 0; q < ny; q++)
+                                        {
+                                            double t2 = pow(-1, q);
+                                            for (size_t j = 0; j < ny; j++)
+                                                for (size_t i = 0; i < nx; i++)
+                                                {
+                                                    size_t k = i + j*nx;
+                                                    arma::vec::fixed<2> r = {xW - xC(i, j), yw - yC(i, j)};
+                                                    double r3 = pow(norm(r), 3);
+                                                    A(k, p+q*nx) += gl_x[ii].weight*gl_y[jj].weight*dt1*t2*r(1)/pow(1 + x2_gl(jj), 2)/r3; 
+                                                }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else if (c == 1) // East
+                        {
+                            for (size_t jj = 0; jj < ny; jj++)
+                            {
+                                double xw = x(nx-1, jj);
+                                double yw = y(nx-1, jj);
+                                for (size_t q = 0; q < ny; q++)
+                                {
+                                    double dt2 = boost::math::chebyshev_t_prime(q, x2_gl(jj));
+                                    for (size_t ii = 0; ii < nx; ii++)
+                                    {
+                                        double xW = xw + (1 + x1_gl(ii))/(1 - x1_gl(ii))/2;
+                                        for (size_t j = 0; j < ny; j++)
+                                            for (size_t i = 0; i < nx; i++)
+                                            {
+                                                size_t k = i + j*nx;
+                                                arma::vec::fixed<2> r = {xW - xC(i, j), yw - yC(i, j)};
+                                                double r3 = pow(norm(r), 3);
+                                                double I = gl_x[ii].weight*gl_y[jj].weight*dt2*r(1)/pow(1 - x1_gl(ii), 2)/r3;
+                                                for (size_t p = 0; p < nx; p++)
+                                                    A(k, p+q*nx) += I;
+                                            }
+                                    }
+                                }
+                            }
+                        }
+                        else if (c == 2) // North
+                        {
+                            for (size_t ii = 0; ii < nx; ii++)
+                            {
+                                double xw = x(ii, ny-1);
+                                double yw = y(ii, ny-1);
+                                for (size_t p = 0; p < nx; p++)
+                                {
+                                    double dt1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
+                                    for (size_t jj = 0; jj < ny; jj++)
+                                    {
+                                        double xW = xw + (1 + x2_gl(jj))/(1 - x2_gl(jj))/2;
+                                        for (size_t j = 0; j < ny; j++)
+                                            for (size_t i = 0; i < nx; i++)
+                                            {
+                                                size_t k = i + j*nx;
+                                                arma::vec::fixed<2> r = {xW - xC(i, j), yw - yC(i, j)};
+                                                double r3 = pow(norm(r), 3);
+                                                double I =-gl_x[ii].weight*gl_y[jj].weight*dt1*r(1)/pow(1 - x2_gl(jj), 2)/r3;
+                                                for (size_t q = 0; q < ny; q++)
+                                                    A(k, p+q*nx) += I;
+                                            }
+                                    }
+                                }
+                            }
+                        }
+                        else // West
+                        {
+                            for (size_t jj = 0; jj < ny; jj++)
+                            {
+                                double xw = x(0, jj);
+                                double yw = y(0, jj);
+                                for (size_t q = 0; q < ny; q++)
+                                {
+                                    double dt2 = boost::math::chebyshev_t_prime(q, x2_gl(jj));
+                                    for (size_t ii = 0; ii < nx; ii++)
+                                    {
+                                        double xW = xw + (1 - x1_gl(ii))/(1 + x1_gl(ii))/2;
+                                        for (size_t p = 0; p < nx; p++)
+                                        {
+                                            double t1 = pow(-1, p);
+                                            for (size_t j = 0; j < ny; j++)
+                                                for (size_t i = 0; i < nx; i++)
+                                                {
+                                                    size_t k = i + j*nx;
+                                                    arma::vec::fixed<2> r = {xW - xC(i, j), yw - yC(i, j)};
+                                                    double r3 = pow(norm(r), 3);
+                                                    A(k, p+q*nx) -= gl_x[ii].weight*gl_y[jj].weight*t1*dt2*r(1)/pow(1 + x1_gl(ii), 2)/r3;
+                                                }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
             if (sym == Symmetry::y)
             {
                 std::vector<fastgl::QuadPair> gl_x(nx), gl_y(ny);
@@ -269,6 +394,131 @@ void Wing::aerodynamicMatrix()
                                     }
                             }
                     }
+                for (auto &w:wakes)
+                    for (size_t c = 0; c < 4; c++)
+                        if (chi[c] == w->chi)
+                        {
+                            std::vector<fastgl::QuadPair> gl_x(nx), gl_y(ny);
+                            arma::vec x1_gl(nx), x2_gl(ny);
+                            for (size_t ii = 0; ii < nx; ii++)
+                            {
+                                gl_x[ii] = fastgl::GLPair(nx, ii+1);
+                                x1_gl(ii) =-gl_x[ii].x();
+                            }
+                            for (size_t jj = 0; jj < ny; jj++)
+                            {
+                                gl_y[jj] = fastgl::GLPair(ny, jj+1);
+                                x2_gl(jj) =-gl_y[jj].x();
+                            }
+                            if (c == 0) // South
+                            {
+                                for (size_t ii = 0; ii < nx; ii++)
+                                {
+                                    double xw = x(ii, 0);
+                                    double yw =-y(ii, 0);
+                                    for (size_t p = 0; p < nx; p++)
+                                    {
+                                        double dt1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
+                                        for (size_t jj = 0; jj < ny; jj++)
+                                        {
+                                            double xW = xw + (1 - x2_gl(jj))/(1 + x2_gl(jj))/2;
+                                            for (size_t q = 0; q < ny; q++)
+                                            {
+                                                double t2 = pow(-1, q);
+                                                for (size_t j = 0; j < ny; j++)
+                                                    for (size_t i = 0; i < nx; i++)
+                                                    {
+                                                        size_t k = i + j*nx;
+                                                        arma::vec::fixed<2> r = {xW - xC(i, j), yw - yC(i, j)};
+                                                        double r3 = pow(norm(r), 3);
+                                                        A(k, p+q*nx) += gl_x[ii].weight*gl_y[jj].weight*dt1*t2*r(1)/pow(1 + x2_gl(jj), 2)/r3; 
+                                                    }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            else if (c == 1) // East
+                            {
+                                for (size_t jj = 0; jj < ny; jj++)
+                                {
+                                    double xw = x(nx-1, jj);
+                                    double yw =-y(nx-1, jj);
+                                    for (size_t q = 0; q < ny; q++)
+                                    {
+                                        double dt2 = boost::math::chebyshev_t_prime(q, x2_gl(jj));
+                                        for (size_t ii = 0; ii < nx; ii++)
+                                        {
+                                            double xW = xw + (1 + x1_gl(ii))/(1 - x1_gl(ii))/2;
+                                            for (size_t j = 0; j < ny; j++)
+                                                for (size_t i = 0; i < nx; i++)
+                                                {
+                                                    size_t k = i + j*nx;
+                                                    arma::vec::fixed<2> r = {xW - xC(i, j), yw - yC(i, j)};
+                                                    double r3 = pow(norm(r), 3);
+                                                    double I = gl_x[ii].weight*gl_y[jj].weight*dt2*r(1)/pow(1 - x1_gl(ii), 2)/r3;
+                                                    for (size_t p = 0; p < nx; p++)
+                                                        A(k, p+q*nx) += I;
+                                                }
+                                        }
+                                    }
+                                }
+                            }
+                            else if (c == 2) // North
+                            {
+                                for (size_t ii = 0; ii < nx; ii++)
+                                {
+                                    double xw = x(ii, ny-1);
+                                    double yw =-y(ii, ny-1);
+                                    for (size_t p = 0; p < nx; p++)
+                                    {
+                                        double dt1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
+                                        for (size_t jj = 0; jj < ny; jj++)
+                                        {
+                                            double xW = xw + (1 + x2_gl(jj))/(1 - x2_gl(jj))/2;
+                                            for (size_t j = 0; j < ny; j++)
+                                                for (size_t i = 0; i < nx; i++)
+                                                {
+                                                    size_t k = i + j*nx;
+                                                    arma::vec::fixed<2> r = {xW - xC(i, j), yw - yC(i, j)};
+                                                    double r3 = pow(norm(r), 3);
+                                                    double I =-gl_x[ii].weight*gl_y[jj].weight*dt1*r(1)/pow(1 - x2_gl(jj), 2)/r3;
+                                                    for (size_t q = 0; q < ny; q++)
+                                                        A(k, p+q*nx) += I;
+                                                }
+                                        }
+                                    }
+                                }
+                            }
+                            else // West
+                            {
+                                for (size_t jj = 0; jj < ny; jj++)
+                                {
+                                    double xw = x(0, jj);
+                                    double yw =-y(0, jj);
+                                    for (size_t q = 0; q < ny; q++)
+                                    {
+                                        double dt2 = boost::math::chebyshev_t_prime(q, x2_gl(jj));
+                                        for (size_t ii = 0; ii < nx; ii++)
+                                        {
+                                            double xW = xw + (1 - x1_gl(ii))/(1 + x1_gl(ii))/2;
+                                            for (size_t p = 0; p < nx; p++)
+                                            {
+                                                double t1 = pow(-1, p);
+                                                for (size_t j = 0; j < ny; j++)
+                                                    for (size_t i = 0; i < nx; i++)
+                                                    {
+                                                        size_t k = i + j*nx;
+                                                        arma::vec::fixed<2> r = {xW - xC(i, j), yw - yC(i, j)};
+                                                        double r3 = pow(norm(r), 3);
+                                                        A(k, p+q*nx) -= gl_x[ii].weight*gl_y[jj].weight*t1*dt2*r(1)/pow(1 + x1_gl(ii), 2)/r3;
+                                                    }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
             }
             break;
         }
@@ -410,6 +660,251 @@ void Wing::aerodynamicMatrix()
                         regularIntegralNonlinear(k1, xC(i, j), yC(i, j), zC(i, j), nx+2-i, j+2, x_right, 1, -1, y_upper);
                 }
             }
+            for (auto &w:wakes)
+                for (size_t c = 0; c < 4; c++)
+                    if (chi[c] == w->chi)
+                    {
+                        std::vector<fastgl::QuadPair> gl_x(nx), gl_y(ny);
+                        arma::vec x1_gl(nx), x2_gl(ny);
+                        for (size_t ii = 0; ii < nx; ii++)
+                        {
+                            gl_x[ii] = fastgl::GLPair(nx, ii+1);
+                            x1_gl(ii) =-gl_x[ii].x();
+                        }
+                        for (size_t jj = 0; jj < ny; jj++)
+                        {
+                            gl_y[jj] = fastgl::GLPair(ny, jj+1);
+                            x2_gl(jj) =-gl_y[jj].x();
+                        }
+                        arma::vec x1_gauss = Chebyshev::gaussLobatto(nx);
+                        arma::vec x2_gauss = Chebyshev::gaussLobatto(ny);
+                        arma::mat D1_gauss = Chebyshev::derivativeMatrix(x1_gauss, Derivative::first);
+                        arma::mat D2_gauss = Chebyshev::derivativeMatrix(x2_gauss, Derivative::first);
+                        arma::mat dxdx1_gauss = D1_gauss * x;
+                        arma::mat dydx1_gauss = D1_gauss * y;
+                        arma::mat dzdx1_gauss = D1_gauss * z;
+                        arma::mat dxdx2_gauss = x * D2_gauss.t();
+                        arma::mat dydx2_gauss = y * D2_gauss.t();
+                        arma::mat dzdx2_gauss = z * D2_gauss.t();
+                        if (c == 0) // South
+                        {
+                            for (size_t ii = 0; ii < nx; ii++)
+                            {
+                                double xw = x(ii, 0);
+                                double yw = y(ii, 0);
+                                double zw = z(ii, 0);
+                                double dxdx1 = dxdx1_gauss(ii, 0);
+                                double dydx1 = dydx1_gauss(ii, 0);
+                                double dzdx1 = dzdx1_gauss(ii, 0);
+                                for (size_t p = 0; p < nx; p++)
+                                {
+                                    double dt1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
+                                    for (size_t jj = 0; jj < ny; jj++)
+                                    {
+                                        double xW = xw + (1 - x2_gl(jj))/(1 + x2_gl(jj))/2;
+                                        double zW = zw + (1 - x2_gl(jj))/(1 + x2_gl(jj))*tan(alpha(0))/2;
+                                        double dxdx2 =-pow(1 + x2_gl(jj),-2);
+                                        // dydx2 = 0;
+                                        double dzdx2 =-tan(alpha(0))/pow(1 + x2_gl(jj), 2);
+                                        arma::vec::fixed<3> e_1 = {dxdx1, dydx1, dzdx1};
+                                        arma::vec::fixed<3> e_2 = {dxdx2,     0, dzdx2};
+                                        double e_11 = dot(e_1, e_1);
+                                        double e_12 = dot(e_1, e_2);
+                                        double e_22 = dot(e_2, e_2);
+                                        double e = e_11*e_22 - pow(e_12, 2);
+                                        double e11 = e_22/e;
+                                        double e12 =-e_12/e;
+                                        double e22 = e_11/e;
+                                        for (size_t q = 0; q < ny; q++)
+                                        {
+                                            double t2 = pow(-1, q);
+                                            for (size_t j = 0; j < ny; j++)
+                                                for (size_t i = 0; i < nx; i++)
+                                                {
+                                                    size_t k = i + j*nx;
+                                                    arma::vec::fixed<3> r = {xW - xC(i, j), yw - yC(i, j), zW - zC(i, j)};
+                                                    double r3 = pow(norm(r), 3);
+                                                    double dmudxi = dt1 * t2;
+                                                    double sqrt_A = sqrt(e*(1 + e11*pow(dzdx1, 2) + 2*e12*dzdx1*dzdx2 + e22*pow(dzdx2, 2)));
+                                                    arma::vec::fixed<3> n_W = arma::vec::fixed<3>({dydx1*dzdx2,
+                                                                                                    dzdx1*dxdx2-dxdx1*dzdx2,
+                                                                                                    -dydx1*dxdx2})/sqrt_A;
+                                                    arma::vec::fixed<3> J_red = {-n_W(1)*dzdx2,
+                                                                                    n_W(0)*dzdx2 - dxdx2*n_W(2),
+                                                                                    dxdx2*n_W(1)};
+                                                    arma::vec::fixed<3> gradmu = J_red*dmudxi;
+                                                    arma::vec::fixed<3> gamma_W = cross(gradmu, n_W);
+                                                    arma::vec q_mu = gl_x[ii].weight * gl_y[jj].weight * cross(gamma_W, r)/r3;
+                                                    A(k, p+q*nx) -= dot(q_mu, nC.row(k)); 
+                                                }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else if (c == 1) // East
+                        {
+                            for (size_t jj = 0; jj < ny; jj++)
+                            {
+                                double xw = x(nx-1, jj);
+                                double yw = y(nx-1, jj);
+                                double zw = z(nx-1, jj);
+                                double dxdx2 = dxdx2_gauss(nx-1, jj);
+                                double dydx2 = dydx2_gauss(nx-1, jj);
+                                double dzdx2 = dzdx2_gauss(nx-1, jj);
+                                for (size_t q = 0; q < ny; q++)
+                                {
+                                    double dt2 = boost::math::chebyshev_t_prime(q, x2_gl(jj));
+                                    for (size_t ii = 0; ii < nx; ii++)
+                                    {
+                                        double xW = xw + (1 + x1_gl(ii))/(1 - x1_gl(ii))/2;
+                                        double zW = zw + (1 + x1_gl(ii))/(1 - x1_gl(ii))*tan(alpha(0))/2;
+                                        double dxdx1 = 1/pow(1 - x1_gl(ii), 2);
+                                        // dydx1 = 0
+                                        double dzdx1 = tan(alpha(0))/pow(1 - x1_gl(ii), 2);
+                                        arma::vec::fixed<3> e_1 = {dxdx1,     0, dzdx1};
+                                        arma::vec::fixed<3> e_2 = {dxdx2, dydx2, dzdx2};
+                                        double e_11 = dot(e_1, e_1);
+                                        double e_12 = dot(e_1, e_2);
+                                        double e_22 = dot(e_2, e_2);
+                                        double e = e_11*e_22 - pow(e_12, 2);
+                                        double e11 = e_22/e;
+                                        double e12 =-e_12/e;
+                                        double e22 = e_11/e;
+                                        for (size_t j = 0; j < ny; j++)
+                                            for (size_t i = 0; i < nx; i++)
+                                            {
+                                                size_t k = i + j*nx;
+                                                arma::vec::fixed<3> r = {xW - xC(i, j), yw - yC(i, j), zW - zC(i, j)};
+                                                double r3 = pow(norm(r), 3);
+                                                double dmudxi = dt2;
+                                                double sqrt_A = sqrt(e*(1 + e11*pow(dzdx1, 2) + 2*e12*dzdx1*dzdx2 + e22*pow(dzdx2, 2)));
+                                                arma::vec::fixed<3> n_W = arma::vec::fixed<3>({-dzdx1*dydx2,
+                                                                                                dzdx1*dxdx2-dxdx1*dzdx2,
+                                                                                                dxdx1*dydx2})/sqrt_A;
+                                                arma::vec::fixed<3> J_red = {n_W(1)*dzdx1,
+                                                                                dxdx1*n_W(2) - n_W(0)*dzdx1,
+                                                                                -dxdx1*n_W(1)};
+                                                arma::vec::fixed<3> gradmu = J_red*dmudxi;
+                                                arma::vec::fixed<3> gamma_W = cross(gradmu, n_W);
+                                                arma::vec q_mu = gl_x[ii].weight * gl_y[jj].weight * cross(gamma_W, r)/r3;
+                                                for (size_t p = 0; p < nx; p++)
+                                                    A(k, p+q*nx) -= dot(q_mu, nC.row(k));
+                                            }
+                                    }
+                                }
+                            }
+                        }
+                        else if (c == 2) // North
+                        {
+                            for (size_t ii = 0; ii < nx; ii++)
+                            {
+                                double xw = x(ii, ny-1);
+                                double yw = y(ii, ny-1);
+                                double zw = z(ii, ny-1);
+                                double dxdx1 = dxdx1_gauss(ii, ny-1);
+                                double dydx1 = dydx1_gauss(ii, ny-1);
+                                double dzdx1 = dzdx1_gauss(ii, ny-1);
+                                for (size_t p = 0; p < nx; p++)
+                                {
+                                    double dt1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
+                                    for (size_t jj = 0; jj < ny; jj++)
+                                    {
+                                        double xW = xw + (1 + x2_gl(jj))/(1 - x2_gl(jj))/2;
+                                        double zW = zw + (1 + x2_gl(jj))/(1 - x2_gl(jj))*tan(alpha(0))/2;
+                                        double dxdx2 = 1/pow(1 - x2_gl(jj), 2);
+                                        // dydx2 = 0
+                                        double dzdx2 = tan(alpha(0))/pow(1 - x2_gl(jj), 2);
+                                        arma::vec::fixed<3> e_1 = {dxdx1, dydx1, dzdx1};
+                                        arma::vec::fixed<3> e_2 = {dxdx2,     0, dzdx2};
+                                        double e_11 = dot(e_1, e_1);
+                                        double e_12 = dot(e_1, e_2);
+                                        double e_22 = dot(e_2, e_2);
+                                        double e = e_11*e_22 - pow(e_12, 2);
+                                        double e11 = e_22/e;
+                                        double e12 =-e_12/e;
+                                        double e22 = e_11/e;
+                                        for (size_t j = 0; j < ny; j++)
+                                            for (size_t i = 0; i < nx; i++)
+                                            {
+                                                size_t k = i + j*nx;
+                                                arma::vec::fixed<3> r = {xW - xC(i, j), yw - yC(i, j), zW - zC(i, j)};
+                                                double r3 = pow(norm(r), 3);
+                                                double dmudxi = dt1;
+                                                double sqrt_A = sqrt(e*(1 + e11*pow(dzdx1, 2) + 2*e12*dzdx1*dzdx2 + e22*pow(dzdx2, 2)));
+                                                arma::vec::fixed<3> n_W = arma::vec::fixed<3>({dydx1*dzdx2,
+                                                                                                dzdx1*dxdx2-dxdx1*dzdx2,
+                                                                                                -dydx1*dxdx2})/sqrt_A;
+                                                arma::vec::fixed<3> J_red = {-dzdx2*n_W(1),
+                                                                                dzdx2*n_W(0) - dxdx2*n_W(2),
+                                                                                dxdx2*n_W(1)};
+                                                arma::vec::fixed<3> gradmu = J_red*dmudxi;
+                                                arma::vec::fixed<3> gamma_W = cross(gradmu, n_W);
+                                                arma::vec q_mu = gl_x[ii].weight * gl_y[jj].weight * cross(gamma_W, r)/r3;
+                                                for (size_t q = 0; q < ny; q++)
+                                                    A(k, p+q*nx) -= dot(q_mu, nC.row(k));
+                                            }
+                                    }
+                                }
+                            }
+                        }
+                        else // West
+                        {
+                            for (size_t jj = 0; jj < ny; jj++)
+                            {
+                                double xw = x(0, jj);
+                                double yw = y(0, jj);
+                                double zw = z(0, jj);
+                                double dxdx2 = dxdx2_gauss(0, jj);
+                                double dydx2 = dydx2_gauss(0, jj);
+                                double dzdx2 = dzdx2_gauss(0, jj);
+                                for (size_t q = 0; q < ny; q++)
+                                {
+                                    double dt2 = boost::math::chebyshev_t_prime(q, x2_gl(jj));
+                                    for (size_t ii = 0; ii < nx; ii++)
+                                    {
+                                        double xW = xw + (1 - x1_gl(ii))/(1 + x1_gl(ii))/2;
+                                        double zW = zw + (1 - x1_gl(ii))/(1 + x1_gl(ii))*tan(alpha(0))/2;
+                                        double dxdx1 =-1/pow(1 + x1_gl(ii), 2);
+                                        // dydx1 = 0
+                                        double dzdx1 =-tan(alpha(0))/pow(1 + x1_gl(ii), 2);
+                                        arma::vec::fixed<3> e_1 = {dxdx1,     0, dzdx1};
+                                        arma::vec::fixed<3> e_2 = {dxdx2, dydx2, dzdx2};
+                                        double e_11 = dot(e_1, e_1);
+                                        double e_12 = dot(e_1, e_2);
+                                        double e_22 = dot(e_2, e_2);
+                                        double e = e_11*e_22 - pow(e_12, 2);
+                                        double e11 = e_22/e;
+                                        double e12 =-e_12/e;
+                                        double e22 = e_11/e;
+                                        for (size_t p = 0; p < nx; p++)
+                                        {
+                                            double t1 = pow(-1, p);
+                                            for (size_t j = 0; j < ny; j++)
+                                                for (size_t i = 0; i < nx; i++)
+                                                {
+                                                    size_t k = i + j*nx;
+                                                    arma::vec::fixed<3> r = {xW - xC(i, j), yw - yC(i, j), zW - zC(i, j)};
+                                                    double r3 = pow(norm(r), 3);
+                                                    double dmudxi = t1*dt2;
+                                                    double sqrt_A = sqrt(e*(1 + e11*pow(dzdx1, 2) + 2*e12*dzdx1*dzdx2 + e22*pow(dzdx2, 2)));
+                                                    arma::vec::fixed<3> n_W = arma::vec::fixed<3>({-dzdx1*dydx2,
+                                                                                                    dzdx1*dxdx2-dxdx1*dzdx2,
+                                                                                                    dxdx1*dydx2})/sqrt_A;
+                                                    arma::vec::fixed<3> J_red = {n_W(1)*dzdx1,
+                                                                                    dxdx1*n_W(2) - n_W(0)*dzdx1,
+                                                                                    -dxdx1*n_W(1)};
+                                                    arma::vec::fixed<3> gradmu = J_red*dmudxi;
+                                                    arma::vec::fixed<3> gamma_W = cross(gradmu, n_W);
+                                                    arma::vec q_mu = gl_x[ii].weight * gl_y[jj].weight * cross(gamma_W, r)/r3;
+                                                    A(k, p+q*nx) -= dot(q_mu, nC.row(k)); 
+                                                }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
             if (sym == Symmetry::y)
             {
                 std::vector<fastgl::QuadPair> gl_x(nx), gl_y(ny);
@@ -472,6 +967,251 @@ void Wing::aerodynamicMatrix()
                                     }
                                 }
                             }
+                for (auto &w:wakes)
+                    for (size_t c = 0; c < 4; c++)
+                        if (chi[c] == w->chi)
+                        {
+                            std::vector<fastgl::QuadPair> gl_x(nx), gl_y(ny);
+                            arma::vec x1_gl(nx), x2_gl(ny);
+                            for (size_t ii = 0; ii < nx; ii++)
+                            {
+                                gl_x[ii] = fastgl::GLPair(nx, ii+1);
+                                x1_gl(ii) =-gl_x[ii].x();
+                            }
+                            for (size_t jj = 0; jj < ny; jj++)
+                            {
+                                gl_y[jj] = fastgl::GLPair(ny, jj+1);
+                                x2_gl(jj) =-gl_y[jj].x();
+                            }
+                            arma::vec x1_gauss = Chebyshev::gaussLobatto(nx);
+                            arma::vec x2_gauss = Chebyshev::gaussLobatto(ny);
+                            arma::mat D1_gauss = Chebyshev::derivativeMatrix(x1_gauss, Derivative::first);
+                            arma::mat D2_gauss = Chebyshev::derivativeMatrix(x2_gauss, Derivative::first);
+                            arma::mat dxdx1_gauss = D1_gauss * x;
+                            arma::mat dydx1_gauss = D1_gauss * y;
+                            arma::mat dzdx1_gauss = D1_gauss * z;
+                            arma::mat dxdx2_gauss = x * D2_gauss.t();
+                            arma::mat dydx2_gauss = y * D2_gauss.t();
+                            arma::mat dzdx2_gauss = z * D2_gauss.t();
+                            if (c == 0) // South
+                            {
+                                for (size_t ii = 0; ii < nx; ii++)
+                                {
+                                    double xw = x(ii, 0);
+                                    double yw = y(ii, 0);
+                                    double zw = z(ii, 0);
+                                    double dxdx1 = dxdx1_gauss(ii, 0);
+                                    double dydx1 = dydx1_gauss(ii, 0);
+                                    double dzdx1 = dzdx1_gauss(ii, 0);
+                                    for (size_t p = 0; p < nx; p++)
+                                    {
+                                        double dt1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
+                                        for (size_t jj = 0; jj < ny; jj++)
+                                        {
+                                            double xW = xw + (1 - x2_gl(jj))/(1 + x2_gl(jj))/2;
+                                            double zW = zw + (1 - x2_gl(jj))/(1 + x2_gl(jj))*tan(alpha(0))/2;
+                                            double dxdx2 =-pow(1 + x2_gl(jj),-2);
+                                            // dydx2 = 0;
+                                            double dzdx2 =-tan(alpha(0))/pow(1 + x2_gl(jj), 2);
+                                            arma::vec::fixed<3> e_1 = {dxdx1, dydx1, dzdx1};
+                                            arma::vec::fixed<3> e_2 = {dxdx2,     0, dzdx2};
+                                            double e_11 = dot(e_1, e_1);
+                                            double e_12 = dot(e_1, e_2);
+                                            double e_22 = dot(e_2, e_2);
+                                            double e = e_11*e_22 - pow(e_12, 2);
+                                            double e11 = e_22/e;
+                                            double e12 =-e_12/e;
+                                            double e22 = e_11/e;
+                                            for (size_t q = 0; q < ny; q++)
+                                            {
+                                                double t2 = pow(-1, q);
+                                                for (size_t j = 0; j < ny; j++)
+                                                    for (size_t i = 0; i < nx; i++)
+                                                    {
+                                                        size_t k = i + j*nx;
+                                                        arma::vec::fixed<3> r = {xW - xC(i, j), yw - yC(i, j), zW - zC(i, j)};
+                                                        double r3 = pow(norm(r), 3);
+                                                        double dmudxi = dt1 * t2;
+                                                        double sqrt_A = sqrt(e*(1 + e11*pow(dzdx1, 2) + 2*e12*dzdx1*dzdx2 + e22*pow(dzdx2, 2)));
+                                                        arma::vec::fixed<3> n_W = arma::vec::fixed<3>({dydx1*dzdx2,
+                                                                                                        dzdx1*dxdx2-dxdx1*dzdx2,
+                                                                                                        -dydx1*dxdx2})/sqrt_A;
+                                                        arma::vec::fixed<3> J_red = {-n_W(1)*dzdx2,
+                                                                                        n_W(0)*dzdx2 - dxdx2*n_W(2),
+                                                                                        dxdx2*n_W(1)};
+                                                        arma::vec::fixed<3> gradmu = J_red*dmudxi;
+                                                        arma::vec::fixed<3> gamma_W = cross(gradmu, n_W);
+                                                        arma::vec q_mu = gl_x[ii].weight * gl_y[jj].weight * cross(gamma_W, r)/r3;
+                                                        A(k, p+q*nx) -= dot(q_mu, nC.row(k)); 
+                                                    }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            else if (c == 1) // East
+                            {
+                                for (size_t jj = 0; jj < ny; jj++)
+                                {
+                                    double xw = x(nx-1, jj);
+                                    double yw = y(nx-1, jj);
+                                    double zw = z(nx-1, jj);
+                                    double dxdx2 = dxdx2_gauss(nx-1, jj);
+                                    double dydx2 = dydx2_gauss(nx-1, jj);
+                                    double dzdx2 = dzdx2_gauss(nx-1, jj);
+                                    for (size_t q = 0; q < ny; q++)
+                                    {
+                                        double dt2 = boost::math::chebyshev_t_prime(q, x2_gl(jj));
+                                        for (size_t ii = 0; ii < nx; ii++)
+                                        {
+                                            double xW = xw + (1 + x1_gl(ii))/(1 - x1_gl(ii))/2;
+                                            double zW = zw + (1 + x1_gl(ii))/(1 - x1_gl(ii))*tan(alpha(0))/2;
+                                            double dxdx1 = 1/pow(1 - x1_gl(ii), 2);
+                                            // dydx1 = 0
+                                            double dzdx1 = tan(alpha(0))/pow(1 - x1_gl(ii), 2);
+                                            arma::vec::fixed<3> e_1 = {dxdx1,     0, dzdx1};
+                                            arma::vec::fixed<3> e_2 = {dxdx2, dydx2, dzdx2};
+                                            double e_11 = dot(e_1, e_1);
+                                            double e_12 = dot(e_1, e_2);
+                                            double e_22 = dot(e_2, e_2);
+                                            double e = e_11*e_22 - pow(e_12, 2);
+                                            double e11 = e_22/e;
+                                            double e12 =-e_12/e;
+                                            double e22 = e_11/e;
+                                            for (size_t j = 0; j < ny; j++)
+                                                for (size_t i = 0; i < nx; i++)
+                                                {
+                                                    size_t k = i + j*nx;
+                                                    arma::vec::fixed<3> r = {xW - xC(i, j), yw - yC(i, j), zW - zC(i, j)};
+                                                    double r3 = pow(norm(r), 3);
+                                                    double dmudxi = dt2;
+                                                    double sqrt_A = sqrt(e*(1 + e11*pow(dzdx1, 2) + 2*e12*dzdx1*dzdx2 + e22*pow(dzdx2, 2)));
+                                                    arma::vec::fixed<3> n_W = arma::vec::fixed<3>({-dzdx1*dydx2,
+                                                                                                    dzdx1*dxdx2-dxdx1*dzdx2,
+                                                                                                    dxdx1*dydx2})/sqrt_A;
+                                                    arma::vec::fixed<3> J_red = {n_W(1)*dzdx1,
+                                                                                    dxdx1*n_W(2) - n_W(0)*dzdx1,
+                                                                                    -dxdx1*n_W(1)};
+                                                    arma::vec::fixed<3> gradmu = J_red*dmudxi;
+                                                    arma::vec::fixed<3> gamma_W = cross(gradmu, n_W);
+                                                    arma::vec q_mu = gl_x[ii].weight * gl_y[jj].weight * cross(gamma_W, r)/r3;
+                                                    for (size_t p = 0; p < nx; p++)
+                                                        A(k, p+q*nx) -= dot(q_mu, nC.row(k));
+                                                }
+                                        }
+                                    }
+                                }
+                            }
+                            else if (c == 2) // North
+                            {
+                                for (size_t ii = 0; ii < nx; ii++)
+                                {
+                                    double xw = x(ii, ny-1);
+                                    double yw = y(ii, ny-1);
+                                    double zw = z(ii, ny-1);
+                                    double dxdx1 = dxdx1_gauss(ii, ny-1);
+                                    double dydx1 = dydx1_gauss(ii, ny-1);
+                                    double dzdx1 = dzdx1_gauss(ii, ny-1);
+                                    for (size_t p = 0; p < nx; p++)
+                                    {
+                                        double dt1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
+                                        for (size_t jj = 0; jj < ny; jj++)
+                                        {
+                                            double xW = xw + (1 + x2_gl(jj))/(1 - x2_gl(jj))/2;
+                                            double zW = zw + (1 + x2_gl(jj))/(1 - x2_gl(jj))*tan(alpha(0))/2;
+                                            double dxdx2 = 1/pow(1 - x2_gl(jj), 2);
+                                            // dydx2 = 0
+                                            double dzdx2 = tan(alpha(0))/pow(1 - x2_gl(jj), 2);
+                                            arma::vec::fixed<3> e_1 = {dxdx1, dydx1, dzdx1};
+                                            arma::vec::fixed<3> e_2 = {dxdx2,     0, dzdx2};
+                                            double e_11 = dot(e_1, e_1);
+                                            double e_12 = dot(e_1, e_2);
+                                            double e_22 = dot(e_2, e_2);
+                                            double e = e_11*e_22 - pow(e_12, 2);
+                                            double e11 = e_22/e;
+                                            double e12 =-e_12/e;
+                                            double e22 = e_11/e;
+                                            for (size_t j = 0; j < ny; j++)
+                                                for (size_t i = 0; i < nx; i++)
+                                                {
+                                                    size_t k = i + j*nx;
+                                                    arma::vec::fixed<3> r = {xW - xC(i, j), yw - yC(i, j), zW - zC(i, j)};
+                                                    double r3 = pow(norm(r), 3);
+                                                    double dmudxi = dt1;
+                                                    double sqrt_A = sqrt(e*(1 + e11*pow(dzdx1, 2) + 2*e12*dzdx1*dzdx2 + e22*pow(dzdx2, 2)));
+                                                    arma::vec::fixed<3> n_W = arma::vec::fixed<3>({dydx1*dzdx2,
+                                                                                                    dzdx1*dxdx2-dxdx1*dzdx2,
+                                                                                                    -dydx1*dxdx2})/sqrt_A;
+                                                    arma::vec::fixed<3> J_red = {-dzdx2*n_W(1),
+                                                                                    dzdx2*n_W(0) - dxdx2*n_W(2),
+                                                                                    dxdx2*n_W(1)};
+                                                    arma::vec::fixed<3> gradmu = J_red*dmudxi;
+                                                    arma::vec::fixed<3> gamma_W = cross(gradmu, n_W);
+                                                    arma::vec q_mu = gl_x[ii].weight * gl_y[jj].weight * cross(gamma_W, r)/r3;
+                                                    for (size_t q = 0; q < ny; q++)
+                                                        A(k, p+q*nx) -= dot(q_mu, nC.row(k));
+                                                }
+                                        }
+                                    }
+                                }
+                            }
+                            else // West
+                            {
+                                for (size_t jj = 0; jj < ny; jj++)
+                                {
+                                    double xw = x(0, jj);
+                                    double yw = y(0, jj);
+                                    double zw = z(0, jj);
+                                    double dxdx2 = dxdx2_gauss(0, jj);
+                                    double dydx2 = dydx2_gauss(0, jj);
+                                    double dzdx2 = dzdx2_gauss(0, jj);
+                                    for (size_t q = 0; q < ny; q++)
+                                    {
+                                        double dt2 = boost::math::chebyshev_t_prime(q, x2_gl(jj));
+                                        for (size_t ii = 0; ii < nx; ii++)
+                                        {
+                                            double xW = xw + (1 - x1_gl(ii))/(1 + x1_gl(ii))/2;
+                                            double zW = zw + (1 - x1_gl(ii))/(1 + x1_gl(ii))*tan(alpha(0))/2;
+                                            double dxdx1 =-1/pow(1 + x1_gl(ii), 2);
+                                            // dydx1 = 0
+                                            double dzdx1 =-tan(alpha(0))/pow(1 + x1_gl(ii), 2);
+                                            arma::vec::fixed<3> e_1 = {dxdx1,     0, dzdx1};
+                                            arma::vec::fixed<3> e_2 = {dxdx2, dydx2, dzdx2};
+                                            double e_11 = dot(e_1, e_1);
+                                            double e_12 = dot(e_1, e_2);
+                                            double e_22 = dot(e_2, e_2);
+                                            double e = e_11*e_22 - pow(e_12, 2);
+                                            double e11 = e_22/e;
+                                            double e12 =-e_12/e;
+                                            double e22 = e_11/e;
+                                            for (size_t p = 0; p < nx; p++)
+                                            {
+                                                double t1 = pow(-1, p);
+                                                for (size_t j = 0; j < ny; j++)
+                                                    for (size_t i = 0; i < nx; i++)
+                                                    {
+                                                        size_t k = i + j*nx;
+                                                        arma::vec::fixed<3> r = {xW - xC(i, j), yw - yC(i, j), zW - zC(i, j)};
+                                                        double r3 = pow(norm(r), 3);
+                                                        double dmudxi = t1*dt2;
+                                                        double sqrt_A = sqrt(e*(1 + e11*pow(dzdx1, 2) + 2*e12*dzdx1*dzdx2 + e22*pow(dzdx2, 2)));
+                                                        arma::vec::fixed<3> n_W = arma::vec::fixed<3>({-dzdx1*dydx2,
+                                                                                                        dzdx1*dxdx2-dxdx1*dzdx2,
+                                                                                                        dxdx1*dydx2})/sqrt_A;
+                                                        arma::vec::fixed<3> J_red = {n_W(1)*dzdx1,
+                                                                                        dxdx1*n_W(2) - n_W(0)*dzdx1,
+                                                                                        -dxdx1*n_W(1)};
+                                                        arma::vec::fixed<3> gradmu = J_red*dmudxi;
+                                                        arma::vec::fixed<3> gamma_W = cross(gradmu, n_W);
+                                                        arma::vec q_mu = gl_x[ii].weight * gl_y[jj].weight * cross(gamma_W, r)/r3;
+                                                        A(k, p+q*nx) -= dot(q_mu, nC.row(k)); 
+                                                    }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
             }
             break;
         }

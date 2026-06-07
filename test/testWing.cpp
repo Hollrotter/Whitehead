@@ -2,7 +2,7 @@
 
 int main()
 {
-    switch (1)
+    switch (2)
     {
         case 0: // Rectangle
         {
@@ -109,32 +109,39 @@ int main()
              * what it is supposed to do.
              */
 
-            size_t n = 15;
-            size_t m = 15;
+            size_t n = 20;
+            size_t m = 10;
 
-            Point p1(-1,-2);
-            Point p2( 1,-2);
-            Point p3( 1, 2);
-            Point p4(-1, 2);
+            Point p1(-1, 0);
+            Point p2( 1, 0);
+            Point p3( 1, 1);
+            Point p4(-1, 1);
 
             Lagrange::CurveInterpolant chi1(p1, p2, n);
             Lagrange::CurveInterpolant chi2(p2, p3, m);
             Lagrange::CurveInterpolant chi3(p3, p4, n);
             Lagrange::CurveInterpolant chi4(p4, p1, m);
 
-            std::array<Wing, 4> w({Wing({&chi1, &chi2, &chi3, &chi4}),
-                                   Wing({&chi2, &chi3, &chi4, &chi1}),
-                                   Wing({&chi3, &chi4, &chi1, &chi2}),
-                                   Wing({&chi4, &chi1, &chi2, &chi3})});
+            arma::mat z1 = 0.1*cos(arma::datum::pi/2*Chebyshev::gaussLobatto(n)) * cos(arma::datum::pi/4*(1+Chebyshev::gaussLobatto(m))).t();
+            arma::mat z2 = 0.1*cos(arma::datum::pi/4*(1+Chebyshev::gaussLobatto(m))) * cos(arma::datum::pi/2*Chebyshev::gaussLobatto(n)).t();
+            arma::mat z3 = arma::flipud(arma::fliplr(z1));
+            arma::mat z4 = arma::flipud(arma::fliplr(z2));
 
+            std::array<Wing, 4> w({Wing(z1, {&chi1, &chi2, &chi3, &chi4}),
+                                   Wing(z2, {&chi2, &chi3, &chi4, &chi1}),
+                                   Wing(z3, {&chi3, &chi4, &chi1, &chi2}),
+                                   Wing(z4, {&chi4, &chi1, &chi2, &chi3})});
+            Wake wk(&chi2);
             for (size_t i = 0; i < 4; i++)
             {
                 w[i].pitch(2);
-                w[i].boundary(&chi1, BC::Dirichlet);
+                w[i].boundary(&chi1, BC::Neumann);
                 w[i].boundary(&chi2, BC::Neumann);
                 w[i].boundary(&chi3, BC::Dirichlet);
                 w[i].boundary(&chi4, BC::Dirichlet);
-                w[i].linear();
+                w[i].wake(&wk);
+                w[i](Symmetry::y);
+                w[i].nonlinear();
                 w[i].output("plot/Data/Wing/square"+std::to_string(i));
             }
 

@@ -1,15 +1,15 @@
-set terminal png background rgb 'black' size 1000, 1000
+set terminal png background rgb 'black' size 1000, 500
 set output '../../png/Wing/square.png'
 
 set palette defined (0 "blue", 0.5 "green", 0.8 "yellow", 1 "red")
-set cbrange [0:0.1]
+set cbrange [-1:3]
 set xlabel 'x' tc rgb 'gray'
 set ylabel 'y' tc rgb 'gray'
 set zlabel 'dcp' tc rgb 'gray'
 set key tc rgb 'gray'
 set border lc rgb 'gray'
 set pm3d map
-# set pm3d interpolate 10,10 corners2color mean
+set pm3d interpolate 10,10 corners2color mean
 
 set multiplot layout 2,2 rowsfirst
 set title "Rotated by 0°" tc rgb 'gray'

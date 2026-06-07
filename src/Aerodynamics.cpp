@@ -96,6 +96,25 @@ void Aerodynamics::checkMesh()
     }
 }
 
+void Aerodynamics::wake(Wake* w)
+{
+    bool found = false;
+    for (auto& wing:wings)
+    {
+        for(auto& CHI:wing->chi)
+            if (CHI == w->chi)
+            {
+                wing->wake(w);
+                found = true;
+                break;
+            }
+        if (found = true)
+            break;
+    }
+    if (found = false)
+        std::println("This wake is not part of any of the wing surfaces!");
+}
+
 template <class C> void Aerodynamics::boundary(const Lagrange::CurveInterpolant* dir, const BC bc, const C val)
 {
     for (auto &wing:wings)
@@ -166,7 +185,132 @@ void Aerodynamics::linear()
                                 }
                             }
                     }
-            }
+                for (auto &w:wings[sD]->wakes)
+                    for (size_t c = 0; c < 4; c++)
+                        if (wings[sD]->chi[c] == w->chi)
+                        {
+                            std::vector<fastgl::QuadPair> gl_x(wings[sD]->nx), gl_y(wings[sD]->ny);
+                            arma::vec x1_gl(wings[sD]->nx), x2_gl(wings[sD]->ny);
+                            for (size_t ii = 0; ii < wings[sD]->nx; ii++)
+                            {
+                                gl_x[ii] = fastgl::GLPair(wings[sD]->nx, ii+1);
+                                x1_gl(ii) =-gl_x[ii].x();
+                            }
+                            for (size_t jj = 0; jj < wings[sD]->ny; jj++)
+                            {
+                                gl_y[jj] = fastgl::GLPair(wings[sD]->ny, jj+1);
+                                x2_gl(jj) =-gl_y[jj].x();
+                            }
+                            if (c == 0) // South
+                            {
+                                for (size_t ii = 0; ii < wings[sD]->nx; ii++)
+                                {
+                                    double xw = wings[sD]->x(ii, 0);
+                                    double yw = wings[sD]->y(ii, 0);
+                                    for (size_t p = 0; p < wings[sD]->nx; p++)
+                                    {
+                                        double dt1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
+                                        for (size_t jj = 0; jj < wings[sD]->ny; jj++)
+                                        {
+                                            double xW = xw + (1 - x2_gl(jj))/(1 + x2_gl(jj))/2;
+                                            for (size_t q = 0; q < wings[sD]->ny; q++)
+                                            {
+                                                double t2 = pow(-1, q);
+                                                for (size_t j = 0; j < wings[tD]->ny; j++)
+                                                    for (size_t i = 0; i < wings[tD]->nx; i++)
+                                                    {
+                                                        size_t k = i + j*wings[tD]->nx;
+                                                        arma::vec::fixed<2> r = {xW - xC(i, j), yw - yC(i, j)};
+                                                        double r3 = pow(norm(r), 3);
+                                                        bw(tD, sD)(k, p+q*wings[sD]->nx, 0) -= gl_x[ii].weight*gl_y[jj].weight*dt1*t2*r(1)/pow(1 + x2_gl(jj), 2)/r3; 
+                                                    }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            else if (c == 1) // East
+                            {
+                                for (size_t jj = 0; jj < wings[sD]->ny; jj++)
+                                {
+                                    double xw = wings[sD]->x(wings[sD]->nx-1, jj);
+                                    double yw = wings[sD]->y(wings[sD]->nx-1, jj);
+                                    for (size_t q = 0; q < wings[sD]->ny; q++)
+                                    {
+                                        double dt2 = boost::math::chebyshev_t_prime(q, x2_gl(jj));
+                                        for (size_t ii = 0; ii < wings[sD]->nx; ii++)
+                                        {
+                                            double xW = xw + (1 + x1_gl(ii))/(1 - x1_gl(ii))/2;
+                                            for (size_t j = 0; j < wings[tD]->ny; j++)
+                                                for (size_t i = 0; i < wings[tD]->nx; i++)
+                                                {
+                                                    size_t k = i + j*wings[tD]->nx;
+                                                    arma::vec::fixed<2> r = {xW - xC(i, j), yw - yC(i, j)};
+                                                    double r3 = pow(norm(r), 3);
+                                                    double I = gl_x[ii].weight*gl_y[jj].weight*dt2*r(1)/pow(1 - x1_gl(ii), 2)/r3;
+                                                    for (size_t p = 0; p < wings[sD]->nx; p++)
+                                                        bw(tD, sD)(k, p+q*wings[sD]->nx, 0) -= I;
+                                                }
+                                        }
+                                    }
+                                }
+                            }
+                            else if (c == 2) // North
+                            {
+                                for (size_t ii = 0; ii < wings[sD]->nx; ii++)
+                                {
+                                    double xw = wings[sD]->x(ii, wings[sD]->ny-1);
+                                    double yw = wings[sD]->y(ii, wings[sD]->ny-1);
+                                    for (size_t p = 0; p < wings[sD]->nx; p++)
+                                    {
+                                        double dt1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
+                                        for (size_t jj = 0; jj < wings[sD]->ny; jj++)
+                                        {
+                                            double xW = xw + (1 + x2_gl(jj))/(1 - x2_gl(jj))/2;
+                                            for (size_t j = 0; j < wings[tD]->ny; j++)
+                                                for (size_t i = 0; i < wings[tD]->nx; i++)
+                                                {
+                                                    size_t k = i + j*wings[tD]->nx;
+                                                    arma::vec::fixed<2> r = {xW - xC(i, j), yw - yC(i, j)};
+                                                    double r3 = pow(norm(r), 3);
+                                                    double I =-gl_x[ii].weight*gl_y[jj].weight*dt1*r(1)/pow(1 - x2_gl(jj), 2)/r3;
+                                                    for (size_t q = 0; q < wings[sD]->ny; q++)
+                                                        bw(tD, sD)(k, p+q*wings[sD]->nx, 0) -= I;
+                                                }
+                                        }
+                                    }
+                                }
+                            }
+                            else // West
+                            {
+                                for (size_t jj = 0; jj < wings[sD]->ny; jj++)
+                                {
+                                    double xw = wings[sD]->x(0, jj);
+                                    double yw = wings[sD]->y(0, jj);
+                                    for (size_t q = 0; q < wings[sD]->ny; q++)
+                                    {
+                                        double dt2 = boost::math::chebyshev_t_prime(q, x2_gl(jj));
+                                        for (size_t ii = 0; ii < wings[sD]->nx; ii++)
+                                        {
+                                            double xW = xw + (1 - x1_gl(ii))/(1 + x1_gl(ii))/2;
+                                            for (size_t p = 0; p < wings[sD]->nx; p++)
+                                            {
+                                                double t1 = pow(-1, p);
+                                                for (size_t j = 0; j < wings[tD]->ny; j++)
+                                                    for (size_t i = 0; i < wings[tD]->nx; i++)
+                                                    {
+                                                        size_t k = i + j*wings[tD]->nx;
+                                                        arma::vec::fixed<2> r = {xW - xC(i, j), yw - yC(i, j)};
+                                                        double r3 = pow(norm(r), 3);
+                                                        bw(tD, sD)(k, p+q*wings[sD]->nx, 0) += gl_x[ii].weight*gl_y[jj].weight*t1*dt2*r(1)/pow(1 + x1_gl(ii), 2)/r3;
+                                                    }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                }
     }
     if (sym == Symmetry::y)
     {
@@ -219,6 +363,131 @@ void Aerodynamics::linear()
                                     }
                                 }
                         }
+                    for (auto &w:wings[sD]->wakes)
+                        for (size_t c = 0; c < 4; c++)
+                            if (wings[sD]->chi[c] == w->chi)
+                            {
+                                std::vector<fastgl::QuadPair> gl_x(wings[sD]->nx), gl_y(wings[sD]->ny);
+                                arma::vec x1_gl(wings[sD]->nx), x2_gl(wings[sD]->ny);
+                                for (size_t ii = 0; ii < wings[sD]->nx; ii++)
+                                {
+                                    gl_x[ii] = fastgl::GLPair(wings[sD]->nx, ii+1);
+                                    x1_gl(ii) =-gl_x[ii].x();
+                                }
+                                for (size_t jj = 0; jj < wings[sD]->ny; jj++)
+                                {
+                                    gl_y[jj] = fastgl::GLPair(wings[sD]->ny, jj+1);
+                                    x2_gl(jj) =-gl_y[jj].x();
+                                }
+                                if (c == 0) // South
+                                {
+                                    for (size_t ii = 0; ii < wings[sD]->nx; ii++)
+                                    {
+                                        double xw = wings[sD]->x(ii, 0);
+                                        double yw =-wings[sD]->y(ii, 0);
+                                        for (size_t p = 0; p < wings[sD]->nx; p++)
+                                        {
+                                            double dt1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
+                                            for (size_t jj = 0; jj < wings[sD]->ny; jj++)
+                                            {
+                                                double xW = xw + (1 - x2_gl(jj))/(1 + x2_gl(jj))/2;
+                                                for (size_t q = 0; q < wings[sD]->ny; q++)
+                                                {
+                                                    double t2 = pow(-1, q);
+                                                    for (size_t j = 0; j < wings[tD]->ny; j++)
+                                                        for (size_t i = 0; i < wings[tD]->nx; i++)
+                                                        {
+                                                            size_t k = i + j*wings[tD]->nx;
+                                                            arma::vec::fixed<2> r = {xW - xC(i, j), yw - yC(i, j)};
+                                                            double r3 = pow(norm(r), 3);
+                                                            bw(tD, sD)(k, p+q*wings[sD]->nx, 0) -= gl_x[ii].weight*gl_y[jj].weight*dt1*t2*r(1)/pow(1 + x2_gl(jj), 2)/r3; 
+                                                        }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                else if (c == 1) // East
+                                {
+                                    for (size_t jj = 0; jj < wings[sD]->ny; jj++)
+                                    {
+                                        double xw = wings[sD]->x(wings[sD]->nx-1, jj);
+                                        double yw =-wings[sD]->y(wings[sD]->nx-1, jj);
+                                        for (size_t q = 0; q < wings[sD]->ny; q++)
+                                        {
+                                            double dt2 = boost::math::chebyshev_t_prime(q, x2_gl(jj));
+                                            for (size_t ii = 0; ii < wings[sD]->nx; ii++)
+                                            {
+                                                double xW = xw + (1 + x1_gl(ii))/(1 - x1_gl(ii))/2;
+                                                for (size_t j = 0; j < wings[tD]->ny; j++)
+                                                    for (size_t i = 0; i < wings[tD]->nx; i++)
+                                                    {
+                                                        size_t k = i + j*wings[tD]->nx;
+                                                        arma::vec::fixed<2> r = {xW - xC(i, j), yw - yC(i, j)};
+                                                        double r3 = pow(norm(r), 3);
+                                                        double I = gl_x[ii].weight*gl_y[jj].weight*dt2*r(1)/pow(1 - x1_gl(ii), 2)/r3;
+                                                        for (size_t p = 0; p < wings[sD]->nx; p++)
+                                                            bw(tD, sD)(k, p+q*wings[sD]->nx, 0) -= I;
+                                                    }
+                                            }
+                                        }
+                                    }
+                                }
+                                else if (c == 2) // North
+                                {
+                                    for (size_t ii = 0; ii < wings[sD]->nx; ii++)
+                                    {
+                                        double xw = wings[sD]->x(ii, wings[sD]->ny-1);
+                                        double yw =-wings[sD]->y(ii, wings[sD]->ny-1);
+                                        for (size_t p = 0; p < wings[sD]->nx; p++)
+                                        {
+                                            double dt1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
+                                            for (size_t jj = 0; jj < wings[sD]->ny; jj++)
+                                            {
+                                                double xW = xw + (1 + x2_gl(jj))/(1 - x2_gl(jj))/2;
+                                                for (size_t j = 0; j < wings[tD]->ny; j++)
+                                                    for (size_t i = 0; i < wings[tD]->nx; i++)
+                                                    {
+                                                        size_t k = i + j*wings[tD]->nx;
+                                                        arma::vec::fixed<2> r = {xW - xC(i, j), yw - yC(i, j)};
+                                                        double r3 = pow(norm(r), 3);
+                                                        double I =-gl_x[ii].weight*gl_y[jj].weight*dt1*r(1)/pow(1 - x2_gl(jj), 2)/r3;
+                                                        for (size_t q = 0; q < wings[sD]->ny; q++)
+                                                            bw(tD, sD)(k, p+q*wings[sD]->nx, 0) -= I;
+                                                    }
+                                            }
+                                        }
+                                    }
+                                }
+                                else // West
+                                {
+                                    for (size_t jj = 0; jj < wings[sD]->ny; jj++)
+                                    {
+                                        double xw = wings[sD]->x(0, jj);
+                                        double yw =-wings[sD]->y(0, jj);
+                                        for (size_t q = 0; q < wings[sD]->ny; q++)
+                                        {
+                                            double dt2 = boost::math::chebyshev_t_prime(q, x2_gl(jj));
+                                            for (size_t ii = 0; ii < wings[sD]->nx; ii++)
+                                            {
+                                                double xW = xw + (1 - x1_gl(ii))/(1 + x1_gl(ii))/2;
+                                                for (size_t p = 0; p < wings[sD]->nx; p++)
+                                                {
+                                                    double t1 = pow(-1, p);
+                                                    for (size_t j = 0; j < wings[tD]->ny; j++)
+                                                        for (size_t i = 0; i < wings[tD]->nx; i++)
+                                                        {
+                                                            size_t k = i + j*wings[tD]->nx;
+                                                            arma::vec::fixed<2> r = {xW - xC(i, j), yw - yC(i, j)};
+                                                            double r3 = pow(norm(r), 3);
+                                                            bw(tD, sD)(k, p+q*wings[sD]->nx, 0) += gl_x[ii].weight*gl_y[jj].weight*t1*dt2*r(1)/pow(1 + x1_gl(ii), 2)/r3;
+                                                        }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                 }
     }
     solve();
@@ -297,6 +566,251 @@ void Aerodynamics::nonlinear()
                                 }
                             } 
                     }
+                for (auto &w:wings[sD]->wakes)
+                    for (size_t c = 0; c < 4; c++)
+                        if (wings[sD]->chi[c] == w->chi)
+                        {
+                            std::vector<fastgl::QuadPair> gl_x(wings[sD]->nx), gl_y(wings[sD]->ny);
+                            arma::vec x1_gl(wings[sD]->nx), x2_gl(wings[sD]->ny);
+                            for (size_t ii = 0; ii < wings[sD]->nx; ii++)
+                            {
+                                gl_x[ii] = fastgl::GLPair(wings[sD]->nx, ii+1);
+                                x1_gl(ii) =-gl_x[ii].x();
+                            }
+                            for (size_t jj = 0; jj < wings[sD]->ny; jj++)
+                            {
+                                gl_y[jj] = fastgl::GLPair(wings[sD]->ny, jj+1);
+                                x2_gl(jj) =-gl_y[jj].x();
+                            }
+                            arma::vec x1_gauss = Chebyshev::gaussLobatto(wings[sD]->nx);
+                            arma::vec x2_gauss = Chebyshev::gaussLobatto(wings[sD]->ny);
+                            arma::mat D1_gauss = Chebyshev::derivativeMatrix(x1_gauss, Derivative::first);
+                            arma::mat D2_gauss = Chebyshev::derivativeMatrix(x2_gauss, Derivative::first);
+                            arma::mat dxdx1_gauss = D1_gauss * wings[sD]->x;
+                            arma::mat dydx1_gauss = D1_gauss * wings[sD]->y;
+                            arma::mat dzdx1_gauss = D1_gauss * wings[sD]->z;
+                            arma::mat dxdx2_gauss = wings[sD]->x * D2_gauss.t();
+                            arma::mat dydx2_gauss = wings[sD]->y * D2_gauss.t();
+                            arma::mat dzdx2_gauss = wings[sD]->z * D2_gauss.t();
+                            if (c == 0) // South
+                            {
+                                for (size_t ii = 0; ii < wings[sD]->nx; ii++)
+                                {
+                                    double xw = wings[sD]->x(ii, 0);
+                                    double yw = wings[sD]->y(ii, 0);
+                                    double zw = wings[sD]->z(ii, 0);
+                                    double dxdx1 = dxdx1_gauss(ii, 0);
+                                    double dydx1 = dydx1_gauss(ii, 0);
+                                    double dzdx1 = dzdx1_gauss(ii, 0);
+                                    for (size_t p = 0; p < wings[sD]->nx; p++)
+                                    {
+                                        double dt1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
+                                        for (size_t jj = 0; jj < wings[sD]->ny; jj++)
+                                        {
+                                            double xW = xw + (1 - x2_gl(jj))/(1 + x2_gl(jj))/2;
+                                            double zW = zw + (1 - x2_gl(jj))/(1 + x2_gl(jj))*tan(wings[sD]->alpha(0))/2;
+                                            double dxdx2 =-pow(1 + x2_gl(jj),-2);
+                                            // dydx2 = 0;
+                                            double dzdx2 =-tan(wings[sD]->alpha(0))/pow(1 + x2_gl(jj), 2);
+                                            arma::vec::fixed<3> e_1 = {dxdx1, dydx1, dzdx1};
+                                            arma::vec::fixed<3> e_2 = {dxdx2,     0, dzdx2};
+                                            double e_11 = dot(e_1, e_1);
+                                            double e_12 = dot(e_1, e_2);
+                                            double e_22 = dot(e_2, e_2);
+                                            double e = e_11*e_22 - pow(e_12, 2);
+                                            double e11 = e_22/e;
+                                            double e12 =-e_12/e;
+                                            double e22 = e_11/e;
+                                            for (size_t q = 0; q < wings[sD]->ny; q++)
+                                            {
+                                                double t2 = pow(-1, q);
+                                                for (size_t j = 0; j < wings[tD]->ny; j++)
+                                                    for (size_t i = 0; i < wings[tD]->nx; i++)
+                                                    {
+                                                        size_t k = i + j*wings[tD]->nx;
+                                                        arma::vec::fixed<3> r = {xW - xC(i, j), yw - yC(i, j), zW - zC(i, j)};
+                                                        double r3 = pow(norm(r), 3);
+                                                        double dmudxi = dt1 * t2;
+                                                        double sqrt_A = sqrt(e*(1 + e11*pow(dzdx1, 2) + 2*e12*dzdx1*dzdx2 + e22*pow(dzdx2, 2)));
+                                                        arma::vec::fixed<3> n_W = arma::vec::fixed<3>({dydx1*dzdx2,
+                                                                                                       dzdx1*dxdx2-dxdx1*dzdx2,
+                                                                                                       -dydx1*dxdx2})/sqrt_A;
+                                                        arma::vec::fixed<3> J_red = {-n_W(1)*dzdx2,
+                                                                                     n_W(0)*dzdx2 - dxdx2*n_W(2),
+                                                                                     dxdx2*n_W(1)};
+                                                        arma::vec::fixed<3> gradmu = J_red*dmudxi;
+                                                        arma::vec::fixed<3> gamma_W = cross(gradmu, n_W);
+                                                        arma::vec q_mu = gl_x[ii].weight * gl_y[jj].weight * cross(gamma_W, r)/r3;
+                                                        bw(tD, sD)(k, p+q*wings[sD]->nx, 0) -= dot(q_mu, wings[tD]->nC.row(k)); 
+                                                    }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            else if (c == 1) // East
+                            {
+                                for (size_t jj = 0; jj < wings[sD]->ny; jj++)
+                                {
+                                    double xw = wings[sD]->x(wings[sD]->nx-1, jj);
+                                    double yw = wings[sD]->y(wings[sD]->nx-1, jj);
+                                    double zw = wings[sD]->z(wings[sD]->nx-1, jj);
+                                    double dxdx2 = dxdx2_gauss(wings[sD]->nx-1, jj);
+                                    double dydx2 = dydx2_gauss(wings[sD]->nx-1, jj);
+                                    double dzdx2 = dzdx2_gauss(wings[sD]->nx-1, jj);
+                                    for (size_t q = 0; q < wings[sD]->ny; q++)
+                                    {
+                                        double dt2 = boost::math::chebyshev_t_prime(q, x2_gl(jj));
+                                        for (size_t ii = 0; ii < wings[sD]->nx; ii++)
+                                        {
+                                            double xW = xw + (1 + x1_gl(ii))/(1 - x1_gl(ii))/2;
+                                            double zW = zw + (1 + x1_gl(ii))/(1 - x1_gl(ii))*tan(wings[sD]->alpha(0))/2;
+                                            double dxdx1 = 1/pow(1 - x1_gl(ii), 2);
+                                            // dydx1 = 0
+                                            double dzdx1 = tan(wings[sD]->alpha(0))/pow(1 - x1_gl(ii), 2);
+                                            arma::vec::fixed<3> e_1 = {dxdx1,     0, dzdx1};
+                                            arma::vec::fixed<3> e_2 = {dxdx2, dydx2, dzdx2};
+                                            double e_11 = dot(e_1, e_1);
+                                            double e_12 = dot(e_1, e_2);
+                                            double e_22 = dot(e_2, e_2);
+                                            double e = e_11*e_22 - pow(e_12, 2);
+                                            double e11 = e_22/e;
+                                            double e12 =-e_12/e;
+                                            double e22 = e_11/e;
+                                            for (size_t j = 0; j < wings[tD]->ny; j++)
+                                                for (size_t i = 0; i < wings[tD]->nx; i++)
+                                                {
+                                                    size_t k = i + j*wings[tD]->nx;
+                                                    arma::vec::fixed<3> r = {xW - xC(i, j), yw - yC(i, j), zW - zC(i, j)};
+                                                    double r3 = pow(norm(r), 3);
+                                                    double dmudxi = dt2;
+                                                    double sqrt_A = sqrt(e*(1 + e11*pow(dzdx1, 2) + 2*e12*dzdx1*dzdx2 + e22*pow(dzdx2, 2)));
+                                                    arma::vec::fixed<3> n_W = arma::vec::fixed<3>({-dzdx1*dydx2,
+                                                                                                    dzdx1*dxdx2-dxdx1*dzdx2,
+                                                                                                    dxdx1*dydx2})/sqrt_A;
+                                                    arma::vec::fixed<3> J_red = {n_W(1)*dzdx1,
+                                                                                 dxdx1*n_W(2) - n_W(0)*dzdx1,
+                                                                                 -dxdx1*n_W(1)};
+                                                    arma::vec::fixed<3> gradmu = J_red*dmudxi;
+                                                    arma::vec::fixed<3> gamma_W = cross(gradmu, n_W);
+                                                    arma::vec q_mu = gl_x[ii].weight * gl_y[jj].weight * cross(gamma_W, r)/r3;
+                                                    for (size_t p = 0; p < wings[sD]->nx; p++)
+                                                        bw(tD, sD)(k, p+q*wings[sD]->nx, 0) -= dot(q_mu, wings[tD]->nC.row(k));
+                                                }
+                                        }
+                                    }
+                                }
+                            }
+                            else if (c == 2) // North
+                            {
+                                for (size_t ii = 0; ii < wings[sD]->nx; ii++)
+                                {
+                                    double xw = wings[sD]->x(ii, wings[sD]->ny-1);
+                                    double yw = wings[sD]->y(ii, wings[sD]->ny-1);
+                                    double zw = wings[sD]->z(ii, wings[sD]->ny-1);
+                                    double dxdx1 = dxdx1_gauss(ii, wings[sD]->ny-1);
+                                    double dydx1 = dydx1_gauss(ii, wings[sD]->ny-1);
+                                    double dzdx1 = dzdx1_gauss(ii, wings[sD]->ny-1);
+                                    for (size_t p = 0; p < wings[sD]->nx; p++)
+                                    {
+                                        double dt1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
+                                        for (size_t jj = 0; jj < wings[sD]->ny; jj++)
+                                        {
+                                            double xW = xw + (1 + x2_gl(jj))/(1 - x2_gl(jj))/2;
+                                            double zW = zw + (1 + x2_gl(jj))/(1 - x2_gl(jj))*tan(wings[sD]->alpha(0))/2;
+                                            double dxdx2 = 1/pow(1 - x2_gl(jj), 2);
+                                            // dydx2 = 0
+                                            double dzdx2 = tan(wings[sD]->alpha(0))/pow(1 - x2_gl(jj), 2);
+                                            arma::vec::fixed<3> e_1 = {dxdx1, dydx1, dzdx1};
+                                            arma::vec::fixed<3> e_2 = {dxdx2,     0, dzdx2};
+                                            double e_11 = dot(e_1, e_1);
+                                            double e_12 = dot(e_1, e_2);
+                                            double e_22 = dot(e_2, e_2);
+                                            double e = e_11*e_22 - pow(e_12, 2);
+                                            double e11 = e_22/e;
+                                            double e12 =-e_12/e;
+                                            double e22 = e_11/e;
+                                            for (size_t j = 0; j < wings[tD]->ny; j++)
+                                                for (size_t i = 0; i < wings[tD]->nx; i++)
+                                                {
+                                                    size_t k = i + j*wings[tD]->nx;
+                                                    arma::vec::fixed<3> r = {xW - xC(i, j), yw - yC(i, j), zW - zC(i, j)};
+                                                    double r3 = pow(norm(r), 3);
+                                                    double dmudxi = dt1;
+                                                    double sqrt_A = sqrt(e*(1 + e11*pow(dzdx1, 2) + 2*e12*dzdx1*dzdx2 + e22*pow(dzdx2, 2)));
+                                                    arma::vec::fixed<3> n_W = arma::vec::fixed<3>({dydx1*dzdx2,
+                                                                                                   dzdx1*dxdx2-dxdx1*dzdx2,
+                                                                                                  -dydx1*dxdx2})/sqrt_A;
+                                                    arma::vec::fixed<3> J_red = {-dzdx2*n_W(1),
+                                                                                 dzdx2*n_W(0) - dxdx2*n_W(2),
+                                                                                 dxdx2*n_W(1)};
+                                                    arma::vec::fixed<3> gradmu = J_red*dmudxi;
+                                                    arma::vec::fixed<3> gamma_W = cross(gradmu, n_W);
+                                                    arma::vec q_mu = gl_x[ii].weight * gl_y[jj].weight * cross(gamma_W, r)/r3;
+                                                    for (size_t q = 0; q < wings[sD]->ny; q++)
+                                                        bw(tD, sD)(k, p+q*wings[sD]->nx, 0) -= dot(q_mu, wings[tD]->nC.row(k));
+                                                }
+                                        }
+                                    }
+                                }
+                            }
+                            else // West
+                            {
+                                for (size_t jj = 0; jj < wings[sD]->ny; jj++)
+                                {
+                                    double xw = wings[sD]->x(0, jj);
+                                    double yw = wings[sD]->y(0, jj);
+                                    double zw = wings[sD]->z(0, jj);
+                                    double dxdx2 = dxdx2_gauss(0, jj);
+                                    double dydx2 = dydx2_gauss(0, jj);
+                                    double dzdx2 = dzdx2_gauss(0, jj);
+                                    for (size_t q = 0; q < wings[sD]->ny; q++)
+                                    {
+                                        double dt2 = boost::math::chebyshev_t_prime(q, x2_gl(jj));
+                                        for (size_t ii = 0; ii < wings[sD]->nx; ii++)
+                                        {
+                                            double xW = xw + (1 - x1_gl(ii))/(1 + x1_gl(ii))/2;
+                                            double zW = zw + (1 - x1_gl(ii))/(1 + x1_gl(ii))*tan(wings[sD]->alpha(0))/2;
+                                            double dxdx1 =-1/pow(1 + x1_gl(ii), 2);
+                                            // dydx1 = 0
+                                            double dzdx1 =-tan(wings[sD]->alpha(0))/pow(1 + x1_gl(ii), 2);
+                                            arma::vec::fixed<3> e_1 = {dxdx1,     0, dzdx1};
+                                            arma::vec::fixed<3> e_2 = {dxdx2, dydx2, dzdx2};
+                                            double e_11 = dot(e_1, e_1);
+                                            double e_12 = dot(e_1, e_2);
+                                            double e_22 = dot(e_2, e_2);
+                                            double e = e_11*e_22 - pow(e_12, 2);
+                                            double e11 = e_22/e;
+                                            double e12 =-e_12/e;
+                                            double e22 = e_11/e;
+                                            for (size_t p = 0; p < wings[sD]->nx; p++)
+                                            {
+                                                double t1 = pow(-1, p);
+                                                for (size_t j = 0; j < wings[tD]->ny; j++)
+                                                    for (size_t i = 0; i < wings[tD]->nx; i++)
+                                                    {
+                                                        size_t k = i + j*wings[tD]->nx;
+                                                        arma::vec::fixed<3> r = {xW - xC(i, j), yw - yC(i, j), zW - zC(i, j)};
+                                                        double r3 = pow(norm(r), 3);
+                                                        double dmudxi = t1*dt2;
+                                                        double sqrt_A = sqrt(e*(1 + e11*pow(dzdx1, 2) + 2*e12*dzdx1*dzdx2 + e22*pow(dzdx2, 2)));
+                                                        arma::vec::fixed<3> n_W = arma::vec::fixed<3>({-dzdx1*dydx2,
+                                                                                                       dzdx1*dxdx2-dxdx1*dzdx2,
+                                                                                                       dxdx1*dydx2})/sqrt_A;
+                                                        arma::vec::fixed<3> J_red = {n_W(1)*dzdx1,
+                                                                                     dxdx1*n_W(2) - n_W(0)*dzdx1,
+                                                                                     -dxdx1*n_W(1)};
+                                                        arma::vec::fixed<3> gradmu = J_red*dmudxi;
+                                                        arma::vec::fixed<3> gamma_W = cross(gradmu, n_W);
+                                                        arma::vec q_mu = gl_x[ii].weight * gl_y[jj].weight * cross(gamma_W, r)/r3;
+                                                        bw(tD, sD)(k, p+q*wings[sD]->nx, 0) -= dot(q_mu, wings[tD]->nC.row(k)); 
+                                                    }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
             }
     }
     if (sym == Symmetry::y)
@@ -369,7 +883,252 @@ void Aerodynamics::nonlinear()
                                     }
                                 } 
                         }
-                }
+                    for (auto &w:wings[sD]->wakes)
+                        for (size_t c = 0; c < 4; c++)
+                            if (wings[sD]->chi[c] == w->chi)
+                            {
+                                std::vector<fastgl::QuadPair> gl_x(wings[sD]->nx), gl_y(wings[sD]->ny);
+                                arma::vec x1_gl(wings[sD]->nx), x2_gl(wings[sD]->ny);
+                                for (size_t ii = 0; ii < wings[sD]->nx; ii++)
+                                {
+                                    gl_x[ii] = fastgl::GLPair(wings[sD]->nx, ii+1);
+                                    x1_gl(ii) =-gl_x[ii].x();
+                                }
+                                for (size_t jj = 0; jj < wings[sD]->ny; jj++)
+                                {
+                                    gl_y[jj] = fastgl::GLPair(wings[sD]->ny, jj+1);
+                                    x2_gl(jj) =-gl_y[jj].x();
+                                }
+                                arma::vec x1_gauss = Chebyshev::gaussLobatto(wings[sD]->nx);
+                                arma::vec x2_gauss = Chebyshev::gaussLobatto(wings[sD]->ny);
+                                arma::mat D1_gauss = Chebyshev::derivativeMatrix(x1_gauss, Derivative::first);
+                                arma::mat D2_gauss = Chebyshev::derivativeMatrix(x2_gauss, Derivative::first);
+                                arma::mat dxdx1_gauss = D1_gauss * wings[sD]->x;
+                                arma::mat dydx1_gauss = D1_gauss * wings[sD]->y;
+                                arma::mat dzdx1_gauss = D1_gauss * wings[sD]->z;
+                                arma::mat dxdx2_gauss = wings[sD]->x * D2_gauss.t();
+                                arma::mat dydx2_gauss = wings[sD]->y * D2_gauss.t();
+                                arma::mat dzdx2_gauss = wings[sD]->z * D2_gauss.t();
+                                if (c == 0) // South
+                                {
+                                    for (size_t ii = 0; ii < wings[sD]->nx; ii++)
+                                    {
+                                        double xw = wings[sD]->x(ii, 0);
+                                        double yw =-wings[sD]->y(ii, 0);
+                                        double zw = wings[sD]->z(ii, 0);
+                                        double dxdx1 = dxdx1_gauss(ii, 0);
+                                        double dydx1 =-dydx1_gauss(ii, 0);
+                                        double dzdx1 = dzdx1_gauss(ii, 0);
+                                        for (size_t p = 0; p < wings[sD]->nx; p++)
+                                        {
+                                            double dt1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
+                                            for (size_t jj = 0; jj < wings[sD]->ny; jj++)
+                                            {
+                                                double xW = xw + (1 - x2_gl(jj))/(1 + x2_gl(jj))/2;
+                                                double zW = zw + (1 - x2_gl(jj))/(1 + x2_gl(jj))*tan(wings[sD]->alpha(0))/2;
+                                                double dxdx2 =-pow(1 + x2_gl(jj),-2);
+                                                // dydx2 = 0;
+                                                double dzdx2 =-tan(wings[sD]->alpha(0))/pow(1 + x2_gl(jj), 2);
+                                                arma::vec::fixed<3> e_1 = {dxdx1, dydx1, dzdx1};
+                                                arma::vec::fixed<3> e_2 = {dxdx2,     0, dzdx2};
+                                                double e_11 = dot(e_1, e_1);
+                                                double e_12 = dot(e_1, e_2);
+                                                double e_22 = dot(e_2, e_2);
+                                                double e = e_11*e_22 - pow(e_12, 2);
+                                                double e11 = e_22/e;
+                                                double e12 =-e_12/e;
+                                                double e22 = e_11/e;
+                                                for (size_t q = 0; q < wings[sD]->ny; q++)
+                                                {
+                                                    double t2 = pow(-1, q);
+                                                    for (size_t j = 0; j < wings[tD]->ny; j++)
+                                                        for (size_t i = 0; i < wings[tD]->nx; i++)
+                                                        {
+                                                            size_t k = i + j*wings[tD]->nx;
+                                                            arma::vec::fixed<3> r = {xW - xC(i, j), yw - yC(i, j), zW - zC(i, j)};
+                                                            double r3 = pow(norm(r), 3);
+                                                            double dmudxi = dt1 * t2;
+                                                            double sqrt_A = sqrt(e*(1 + e11*pow(dzdx1, 2) + 2*e12*dzdx1*dzdx2 + e22*pow(dzdx2, 2)));
+                                                            arma::vec::fixed<3> n_W = arma::vec::fixed<3>({dydx1*dzdx2,
+                                                                                                        dzdx1*dxdx2-dxdx1*dzdx2,
+                                                                                                        -dydx1*dxdx2})/sqrt_A;
+                                                            arma::vec::fixed<3> J_red = {-n_W(1)*dzdx2,
+                                                                                        n_W(0)*dzdx2 - dxdx2*n_W(2),
+                                                                                        dxdx2*n_W(1)};
+                                                            arma::vec::fixed<3> gradmu = J_red*dmudxi;
+                                                            arma::vec::fixed<3> gamma_W = cross(gradmu, n_W);
+                                                            arma::vec q_mu = gl_x[ii].weight * gl_y[jj].weight * cross(gamma_W, r)/r3;
+                                                            bw(tD, sD)(k, p+q*wings[sD]->nx, 0) -= dot(q_mu, wings[tD]->nC.row(k)); 
+                                                        }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                else if (c == 1) // East
+                                {
+                                    for (size_t jj = 0; jj < wings[sD]->ny; jj++)
+                                    {
+                                        double xw = wings[sD]->x(wings[sD]->nx-1, jj);
+                                        double yw =-wings[sD]->y(wings[sD]->nx-1, jj);
+                                        double zw = wings[sD]->z(wings[sD]->nx-1, jj);
+                                        double dxdx2 = dxdx2_gauss(wings[sD]->nx-1, jj);
+                                        double dydx2 =-dydx2_gauss(wings[sD]->nx-1, jj);
+                                        double dzdx2 = dzdx2_gauss(wings[sD]->nx-1, jj);
+                                        for (size_t q = 0; q < wings[sD]->ny; q++)
+                                        {
+                                            double dt2 = boost::math::chebyshev_t_prime(q, x2_gl(jj));
+                                            for (size_t ii = 0; ii < wings[sD]->nx; ii++)
+                                            {
+                                                double xW = xw + (1 + x1_gl(ii))/(1 - x1_gl(ii))/2;
+                                                double zW = zw + (1 + x1_gl(ii))/(1 - x1_gl(ii))*tan(wings[sD]->alpha(0))/2;
+                                                double dxdx1 = 1/pow(1 - x1_gl(ii), 2);
+                                                // dydx1 = 0
+                                                double dzdx1 = tan(wings[sD]->alpha(0))/pow(1 - x1_gl(ii), 2);
+                                                arma::vec::fixed<3> e_1 = {dxdx1,     0, dzdx1};
+                                                arma::vec::fixed<3> e_2 = {dxdx2, dydx2, dzdx2};
+                                                double e_11 = dot(e_1, e_1);
+                                                double e_12 = dot(e_1, e_2);
+                                                double e_22 = dot(e_2, e_2);
+                                                double e = e_11*e_22 - pow(e_12, 2);
+                                                double e11 = e_22/e;
+                                                double e12 =-e_12/e;
+                                                double e22 = e_11/e;
+                                                for (size_t j = 0; j < wings[tD]->ny; j++)
+                                                    for (size_t i = 0; i < wings[tD]->nx; i++)
+                                                    {
+                                                        size_t k = i + j*wings[tD]->nx;
+                                                        arma::vec::fixed<3> r = {xW - xC(i, j), yw - yC(i, j), zW - zC(i, j)};
+                                                        double r3 = pow(norm(r), 3);
+                                                        double dmudxi = dt2;
+                                                        double sqrt_A = sqrt(e*(1 + e11*pow(dzdx1, 2) + 2*e12*dzdx1*dzdx2 + e22*pow(dzdx2, 2)));
+                                                        arma::vec::fixed<3> n_W = arma::vec::fixed<3>({-dzdx1*dydx2,
+                                                                                                        dzdx1*dxdx2-dxdx1*dzdx2,
+                                                                                                        dxdx1*dydx2})/sqrt_A;
+                                                        arma::vec::fixed<3> J_red = {n_W(1)*dzdx1,
+                                                                                    dxdx1*n_W(2) - n_W(0)*dzdx1,
+                                                                                    -dxdx1*n_W(1)};
+                                                        arma::vec::fixed<3> gradmu = J_red*dmudxi;
+                                                        arma::vec::fixed<3> gamma_W = cross(gradmu, n_W);
+                                                        arma::vec q_mu = gl_x[ii].weight * gl_y[jj].weight * cross(gamma_W, r)/r3;
+                                                        for (size_t p = 0; p < wings[sD]->nx; p++)
+                                                            bw(tD, sD)(k, p+q*wings[sD]->nx, 0) -= dot(q_mu, wings[tD]->nC.row(k));
+                                                    }
+                                            }
+                                        }
+                                    }
+                                }
+                                else if (c == 2) // North
+                                {
+                                    for (size_t ii = 0; ii < wings[sD]->nx; ii++)
+                                    {
+                                        double xw = wings[sD]->x(ii, wings[sD]->ny-1);
+                                        double yw =-wings[sD]->y(ii, wings[sD]->ny-1);
+                                        double zw = wings[sD]->z(ii, wings[sD]->ny-1);
+                                        double dxdx1 = dxdx1_gauss(ii, wings[sD]->ny-1);
+                                        double dydx1 =-dydx1_gauss(ii, wings[sD]->ny-1);
+                                        double dzdx1 = dzdx1_gauss(ii, wings[sD]->ny-1);
+                                        for (size_t p = 0; p < wings[sD]->nx; p++)
+                                        {
+                                            double dt1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
+                                            for (size_t jj = 0; jj < wings[sD]->ny; jj++)
+                                            {
+                                                double xW = xw + (1 + x2_gl(jj))/(1 - x2_gl(jj))/2;
+                                                double zW = zw + (1 + x2_gl(jj))/(1 - x2_gl(jj))*tan(wings[sD]->alpha(0))/2;
+                                                double dxdx2 = 1/pow(1 - x2_gl(jj), 2);
+                                                // dydx2 = 0
+                                                double dzdx2 = tan(wings[sD]->alpha(0))/pow(1 - x2_gl(jj), 2);
+                                                arma::vec::fixed<3> e_1 = {dxdx1, dydx1, dzdx1};
+                                                arma::vec::fixed<3> e_2 = {dxdx2,     0, dzdx2};
+                                                double e_11 = dot(e_1, e_1);
+                                                double e_12 = dot(e_1, e_2);
+                                                double e_22 = dot(e_2, e_2);
+                                                double e = e_11*e_22 - pow(e_12, 2);
+                                                double e11 = e_22/e;
+                                                double e12 =-e_12/e;
+                                                double e22 = e_11/e;
+                                                for (size_t j = 0; j < wings[tD]->ny; j++)
+                                                    for (size_t i = 0; i < wings[tD]->nx; i++)
+                                                    {
+                                                        size_t k = i + j*wings[tD]->nx;
+                                                        arma::vec::fixed<3> r = {xW - xC(i, j), yw - yC(i, j), zW - zC(i, j)};
+                                                        double r3 = pow(norm(r), 3);
+                                                        double dmudxi = dt1;
+                                                        double sqrt_A = sqrt(e*(1 + e11*pow(dzdx1, 2) + 2*e12*dzdx1*dzdx2 + e22*pow(dzdx2, 2)));
+                                                        arma::vec::fixed<3> n_W = arma::vec::fixed<3>({dydx1*dzdx2,
+                                                                                                    dzdx1*dxdx2-dxdx1*dzdx2,
+                                                                                                    -dydx1*dxdx2})/sqrt_A;
+                                                        arma::vec::fixed<3> J_red = {-dzdx2*n_W(1),
+                                                                                    dzdx2*n_W(0) - dxdx2*n_W(2),
+                                                                                    dxdx2*n_W(1)};
+                                                        arma::vec::fixed<3> gradmu = J_red*dmudxi;
+                                                        arma::vec::fixed<3> gamma_W = cross(gradmu, n_W);
+                                                        arma::vec q_mu = gl_x[ii].weight * gl_y[jj].weight * cross(gamma_W, r)/r3;
+                                                        for (size_t q = 0; q < wings[sD]->ny; q++)
+                                                            bw(tD, sD)(k, p+q*wings[sD]->nx, 0) -= dot(q_mu, wings[tD]->nC.row(k));
+                                                    }
+                                            }
+                                        }
+                                    }
+                                }
+                                else // West
+                                {
+                                    for (size_t jj = 0; jj < wings[sD]->ny; jj++)
+                                    {
+                                        double xw = wings[sD]->x(0, jj);
+                                        double yw =-wings[sD]->y(0, jj);
+                                        double zw = wings[sD]->z(0, jj);
+                                        double dxdx2 = dxdx2_gauss(0, jj);
+                                        double dydx2 =-dydx2_gauss(0, jj);
+                                        double dzdx2 = dzdx2_gauss(0, jj);
+                                        for (size_t q = 0; q < wings[sD]->ny; q++)
+                                        {
+                                            double dt2 = boost::math::chebyshev_t_prime(q, x2_gl(jj));
+                                            for (size_t ii = 0; ii < wings[sD]->nx; ii++)
+                                            {
+                                                double xW = xw + (1 - x1_gl(ii))/(1 + x1_gl(ii))/2;
+                                                double zW = zw + (1 - x1_gl(ii))/(1 + x1_gl(ii))*tan(wings[sD]->alpha(0))/2;
+                                                double dxdx1 =-1/pow(1 + x1_gl(ii), 2);
+                                                // dydx1 = 0
+                                                double dzdx1 =-tan(wings[sD]->alpha(0))/pow(1 + x1_gl(ii), 2);
+                                                arma::vec::fixed<3> e_1 = {dxdx1,     0, dzdx1};
+                                                arma::vec::fixed<3> e_2 = {dxdx2, dydx2, dzdx2};
+                                                double e_11 = dot(e_1, e_1);
+                                                double e_12 = dot(e_1, e_2);
+                                                double e_22 = dot(e_2, e_2);
+                                                double e = e_11*e_22 - pow(e_12, 2);
+                                                double e11 = e_22/e;
+                                                double e12 =-e_12/e;
+                                                double e22 = e_11/e;
+                                                for (size_t p = 0; p < wings[sD]->nx; p++)
+                                                {
+                                                    double t1 = pow(-1, p);
+                                                    for (size_t j = 0; j < wings[tD]->ny; j++)
+                                                        for (size_t i = 0; i < wings[tD]->nx; i++)
+                                                        {
+                                                            size_t k = i + j*wings[tD]->nx;
+                                                            arma::vec::fixed<3> r = {xW - xC(i, j), yw - yC(i, j), zW - zC(i, j)};
+                                                            double r3 = pow(norm(r), 3);
+                                                            double dmudxi = t1*dt2;
+                                                            double sqrt_A = sqrt(e*(1 + e11*pow(dzdx1, 2) + 2*e12*dzdx1*dzdx2 + e22*pow(dzdx2, 2)));
+                                                            arma::vec::fixed<3> n_W = arma::vec::fixed<3>({-dzdx1*dydx2,
+                                                                                                        dzdx1*dxdx2-dxdx1*dzdx2,
+                                                                                                        dxdx1*dydx2})/sqrt_A;
+                                                            arma::vec::fixed<3> J_red = {n_W(1)*dzdx1,
+                                                                                        dxdx1*n_W(2) - n_W(0)*dzdx1,
+                                                                                        -dxdx1*n_W(1)};
+                                                            arma::vec::fixed<3> gradmu = J_red*dmudxi;
+                                                            arma::vec::fixed<3> gamma_W = cross(gradmu, n_W);
+                                                            arma::vec q_mu = gl_x[ii].weight * gl_y[jj].weight * cross(gamma_W, r)/r3;
+                                                            bw(tD, sD)(k, p+q*wings[sD]->nx, 0) -= dot(q_mu, wings[tD]->nC.row(k)); 
+                                                        }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
     }
     solve();
 }

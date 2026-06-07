@@ -1,6 +1,7 @@
 #pragma once
 #include "TensorField.hpp"
 #include "Metric.hpp"
+#include "Wake.hpp"
 
 class Wing
 {
@@ -58,6 +59,7 @@ class Wing
     arma::vec moment = arma::zeros(con); // Moment in Nm
     Symmetry sym = Symmetry::none; // Symmetry (no symmetry or symmetry in the y-direction)
     Analysis analysis = Analysis::linear; // Analysis type (linear or nonlinear)
+    std::vector<Wake*> wakes;
     Wing fromTransfiniteQuadMap(std::array<Lagrange::CurveInterpolant*, 4>);
     Wing fromTransfiniteQuadMap(arma::mat, std::array<Lagrange::CurveInterpolant*, 4>);
 public:
@@ -84,6 +86,10 @@ public:
         sym = _sym;
     }
     void checkMesh();
+    void wake(Wake* w)
+    {
+        wakes.push_back(w);
+    }
     void linear();
     void nonlinear();
     // Gets the lift

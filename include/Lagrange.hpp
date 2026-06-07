@@ -43,9 +43,17 @@ namespace Lagrange
         CurveInterpolant(Point p1, Point p2, size_t n) : x((p2.X()-p1.X())*(Chebyshev::gaussLobatto(n)+1)/2 + p1.X()),
                                                          y((p2.Y()-p1.Y())*(Chebyshev::gaussLobatto(n)+1)/2 + p1.Y()), nodes(Chebyshev::gaussLobatto(n)) {};
         CurveInterpolant(Point p1, Point p2, Point pm, double r, size_t n) : CurveInterpolant(arc(p1, p2, pm, r, n)) {};
+        std::pair<arma::vec, arma::vec> evaluate()
+        {
+            return {interpolation(nodes, nodes, x, w), interpolation(nodes, nodes, y, w)};
+        }
         template <class S> std::pair<S, S> evaluate(const S s)
         {
             return {interpolation(s, nodes, x, w), interpolation(s, nodes, y, w)};
+        }
+        std::pair<arma::vec, arma::vec> derivative()
+        {
+            return {interpolantDerivative(nodes, nodes, x, w), interpolantDerivative(nodes, nodes, y, w)};
         }
         template <class S> std::pair<S, S> derivative(const S s)
         {
