@@ -38,10 +38,12 @@ arma::vec B_Spline::operator()(const double x)
 double B_Spline::operator()(const double x, const size_t i, const size_t k)
 {
     if (k == 0)
+    {
         if (almostEqual(x, X.back()))
             return (x > X(i) || almostEqual(x, X(i))) && (x < X(i+1) || almostEqual(x, X(i+1))) ? 1 : 0;
         else
             return (x > X(i) || almostEqual(x, X(i))) && (x < X(i+1)) ? 1 : 0;
+    }
     double c1 = (almostEqual(X(i+k),   X(i))   == false) ? (x - X(i))    /(X(k+i) - X(i))    *operator()(x, i,   k-1) : 0;
     double c2 = (almostEqual(X(i+k+1), X(i+1)) == false) ? (x - X(i+k+1))/(X(i+1) - X(i+k+1))*operator()(x, i+1, k-1) : 0;
     return c1 + c2;

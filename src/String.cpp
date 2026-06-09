@@ -9,7 +9,7 @@
  */
 String::String(double _c, size_t _n, double _sigma) : c(_c), n(_n), sigma(_sigma)
 {
-    if (c <= 0 || n <= 0 || sigma <= 0)
+    if (c <= 0 || sigma <= 0)
     {
         std::println("All given parameters must be positive!");
         exit(EXIT_FAILURE);
@@ -72,19 +72,13 @@ void String::load(std::function<double(double)> f)
  */
 void String::boundary(Location loc, BC bc, double val)
 {
-    size_t i;
-    int sign;
     switch(loc)
     {
         case Location::Front:
-            i    = 0;
-            sign = 1;
             front = bc;
             frontBC = val;
             break;
         case Location::Back:
-            i    = n-1;
-            sign =-1;
             back = bc;
             backBC = val;
             break;

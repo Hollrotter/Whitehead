@@ -3,10 +3,10 @@
 void Structure::planeStrain()
 {
     bool converged = false;
-    int count = 1;
+    size_t count = 1;
     arma::field<arma::vec> Vntarget(interfaces.size()), Vnsource(interfaces.size());
     arma::field<arma::vec> Vttarget(interfaces.size()), Vtsource(interfaces.size());
-    for (Interface& interface:interfaces)
+    for (const Interface& interface:interfaces)
     {
         Direction targetDirection = static_cast<Direction>(interface.targetCurve);
         Membrane *membraneTarget = membranes[interface.targetDomain];
@@ -209,7 +209,7 @@ void Structure::planeStrain()
     do
     {
         std::cout << "Iteration " << count << '/' << iterations << '\n';
-        for (Interface& interface:interfaces)
+        for (const Interface& interface:interfaces)
         {
             Membrane *membraneSource = membranes[interface.sourceDomain];
             Membrane *membraneTarget = membranes[interface.targetDomain];
@@ -946,7 +946,7 @@ void Structure::planeStrain()
         for (size_t k = 0; k < interfaces.size(); k++)
         {
             Interface interface = interfaces[k];
-            Membrane *membraneSource = membranes[interface.sourceDomain];
+            const Membrane *membraneSource = membranes[interface.sourceDomain];
             arma::mat V1    = membraneSource->v1;
             arma::mat V2    = membraneSource->v2;
             arma::mat v1__1 = membraneSource->v1__1;
@@ -1002,7 +1002,7 @@ void Structure::planeStrain()
                     break;
                 }
             }
-            Membrane *membraneTarget = membranes[interface.targetDomain];
+            const Membrane *membraneTarget = membranes[interface.targetDomain];
             V1    = membraneTarget->v1;
             V2    = membraneTarget->v2;
             v1__1 = membraneTarget->v1__1;

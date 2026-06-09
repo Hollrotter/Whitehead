@@ -77,7 +77,7 @@ arma::vec Lagrange::CurveInterpolant::parametrize(arma::vec s)
     size_t n = x.size();
     arma::vec w = barycentricWeights(n);
     arma::vec t(n, arma::fill::zeros);
-    double L;
+    double L = 0;
     if (almostEqual(s(0),-1))
     {
         arma::mat D = Lagrange::derivativeMatrix(s);
@@ -104,7 +104,6 @@ arma::vec Lagrange::CurveInterpolant::parametrize(arma::vec s)
         t(0) =-1;
     else
     {
-        double I1;
         double I2 = sqrt(pow(interpolantDerivative(-1, s, x, w), 2)
                        + pow(interpolantDerivative(-1, s, y, w), 2));
         t(0) = s(0);
@@ -118,14 +117,13 @@ arma::vec Lagrange::CurveInterpolant::parametrize(arma::vec s)
             dxdt = interpolantDerivative(t(0), s, x, w);
             dydt = interpolantDerivative(t(0), s, y, w);
 
-            I1 = sqrt(pow(dxdt, 2) + pow(dydt, 2));
+            double I1 = sqrt(pow(dxdt, 2) + pow(dydt, 2));
 
             double f = L/2*(s(0) + 1) - (t(0) + 1)*(I1 + 4*Im + I2)/6;
             t(0) += 0.1*f/I1;
             if (fabs(f) < 1e-10)
                 break;
         }
-        I2 = I1;
     }
     double I2 = sqrt(pow(interpolantDerivative(-1, s, x, w), 2)
                    + pow(interpolantDerivative(-1, s, y, w), 2));
@@ -174,7 +172,6 @@ arma::vec Lagrange::CurveInterpolant::parametrize(arma::vec s)
             if (fabs(f) < 1e-10)
                 break;
         }
-        I2 = I1;
     }
     return t;
 }

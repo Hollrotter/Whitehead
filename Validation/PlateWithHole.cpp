@@ -5,7 +5,7 @@ int main()
     double L = 1.5; // Length of the plate in m
     double D = 0.5; // Height of the plate in m
     double d = 0.2; // Diameter of the hole in m
-    double h = 0.15; // Distance between hole and border in m (redundant)
+    // double h = 0.15; // Distance between hole and border in m (redundant)
     double t = 0.01; // Thickness of the plate in m
     double delta = (D-d)/6; // Location of refined mesh
 

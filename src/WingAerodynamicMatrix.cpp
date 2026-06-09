@@ -4,9 +4,9 @@ arma::vec Wing::externalContour(double x_min, double x_max, double y_min, double
 {
     arma::vec rho(theta.size());
     for (size_t n = 0; n < theta.size(); n++)
-        if (-arma::datum::pi < theta(n) && theta(n) <=-arma::datum::pi/2 || arma::datum::pi < theta(n) && theta(n) <= 3*arma::datum::pi/2)
+        if ((-arma::datum::pi < theta(n) && theta(n) <=-arma::datum::pi/2) || (arma::datum::pi < theta(n) && theta(n) <= 3*arma::datum::pi/2))
             rho(n) = std::min(fabs((x_min-eta_1)/cos(theta(n))), fabs((y_min-eta_2)/sin(theta(n))));
-        else if (-arma::datum::pi/2 < theta(n) && theta(n) <= 0 || 3*arma::datum::pi/2 < theta(n) && theta(n) <= 2*arma::datum::pi)
+        else if ((-arma::datum::pi/2 < theta(n) && theta(n) <= 0) || (3*arma::datum::pi/2 < theta(n) && theta(n) <= 2*arma::datum::pi))
             rho(n) = std::min(fabs((x_max-eta_1)/cos(theta(n))), fabs((y_min-eta_2)/sin(theta(n))));
         else if (0 < theta(n) && theta(n) <= arma::datum::pi/2)
             rho(n) = std::min(fabs((x_max-eta_1)/cos(theta(n))), fabs((y_max-eta_2)/sin(theta(n))));
@@ -227,7 +227,7 @@ void Wing::aerodynamicMatrix()
                         regularIntegralLinear(k1, xC(i, j), yC(i, j), nx+2-i, j+2, x_right, 1, -1, y_upper);
                 }
             }
-            for (auto &w:wakes)
+            for (const auto &w:wakes)
                 for (size_t c = 0; c < 4; c++)
                     if (chi[c] == w->chi)
                     {
@@ -394,7 +394,7 @@ void Wing::aerodynamicMatrix()
                                     }
                             }
                     }
-                for (auto &w:wakes)
+                for (const auto &w:wakes)
                     for (size_t c = 0; c < 4; c++)
                         if (chi[c] == w->chi)
                         {
@@ -660,7 +660,7 @@ void Wing::aerodynamicMatrix()
                         regularIntegralNonlinear(k1, xC(i, j), yC(i, j), zC(i, j), nx+2-i, j+2, x_right, 1, -1, y_upper);
                 }
             }
-            for (auto &w:wakes)
+            for (const auto &w:wakes)
                 for (size_t c = 0; c < 4; c++)
                     if (chi[c] == w->chi)
                     {
@@ -967,7 +967,7 @@ void Wing::aerodynamicMatrix()
                                     }
                                 }
                             }
-                for (auto &w:wakes)
+                for (const auto &w:wakes)
                     for (size_t c = 0; c < 4; c++)
                         if (chi[c] == w->chi)
                         {
@@ -1215,5 +1215,8 @@ void Wing::aerodynamicMatrix()
             }
             break;
         }
+        default:
+            std::println("Only linear and nonlinear analysis are implemented for Wing!");
+            exit(EXIT_FAILURE);
     }
 }

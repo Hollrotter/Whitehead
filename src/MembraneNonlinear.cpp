@@ -433,7 +433,7 @@ double Membrane::armijoNonlinear(arma::vec dv, arma::mat &surface1, arma::mat &s
     return omega;
 }
 
-double Membrane::residualLevelFunctionNonlinear(arma::vec V, arma::mat &surface1, arma::mat &surface2, arma::mat &pressure)
+double Membrane::residualLevelFunctionNonlinear(arma::vec V, const arma::mat &surface1, const arma::mat &surface2, const arma::mat &pressure)
 {
     arma::mat V1 = reshape(V(arma::span(    0,   nxy-1)), nx, ny);
     arma::mat V2 = reshape(V(arma::span(  nxy, 2*nxy-1)), nx, ny);

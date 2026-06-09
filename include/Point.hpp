@@ -2,8 +2,8 @@
 
 class Point
 {
-    double x;
-    double y;
+    double x = 0;
+    double y = 0;
 public:
     Point() = default;
     Point(double _x, double _y) : x(_x), y(_y){};

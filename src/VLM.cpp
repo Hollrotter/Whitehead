@@ -45,6 +45,9 @@ void VLM::vlm()
         case Analysis::nonlinear:
             vlmNonlinear();
             break;
+        default:
+            std::println("Only linear and nonlinear analysis are implemented for VLM!");
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -243,6 +246,9 @@ void VLM::postprocessing(arma::mat &g)
                         }
                     }
                     break;
+                default:
+                    std::println("Only linear and nonlinear analysis are implemented for VLM!");
+                    exit(EXIT_FAILURE);
             }
             lift   *= qdyn;
             moment *= qdyn;

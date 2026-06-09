@@ -29,8 +29,8 @@ void String::solve_S()
         case BC::Robin:
             std::println("Robin BC not implemented for String!");
             exit(EXIT_FAILURE);
-        case BC::None:
-            std::println("No BC provided at front!");
+        default:
+            std::println("No suitable BC provided at front!");
             exit(EXIT_FAILURE);
     }
     switch(back)
@@ -45,8 +45,8 @@ void String::solve_S()
         case BC::Robin:
             std::println("Robin BC not implemented for String!");
             exit(EXIT_FAILURE);
-        case BC::None:
-            std::println("No BC provided at front!");
+        default:
+            std::println("No suitable BC provided at back!");
             exit(EXIT_FAILURE);
     }
     arma::lu(L, U, P, S);

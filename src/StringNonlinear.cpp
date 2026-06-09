@@ -24,10 +24,10 @@ void String::nonlinear()
                 b(0) = dot(D1.row(0), z) - frontBC;
                 break;
             case BC::Robin:
-                std::println("Robin BC not implemented for String");
+                std::println("Robin BC not implemented for String!");
                 exit(EXIT_FAILURE);
-            case BC::None:
-                std::println("No BC provided at front");
+            default:
+                std::println("No suitable BC provided at front!");
                 exit(EXIT_FAILURE);
         }
         switch(back)
@@ -42,10 +42,10 @@ void String::nonlinear()
                 b(n-1) = backBC - dot(D1.row(n-1), z);
                 break;
             case BC::Robin:
-                std::println("Robin BC not implemented for String");
+                std::println("Robin BC not implemented for String!");
                 exit(EXIT_FAILURE);
-            case BC::None:
-                std::println("No BC provided at front");
+            default:
+                std::println("No suitable BC provided at back!");
                 exit(EXIT_FAILURE);
         }
             

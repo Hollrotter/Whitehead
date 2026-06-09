@@ -7,7 +7,7 @@ Wing Wing::fromTransfiniteQuadMap(std::array<Lagrange::CurveInterpolant*, 4> _ch
     arma::vec xi_2 = Chebyshev::gauss(_chi[1]->getNodes().size());
     std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::vec, arma::rowvec, arma::rowvec>
         _h = Lagrange::covariantScaleFactors(xi_1, xi_2, _chi);
-    return {_x, _y, _chi, _h};
+    return {_chi, _x, _y, _h};
 }
 
 Wing Wing::fromTransfiniteQuadMap(arma::mat _z, std::array<Lagrange::CurveInterpolant*, 4> _chi)
@@ -17,7 +17,7 @@ Wing Wing::fromTransfiniteQuadMap(arma::mat _z, std::array<Lagrange::CurveInterp
     arma::vec xi_2 = Chebyshev::gauss(_chi[1]->getNodes().size());
     std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::vec, arma::rowvec, arma::rowvec>
         _h = Lagrange::covariantScaleFactors(xi_1, xi_2, _chi, _z);
-    return {_x, _y, _z, _chi, _h};
+    return {_chi, _x, _y, _z, _h};
 }
 
 /**
@@ -309,6 +309,9 @@ void Wing::postprocessing()
                 }
             break;
         }
+        default:
+            std::println("Only linear and nonlinear analysis are implemented for Wing!");
+            exit(EXIT_FAILURE);
     }
     area = 0;
     lift.zeros();
@@ -406,5 +409,8 @@ void Wing::postprocessing()
             moment = M.row(1);
             break;
         }
+        default:
+            std::println("Only linear and nonlinear analysis are implemented for Wing!");
+            exit(EXIT_FAILURE);
     }
 }

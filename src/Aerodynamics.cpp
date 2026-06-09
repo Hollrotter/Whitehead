@@ -12,37 +12,37 @@ Aerodynamics Aerodynamics::fromWings(std::vector<Wing*> _wings)
                         _interfaces.push_back(Interface(sD, tD, sC, tC));
                         _wings[sD]->chi[sC]->curveType = CurveType::Interface;
                     }
-    double lambda0 = 2;
+    double l0 = 2;
     for (Interface& interface:_interfaces)
     {
         switch (interface.sourceCurve)
         {
             case 0: // South
-                interface.lambdaSource = lambda0*mean(_wings[interface.sourceDomain]->h_2s2_south);
+                interface.lambdaSource = l0*mean(_wings[interface.sourceDomain]->h_2s2_south);
                 break;
             case 1: // East
-                interface.lambdaSource = lambda0*mean(_wings[interface.sourceDomain]->h_1s1_east);
+                interface.lambdaSource = l0*mean(_wings[interface.sourceDomain]->h_1s1_east);
                 break;
             case 2: // North
-                interface.lambdaSource = lambda0*mean(_wings[interface.sourceDomain]->h_2s2_north);
+                interface.lambdaSource = l0*mean(_wings[interface.sourceDomain]->h_2s2_north);
                 break;
             case 3: // West
-                interface.lambdaSource = lambda0*mean(_wings[interface.sourceDomain]->h_1s1_west);
+                interface.lambdaSource = l0*mean(_wings[interface.sourceDomain]->h_1s1_west);
                 break;
         }
         switch (interface.targetCurve)
         {
             case 0: // South
-                interface.lambdaTarget = lambda0*mean(_wings[interface.targetDomain]->h_2s2_south);
+                interface.lambdaTarget = l0*mean(_wings[interface.targetDomain]->h_2s2_south);
                 break;
             case 1: // East
-                interface.lambdaTarget = lambda0*mean(_wings[interface.targetDomain]->h_1s1_east);
+                interface.lambdaTarget = l0*mean(_wings[interface.targetDomain]->h_1s1_east);
                 break;
             case 2: // North
-                interface.lambdaTarget = lambda0*mean(_wings[interface.targetDomain]->h_2s2_north);
+                interface.lambdaTarget = l0*mean(_wings[interface.targetDomain]->h_2s2_north);
                 break;
             case 3: // West
-                interface.lambdaTarget = lambda0*mean(_wings[interface.targetDomain]->h_1s1_west);
+                interface.lambdaTarget = l0*mean(_wings[interface.targetDomain]->h_1s1_west);
                 break;
         }
     }
@@ -98,27 +98,19 @@ void Aerodynamics::checkMesh()
 
 void Aerodynamics::wake(Wake* w)
 {
-    bool found = false;
     for (auto& wing:wings)
-    {
-        for(auto& CHI:wing->chi)
-            if (CHI == w->chi)
-            {
-                wing->wake(w);
-                found = true;
-                break;
-            }
-        if (found = true)
-            break;
-    }
-    if (found = false)
-        std::println("This wake is not part of any of the wing surfaces!");
+        if (std::any_of(wing->chi.begin(), wing->chi.end(), [&](Lagrange::CurveInterpolant* c) {return c == w->chi;}))
+        {
+            wing->wake(w);
+            return;
+        }
+    std::println("This wake is not part of any of the wing surfaces!");
 }
 
 template <class C> void Aerodynamics::boundary(const Lagrange::CurveInterpolant* dir, const BC bc, const C val)
 {
     for (auto &wing:wings)
-        for (auto &chi:wing->chi)
+        for (const auto &chi:wing->chi)
             if (chi == dir)
                 wing->boundary(chi, bc, val);
 }
@@ -126,7 +118,7 @@ template <class C> void Aerodynamics::boundary(const Lagrange::CurveInterpolant*
 template <class C> void Aerodynamics::boundary(const Lagrange::CurveInterpolant* dir, const BC bc, const double _r1, const double _r2, const C val)
 {
     for (auto &wing:wings)
-        for (auto &chi:wing->chi)
+        for (const auto &chi:wing->chi)
             if (chi == dir)
                 wing->boundary(chi, bc, _r1, _r2, val);
 }
@@ -185,7 +177,7 @@ void Aerodynamics::linear()
                                 }
                             }
                     }
-                for (auto &w:wings[sD]->wakes)
+                for (const auto &w:wings[sD]->wakes)
                     for (size_t c = 0; c < 4; c++)
                         if (wings[sD]->chi[c] == w->chi)
                         {
@@ -363,7 +355,7 @@ void Aerodynamics::linear()
                                     }
                                 }
                         }
-                    for (auto &w:wings[sD]->wakes)
+                    for (const auto &w:wings[sD]->wakes)
                         for (size_t c = 0; c < 4; c++)
                             if (wings[sD]->chi[c] == w->chi)
                             {
@@ -566,7 +558,7 @@ void Aerodynamics::nonlinear()
                                 }
                             } 
                     }
-                for (auto &w:wings[sD]->wakes)
+                for (const auto &w:wings[sD]->wakes)
                     for (size_t c = 0; c < 4; c++)
                         if (wings[sD]->chi[c] == w->chi)
                         {
@@ -883,7 +875,7 @@ void Aerodynamics::nonlinear()
                                     }
                                 } 
                         }
-                    for (auto &w:wings[sD]->wakes)
+                    for (const auto &w:wings[sD]->wakes)
                         for (size_t c = 0; c < 4; c++)
                             if (wings[sD]->chi[c] == w->chi)
                             {
@@ -1136,12 +1128,12 @@ void Aerodynamics::nonlinear()
 void Aerodynamics::solve()
 {
     bool converged = false;
-    int count = 1;
+    size_t count = 1;
     arma::field<arma::vec> muTarget(interfaces.size()), muSource(interfaces.size());
     arma::field<arma::mat> b0(wings.size());
     for (size_t w = 0; w < wings.size(); w++)
         b0(w) = wings[w]->b;
-    for (auto& interface:interfaces)
+    for (const auto& interface:interfaces)
     {
         Direction targetDirection = static_cast<Direction>(interface.targetCurve);
         Wing *wingTarget = wings[interface.targetDomain];
@@ -1319,6 +1311,9 @@ void Aerodynamics::solve()
             for (auto& wing:wings)
                 wing->nonlinearSolve();
             break;
+        default:
+            std::println("Only linear and nonlinear analysis is implemented for Aerodynamics!");
+            exit(EXIT_FAILURE);
     }
     do
     {
@@ -1836,12 +1831,15 @@ void Aerodynamics::solve()
                 for (auto& wing:wings)
                     wing->nonlinearEval();
                 break;
+            default:
+                std::println("Only linear and nonlinear analysis are implemented for Aerodynamics!");
+                exit(EXIT_FAILURE);
         }
 
         for (size_t k = 0; k < interfaces.size(); k++)
         {
             Interface interface = interfaces[k];
-            Wing *wingSource = wings[interface.sourceDomain];
+            const Wing *wingSource = wings[interface.sourceDomain];
             size_t nx = wingSource->nx;
             size_t ny = wingSource->ny;
             arma::mat mu_hat = wingSource->mu_hat;
@@ -1938,7 +1936,7 @@ void Aerodynamics::solve()
                     break;
                 }
             }
-            Wing *wingTarget = wings[interface.targetDomain];
+            const Wing *wingTarget = wings[interface.targetDomain];
             nx = wingTarget->nx;
             ny = wingTarget->ny;
             mu_hat = wingTarget->mu_hat;
@@ -2066,7 +2064,7 @@ void Aerodynamics::solve()
 arma::vec Aerodynamics::get_lift()
 {
     arma::vec lift(wings[0]->con, arma::fill::zeros);
-    for (auto wing:wings)
+    for (const auto wing:wings)
         lift += wing->lift;
     return lift;
 }
@@ -2074,14 +2072,14 @@ arma::vec Aerodynamics::get_lift()
 arma::vec Aerodynamics::get_moment()
 {
     arma::vec moment(wings[0]->con, arma::fill::zeros);
-    for (auto wing:wings)
+    for (const auto wing:wings)
         moment += wing->moment;
     return moment;
 }
 double Aerodynamics::get_area()
 {
     double area = 0;
-    for (auto wing:wings)
+    for (const auto wing:wings)
         area += wing->area;
     return area;
 }

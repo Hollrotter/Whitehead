@@ -47,7 +47,7 @@ public:
     // Sets the pitch for multiple configurations
     void pitch(arma::vec);
     // Sets the camber of the wing
-    void camber(Camber _c)
+    void camber(const Camber& _c)
     {
         c = _c;
     }
@@ -90,7 +90,7 @@ public:
     }
     // Output x, y and dcp for surface plots
     void output(std::string);
-    void operator()(Camber _c)
+    void operator()(const Camber& _c)
     {
         c = _c;
     }

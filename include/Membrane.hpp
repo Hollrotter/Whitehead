@@ -107,7 +107,7 @@ public:
     Membrane() = default;
     // Constructor to set x and y
     Membrane(arma::mat _x, arma::mat _y) : x(_x), y(_y) {}
-    Membrane(arma::mat _x, arma::mat _y, std::array<Lagrange::CurveInterpolant*, 4> _chi) : x(_x), y(_y), chi(_chi) {}
+    Membrane(std::array<Lagrange::CurveInterpolant*, 4> _chi, arma::mat _x, arma::mat _y) : chi(_chi), x(_x), y(_y) {}
     Membrane(std::array<Lagrange::CurveInterpolant*, 4> _chi) : Membrane(fromTransfiniteQuadMap(_chi)) {}
     // Sets the Young's modulus times thickness (Et)
     void youngsModulus(const double _Et);
@@ -471,7 +471,7 @@ private:
     {
         return arma::diagmat(arma::vectorise(H));
     }
-    std::unique_ptr<TensorField> setField(const Field);
+    TensorField* setField(const Field);
     void planeStrainSolve();
     void planeStrainEval();
     void structuralMatrix();
@@ -479,8 +479,8 @@ private:
     void solve_b();
     double armijoSemilinear(arma::vec, arma::vec&);
     double armijoNonlinear(arma::vec, arma::mat&, arma::mat&, arma::mat&);
-    double residualLevelFunctionSemilinear(arma::vec, arma::vec&);
-    double residualLevelFunctionNonlinear(arma::vec, arma::mat&, arma::mat&, arma::mat&);
+    double residualLevelFunctionSemilinear(arma::vec, const arma::vec&);
+    double residualLevelFunctionNonlinear(arma::vec, const arma::mat&, const arma::mat&, const arma::mat&);
     void zBoundary(const BC, const double, const size_t, const size_t,
                    const double, const double, const double, const double);
     void v1BoundaryWestEast(const BC, const double, const size_t, const size_t, arma::mat&,

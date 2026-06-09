@@ -29,7 +29,7 @@ void Structure::nonlinear()
             membranes[k]->p2 = p20(k)*substep/substeps;
         }
         bool converged = false;
-        int count = 1;
+        size_t count = 1;
         do
         {
             std::cout << "Iteration " << count << '/' << iterations << '\n';
@@ -371,7 +371,7 @@ void Structure::nonlinear()
             for (size_t k = 0; k < interfaces.size(); k++)
             {
                 Interface interface = interfaces[k];
-                Membrane *membraneSource = membranes[interface.sourceDomain];
+                const Membrane *membraneSource = membranes[interface.sourceDomain];
                 arma::mat D1    = membraneSource->D1;
                 arma::mat D2    = membraneSource->D2;
                 arma::mat Z     = membraneSource->z;
@@ -442,7 +442,7 @@ void Structure::nonlinear()
                         break;
                     }
                 }
-                Membrane *membraneTarget = membranes[interface.targetDomain];
+                const Membrane *membraneTarget = membranes[interface.targetDomain];
                 D1    = membraneTarget->D1;
                 D2    = membraneTarget->D2;
                 Z     = membraneTarget->z;

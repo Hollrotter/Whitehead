@@ -9,7 +9,7 @@
  * @param D2 Derivative Matrix of differentiation in 2-direction.
  * @return arma::cube 
  */
-arma::cube MetricCo(arma::mat &y1, arma::mat &y2, arma::mat &D1, arma::mat &D2)
+arma::cube MetricCo(const arma::mat &y1, const arma::mat &y2, arma::mat &D1, arma::mat &D2)
 {
 	arma::mat dxdx1 = D1 * y1;
 	arma::mat dxdx2 = y1 * D2.t();

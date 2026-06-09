@@ -3,7 +3,7 @@
 Membrane Membrane::fromTransfiniteQuadMap(std::array<Lagrange::CurveInterpolant*, 4> _chi)
 {
     auto [_x, _y] = Lagrange::TransfiniteQuadMap(_chi);
-    return {_x, _y, _chi};
+    return {_chi, _x, _y};
 }
 
 /**
@@ -130,9 +130,8 @@ double Membrane::integrate(arma::mat f)
  */
 double Membrane::integrate(const Field field)
 {
-    std::unique_ptr<TensorField> f = setField(field);
+    const TensorField* f = setField(field);
     arma::mat F = *f;
-    f.release();
     return integrate(F);
 }
 
@@ -213,28 +212,25 @@ void Membrane::principalStrains(const std::string filenameKartesianDeformations,
  */
 void Membrane::output(const std::string filename, const Field field)
 {
-    std::unique_ptr<TensorField> f = setField(field);
+    TensorField* f = setField(field);
     std::ofstream file(filename);
     for (size_t i = 0; i < nx; i++, file<<'\n')
         for (size_t j = 0; j < ny; j++, file<<'\n')
             file << x(i, j) << ' ' << y(i, j) << ' ' << f->operator()(i, j);
     file.close();
-    f.release();
 }
 
 double Membrane::operator()(const size_t i, const size_t j, const Field field)
 {
-    std::unique_ptr<TensorField> f = setField(field);
+    TensorField* f = setField(field);
     double F = f->operator()(i, j);
-    f.release();
     return F;
 }
 
 TensorField Membrane::operator()(const Field field)
 {
-    std::unique_ptr<TensorField> f = setField(field);
+    const TensorField* f = setField(field);
     TensorField F = *f;
-    f.release();
     return F;
 }
 
@@ -242,34 +238,26 @@ TensorField Membrane::operator()(const Field field)
  * @brief 
  * 
  * @param field Field the pointer will point at.
- * @return std::unique_ptr<TensorField> 
+ * @return TensorField* 
  */
-std::unique_ptr<TensorField> Membrane::setField(const Field field)
+TensorField* Membrane::setField(const Field field)
 {
-    std::unique_ptr<TensorField> f;
     switch(field)
     {
         case Field::z:
-            f.reset(&z);
-            return f;
+            return &z;
         case Field::v1:
-            f.reset(&v1);
-            return f;
+            return &v1;
         case Field::v2:
-            f.reset(&v2);
-            return f;
+            return &v2;
         case Field::n11:
-            f.reset(&n11);
-            return f;
+            return &n11;
         case Field::n12:
-            f.reset(&n12);
-            return f;
+            return &n12;
         case Field::n22:
-            f.reset(&n22);
-            return f;
+            return &n22;
         default:
             std::println("Not a valid field for the Membrane structure!");
-            f.release();
             exit(EXIT_FAILURE);
     }
     std::unreachable();

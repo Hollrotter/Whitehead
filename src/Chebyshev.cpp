@@ -135,7 +135,7 @@ arma::mat Chebyshev::derivativeMatrix(const arma::vec x, const Derivative deriva
             #pragma omp parallel for
             for (size_t i = 0; i <= n; i++)
                 for (size_t j = 0; j <= n; j++)
-                    if (i == 0 && j == 0 || i == n && j == n)
+                    if ((i == 0 && j == 0) || (i == n && j == n))
                         D(i, i) = (pow(n, 4) - 1)/15;
                     else if (i == j)
                         D(i, i) =-((n*n - 1)*(1 - x(i)*x(i)) + 3)/(3*pow(1 - x(i)*x(i), 2));

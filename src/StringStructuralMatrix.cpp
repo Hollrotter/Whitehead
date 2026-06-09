@@ -12,6 +12,7 @@ void String::structuralMatrix()
             S = D11;
             break;
         case Analysis::nonlinear:
+        {
             double s = sigma;
             arma::vec dzdx = D1*z;
             if (materialModel == Material::extensible)
@@ -23,5 +24,9 @@ void String::structuralMatrix()
             S = s*D11;
             b = s*D11*z + p%pow(1 + pow(dzdx, 2), 1.5);
             break;
+        }
+        default:
+            std::println("Only linear and nonlinear analysis is implemented for String!");
+            exit(EXIT_FAILURE);
     }
 }

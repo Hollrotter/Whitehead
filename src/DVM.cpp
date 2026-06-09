@@ -58,6 +58,9 @@ void DVM::dvm()
         case Analysis::nonlinear:
             dvmNonlinear();
             break;
+        default:
+            std::println("Only linear and nonlinear analysis are implemented for DVM!");
+            exit(EXIT_FAILURE);
     } 
 }
 
@@ -129,11 +132,16 @@ void DVM::postprocessing(arma::mat &g)
             dcp = 2*g/repelem(arma::diff(x), 1, con);
             break;
         case Analysis::nonlinear:
+        {
             cM  = 2*sum((c/4-xg*cos(alpha).t())%g).t()/pow(c, 2);
             dcp.zeros(nx, con);
             arma::vec alpha_panel =-atan(camber.diff(xC/c));
             for (size_t i = 0; i < nx; i++)
                 dcp.row(i) = 2*cos(alpha + alpha_panel(i))%g.row(i)/sqrt(pow(x(i+1)-x(i), 2) + pow(z(i+1)-z(i), 2)); // Maybe wrong in Katz & Plotkin!
             break;
+        }
+        default:
+            std::println("Only linear and nonlinear analysis are implemented for DVM!");
+            exit(EXIT_FAILURE);
     }
 }

@@ -3,7 +3,7 @@
 
 class B_Spline
 {
-    size_t order; // Polynomial order of the Spline
+    size_t order = 3; // Polynomial order of the Spline
     arma::vec X; // Nodes of the Spline segments
 public:
     B_Spline() = default;

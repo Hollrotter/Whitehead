@@ -4,7 +4,7 @@ void Structure::semilinear()
 {
     analysis = Analysis::semilinear;
     bool converged = false;
-    int count = 1;
+    size_t count = 1;
     arma::field<arma::vec> Ztarget(interfaces.size()), Zsource(interfaces.size());
 
     arma::vec iter_old(membranes.size());
@@ -238,7 +238,7 @@ void Structure::semilinear()
         for (size_t k = 0; k < interfaces.size(); k++)
         {
             Interface interface = interfaces[k];
-            Membrane *membraneSource = membranes[interface.sourceDomain];
+            const Membrane *membraneSource = membranes[interface.sourceDomain];
             arma::mat D1 = membraneSource->D1;
             arma::mat D2 = membraneSource->D2;
             arma::mat Z  = membraneSource->z;
@@ -283,7 +283,7 @@ void Structure::semilinear()
                     break;
                 }
             }
-            Membrane *membraneTarget = membranes[interface.targetDomain];
+            const Membrane *membraneTarget = membranes[interface.targetDomain];
             D1 = membraneTarget->D1;
             D2 = membraneTarget->D2;
             Z  = membraneTarget->z;

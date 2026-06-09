@@ -28,21 +28,21 @@ class DVM
 public:
     DVM() : camber(Camber()) {}
     // Constructor for flat plate
-    DVM(double _c, size_t _nx) : c(_c), nx(_nx), camber(Camber()) {}
+    DVM(double _c, size_t _nx) : camber(Camber()), c(_c), nx(_nx) {}
     // Constructor for camber defined by function describing only the derivative of z (use for linear analysis only!)
     DVM(std::function<double(double)> dF) : camber(Camber(dF)) {}
     // Constructor for camber defined by function describing only the derivative of z (use for linear analysis only!)
-    DVM(double _c, size_t _nx, std::function<double(double)> dF) : c(_c), nx(_nx), camber(Camber(dF)) {}
+    DVM(double _c, size_t _nx, std::function<double(double)> dF) : camber(Camber(dF)), c(_c), nx(_nx) {}
     // Constructor for camber defined by function describing the value and the derivative of z (use for nonlinear analysis!)
     DVM(std::function<double(double)> F, std::function<double(double)> dF) : camber(Camber(F, dF)) {}
     // Constructor for camber defined by function describing the value and the derivative of z (use for nonlinear analysis!)
-    DVM(double _c, size_t _nx, std::function<double(double)> F, std::function<double(double)> dF) : c(_c), nx(_nx), camber(Camber(F, dF)) {}
+    DVM(double _c, size_t _nx, std::function<double(double)> F, std::function<double(double)> dF) : camber(Camber(F, dF)), c(_c), nx(_nx) {}
     // Constructor for camber defined by Splinefitting
     DVM(Splinefit S) : camber(Camber(S)) {}
     // Constructor for camber defined by Splinefitting
-    DVM(double _c, size_t _nx, Splinefit S) : c(_c), nx(_nx), camber(Camber(S)) {}
+    DVM(double _c, size_t _nx, Splinefit S) : camber(Camber(S)), c(_c), nx(_nx) {}
     DVM(Camber _camber) : camber(_camber) {}
-    DVM(double _c, size_t _nx, Camber _camber) : c(_c), nx(_nx), camber(_camber) {}
+    DVM(double _c, size_t _nx, Camber _camber) : camber(_camber), c(_c), nx(_nx) {}
     // Set dynamic pressure
     void dynamicPressure(double);
     // Set pitch in degree

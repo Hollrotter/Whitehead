@@ -4,9 +4,9 @@ void Structure::linear()
 {
     analysis = Analysis::linear;
     bool converged = false;
-    int count = 1;
+    size_t count = 1;
     arma::field<arma::vec> Ztarget(interfaces.size()), Zsource(interfaces.size());
-    for (Interface& interface:interfaces)
+    for (const Interface& interface:interfaces)
     {
         Direction targetDirection = static_cast<Direction>(interface.targetCurve);
         Membrane *membraneTarget = membranes[interface.targetDomain];
@@ -177,7 +177,7 @@ void Structure::linear()
     do
     {
         std::cout << "Iteration " << count << '/' << iterations << std::endl;
-        for (Interface& interface:interfaces)
+        for (const Interface& interface:interfaces)
         {
             Membrane *membraneSource = membranes[interface.sourceDomain];
             Membrane *membraneTarget = membranes[interface.targetDomain];
@@ -575,7 +575,7 @@ void Structure::linear()
         for (size_t k = 0; k < interfaces.size(); k++)
         {
             Interface interface = interfaces[k];
-            Membrane *membraneSource = membranes[interface.sourceDomain];
+            const Membrane *membraneSource = membranes[interface.sourceDomain];
             arma::mat Z  = membraneSource->z;
             arma::mat D1 = membraneSource->D1;
             arma::mat D2 = membraneSource->D2;
@@ -620,7 +620,7 @@ void Structure::linear()
                     break;
                 }
             }
-            Membrane *membraneTarget = membranes[interface.targetDomain];
+            const Membrane *membraneTarget = membranes[interface.targetDomain];
             Z  = membraneTarget->z;
             D1 = membraneTarget->D1;
             D2 = membraneTarget->D2;

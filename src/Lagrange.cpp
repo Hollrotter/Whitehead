@@ -566,29 +566,16 @@ std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::ve
     auto [x_2, y_2] = chi[0]->evaluate( sign1);
     auto [x_3, y_3] = chi[2]->evaluate( sign3);
     auto [x_4, y_4] = chi[2]->evaluate(-sign3);
-    arma::vec    dxdx1_south(x1.size());
-    arma::vec    dydx1_south(x1.size());
-    arma::vec    dxdx2_south(x1.size());
-    arma::vec    dydx2_south(x1.size());
-    arma::rowvec dxdx1_east(x2.size());
-    arma::rowvec dydx1_east(x2.size());
-    arma::rowvec dxdx2_east(x2.size());
-    arma::rowvec dydx2_east(x2.size());
-    arma::vec    dxdx1_north(x1.size());
-    arma::vec    dydx1_north(x1.size());
-    arma::vec    dxdx2_north(x1.size());
-    arma::vec    dydx2_north(x1.size());
-    arma::rowvec dxdx1_west(x2.size());
-    arma::rowvec dydx1_west(x2.size());
-    arma::rowvec dxdx2_west(x2.size());
-    arma::rowvec dydx2_west(x2.size());
+    arma::vec    dxdx1_south(x1.size()), dydx1_south(x1.size()), dxdx2_south(x1.size()), dydx2_south(x1.size());
+    arma::rowvec dxdx1_east(x2.size()),  dydx1_east(x2.size()),  dxdx2_east(x2.size()),  dydx2_east(x2.size());
+    arma::vec    dxdx1_north(x1.size()), dydx1_north(x1.size()), dxdx2_north(x1.size()), dydx2_north(x1.size());
+    arma::rowvec dxdx1_west(x2.size()),  dydx1_west(x2.size()),  dxdx2_west(x2.size()),  dydx2_west(x2.size());
     for (size_t j = 0; j < x2.size(); j++)
     {
-        double x1i =-1;
-        auto [X_1,  Y_1]  = chi[0]->evaluate(sign1*x1i);
-        auto [X_3,  Y_3]  = chi[2]->evaluate(sign3*x1i);
-        auto [Xs_1, Ys_1] = chi[0]->derivative(sign1*x1i);
-        auto [Xs_3, Ys_3] = chi[2]->derivative(sign3*x1i);
+        auto [X_1,  Y_1]  = chi[0]->evaluate(-sign1);
+        auto [X_3,  Y_3]  = chi[2]->evaluate(-sign3);
+        auto [Xs_1, Ys_1] = chi[0]->derivative(-sign1);
+        auto [Xs_3, Ys_3] = chi[2]->derivative(-sign3);
         Xs_1 *= sign1;
         Ys_1 *= sign1;
         Xs_3 *= sign3;
@@ -596,49 +583,39 @@ std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::ve
         double x2j = x2(j);
         auto [X_2,  Y_2]  = chi[1]->evaluate(sign2*x2j);
         auto [X_4,  Y_4]  = chi[3]->evaluate(sign4*x2j);
-        auto [Xs_2, Ys_2] = chi[1]->derivative(sign2*x2j);
         auto [Xs_4, Ys_4] = chi[3]->derivative(sign4*x2j);
-        Xs_2 *= sign2;
-        Ys_2 *= sign2;
         Xs_4 *= sign4;
         Ys_4 *= sign4;
         dxdx1_west(j) = (X_2 - X_4 + (1 - x2j)*Xs_1 + (1 + x2j)*Xs_3)/2 - ((1 - x2j)*(x_2 - x_1) + (1 + x2j)*(x_3 - x_4))/4;
         dydx1_west(j) = (Y_2 - Y_4 + (1 - x2j)*Ys_1 + (1 + x2j)*Ys_3)/2 - ((1 - x2j)*(y_2 - y_1) + (1 + x2j)*(y_3 - y_4))/4;
-        dxdx2_west(j) = ((1 - x1i)*Xs_4 + (1 + x1i)*Xs_2 + X_3 - X_1)/2 - ((1 - x1i)*(x_4 - x_1) + (1 + x1i)*(x_3 - x_2))/4;
-        dydx2_west(j) = ((1 - x1i)*Ys_4 + (1 + x1i)*Ys_2 + Y_3 - Y_1)/2 - ((1 - x1i)*(y_4 - y_1) + (1 + x1i)*(y_3 - y_2))/4;
-    }
-    for (size_t j = 0; j < x2.size(); j++)
-    {
-        double x1i = 1;
-        auto [X_1,  Y_1]  = chi[0]->evaluate(sign1*x1i);
-        auto [X_3,  Y_3]  = chi[2]->evaluate(sign3*x1i);
-        auto [Xs_1, Ys_1] = chi[0]->derivative(sign1*x1i);
-        auto [Xs_3, Ys_3] = chi[2]->derivative(sign3*x1i);
+        dxdx2_west(j) = (2*Xs_4 + X_3 - X_1)/2 - (x_4 - x_1)/2;
+        dydx2_west(j) = (2*Ys_4 + Y_3 - Y_1)/2 - (y_4 - y_1)/2;
+
+        std::tie(X_1,  Y_1)  = chi[0]->evaluate(sign1);
+        std::tie(X_3,  Y_3)  = chi[2]->evaluate(sign3);
+        std::tie(Xs_1, Ys_1) = chi[0]->derivative(sign1);
+        std::tie(Xs_3, Ys_3) = chi[2]->derivative(sign3);
         Xs_1 *= sign1;
         Ys_1 *= sign1;
         Xs_3 *= sign3;
         Ys_3 *= sign3;
-        double x2j = x2(j);
-        auto [X_2,  Y_2]  = chi[1]->evaluate(sign2*x2j);
-        auto [X_4,  Y_4]  = chi[3]->evaluate(sign4*x2j);
+        x2j = x2(j);
+        std::tie(X_2,  Y_2)  = chi[1]->evaluate(sign2*x2j);
+        std::tie(X_4,  Y_4)  = chi[3]->evaluate(sign4*x2j);
         auto [Xs_2, Ys_2] = chi[1]->derivative(sign2*x2j);
-        auto [Xs_4, Ys_4] = chi[3]->derivative(sign4*x2j);
         Xs_2 *= sign2;
         Ys_2 *= sign2;
-        Xs_4 *= sign4;
-        Ys_4 *= sign4;
         dxdx1_east(j) = (X_2 - X_4 + (1 - x2j)*Xs_1 + (1 + x2j)*Xs_3)/2 - ((1 - x2j)*(x_2 - x_1) + (1 + x2j)*(x_3 - x_4))/4;
         dydx1_east(j) = (Y_2 - Y_4 + (1 - x2j)*Ys_1 + (1 + x2j)*Ys_3)/2 - ((1 - x2j)*(y_2 - y_1) + (1 + x2j)*(y_3 - y_4))/4;
-        dxdx2_east(j) = ((1 - x1i)*Xs_4 + (1 + x1i)*Xs_2 + X_3 - X_1)/2 - ((1 - x1i)*(x_4 - x_1) + (1 + x1i)*(x_3 - x_2))/4;
-        dydx2_east(j) = ((1 - x1i)*Ys_4 + (1 + x1i)*Ys_2 + Y_3 - Y_1)/2 - ((1 - x1i)*(y_4 - y_1) + (1 + x1i)*(y_3 - y_2))/4;
+        dxdx2_east(j) = (2*Xs_2 + X_3 - X_1)/2 - (x_3 - x_2)/2;
+        dydx2_east(j) = (2*Ys_2 + Y_3 - Y_1)/2 - (y_3 - y_2)/2;
     }
     for (size_t i = 0; i < x1.size(); i++)
     {
-        double x2j =-1;
-        auto [X_2,  Y_2]  = chi[1]->evaluate(sign2*x2j);
-        auto [X_4,  Y_4]  = chi[3]->evaluate(sign4*x2j);
-        auto [Xs_2, Ys_2] = chi[1]->derivative(sign2*x2j);
-        auto [Xs_4, Ys_4] = chi[3]->derivative(sign4*x2j);
+        auto [X_2,  Y_2]  = chi[1]->evaluate(-sign2);
+        auto [X_4,  Y_4]  = chi[3]->evaluate(-sign4);
+        auto [Xs_2, Ys_2] = chi[1]->derivative(-sign2);
+        auto [Xs_4, Ys_4] = chi[3]->derivative(-sign4);
         Xs_2 *= sign2;
         Ys_2 *= sign2;
         Xs_4 *= sign4;
@@ -647,38 +624,29 @@ std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::ve
         auto [X_1,  Y_1]  = chi[0]->evaluate(sign1*x1i);
         auto [X_3,  Y_3]  = chi[2]->evaluate(sign3*x1i);
         auto [Xs_1, Ys_1] = chi[0]->derivative(sign1*x1i);
-        auto [Xs_3, Ys_3] = chi[2]->derivative(sign3*x1i);
         Xs_1 *= sign1;
         Ys_1 *= sign1;
-        Xs_3 *= sign3;
-        Ys_3 *= sign3;
-        dxdx1_south(i) = (X_2 - X_4 + (1 - x2j)*Xs_1 + (1 + x2j)*Xs_3)/2 - ((1 - x2j)*(x_2 - x_1) + (1 + x2j)*(x_3 - x_4))/4;
-        dydx1_south(i) = (Y_2 - Y_4 + (1 - x2j)*Ys_1 + (1 + x2j)*Ys_3)/2 - ((1 - x2j)*(y_2 - y_1) + (1 + x2j)*(y_3 - y_4))/4;
+        dxdx1_south(i) = (X_2 - X_4 + 2*Xs_1)/2 - (x_2 - x_1)/2;
+        dydx1_south(i) = (Y_2 - Y_4 + 2*Ys_1)/2 - (y_2 - y_1)/2;
         dxdx2_south(i) = ((1 - x1i)*Xs_4 + (1 + x1i)*Xs_2 + X_3 - X_1)/2 - ((1 - x1i)*(x_4 - x_1) + (1 + x1i)*(x_3 - x_2))/4;
         dydx2_south(i) = ((1 - x1i)*Ys_4 + (1 + x1i)*Ys_2 + Y_3 - Y_1)/2 - ((1 - x1i)*(y_4 - y_1) + (1 + x1i)*(y_3 - y_2))/4;
-    }
-    for (size_t i = 0; i < x1.size(); i++)
-    {
-        double x2j = 1;
-        auto [X_2,  Y_2]  = chi[1]->evaluate(sign2*x2j);
-        auto [X_4,  Y_4]  = chi[3]->evaluate(sign4*x2j);
-        auto [Xs_2, Ys_2] = chi[1]->derivative(sign2*x2j);
-        auto [Xs_4, Ys_4] = chi[3]->derivative(sign4*x2j);
+
+        std::tie(X_2,  Y_2)  = chi[1]->evaluate(sign2);
+        std::tie(X_4,  Y_4)  = chi[3]->evaluate(sign4);
+        std::tie(Xs_2, Ys_2) = chi[1]->derivative(sign2);
+        std::tie(Xs_4, Ys_4) = chi[3]->derivative(sign4);
         Xs_2 *= sign2;
         Ys_2 *= sign2;
         Xs_4 *= sign4;
         Ys_4 *= sign4;
-        double x1i = x1(i);
-        auto [X_1,  Y_1]  = chi[0]->evaluate(sign1*x1i);
-        auto [X_3,  Y_3]  = chi[2]->evaluate(sign3*x1i);
-        auto [Xs_1, Ys_1] = chi[0]->derivative(sign1*x1i);
+        x1i = x1(i);
+        std::tie(X_1,  Y_1)  = chi[0]->evaluate(sign1*x1i);
+        std::tie(X_3,  Y_3)  = chi[2]->evaluate(sign3*x1i);
         auto [Xs_3, Ys_3] = chi[2]->derivative(sign3*x1i);
-        Xs_1 *= sign1;
-        Ys_1 *= sign1;
         Xs_3 *= sign3;
         Ys_3 *= sign3;
-        dxdx1_north(i) = (X_2 - X_4 + (1 - x2j)*Xs_1 + (1 + x2j)*Xs_3)/2 - ((1 - x2j)*(x_2 - x_1) + (1 + x2j)*(x_3 - x_4))/4;
-        dydx1_north(i) = (Y_2 - Y_4 + (1 - x2j)*Ys_1 + (1 + x2j)*Ys_3)/2 - ((1 - x2j)*(y_2 - y_1) + (1 + x2j)*(y_3 - y_4))/4;
+        dxdx1_north(i) = (X_2 - X_4 + 2*Xs_3)/2 - (x_3 - x_4)/2;
+        dydx1_north(i) = (Y_2 - Y_4 + 2*Ys_3)/2 - (y_3 - y_4)/2;
         dxdx2_north(i) = ((1 - x1i)*Xs_4 + (1 + x1i)*Xs_2 + X_3 - X_1)/2 - ((1 - x1i)*(x_4 - x_1) + (1 + x1i)*(x_3 - x_2))/4;
         dydx2_north(i) = ((1 - x1i)*Ys_4 + (1 + x1i)*Ys_2 + Y_3 - Y_1)/2 - ((1 - x1i)*(y_4 - y_1) + (1 + x1i)*(y_3 - y_2))/4;
     }
@@ -798,29 +766,16 @@ std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::ve
     auto [x_2, y_2] = chi[0]->evaluate( sign1);
     auto [x_3, y_3] = chi[2]->evaluate( sign3);
     auto [x_4, y_4] = chi[2]->evaluate(-sign3);
-    arma::vec    dxdx1_south(x1.size());
-    arma::vec    dydx1_south(x1.size());
-    arma::vec    dxdx2_south(x1.size());
-    arma::vec    dydx2_south(x1.size());
-    arma::rowvec dxdx1_east(x2.size());
-    arma::rowvec dydx1_east(x2.size());
-    arma::rowvec dxdx2_east(x2.size());
-    arma::rowvec dydx2_east(x2.size());
-    arma::vec    dxdx1_north(x1.size());
-    arma::vec    dydx1_north(x1.size());
-    arma::vec    dxdx2_north(x1.size());
-    arma::vec    dydx2_north(x1.size());
-    arma::rowvec dxdx1_west(x2.size());
-    arma::rowvec dydx1_west(x2.size());
-    arma::rowvec dxdx2_west(x2.size());
-    arma::rowvec dydx2_west(x2.size());
+    arma::vec    dxdx1_south(x1.size()), dydx1_south(x1.size()), dxdx2_south(x1.size()), dydx2_south(x1.size());
+    arma::rowvec dxdx1_east(x2.size()),  dydx1_east(x2.size()),  dxdx2_east(x2.size()),  dydx2_east(x2.size());
+    arma::vec    dxdx1_north(x1.size()), dydx1_north(x1.size()), dxdx2_north(x1.size()), dydx2_north(x1.size());
+    arma::rowvec dxdx1_west(x2.size()),  dydx1_west(x2.size()),  dxdx2_west(x2.size()),  dydx2_west(x2.size());
     for (size_t j = 0; j < x2.size(); j++)
     {
-        double x1i =-1;
-        auto [X_1,  Y_1]  = chi[0]->evaluate(sign1*x1i);
-        auto [X_3,  Y_3]  = chi[2]->evaluate(sign3*x1i);
-        auto [Xs_1, Ys_1] = chi[0]->derivative(sign1*x1i);
-        auto [Xs_3, Ys_3] = chi[2]->derivative(sign3*x1i);
+        auto [X_1,  Y_1]  = chi[0]->evaluate(-sign1);
+        auto [X_3,  Y_3]  = chi[2]->evaluate(-sign3);
+        auto [Xs_1, Ys_1] = chi[0]->derivative(-sign1);
+        auto [Xs_3, Ys_3] = chi[2]->derivative(-sign3);
         Xs_1 *= sign1;
         Ys_1 *= sign1;
         Xs_3 *= sign3;
@@ -828,49 +783,39 @@ std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::ve
         double x2j = x2(j);
         auto [X_2,  Y_2]  = chi[1]->evaluate(sign2*x2j);
         auto [X_4,  Y_4]  = chi[3]->evaluate(sign4*x2j);
-        auto [Xs_2, Ys_2] = chi[1]->derivative(sign2*x2j);
         auto [Xs_4, Ys_4] = chi[3]->derivative(sign4*x2j);
-        Xs_2 *= sign2;
-        Ys_2 *= sign2;
         Xs_4 *= sign4;
         Ys_4 *= sign4;
         dxdx1_west(j) = (X_2 - X_4 + (1 - x2j)*Xs_1 + (1 + x2j)*Xs_3)/2 - ((1 - x2j)*(x_2 - x_1) + (1 + x2j)*(x_3 - x_4))/4;
         dydx1_west(j) = (Y_2 - Y_4 + (1 - x2j)*Ys_1 + (1 + x2j)*Ys_3)/2 - ((1 - x2j)*(y_2 - y_1) + (1 + x2j)*(y_3 - y_4))/4;
-        dxdx2_west(j) = ((1 - x1i)*Xs_4 + (1 + x1i)*Xs_2 + X_3 - X_1)/2 - ((1 - x1i)*(x_4 - x_1) + (1 + x1i)*(x_3 - x_2))/4;
-        dydx2_west(j) = ((1 - x1i)*Ys_4 + (1 + x1i)*Ys_2 + Y_3 - Y_1)/2 - ((1 - x1i)*(y_4 - y_1) + (1 + x1i)*(y_3 - y_2))/4;
-    }
-    for (size_t j = 0; j < x2.size(); j++)
-    {
-        double x1i = 1;
-        auto [X_1,  Y_1]  = chi[0]->evaluate(sign1*x1i);
-        auto [X_3,  Y_3]  = chi[2]->evaluate(sign3*x1i);
-        auto [Xs_1, Ys_1] = chi[0]->derivative(sign1*x1i);
-        auto [Xs_3, Ys_3] = chi[2]->derivative(sign3*x1i);
+        dxdx2_west(j) = (2*Xs_4 + X_3 - X_1)/2 - (x_4 - x_1)/2;
+        dydx2_west(j) = (2*Ys_4 + Y_3 - Y_1)/2 - (y_4 - y_1)/2;
+
+        std::tie(X_1,  Y_1)  = chi[0]->evaluate(sign1);
+        std::tie(X_3,  Y_3)  = chi[2]->evaluate(sign3);
+        std::tie(Xs_1, Ys_1) = chi[0]->derivative(sign1);
+        std::tie(Xs_3, Ys_3) = chi[2]->derivative(sign3);
         Xs_1 *= sign1;
         Ys_1 *= sign1;
         Xs_3 *= sign3;
         Ys_3 *= sign3;
-        double x2j = x2(j);
-        auto [X_2,  Y_2]  = chi[1]->evaluate(sign2*x2j);
-        auto [X_4,  Y_4]  = chi[3]->evaluate(sign4*x2j);
+        x2j = x2(j);
+        std::tie(X_2,  Y_2)  = chi[1]->evaluate(sign2*x2j);
+        std::tie(X_4,  Y_4)  = chi[3]->evaluate(sign4*x2j);
         auto [Xs_2, Ys_2] = chi[1]->derivative(sign2*x2j);
-        auto [Xs_4, Ys_4] = chi[3]->derivative(sign4*x2j);
         Xs_2 *= sign2;
         Ys_2 *= sign2;
-        Xs_4 *= sign4;
-        Ys_4 *= sign4;
         dxdx1_east(j) = (X_2 - X_4 + (1 - x2j)*Xs_1 + (1 + x2j)*Xs_3)/2 - ((1 - x2j)*(x_2 - x_1) + (1 + x2j)*(x_3 - x_4))/4;
         dydx1_east(j) = (Y_2 - Y_4 + (1 - x2j)*Ys_1 + (1 + x2j)*Ys_3)/2 - ((1 - x2j)*(y_2 - y_1) + (1 + x2j)*(y_3 - y_4))/4;
-        dxdx2_east(j) = ((1 - x1i)*Xs_4 + (1 + x1i)*Xs_2 + X_3 - X_1)/2 - ((1 - x1i)*(x_4 - x_1) + (1 + x1i)*(x_3 - x_2))/4;
-        dydx2_east(j) = ((1 - x1i)*Ys_4 + (1 + x1i)*Ys_2 + Y_3 - Y_1)/2 - ((1 - x1i)*(y_4 - y_1) + (1 + x1i)*(y_3 - y_2))/4;
+        dxdx2_east(j) = (2*Xs_2 + X_3 - X_1)/2 - (x_3 - x_2)/2;
+        dydx2_east(j) = (2*Ys_2 + Y_3 - Y_1)/2 - (y_3 - y_2)/2;
     }
     for (size_t i = 0; i < x1.size(); i++)
     {
-        double x2j =-1;
-        auto [X_2,  Y_2]  = chi[1]->evaluate(sign2*x2j);
-        auto [X_4,  Y_4]  = chi[3]->evaluate(sign4*x2j);
-        auto [Xs_2, Ys_2] = chi[1]->derivative(sign2*x2j);
-        auto [Xs_4, Ys_4] = chi[3]->derivative(sign4*x2j);
+        auto [X_2,  Y_2]  = chi[1]->evaluate(-sign2);
+        auto [X_4,  Y_4]  = chi[3]->evaluate(-sign4);
+        auto [Xs_2, Ys_2] = chi[1]->derivative(-sign2);
+        auto [Xs_4, Ys_4] = chi[3]->derivative(-sign4);
         Xs_2 *= sign2;
         Ys_2 *= sign2;
         Xs_4 *= sign4;
@@ -879,38 +824,29 @@ std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::ve
         auto [X_1,  Y_1]  = chi[0]->evaluate(sign1*x1i);
         auto [X_3,  Y_3]  = chi[2]->evaluate(sign3*x1i);
         auto [Xs_1, Ys_1] = chi[0]->derivative(sign1*x1i);
-        auto [Xs_3, Ys_3] = chi[2]->derivative(sign3*x1i);
         Xs_1 *= sign1;
         Ys_1 *= sign1;
-        Xs_3 *= sign3;
-        Ys_3 *= sign3;
-        dxdx1_south(i) = (X_2 - X_4 + (1 - x2j)*Xs_1 + (1 + x2j)*Xs_3)/2 - ((1 - x2j)*(x_2 - x_1) + (1 + x2j)*(x_3 - x_4))/4;
-        dydx1_south(i) = (Y_2 - Y_4 + (1 - x2j)*Ys_1 + (1 + x2j)*Ys_3)/2 - ((1 - x2j)*(y_2 - y_1) + (1 + x2j)*(y_3 - y_4))/4;
+        dxdx1_south(i) = (X_2 - X_4 + 2*Xs_1)/2 - (x_2 - x_1)/2;
+        dydx1_south(i) = (Y_2 - Y_4 + 2*Ys_1)/2 - (y_2 - y_1)/2;
         dxdx2_south(i) = ((1 - x1i)*Xs_4 + (1 + x1i)*Xs_2 + X_3 - X_1)/2 - ((1 - x1i)*(x_4 - x_1) + (1 + x1i)*(x_3 - x_2))/4;
         dydx2_south(i) = ((1 - x1i)*Ys_4 + (1 + x1i)*Ys_2 + Y_3 - Y_1)/2 - ((1 - x1i)*(y_4 - y_1) + (1 + x1i)*(y_3 - y_2))/4;
-    }
-    for (size_t i = 0; i < x1.size(); i++)
-    {
-        double x2j = 1;
-        auto [X_2,  Y_2]  = chi[1]->evaluate(sign2*x2j);
-        auto [X_4,  Y_4]  = chi[3]->evaluate(sign4*x2j);
-        auto [Xs_2, Ys_2] = chi[1]->derivative(sign2*x2j);
-        auto [Xs_4, Ys_4] = chi[3]->derivative(sign4*x2j);
+
+        std::tie(X_2,  Y_2)  = chi[1]->evaluate(sign2);
+        std::tie(X_4,  Y_4)  = chi[3]->evaluate(sign4);
+        std::tie(Xs_2, Ys_2) = chi[1]->derivative(sign2);
+        std::tie(Xs_4, Ys_4) = chi[3]->derivative(sign4);
         Xs_2 *= sign2;
         Ys_2 *= sign2;
         Xs_4 *= sign4;
         Ys_4 *= sign4;
-        double x1i = x1(i);
-        auto [X_1,  Y_1]  = chi[0]->evaluate(sign1*x1i);
-        auto [X_3,  Y_3]  = chi[2]->evaluate(sign3*x1i);
-        auto [Xs_1, Ys_1] = chi[0]->derivative(sign1*x1i);
+        x1i = x1(i);
+        std::tie(X_1,  Y_1)  = chi[0]->evaluate(sign1*x1i);
+        std::tie(X_3,  Y_3)  = chi[2]->evaluate(sign3*x1i);
         auto [Xs_3, Ys_3] = chi[2]->derivative(sign3*x1i);
-        Xs_1 *= sign1;
-        Ys_1 *= sign1;
         Xs_3 *= sign3;
         Ys_3 *= sign3;
-        dxdx1_north(i) = (X_2 - X_4 + (1 - x2j)*Xs_1 + (1 + x2j)*Xs_3)/2 - ((1 - x2j)*(x_2 - x_1) + (1 + x2j)*(x_3 - x_4))/4;
-        dydx1_north(i) = (Y_2 - Y_4 + (1 - x2j)*Ys_1 + (1 + x2j)*Ys_3)/2 - ((1 - x2j)*(y_2 - y_1) + (1 + x2j)*(y_3 - y_4))/4;
+        dxdx1_north(i) = (X_2 - X_4 + 2*Xs_3)/2 - (x_3 - x_4)/2;
+        dydx1_north(i) = (Y_2 - Y_4 + 2*Ys_3)/2 - (y_3 - y_4)/2;
         dxdx2_north(i) = ((1 - x1i)*Xs_4 + (1 + x1i)*Xs_2 + X_3 - X_1)/2 - ((1 - x1i)*(x_4 - x_1) + (1 + x1i)*(x_3 - x_2))/4;
         dydx2_north(i) = ((1 - x1i)*Ys_4 + (1 + x1i)*Ys_2 + Y_3 - Y_1)/2 - ((1 - x1i)*(y_4 - y_1) + (1 + x1i)*(y_3 - y_2))/4;
     }

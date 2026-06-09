@@ -21,5 +21,8 @@ void DVM::aerodynamicMatrix()
                     A(i, j) = dot(arma::vec::fixed<2>{zC(i)-zg(j), xg(j)-xC(i)}/arma::datum::tau/(pow(xg(j)-xC(i), 2) + pow(zg(j)-zC(i), 2)), nC.col(i));
             break;
         }
+        default:
+            std::println("Only linear and nonlinear analysis are implemented for DVM!");
+            exit(EXIT_FAILURE);
     }
 }

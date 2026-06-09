@@ -12,7 +12,7 @@ Structure Structure::fromMembranes(std::vector<Membrane*> _membranes)
                         _interfaces.push_back(Interface(sD, tD, sC, tC));
                         _membranes[sD]->chi[sC]->curveType = CurveType::Interface;
                     }
-    double lambda0 = 2;
+    double l0 = 2;
     for (Interface& interface:_interfaces)
     {
         Membrane *mSource = _membranes[interface.sourceDomain];
@@ -24,7 +24,7 @@ Structure Structure::fromMembranes(std::vector<Membrane*> _membranes)
                 interface.c11Source = pow(mSource->h_2s1_south, 2);
                 interface.c12Source = mSource->h_2s1_south%mSource->h_2s2_south;
                 interface.c22Source = pow(mSource->h_2s2_south, 2);
-                interface.lambdaSource = lambda0*mean(mSource->h_2s2_south);
+                interface.lambdaSource = l0*mean(mSource->h_2s2_south);
                 break;
             case 1: // East
                 interface.c1Source  = (mSource->h_2s2_east%mSource->h_1s1_east).t();
@@ -32,7 +32,7 @@ Structure Structure::fromMembranes(std::vector<Membrane*> _membranes)
                 interface.c11Source = pow(mSource->h_1s1_east, 2).t();
                 interface.c12Source = (mSource->h_1s1_east%mSource->h_1s2_east).t();
                 interface.c22Source = pow(mSource->h_1s2_east, 2).t();
-                interface.lambdaSource = lambda0*mean(mSource->h_1s1_east);
+                interface.lambdaSource = l0*mean(mSource->h_1s1_east);
                 break;
             case 2: // North
                 interface.c1Source  = mSource->h_1s1_north%mSource->h_2s1_north;
@@ -40,7 +40,7 @@ Structure Structure::fromMembranes(std::vector<Membrane*> _membranes)
                 interface.c11Source = pow(mSource->h_2s1_north, 2);
                 interface.c12Source = mSource->h_2s1_north%mSource->h_2s2_north;
                 interface.c22Source = pow(mSource->h_2s2_north, 2);
-                interface.lambdaSource = lambda0*mean(mSource->h_2s2_north);
+                interface.lambdaSource = l0*mean(mSource->h_2s2_north);
                 break;
             case 3: // West
                 interface.c1Source  = (mSource->h_2s2_west%mSource->h_1s1_west).t();
@@ -48,7 +48,7 @@ Structure Structure::fromMembranes(std::vector<Membrane*> _membranes)
                 interface.c11Source = pow(mSource->h_1s1_west, 2).t();
                 interface.c12Source = (mSource->h_1s1_west%mSource->h_1s2_west).t();
                 interface.c22Source = pow(mSource->h_1s2_west, 2).t();
-                interface.lambdaSource = lambda0*mean(mSource->h_1s1_west);
+                interface.lambdaSource = l0*mean(mSource->h_1s1_west);
                 break;
         }
         Membrane *mTarget = _membranes[interface.targetDomain];
@@ -60,7 +60,7 @@ Structure Structure::fromMembranes(std::vector<Membrane*> _membranes)
                 interface.c11Target = pow(mTarget->h_2s1_south, 2);
                 interface.c12Target = mTarget->h_2s1_south%mTarget->h_2s2_south;
                 interface.c22Target = pow(mTarget->h_2s2_south, 2);
-                interface.lambdaTarget = lambda0*mean(mTarget->h_2s2_south);
+                interface.lambdaTarget = l0*mean(mTarget->h_2s2_south);
                 break;
             case 1: // East
                 interface.c1Target  = (mTarget->h_2s2_east%mTarget->h_1s1_east).t();
@@ -68,7 +68,7 @@ Structure Structure::fromMembranes(std::vector<Membrane*> _membranes)
                 interface.c11Target = pow(mTarget->h_1s1_east, 2).t();
                 interface.c12Target = (mTarget->h_1s1_east%mTarget->h_1s2_east).t();
                 interface.c22Target = pow(mTarget->h_1s2_east, 2).t();
-                interface.lambdaTarget = lambda0*mean(mTarget->h_1s1_east);
+                interface.lambdaTarget = l0*mean(mTarget->h_1s1_east);
                 break;
             case 2: // North
                 interface.c1Target  = mTarget->h_1s1_north%mTarget->h_2s1_north;
@@ -76,7 +76,7 @@ Structure Structure::fromMembranes(std::vector<Membrane*> _membranes)
                 interface.c11Target = pow(mTarget->h_2s1_north, 2);
                 interface.c12Target = mTarget->h_2s1_north%mTarget->h_2s2_north;
                 interface.c22Target = pow(mTarget->h_2s2_north, 2);
-                interface.lambdaTarget = lambda0*mean(mTarget->h_2s2_north);
+                interface.lambdaTarget = l0*mean(mTarget->h_2s2_north);
                 break;
             case 3: // West
                 interface.c1Target  = (mTarget->h_2s2_west%mTarget->h_1s1_west).t();
@@ -84,7 +84,7 @@ Structure Structure::fromMembranes(std::vector<Membrane*> _membranes)
                 interface.c11Target = pow(mTarget->h_1s1_west, 2).t();
                 interface.c12Target = (mTarget->h_1s1_west%mTarget->h_1s2_west).t();
                 interface.c22Target = pow(mTarget->h_1s2_west, 2).t();
-                interface.lambdaTarget = lambda0*mean(mTarget->h_1s1_west);
+                interface.lambdaTarget = l0*mean(mTarget->h_1s1_west);
                 break;
         }
     }
@@ -141,7 +141,7 @@ void Structure::checkMesh()
 template <class C> void Structure::boundary(const Field field, const Lagrange::CurveInterpolant* dir, const BC bc, const C val)
 {
     for (auto &membrane:membranes)
-        for (auto &chi:membrane->chi)
+        for (const auto &chi:membrane->chi)
             if (chi == dir)
                 membrane->boundary(field, chi, bc, val);
 }
@@ -149,7 +149,7 @@ template <class C> void Structure::boundary(const Field field, const Lagrange::C
 template <class C> void Structure::boundary(const Field field, const Lagrange::CurveInterpolant* dir, const BC bc, const double _r1, const double _r2, const C val)
 {
     for (auto &membrane:membranes)
-        for (auto &chi:membrane->chi)
+        for (const auto &chi:membrane->chi)
             if (chi == dir)
                 membrane->boundary(field, chi, bc, _r1, _r2, val);
 }

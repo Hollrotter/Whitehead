@@ -103,7 +103,7 @@ double Membrane::armijoSemilinear(arma::vec dz, arma::vec &P)
     return omega;
 }
 
-double Membrane::residualLevelFunctionSemilinear(arma::vec Z, arma::vec &P)
+double Membrane::residualLevelFunctionSemilinear(arma::vec Z, const arma::vec &P)
 {
     arma::vec Z_1 = DD1*Z;
     arma::vec Z_2 = DD2*Z;

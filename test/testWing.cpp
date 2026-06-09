@@ -122,8 +122,8 @@ int main()
             Lagrange::CurveInterpolant chi3(p3, p4, n);
             Lagrange::CurveInterpolant chi4(p4, p1, m);
 
-            arma::mat z1 = 0.1*cos(arma::datum::pi/2*Chebyshev::gaussLobatto(n)) * cos(arma::datum::pi/4*(1+Chebyshev::gaussLobatto(m))).t();
-            arma::mat z2 = 0.1*cos(arma::datum::pi/4*(1+Chebyshev::gaussLobatto(m))) * cos(arma::datum::pi/2*Chebyshev::gaussLobatto(n)).t();
+            arma::mat z1 = 0.1*cos(arma::datum::pi/4*(1-Chebyshev::gaussLobatto(n))) * cos(arma::datum::pi/4*(1+Chebyshev::gaussLobatto(m))).t();
+            arma::mat z2 = 0.1*cos(arma::datum::pi/4*(1+Chebyshev::gaussLobatto(m))) * cos(arma::datum::pi/4*(1+Chebyshev::gaussLobatto(n))).t();
             arma::mat z3 = arma::flipud(arma::fliplr(z1));
             arma::mat z4 = arma::flipud(arma::fliplr(z2));
 
@@ -134,7 +134,7 @@ int main()
             Wake wk(&chi2);
             for (size_t i = 0; i < 4; i++)
             {
-                w[i].pitch(2);
+                w[i].pitch(3);
                 w[i].boundary(&chi1, BC::Neumann);
                 w[i].boundary(&chi2, BC::Neumann);
                 w[i].boundary(&chi3, BC::Dirichlet);

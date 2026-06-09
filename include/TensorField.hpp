@@ -81,35 +81,35 @@ template <Number C> arma::mat operator*(const TensorField &T, C c)
 {
     return static_cast<arma::mat>(T) *= c;
 }
-inline arma::mat operator*(arma::mat M, TensorField T)
+inline arma::mat operator*(arma::mat M, const TensorField &T)
 {
     return M *= static_cast<arma::mat>(T);
 }
-inline arma::mat operator*(TensorField T, arma::mat M)
+inline arma::mat operator*(const TensorField &T, arma::mat M)
 {
     return static_cast<arma::mat>(T) *= M;
 }
-inline arma::mat operator%(arma::mat A, TensorField T)
+inline arma::mat operator%(arma::mat A, const TensorField &T)
 {
     return A % static_cast<arma::mat>(T);
 }
-inline arma::mat operator%(TensorField T, arma::mat A)
+inline arma::mat operator%(const TensorField &T, arma::mat A)
 {
     return static_cast<arma::mat>(T) % A;
 }
-inline arma::mat operator%(TensorField T1, TensorField T2)
+inline arma::mat operator%(const TensorField &T1, const TensorField &T2)
 {
     return static_cast<arma::mat>(T1) % static_cast<arma::mat>(T2);
 }
-inline arma::mat operator/(TensorField T, arma::mat M)
+inline arma::mat operator/(const TensorField &T, arma::mat M)
 {
     return static_cast<arma::mat>(T) /= M;
 }
-inline arma::mat operator/(TensorField T, double d)
+inline arma::mat operator/(const TensorField &T, double d)
 {
     return static_cast<arma::mat>(T) /= d;
 }
-inline arma::mat operator/(arma::mat A, TensorField T)
+inline arma::mat operator/(arma::mat A, const TensorField &T)
 {
     return A /= static_cast<arma::mat>(T);
 }

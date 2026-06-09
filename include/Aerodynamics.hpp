@@ -15,8 +15,8 @@ class Aerodynamics
     Aerodynamics fromWings(std::vector<Wing*>);
 public:
     Aerodynamics() = default;
-    Aerodynamics(std::vector<Wing*> _w, std::vector<Interface> _i) : wings(_w), interfaces(_i) {};
-    Aerodynamics(std::vector<Wing*> _w) : Aerodynamics(fromWings(_w)) {};
+    Aerodynamics(const std::vector<Wing*> _w, const std::vector<Interface> _i) : wings(_w), interfaces(_i) {};
+    Aerodynamics(const std::vector<Wing*> _w) : Aerodynamics(fromWings(_w)) {};
     void setlambda(double);
     // Sets the dynamic pressure
     void dynamicPressure(double _qdyn)

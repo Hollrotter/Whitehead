@@ -11,7 +11,7 @@
  */
 template <class C> void Membrane::boundary(const Field field, const Direction dir, const BC bc, const C val)
 {
-    std::unique_ptr<TensorField> f = setField(field);
+    TensorField* f = setField(field);
     switch (dir)
     {
         case Direction::N:
@@ -31,12 +31,11 @@ template <class C> void Membrane::boundary(const Field field, const Direction di
             f->east    = (typeid(val) == typeid(arma::vec) ? arma::vec(val) : f->east*val);
             break;
     }
-    f.release();
 }
 
 template <class C> void Membrane::boundary(const Field field, const Lagrange::CurveInterpolant* dir, const BC bc, const C val)
 {
-    std::unique_ptr<TensorField> f = setField(field);
+    TensorField* f = setField(field);
     if (dir == chi[0])
     {
         f->southBC = bc;
@@ -60,10 +59,8 @@ template <class C> void Membrane::boundary(const Field field, const Lagrange::Cu
     else
     {
         std::println("Not a curve of the membrane!");
-        f.release();
         exit(EXIT_FAILURE);
     }
-    f.release();
 }
 
 /**
@@ -79,7 +76,7 @@ template <class C> void Membrane::boundary(const Field field, const Lagrange::Cu
  */
 template <class C> void Membrane::boundary(const Field field, const Direction dir, const BC bc, const double _r1, const double _r2, const C val)
 {
-    std::unique_ptr<TensorField> f = setField(field);
+    TensorField* f = setField(field);
     switch (dir)
     {
         case Direction::N:
@@ -99,13 +96,12 @@ template <class C> void Membrane::boundary(const Field field, const Direction di
             f->r2East = _r2;
             break;
     }
-    f.release();
     boundary(field, dir, bc, val);
 }
 
 template <class C> void Membrane::boundary(const Field field, const Lagrange::CurveInterpolant* dir, const BC bc, const double _r1, const double _r2, const C val)
 {
-    std::unique_ptr<TensorField> f = setField(field);
+    TensorField* f = setField(field);
     if (dir == chi[0])
     {
         f->r1South = _r1;
@@ -129,10 +125,8 @@ template <class C> void Membrane::boundary(const Field field, const Lagrange::Cu
     else
     {
         std::println("Not a curve of the membrane!");
-        f.release();
         exit(EXIT_FAILURE);
     }
-    f.release();
     boundary(field, dir, bc, val);
 }
 

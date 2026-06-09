@@ -27,7 +27,7 @@ class Airfoil
 public:
     Airfoil() = default;
     Airfoil(double _c, size_t _nx) : c(_c), nx(_nx) {}
-    Airfoil(arma::vec _x, arma::vec _z, Lagrange::CurveInterpolant* _chi) : x(_x), z(_z), chi(_chi), c(_x.back()-_x.front()), nx(_x.size()) {};
+    Airfoil(arma::vec _x, arma::vec _z, Lagrange::CurveInterpolant* _chi) : c(_x.back()-_x.front()), nx(_x.size()), chi(_chi), x(_x), z(_z) {};
     Airfoil(Lagrange::CurveInterpolant* _chi) : Airfoil(fromLagrangeCurveInterpolant(_chi)) {}
     // Set dynamic pressure
     void dynamicPressure(double);

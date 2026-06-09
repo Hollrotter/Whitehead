@@ -10,8 +10,8 @@ class Camber
     Splinefit s; // Splinefitting for the initial contour of the camber
 public:
     Camber() : camberType(CamberType::none) {}
-    Camber(std::function<double(double)> dF) : df(dF), camberType(CamberType::function) {}
-    Camber(std::function<double(double)> F, std::function<double(double)> dF) : f(F), df(dF), camberType(CamberType::function) {}
+    Camber(std::function<double(double)> dF) : camberType(CamberType::function), df(dF) {}
+    Camber(std::function<double(double)> F, std::function<double(double)> dF) : camberType(CamberType::function), f(F), df(dF) {}
     Camber(Splinefit S) : s(S) {}
     // Compute z coordinate at given x value
     double operator() (double);

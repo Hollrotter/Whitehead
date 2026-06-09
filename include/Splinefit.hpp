@@ -5,8 +5,8 @@ class Splinefit
 {
     size_t order = 3; // Order of the B-Splines
     arma::vec h; // Factors obtained from least-squares fitting
-    size_t M; // Number of segments in 1-direction
-    size_t N; // Number of segments in 2-direction
+    size_t M = 1; // Number of segments in 1-direction
+    size_t N = 1; // Number of segments in 2-direction
     B_Spline B1; // B-Spline in 1-direction
     B_Spline B2; // B-Spline in 2-direction
     arma::mat Q; // Orthogonal matrix

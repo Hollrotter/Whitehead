@@ -9,7 +9,7 @@
  * @param D2 
  * @return std::tuple<arma::cube, arma::cube> 
  */
-std::tuple<arma::cube, arma::cube> Metric(arma::mat &y1, arma::mat &y2, arma::mat &D1, arma::mat &D2)
+std::tuple<arma::cube, arma::cube> Metric(const arma::mat &y1, const arma::mat &y2, arma::mat &D1, arma::mat &D2)
 {
 	arma::cube g_c = MetricCo(y1, y2, D1, D2);
 	arma::cube gc  = MetricContra(g_c);

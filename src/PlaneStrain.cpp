@@ -8,8 +8,6 @@ void Membrane::planeStrain()
 
 void Membrane::planeStrainSolve()
 {
-    size_t nxy2 = 2*nxy;
-
     arma::mat Phi111 = 3*H1111%g111() + 6*H1112%g112() + (H1122 + 2*H1221)%g122();
     arma::mat Phi112 = 2*H1112%(g111() + g212()) + 2*H1222%g122() + H1111%g211() + H1221%(3*g112() + g222()) + H1122%g112();
     arma::mat Phi121 = 2*H1111%g211() + (H1122 + H1221)%(g112() + g222()) + H1112%(g111() + 4*g212()) + H1222%g122();
@@ -85,7 +83,6 @@ void Membrane::planeStrainSolve()
 
     // BC north-west corner (i = 0, j = ny-1)
     size_t j = ny-1;
-    size_t k = j*nx;
     if (chi[2]->curveType == CurveType::Boundary  && chi[3]->curveType == CurveType::Interface)
     {
         v1BoundarySouthNorth(v1.northBC, v1.north(0), 0, j, A, v1.r1North, v1.r2North, h_1s1_north(0), h_2s1_north(0), h_2s2_north(0));
@@ -121,7 +118,6 @@ void Membrane::planeStrainSolve()
     // BC north-east corner (i = nx-1, j = ny-1)
     i = nx-1;
     j = ny-1;
-    k = i + j*nx;
     if (chi[2]->curveType == CurveType::Interface && chi[1]->curveType == CurveType::Boundary)
     {
         v1BoundaryWestEast(v1.eastBC, v1.east(0), i, j, A, v1.r1East, v1.r2East, h_1s1_east(j), h_1s2_east(j));
