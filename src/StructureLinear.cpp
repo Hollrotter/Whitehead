@@ -428,7 +428,6 @@ void Structure::linear()
                 }
                 case 1: // East
                 {
-                    size_t nx = membraneTarget->nx;
                     arma::rowvec dZd1 = D1.row(nx-1)*Z;
                     arma::rowvec dZd2 = Z.row(nx-1)*D2.t();
                     arma::rowvec h_1s1 = membraneTarget->h_1s1_east;
@@ -475,7 +474,6 @@ void Structure::linear()
                 }
                 case 2: // North
                 {
-                    size_t ny = membraneTarget->ny;
                     arma::vec dZd1 = D1*Z.col(ny-1);
                     arma::vec dZd2 = Z*D2.row(ny-1).t();
                     arma::vec h_2s1 = membraneTarget->h_2s1_north;
@@ -677,7 +675,7 @@ void Structure::linear()
         converged = true;
         for (size_t k = 0; k < interfaces.size(); k++)
         {
-            printf("Interface %lu: ", k+1);
+            std::cout << "Interface " << k+1 << "\n";
             double res = fabs(1 - arma::norm(Zsource(k).subvec(1, Zsource(k).size()-2))/arma::norm(Ztarget(k).subvec(1, Ztarget(k).size()-2)));
             printf("Residual %4.2e\n", res);
             if (res > residualTarget)

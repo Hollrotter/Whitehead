@@ -5,7 +5,7 @@
 class DVM
 {
     Camber camber;
-    double c; // Chord length
+    double c = 0; // Chord length
     double qdyn = 1; // Dynamic pressure
     arma::vec alpha = arma::zeros(1); // Pitch
     size_t nx = 1; // Number of segments
@@ -30,7 +30,7 @@ public:
     // Constructor for flat plate
     DVM(double _c, size_t _nx) : camber(Camber()), c(_c), nx(_nx) {}
     // Constructor for camber defined by function describing only the derivative of z (use for linear analysis only!)
-    DVM(std::function<double(double)> dF) : camber(Camber(dF)) {}
+    explicit DVM(std::function<double(double)> dF) : camber(Camber(dF)) {}
     // Constructor for camber defined by function describing only the derivative of z (use for linear analysis only!)
     DVM(double _c, size_t _nx, std::function<double(double)> dF) : camber(Camber(dF)), c(_c), nx(_nx) {}
     // Constructor for camber defined by function describing the value and the derivative of z (use for nonlinear analysis!)
@@ -38,11 +38,11 @@ public:
     // Constructor for camber defined by function describing the value and the derivative of z (use for nonlinear analysis!)
     DVM(double _c, size_t _nx, std::function<double(double)> F, std::function<double(double)> dF) : camber(Camber(F, dF)), c(_c), nx(_nx) {}
     // Constructor for camber defined by Splinefitting
-    DVM(Splinefit S) : camber(Camber(S)) {}
+    explicit DVM(const Splinefit &S) : camber(Camber(S)) {}
     // Constructor for camber defined by Splinefitting
-    DVM(double _c, size_t _nx, Splinefit S) : camber(Camber(S)), c(_c), nx(_nx) {}
-    DVM(Camber _camber) : camber(_camber) {}
-    DVM(double _c, size_t _nx, Camber _camber) : camber(_camber), c(_c), nx(_nx) {}
+    DVM(double _c, size_t _nx, const Splinefit &S) : camber(Camber(S)), c(_c), nx(_nx) {}
+    explicit DVM(const Camber &_camber) : camber(_camber) {}
+    DVM(double _c, size_t _nx, const Camber &_camber) : camber(_camber), c(_c), nx(_nx) {}
     // Set dynamic pressure
     void dynamicPressure(double);
     // Set pitch in degree

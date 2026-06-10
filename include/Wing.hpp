@@ -69,7 +69,7 @@ public:
         : chi(_chi), x(_x), y(_y), h(_h) {}
     Wing(std::array<Lagrange::CurveInterpolant*, 4> _chi, arma::mat _x, arma::mat _y, arma::mat _z, std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::vec, arma::rowvec, arma::rowvec> _h)
         : chi(_chi), x(_x), y(_y), z(_z), h(_h) {}
-    Wing(std::array<Lagrange::CurveInterpolant*, 4> _chi) : Wing(fromTransfiniteQuadMap(_chi)) {}
+    explicit Wing(std::array<Lagrange::CurveInterpolant*, 4> _chi) : Wing(fromTransfiniteQuadMap(_chi)) {}
     Wing(arma::mat _z, std::array<Lagrange::CurveInterpolant*, 4> _chi) : Wing(fromTransfiniteQuadMap(_z, _chi)) {}
     // Sets the dynamic pressure
     void dynamicPressure(double);

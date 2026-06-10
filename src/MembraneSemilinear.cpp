@@ -4,31 +4,28 @@ void Membrane::semilinear()
 {
     analysis = Analysis::semilinear;
     structuralMatrix();
-    arma::mat e11  = ec.slice(0);
-    arma::mat e12  = ec.slice(1);
-    arma::mat e22  = ec.slice(2);
-    arma::vec E11  = vectorise(e11);
-    arma::vec E12  = vectorise(e12);
-    arma::vec E22  = vectorise(e22);
+    arma::vec E11  = vectorise(e11());
+    arma::vec E12  = vectorise(e12());
+    arma::vec E22  = vectorise(e22());
 
     for (size_t substep = 1; substep <= substeps; substep++)
     {
-        printf("Substep %lu/%lu\n", substep, substeps);
+        std::cout << "Substep " << substep << '/' << substeps << '\n';
         arma::mat pressure = p*substep/substeps;
         for (size_t q = 0; q < iter; q++)
         {
-            printf("Iteration %lu/%lu\n", q+1, iter);
-            arma::vec Z  = vectorise(arma::mat(z));
-            arma::vec P  = vectorise(pressure);
-            double pMAX = loaded ? max(arma::abs(P)) : 1;
-            double pRMS = loaded ? sqrt(sum(P%P))    : 1;
-            arma::vec z_1 = DD1*Z;
-            arma::vec z_2 = DD2*Z;
+            std::cout << "Iteration " << q+1 << '/' << iter << '\n';
+            arma::vec _z  = vectorise(arma::mat(z));
+            arma::vec _p  = vectorise(pressure);
+            double pMAX = loaded ? max(arma::abs(_p)) : 1;
+            double pRMS = loaded ? sqrt(sum(_p%_p))   : 1;
+            arma::vec z_1 = DD1*_z;
+            arma::vec z_2 = DD2*_z;
             arma::vec sae = sqrt(1 + E11%z_1%z_1 + 2*E12%z_1%z_2 + E22%z_2%z_2);
-            b = S*Z + P%sae;
+            b = S*_z + _p%sae;
             arma::mat dsaedz = (QLM((E11%z_1 + E12%z_2), DD1) + QLM((E12%z_1 + E22%z_2), DD2))&(sae);
 
-            arma::mat A = S + QLM(P, dsaedz);
+            arma::mat A = S + QLM(_p, dsaedz);
             for (size_t j = 1; j < ny-1; j++)
             {
                 zBoundarySemilinear(z.westBC, z.west(j),    0, j, A, b, z.r1West, z.r2West, z_1(j*nx),       z_2(j*nx),       h_1s1_west(j), h_1s2_west(j));
@@ -77,22 +74,22 @@ void Membrane::semilinear()
                 break;
 
             arma::vec dz = solve(A, b);
-            double omega = armijoSemilinear(dz, P);
+            double omega = armijoSemilinear(dz, _p);
             std::println("omega = {0:4.2f}", omega);
             z.arma::mat::operator-=(omega*reshape(dz, nx, ny));
         }
     }
 }
 
-double Membrane::armijoSemilinear(arma::vec dz, arma::vec &P)
+double Membrane::armijoSemilinear(arma::vec dz, const arma::vec &_p)
 {
     double omega = 1;
-    double T = residualLevelFunctionSemilinear(vectorise(arma::mat(z)), P);
+    double T = residualLevelFunctionSemilinear(vectorise(arma::mat(z)), _p);
     double T_dx_min = 1e10;
     for (size_t m = 0; m < 10; m++)
     {
         double alpha = pow(0.5, m);
-        double T_dx = residualLevelFunctionSemilinear(vectorise(arma::mat(z)) - alpha*dz, P);
+        double T_dx = residualLevelFunctionSemilinear(vectorise(arma::mat(z)) - alpha*dz, _p);
         if (T_dx <= (1 - alpha/2)*T)
             if (T_dx < T_dx_min)
             {
@@ -103,11 +100,11 @@ double Membrane::armijoSemilinear(arma::vec dz, arma::vec &P)
     return omega;
 }
 
-double Membrane::residualLevelFunctionSemilinear(arma::vec Z, const arma::vec &P)
+double Membrane::residualLevelFunctionSemilinear(arma::vec _z, const arma::vec &_p)
 {
-    arma::vec Z_1 = DD1*Z;
-    arma::vec Z_2 = DD2*Z;
-    arma::vec f = S*Z + P%(1 + vectorise(e11())%Z_1%Z_1 + 2*vectorise(e12())%Z_1%Z_2 + vectorise(e22())%Z_2%Z_2);
+    arma::vec Z_1 = DD1*_z;
+    arma::vec Z_2 = DD2*_z;
+    arma::vec f = S*_z + _p%(1 + vectorise(e11())%Z_1%Z_1 + 2*vectorise(e12())%Z_1%Z_2 + vectorise(e22())%Z_2%Z_2);
 
     return dot(f, f);
 }

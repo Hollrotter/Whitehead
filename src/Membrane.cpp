@@ -116,7 +116,6 @@ double Membrane::integrate(arma::mat f)
     Dx.row(0).eye();
     arma::mat Dy = D2;
     Dy.row(0).eye();
-    arma::mat e = e_c.slice(0)%e_c.slice(2) - e_c.slice(1)%e_c.slice(1);
     arma::mat int_f_dx   = solve(Dx, sqrt(e)%f);
     arma::mat int_f_dxdy = solve(Dy, int_f_dx.t());
     return int_f_dxdy(ny-1, nx-1) - int_f_dxdy(0, 0); // Transpose not needed because only last element needed
@@ -152,10 +151,10 @@ std::pair<arma::mat, arma::mat> Membrane::kartesianDisplacements()
     arma::mat vx = ( J(1, 1)%v1 - J(1, 0)%v2)/det;
     arma::mat vy = (-J(0, 1)%v1 + J(0, 0)%v2)/det;
 
-    return std::tie(vx, vy);
+    return std::make_pair(vx, vy);
 }
 
-void Membrane::principalStresses(const std::string filenameKartesianStresses, const std::string filenamePrincipalStresses)
+void Membrane::principalStresses(const std::string &fileSx, const std::string &fileS1)
 {
     arma::mat sigma_x = pow(J(0, 0), 2)%n11 +                   2*J(0, 0)%J(0, 1)%n12 + pow(J(0, 1), 2)%n22;
     arma::mat tau_xy  = J(0, 0)%J(1, 0)%n11 + (J(0, 0)%J(1, 1) + J(0, 1)%J(1, 0))%n12 + J(0, 1)%J(1, 1)%n22;
@@ -164,8 +163,8 @@ void Membrane::principalStresses(const std::string filenameKartesianStresses, co
     arma::mat sigma_1 = (sigma_x + sigma_y)/2 + sqrt((sigma_x - sigma_y)%(sigma_x - sigma_y)/4 + tau_xy%tau_xy);
     arma::mat sigma_2 = (sigma_x + sigma_y)/2 - sqrt((sigma_x - sigma_y)%(sigma_x - sigma_y)/4 + tau_xy%tau_xy);
     arma::mat tau_12  = (sigma_1 - sigma_2)/2;
-    std::ofstream file_k(filenameKartesianStresses);
-    std::ofstream file_p(filenamePrincipalStresses);
+    std::ofstream file_k(fileSx);
+    std::ofstream file_p(fileS1);
     for (size_t i = 0; i < nx; i++, file_k<<'\n', file_p<<'\n')
         for (size_t j = 0; j < ny; j++, file_k<<'\n', file_p<<'\n')
         {
@@ -176,28 +175,28 @@ void Membrane::principalStresses(const std::string filenameKartesianStresses, co
     file_p.close();
 }
 
-void Membrane::principalStrains(const std::string filenameKartesianDeformations, const std::string filenameKartesianStrains, const std::string filenamePrincipalStrains)
+void Membrane::principalStrains(const std::string &fileV, const std::string &fileEx, const std::string &fileE1)
 {
     arma::mat det2 = pow(J(0, 0)%J(1, 1) - J(0, 1)%J(1, 0), 2);
 
     auto [vx, vy] = kartesianDisplacements();
 
     arma::mat epsilon_x = (pow(J(1, 1), 2)%gamma_11 - 2*J(1, 1)%J(1, 0)%gamma_12  + pow(J(1, 0), 2)%gamma_22)/det2;
-    arma::mat gamma_xy  =-(J(1, 1)%J(0, 1)%gamma_11 - (J(1, 1)%J(0, 0) + J(1, 0)%J(0, 1))%gamma_12 + J(1, 0)%J(0, 0)%gamma_22)/det2;
+    arma::mat gam_xy    =-(J(1, 1)%J(0, 1)%gamma_11 - (J(1, 1)%J(0, 0) + J(1, 0)%J(0, 1))%gamma_12 + J(1, 0)%J(0, 0)%gamma_22)/det2;
     arma::mat epsilon_y = (pow(J(0, 1), 2)%gamma_11 - 2*J(0, 1)%J(0, 0)%gamma_12  + pow(J(0, 0), 2)%gamma_22)/det2;
     
-    arma::mat epsilon_1 = (epsilon_x + epsilon_y)/2 + sqrt((epsilon_x - epsilon_y)%(epsilon_x - epsilon_y)/4 + gamma_xy%gamma_xy);
-    arma::mat epsilon_2 = (epsilon_x + epsilon_y)/2 - sqrt((epsilon_x - epsilon_y)%(epsilon_x - epsilon_y)/4 + gamma_xy%gamma_xy);
-    arma::mat gamma_12  = (epsilon_1 - epsilon_2)/2;
-    std::ofstream file_v(filenameKartesianDeformations);
-    std::ofstream file_k(filenameKartesianStrains);
-    std::ofstream file_p(filenamePrincipalStrains);
+    arma::mat epsilon_1 = (epsilon_x + epsilon_y)/2 + sqrt((epsilon_x - epsilon_y)%(epsilon_x - epsilon_y)/4 + gam_xy%gam_xy);
+    arma::mat epsilon_2 = (epsilon_x + epsilon_y)/2 - sqrt((epsilon_x - epsilon_y)%(epsilon_x - epsilon_y)/4 + gam_xy%gam_xy);
+    arma::mat gam_12    = (epsilon_1 - epsilon_2)/2;
+    std::ofstream file_v(fileV);
+    std::ofstream file_k(fileEx);
+    std::ofstream file_p(fileE1);
     for (size_t i = 0; i < nx; i++, file_v<<'\n', file_k<<'\n', file_p<<'\n')
         for (size_t j = 0; j < ny; j++, file_v<<'\n', file_k<<'\n', file_p<<'\n')
         {
             file_v << x(i, j) << ' ' << y(i, j) << ' ' << vx(i, j) << ' ' << vy(i, j);
-            file_k << x(i, j) << ' ' << y(i, j) << ' ' << epsilon_x(i, j) << ' ' << epsilon_y(i, j) << ' ' << gamma_xy(i, j);
-            file_p << x(i, j) << ' ' << y(i, j) << ' ' << epsilon_1(i, j) << ' ' << epsilon_2(i, j) << ' ' << gamma_12(i, j);
+            file_k << x(i, j) << ' ' << y(i, j) << ' ' << epsilon_x(i, j) << ' ' << epsilon_y(i, j) << ' ' << gam_xy(i, j);
+            file_p << x(i, j) << ' ' << y(i, j) << ' ' << epsilon_1(i, j) << ' ' << epsilon_2(i, j) << ' ' << gam_12(i, j);
         }
     file_v.close();
     file_k.close();
@@ -210,7 +209,7 @@ void Membrane::principalStrains(const std::string filenameKartesianDeformations,
  * @param filename Path of the file where the data will be output to.
  * @param field Field to be output.
  */
-void Membrane::output(const std::string filename, const Field field)
+void Membrane::output(const std::string &filename, const Field field)
 {
     TensorField* f = setField(field);
     std::ofstream file(filename);

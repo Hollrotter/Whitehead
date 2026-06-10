@@ -21,7 +21,7 @@ void Structure::nonlinear()
 
     for (size_t substep = 1; substep <= substeps; substep++)
     {
-        printf("Substep %lu/%lu\n", substep, substeps);
+        std::cout << "Substep " << substep << '/' << substeps << '\n';
         for (size_t k = 0; k < membranes.size(); k++)
         {
             membranes[k]->p  =  p0(k)*substep/substeps;
@@ -637,7 +637,7 @@ void Structure::nonlinear()
             converged = true;
             for (size_t k = 0; k < interfaces.size(); k++)
             {
-                printf("Interface %lu\n", k+1);
+                std::cout << "Interface " << k+1 << '\n';
                 double res1 = fabs(1 - arma::norm(Vnsource(k).subvec(1, Vnsource(k).size()-2))/arma::norm(Vntarget(k).subvec(1, Vntarget(k).size()-2)));
                 double res2 = fabs(1 - arma::norm(Vtsource(k).subvec(1, Vtsource(k).size()-2))/arma::norm(Vttarget(k).subvec(1, Vttarget(k).size()-2)));
                 double res3 = fabs(1 - arma::norm( Zsource(k).subvec(1,  Zsource(k).size()-2))/arma::norm( Ztarget(k).subvec(1,  Ztarget(k).size()-2)));

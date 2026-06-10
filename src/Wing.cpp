@@ -3,20 +3,20 @@
 Wing Wing::fromTransfiniteQuadMap(std::array<Lagrange::CurveInterpolant*, 4> _chi)
 {
     auto [_x, _y] = Lagrange::TransfiniteQuadMap(_chi);
-    arma::vec xi_1 = Chebyshev::gauss(_chi[0]->getNodes().size());
-    arma::vec xi_2 = Chebyshev::gauss(_chi[1]->getNodes().size());
+    arma::vec _x1 = Chebyshev::gauss(_chi[0]->getNodes().size());
+    arma::vec _x2 = Chebyshev::gauss(_chi[1]->getNodes().size());
     std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::vec, arma::rowvec, arma::rowvec>
-        _h = Lagrange::covariantScaleFactors(xi_1, xi_2, _chi);
+        _h = Lagrange::covariantScaleFactors(_x1, _x2, _chi);
     return {_chi, _x, _y, _h};
 }
 
 Wing Wing::fromTransfiniteQuadMap(arma::mat _z, std::array<Lagrange::CurveInterpolant*, 4> _chi)
 {
     auto [_x, _y] = Lagrange::TransfiniteQuadMap(_chi);
-    arma::vec xi_1 = Chebyshev::gauss(_chi[0]->getNodes().size());
-    arma::vec xi_2 = Chebyshev::gauss(_chi[1]->getNodes().size());
+    arma::vec _x1 = Chebyshev::gauss(_chi[0]->getNodes().size());
+    arma::vec _x2 = Chebyshev::gauss(_chi[1]->getNodes().size());
     std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::vec, arma::rowvec, arma::rowvec>
-        _h = Lagrange::covariantScaleFactors(xi_1, xi_2, _chi, _z);
+        _h = Lagrange::covariantScaleFactors(_x1, _x2, _chi, _z);
     return {_chi, _x, _y, _z, _h};
 }
 
@@ -293,15 +293,15 @@ void Wing::postprocessing()
                     J_red/=sqrt_a(i, j);
                     for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                     {
-                        double T2 = boost::math::chebyshev_t(q, x2(j));
+                        double t2 = boost::math::chebyshev_t(q, x2(j));
                         double dT2dx2 = boost::math::chebyshev_t_prime(q, x2(j));
                         for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                         {
-                            double T1 = boost::math::chebyshev_t(p, x1(i));
+                            double t1 = boost::math::chebyshev_t(p, x1(i));
                             double dT1dx1 = boost::math::chebyshev_t_prime(p, x1(i));
-                            arma::vec::fixed<2> dmudxi = {dT1dx1*T2, T1*dT2dx2};
+                            arma::vec::fixed<2> dmudxi = {dT1dx1*t2, t1*dT2dx2};
                             arma::vec::fixed<3> gradmu = J_red*dmudxi;
-                            mu(i, j) += mu_hat(p+q*nx, 0) * T1 * T2;
+                            mu(i, j) += mu_hat(p+q*nx, 0) * t1 * t2;
                             q_mu     += mu_hat(p+q*nx, 0) * gradmu;
                         }
                     }
@@ -344,13 +344,13 @@ void Wing::postprocessing()
                     arma::vec DCP(con, arma::fill::zeros);
                     for (size_t q = 0; q < ny; q++)
                     {
-                        double T2 = boost::math::chebyshev_t(q, x2_gl(j));
+                        double t2 = boost::math::chebyshev_t(q, x2_gl(j));
                         double dT2dx2 = boost::math::chebyshev_t_prime(q, x2_gl(j));
                         for (size_t p = 0; p < nx; p++)
                         {
-                            double T1 = boost::math::chebyshev_t(p, x1_gl(i));
+                            double t1 = boost::math::chebyshev_t(p, x1_gl(i));
                             double dT1dx1 = boost::math::chebyshev_t_prime(p, x1_gl(i));
-                            DCP += 2*mu_hat.row(p+q*nx) * (J11_inv*dT1dx1*T2 + J21_inv*T1*dT2dx2);
+                            DCP += 2*mu_hat.row(p+q*nx) * (J11_inv*dT1dx1*t2 + J21_inv*t1*dT2dx2);
                         }
                     }
                     area   += gl_x[i].weight * gl_y[j].weight * detJ;
@@ -364,9 +364,9 @@ void Wing::postprocessing()
             arma::mat F(3, con);
             arma::mat M(3, con);
             arma::mat Q = join_horiz(cos(alpha), arma::zeros(con), sin(alpha));
-            arma::mat Tx = Lagrange::interpolationMatrix(x1, x1_gl);
-            arma::mat Ty = Lagrange::interpolationMatrix(x2, x2_gl);
-            arma::mat z_gl = Lagrange::interpolation2D(Tx, Ty, z, x1_gl, x2_gl);
+            arma::mat Tx_gl = Lagrange::interpolationMatrix(x1, x1_gl);
+            arma::mat Ty_gl = Lagrange::interpolationMatrix(x2, x2_gl);
+            arma::mat z_gl  = Lagrange::interpolation2D(Tx_gl, Ty_gl, z, x1_gl, x2_gl);
             arma::mat D1_gl = Lagrange::derivativeMatrix(x1_gl);
             arma::mat D2_gl = Lagrange::derivativeMatrix(x2_gl);
             arma::mat dzdx1_gl = D1_gl*z_gl;
@@ -388,13 +388,13 @@ void Wing::postprocessing()
                     arma::vec::fixed<3> q_mu(arma::fill::zeros);
                     for (size_t q = 0; q < ny; q++)
                     {
-                        double T2 = boost::math::chebyshev_t(q, x2_gl(j));
+                        double t2 = boost::math::chebyshev_t(q, x2_gl(j));
                         double dT2dx2 = boost::math::chebyshev_t_prime(q, x2_gl(j));
                         for (size_t p = 0; p < nx; p++)
                         {
-                            double T1 = boost::math::chebyshev_t(p, x1_gl(i));
+                            double t1 = boost::math::chebyshev_t(p, x1_gl(i));
                             double dT1dx1 = boost::math::chebyshev_t_prime(p, x1_gl(i));
-                            arma::vec::fixed<2> dmudxi = {dT1dx1*T2, T1*dT2dx2};
+                            arma::vec::fixed<2> dmudxi = {dT1dx1*t2, t1*dT2dx2};
                             arma::vec::fixed<3> gradmu = J_red*dmudxi;
                             q_mu += mu_hat(p+q*nx, 0) * gradmu;
                         }

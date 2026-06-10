@@ -17,8 +17,8 @@ void String::structuralMatrix()
             arma::vec dzdx = D1*z;
             if (materialModel == Material::extensible)
             {
-                double L = integrate(sqrt(1 + pow(dzdx, 2)));
-                double delta = log(L/L0);
+                double length = integrate(sqrt(1 + pow(dzdx, 2)));
+                double delta = log(length/L0);
                 s += Et*delta;
             }
             S = s*D11;

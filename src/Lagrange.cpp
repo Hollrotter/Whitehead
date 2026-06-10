@@ -302,7 +302,7 @@ std::pair<arma::mat, arma::mat> Lagrange::TransfiniteQuadMap(const arma::vec &x1
                     - ((1 - x1i)*((1 - x2j)*y_1 + (1 + x2j)*y_4) + (1 + x1i)*((1 - x2j)*y_2 + (1 + x2j)*y_3))/4;
         }
     }
-    return std::tie(x, y);
+    return std::make_pair(x, y);
 }
 
 std::tuple<arma::mat, arma::mat, arma::mat, arma::mat> Lagrange::TransfiniteQuadMetrics(const std::array<CurveInterpolant*, 4> chi)
@@ -395,7 +395,7 @@ std::tuple<double, double, double, double> Lagrange::TransfiniteQuadMetrics(cons
     double dxdx2 = ((1 - x1)*Xs_4 + (1 + x1)*Xs_2 + X_3 - X_1)/2 - ((1 - x1)*(x_4 - x_1) + (1 + x1)*(x_3 - x_2))/4;
     double dydx2 = ((1 - x1)*Ys_4 + (1 + x1)*Ys_2 + Y_3 - Y_1)/2 - ((1 - x1)*(y_4 - y_1) + (1 + x1)*(y_3 - y_2))/4;
 
-    return std::tie(dxdx1, dxdx2, dydx1, dydx2);
+    return std::make_tuple(dxdx1, dxdx2, dydx1, dydx2);
 }
 
 std::tuple<arma::mat, arma::mat, arma::mat, arma::mat> Lagrange::TransfiniteQuadMetrics(const arma::vec &x1, const arma::vec &x2, const std::array<CurveInterpolant*, 4> chi)
@@ -492,7 +492,7 @@ std::tuple<arma::mat, arma::mat, arma::mat, arma::mat> Lagrange::TransfiniteQuad
             dydx2(i, j) = ((1 - x1i)*Ys_4 + (1 + x1i)*Ys_2 + Y_3 - Y_1)/2 - ((1 - x1i)*(y_4 - y_1) + (1 + x1i)*(y_3 - y_2))/4;
         }
     }
-    return std::tie(dxdx1, dxdx2, dydx1, dydx2);
+    return std::make_tuple(dxdx1, dxdx2, dydx1, dydx2);
 }
 
 std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::vec, arma::rowvec, arma::rowvec>
@@ -692,11 +692,11 @@ std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::ve
     arma::vec h_2s2_north = sqrt(e22_north);
     arma::vec h_2s1_north = e12_north/sqrt(e22_north);
 
-    return {h_2s2_south, h_2s1_south, h_1s1_east, h_1s2_east, h_2s2_north, h_2s1_north, h_1s1_west, h_1s2_west};
+    return std::make_tuple(h_2s2_south, h_2s1_south, h_1s1_east, h_1s2_east, h_2s2_north, h_2s1_north, h_1s1_west, h_1s2_west);
 }
 
 std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::vec, arma::rowvec, arma::rowvec>
-    Lagrange::covariantScaleFactors(const std::array<CurveInterpolant*, 4> chi, arma::mat &z)
+    Lagrange::covariantScaleFactors(const std::array<CurveInterpolant*, 4> chi, const arma::mat &z)
 {
     arma::vec x1 = Chebyshev::gaussLobatto(chi[0]->getNodes().size());
     arma::vec x2 = Chebyshev::gaussLobatto(chi[1]->getNodes().size());
@@ -704,7 +704,7 @@ std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::ve
 }
 
 std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::vec, arma::rowvec, arma::rowvec>
-    Lagrange::covariantScaleFactors(const arma::vec &x1, const arma::vec &x2, const std::array<CurveInterpolant*, 4> chi, arma::mat &z)
+    Lagrange::covariantScaleFactors(const arma::vec &x1, const arma::vec &x2, const std::array<CurveInterpolant*, 4> chi, const arma::mat &z)
 {
     if (chi[0]->getNodes().size() != chi[2]->getNodes().size() || chi[1]->getNodes().size() != chi[3]->getNodes().size())
     {
@@ -898,5 +898,5 @@ std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::ve
     arma::vec h_2s2_north = sqrt(a22_north);
     arma::vec h_2s1_north = a12_north/sqrt(a22_north);
 
-    return {h_2s2_south, h_2s1_south, h_1s1_east, h_1s2_east, h_2s2_north, h_2s1_north, h_1s1_west, h_1s2_west};
+    return std::make_tuple(h_2s2_south, h_2s1_south, h_1s1_east, h_1s2_east, h_2s2_north, h_2s1_north, h_1s1_west, h_1s2_west);
 }

@@ -14,8 +14,8 @@ class Structure
     Structure fromMembranes(std::vector<Membrane*>);
 public:
     Structure() = default;
-    Structure(std::vector<Membrane*> _m, std::vector<Interface> _i) : membranes(_m), interfaces(_i) {};
-    Structure(std::vector<Membrane*> _m) : Structure(fromMembranes(_m)) {};
+    Structure(const std::vector<Membrane*> &_m, const std::vector<Interface> &_i) : membranes(_m), interfaces(_i) {};
+    explicit Structure(const std::vector<Membrane*> &_m) : Structure(fromMembranes(_m)) {};
     // Sets the number of substeps for nonlinear analysis (default: substeps = 1)
     void substepControl(const double _substeps)
     {
@@ -122,10 +122,10 @@ public:
     void linear();
     void semilinear();
     void nonlinear();
-    void principalStresses(const std::string, const std::string);
-    void principalStrains(const std::string, const std::string, const std::string);
-    void output(const std::string, const Field);
-    void output(const Field field, const std::string filename)
+    void principalStresses(const std::string&, const std::string&);
+    void principalStrains(const std::string&, const std::string&, const std::string&);
+    void output(const std::string&, const Field);
+    void output(const Field field, const std::string &filename)
     {
         output(filename, field);
     }

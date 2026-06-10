@@ -30,9 +30,9 @@ namespace Chebyshev
     arma::cube ChebyshevDerivativeCoefficients(const arma::mat u_hat);
     arma::cx_vec FFFTEO(const arma::vec f);
     std::pair<arma::vec, arma::vec> forwardRealFFT(const arma::vec x);
-    arma::vec fastCosineTransform(const arma::vec f, const std::string s);
-    arma::vec fastChebyshevTransform(const arma::vec f, const std::string s);
-    arma::mat fastChebyshevTransform(const arma::mat f, const std::string s);
+    arma::vec fastCosineTransform(const arma::vec f, const std::string &s);
+    arma::vec fastChebyshevTransform(const arma::vec f, const std::string &s);
+    arma::mat fastChebyshevTransform(const arma::mat f, const std::string &s);
     inline double c(const size_t k)
     {
         return (k == 0) ? 2 : 1;

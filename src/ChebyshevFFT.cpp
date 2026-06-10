@@ -26,10 +26,10 @@ std::pair<arma::vec, arma::vec> Chebyshev::forwardRealFFT(const arma::vec x)
     arma::vec       b =-2*imag(X);
     b(0)     = 0;
     b.back() = 0;
-    return std::tie(a, b);
+    return std::make_pair(a, b);
 }
 
-arma::vec Chebyshev::fastCosineTransform(const arma::vec f, const std::string s)
+arma::vec Chebyshev::fastCosineTransform(const arma::vec f, const std::string &s)
 {
     const size_t N = f.size()-1;
     const arma::vec C = cos(arma::regspace(0, N)*arma::datum::pi/N);
@@ -53,7 +53,7 @@ arma::vec Chebyshev::fastCosineTransform(const arma::vec f, const std::string s)
     return a;
 }
 
-arma::vec Chebyshev::fastChebyshevTransform(const arma::vec f, const std::string s)
+arma::vec Chebyshev::fastChebyshevTransform(const arma::vec f, const std::string &s)
 {
     arma::vec g = f;
     
@@ -74,7 +74,7 @@ arma::vec Chebyshev::fastChebyshevTransform(const arma::vec f, const std::string
     return a;
 }
 
-arma::mat Chebyshev::fastChebyshevTransform(const arma::mat f, const std::string s)
+arma::mat Chebyshev::fastChebyshevTransform(const arma::mat f, const std::string &s)
 {
     arma::mat f_hat = f;
 

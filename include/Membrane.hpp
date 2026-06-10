@@ -108,7 +108,7 @@ public:
     // Constructor to set x and y
     Membrane(arma::mat _x, arma::mat _y) : x(_x), y(_y) {}
     Membrane(std::array<Lagrange::CurveInterpolant*, 4> _chi, arma::mat _x, arma::mat _y) : chi(_chi), x(_x), y(_y) {}
-    Membrane(std::array<Lagrange::CurveInterpolant*, 4> _chi) : Membrane(fromTransfiniteQuadMap(_chi)) {}
+    explicit Membrane(std::array<Lagrange::CurveInterpolant*, 4> _chi) : Membrane(fromTransfiniteQuadMap(_chi)) {}
     // Sets the Young's modulus times thickness (Et)
     void youngsModulus(const double _Et);
     // Sets the Poisson's ratio (nu)
@@ -424,11 +424,11 @@ public:
     // Calculates the elastic potential or strain energy per unit area of the middle surface
     double elasticPotential();
     std::pair<arma::mat, arma::mat> kartesianDisplacements();
-    void principalStresses(std::string, std::string);
-    void principalStrains(std::string, std::string, std::string);
+    void principalStresses(const std::string&, const std::string&);
+    void principalStrains(const std::string&, const std::string&, const std::string&);
     // Output y, x and a chosen field to chosen file
-    void output(const std::string, const Field);
-    void output(const Field field, const std::string filename)
+    void output(const std::string&, const Field);
+    void output(const Field field, const std::string &filename)
     {
         output(filename, field);
     }
@@ -477,8 +477,8 @@ private:
     void structuralMatrix();
     void solve_S();
     void solve_b();
-    double armijoSemilinear(arma::vec, arma::vec&);
-    double armijoNonlinear(arma::vec, arma::mat&, arma::mat&, arma::mat&);
+    double armijoSemilinear(arma::vec, const arma::vec&);
+    double armijoNonlinear(arma::vec, const arma::mat&, const arma::mat&, const arma::mat&);
     double residualLevelFunctionSemilinear(arma::vec, const arma::vec&);
     double residualLevelFunctionNonlinear(arma::vec, const arma::mat&, const arma::mat&, const arma::mat&);
     void zBoundary(const BC, const double, const size_t, const size_t,

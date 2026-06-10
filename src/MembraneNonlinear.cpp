@@ -67,13 +67,13 @@ void Membrane::nonlinear()
 
     for (size_t substep = 1; substep <= substeps; substep++)
     {
-        printf("Substep %lu/%lu\n", substep, substeps);
+        std::cout << "Substep " << substep << '/' << substeps << '\n';
         arma::mat pressure =  p*substep/substeps;
         arma::mat surface1 = reshape(p1, nx, ny)*substep/substeps;
         arma::mat surface2 = reshape(p2, nx, ny)*substep/substeps;
         for (size_t q = 0; q < iter; q++)
         {
-            printf("Iteration %lu/%lu\n", q+1, iter);
+            std::cout << "Iteration " << q+1 << '/' << iter << '\n';
             double pMAX = loaded ? max(max(arma::abs(pressure)))     : 1;
             double pRMS = loaded ? sqrt(sum(sum(pressure%pressure))) : 1;
 
@@ -413,7 +413,7 @@ void Membrane::nonlinear()
     }
 }
 
-double Membrane::armijoNonlinear(arma::vec dv, arma::mat &surface1, arma::mat &surface2, arma::mat &pressure)
+double Membrane::armijoNonlinear(arma::vec dv, const arma::mat &surface1, const arma::mat &surface2, const arma::mat &pressure)
 {
     double omega = 1;
     arma::vec v = join_vert(vectorise(arma::mat(v1)), vectorise(arma::mat(v2)), vectorise(arma::mat(z)));
@@ -433,38 +433,38 @@ double Membrane::armijoNonlinear(arma::vec dv, arma::mat &surface1, arma::mat &s
     return omega;
 }
 
-double Membrane::residualLevelFunctionNonlinear(arma::vec V, const arma::mat &surface1, const arma::mat &surface2, const arma::mat &pressure)
+double Membrane::residualLevelFunctionNonlinear(arma::vec _v, const arma::mat &surface1, const arma::mat &surface2, const arma::mat &pressure)
 {
-    arma::mat V1 = reshape(V(arma::span(    0,   nxy-1)), nx, ny);
-    arma::mat V2 = reshape(V(arma::span(  nxy, 2*nxy-1)), nx, ny);
-    arma::mat Z  = reshape(V(arma::span(2*nxy, 3*nxy-1)), nx, ny);
-    arma::mat V1_1 = D1*V1;
-    arma::mat V1_2 = V1*D2.t();
-    arma::mat V2_1 = D1*V2;
-    arma::mat V2_2 = V2*D2.t();
-    arma::mat V1__1 = V1_1 - g111()%V1 - g211()%V2;
-    arma::mat V1__2 = V1_2 - g112()%V1 - g212()%V2;
-    arma::mat V2__1 = V2_1 - g112()%V1 - g212()%V2;
-    arma::mat V2__2 = V2_2 - g122()%V1 - g222()%V2;
-    arma::mat Z_1  = D1*Z;
-    arma::mat Z_2  = Z*D2.t();
+    arma::mat _v1 = reshape(_v(arma::span(    0,   nxy-1)), nx, ny);
+    arma::mat _v2 = reshape(_v(arma::span(  nxy, 2*nxy-1)), nx, ny);
+    arma::mat _z  = reshape(_v(arma::span(2*nxy, 3*nxy-1)), nx, ny);
+    arma::mat V1_1 = D1*_v1;
+    arma::mat V1_2 = _v1*D2.t();
+    arma::mat V2_1 = D1*_v2;
+    arma::mat V2_2 = _v2*D2.t();
+    arma::mat V1__1 = V1_1 - g111()%_v1 - g211()%_v2;
+    arma::mat V1__2 = V1_2 - g112()%_v1 - g212()%_v2;
+    arma::mat V2__1 = V2_1 - g112()%_v1 - g212()%_v2;
+    arma::mat V2__2 = V2_2 - g122()%_v1 - g222()%_v2;
+    arma::mat Z_1  = D1*_z;
+    arma::mat Z_2  = _z*D2.t();
 
-    arma::mat V1_11 = D11*V1;
-    arma::mat V1_12 = D1*V1*D2.t();
-    arma::mat V1_22 = V1*D22.t();
-    arma::mat V2_11 = D11*V2;
-    arma::mat V2_12 = D1*V2*D2.t();
-    arma::mat V2_22 = V2*D22.t();
-    arma::mat Z_11 = D11*Z;
-    arma::mat Z_12 = D1*Z*D2.t();
-    arma::mat Z_22 = Z*D22.t();
+    arma::mat V1_11 = D11*_v1;
+    arma::mat V1_12 = D1*_v1*D2.t();
+    arma::mat V1_22 = _v1*D22.t();
+    arma::mat V2_11 = D11*_v2;
+    arma::mat V2_12 = D1*_v2*D2.t();
+    arma::mat V2_22 = _v2*D22.t();
+    arma::mat Z_11 = D11*_z;
+    arma::mat Z_12 = D1*_z*D2.t();
+    arma::mat Z_22 = _z*D22.t();
 
-    arma::mat V1__11 = V1_11 - 3*g111()%V1_1 - g211()%(V1_2 + 2*V2_1) + Psi1111%V1 + Psi1112%V2;
-    arma::mat V2__22 = V2_22 - 3*g222()%V2_2 - g122()%(V2_1 + 2*V1_2) + Psi2221%V1 + Psi2222%V2;
-    arma::mat V1__12 = V1_12 - 2*g112()%V1_1 - (g111() + g212())%V1_2 - g212()%V2_1 - g211()%V2_2 + Psi1121%V1 + Psi1122%V2;
-    arma::mat V2__12 = V2_12 - 2*g212()%V2_2 - (g112() + g222())%V2_1 - g122()%V1_1 - g112()%V1_2 + Psi2121%V1 + Psi2122%V2;
-    arma::mat V1__22 = V1_22 -   g122()%V1_1 - (2*g112() + g222())%V1_2 - 2*g212()%V2_2 + Psi1221%V1 + Psi1222%V2;
-    arma::mat V2__11 = V2_11 -   g211()%V2_2 - (2*g212() + g111())%V2_1 - 2*g112()%V1_1 + Psi2112%V1 + Psi2111%V2;
+    arma::mat V1__11 = V1_11 - 3*g111()%V1_1 - g211()%(V1_2 + 2*V2_1) + Psi1111%_v1 + Psi1112%_v2;
+    arma::mat V2__22 = V2_22 - 3*g222()%V2_2 - g122()%(V2_1 + 2*V1_2) + Psi2221%_v1 + Psi2222%_v2;
+    arma::mat V1__12 = V1_12 - 2*g112()%V1_1 - (g111() + g212())%V1_2 - g212()%V2_1 - g211()%V2_2 + Psi1121%_v1 + Psi1122%_v2;
+    arma::mat V2__12 = V2_12 - 2*g212()%V2_2 - (g112() + g222())%V2_1 - g122()%V1_1 - g112()%V1_2 + Psi2121%_v1 + Psi2122%_v2;
+    arma::mat V1__22 = V1_22 -   g122()%V1_1 - (2*g112() + g222())%V1_2 - 2*g212()%V2_2 + Psi1221%_v1 + Psi1222%_v2;
+    arma::mat V2__11 = V2_11 -   g211()%V2_2 - (2*g212() + g111())%V2_1 - 2*g112()%V1_1 + Psi2112%_v1 + Psi2111%_v2;
     arma::mat Z__11  = Z_11  -   g111()%Z_1  - g211()%Z_2;
     arma::mat Z__12  = Z_12  -   g112()%Z_1  - g212()%Z_2;
     arma::mat Z__22  = Z_22  -   g122()%Z_1  - g222()%Z_2;
@@ -485,14 +485,14 @@ double Membrane::residualLevelFunctionNonlinear(arma::vec V, const arma::mat &su
     arma::mat G_22__1 = V2__12 + Z_2__12           + e11()%V1__2%V1__12                  + e12()%(V1__2%V2__12 + V2__2%V1__12)                               + e22()%V2__2%V2__12;
     arma::mat G_22__2 = V2__22 + Z_2%Z__22         + e11()%V1__2%V1__22                  + e12()%(V1__2%V2__22 + V2__2%V1__22)                               + e22()%V2__2%V2__22;
 
-    arma::mat N11 = D*(H1111%GAMMA_11 + 2*H1112%GAMMA_12 + H1122%GAMMA_22);
-    arma::mat N12 = D*(H1112%GAMMA_11 + 2*H1221%GAMMA_12 + H1222%GAMMA_22);
-    arma::mat N22 = D*(H1122%GAMMA_11 + 2*H1222%GAMMA_12 + H2222%GAMMA_22);
+    arma::mat _n11 = D*(H1111%GAMMA_11 + 2*H1112%GAMMA_12 + H1122%GAMMA_22);
+    arma::mat _n12 = D*(H1112%GAMMA_11 + 2*H1221%GAMMA_12 + H1222%GAMMA_22);
+    arma::mat _n22 = D*(H1122%GAMMA_11 + 2*H1222%GAMMA_12 + H2222%GAMMA_22);
 
-    arma::mat N11__1 = D*(H1111%G_11__1 + 2*H1112%G_12__1 + H1122%G_22__1);
-    arma::mat N12__1 = D*(H1112%G_11__1 + 2*H1221%G_12__1 + H1222%G_22__1);
-    arma::mat N12__2 = D*(H1112%G_11__2 + 2*H1221%G_12__2 + H1222%G_22__2);
-    arma::mat N22__2 = D*(H1122%G_11__2 + 2*H1222%G_12__2 + H2222%G_22__2);
+    arma::mat _n11__1 = D*(H1111%G_11__1 + 2*H1112%G_12__1 + H1122%G_22__1);
+    arma::mat _n12__1 = D*(H1112%G_11__1 + 2*H1221%G_12__1 + H1222%G_22__1);
+    arma::mat _n12__2 = D*(H1112%G_11__2 + 2*H1221%G_12__2 + H1222%G_22__2);
+    arma::mat _n22__2 = D*(H1122%G_11__2 + 2*H1222%G_12__2 + H2222%G_22__2);
 
     arma::mat L111 = e11()%V1__11 + e12()%V2__11;
     arma::mat L112 = e11()%V1__12 + e12()%V2__12;
@@ -514,8 +514,8 @@ double Membrane::residualLevelFunctionNonlinear(arma::vec V, const arma::mat &su
     arma::mat S2 = surface1%(e_12()%V1__1 + e_22()%V2__1)     + surface2%(e_12()%V1__2 + e_22()%V2__2 + 1) + pressure%W2;
     arma::mat S3 = surface1%Z_1 + surface2%Z_2 + pressure%(1 + W);
 
-    arma::vec f = join_vert(vectorise(N11__1 + N12__2 + L111%N11 + 2*L112%N12 + L122%N22 + SAE%S1)/D,
-                            vectorise(N12__1 + N22__2 + L211%N11 + 2*L212%N12 + L222%N22 + SAE%S2)/D,
-                            vectorise(Z__11%N11 + 2*Z__12%N12 + Z__22%N22 + SAE%S3)/D);
+    arma::vec f = join_vert(vectorise(_n11__1 + _n12__2 + L111%_n11 + 2*L112%_n12 + L122%_n22 + SAE%S1)/D,
+                            vectorise(_n12__1 + _n22__2 + L211%_n11 + 2*L212%_n12 + L222%_n22 + SAE%S2)/D,
+                            vectorise(Z__11%_n11 + 2*Z__12%_n12 + Z__22%_n22 + SAE%S3)/D);
     return dot(f, f);
 }

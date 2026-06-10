@@ -15,8 +15,8 @@ class Aerodynamics
     Aerodynamics fromWings(std::vector<Wing*>);
 public:
     Aerodynamics() = default;
-    Aerodynamics(const std::vector<Wing*> _w, const std::vector<Interface> _i) : wings(_w), interfaces(_i) {};
-    Aerodynamics(const std::vector<Wing*> _w) : Aerodynamics(fromWings(_w)) {};
+    Aerodynamics(const std::vector<Wing*> &_w, const std::vector<Interface> &_i) : wings(_w), interfaces(_i) {};
+    explicit Aerodynamics(const std::vector<Wing*> &_w) : Aerodynamics(fromWings(_w)) {};
     void setlambda(double);
     // Sets the dynamic pressure
     void dynamicPressure(double _qdyn)
@@ -59,7 +59,7 @@ public:
     arma::vec get_lift();
     arma::vec get_moment();
     double get_area();
-    void output(const std::string);
+    void output(const std::string&);
     void operator()(Symmetry _sym)
     {
         sym = _sym;

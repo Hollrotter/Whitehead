@@ -62,9 +62,9 @@ Lagrange::CurveInterpolant Lagrange::CurveInterpolant::arc(Point p1, Point p2, P
     phi = phi1 + (phi2-phi1)/2*(1+Chebyshev::gaussLobatto(n));
     arma::vec sin_phi = sin(phi);
 
-    arma::vec x = r*cos_phi + p0.X();
-    arma::vec y = r*sin_phi + p0.Y();
-    return {x, y, r};
+    arma::vec _x = r*cos_phi + p0.X();
+    arma::vec _y = r*sin_phi + p0.Y();
+    return {_x, _y, r};
 }
 
 arma::vec Lagrange::CurveInterpolant::parametrize()
@@ -75,7 +75,7 @@ arma::vec Lagrange::CurveInterpolant::parametrize()
 arma::vec Lagrange::CurveInterpolant::parametrize(arma::vec s)
 {
     size_t n = x.size();
-    arma::vec w = barycentricWeights(n);
+    arma::vec _w = barycentricWeights(n);
     arma::vec t(n, arma::fill::zeros);
     double L = 0;
     if (almostEqual(s(0),-1))
@@ -95,8 +95,8 @@ arma::vec Lagrange::CurveInterpolant::parametrize(arma::vec s)
         for (size_t i = 0; i < n; i++)
         {
             fastgl::QuadPair gl = fastgl::GLPair(n, i+1);
-            double dxds = interpolantDerivative(gl.x(), s, x, w);
-            double dyds = interpolantDerivative(gl.x(), s, y, w);
+            double dxds = interpolantDerivative(gl.x(), s, x, _w);
+            double dyds = interpolantDerivative(gl.x(), s, y, _w);
             L += gl.weight * sqrt(pow(dxds, 2) + pow(dyds, 2));
         }
     }
@@ -104,18 +104,18 @@ arma::vec Lagrange::CurveInterpolant::parametrize(arma::vec s)
         t(0) =-1;
     else
     {
-        double I2 = sqrt(pow(interpolantDerivative(-1, s, x, w), 2)
-                       + pow(interpolantDerivative(-1, s, y, w), 2));
+        double I2 = sqrt(pow(interpolantDerivative(-1, s, x, _w), 2)
+                       + pow(interpolantDerivative(-1, s, y, _w), 2));
         t(0) = s(0);
         for (size_t q = 0; q < 1000; q++)
         {
-            double dxdt = interpolantDerivative((t(0)-1)/2, s, x, w);
-            double dydt = interpolantDerivative((t(0)-1)/2, s, y, w);
+            double dxdt = interpolantDerivative((t(0)-1)/2, s, x, _w);
+            double dydt = interpolantDerivative((t(0)-1)/2, s, y, _w);
 
             double Im = sqrt(pow(dxdt, 2) + pow(dydt, 2));
 
-            dxdt = interpolantDerivative(t(0), s, x, w);
-            dydt = interpolantDerivative(t(0), s, y, w);
+            dxdt = interpolantDerivative(t(0), s, x, _w);
+            dydt = interpolantDerivative(t(0), s, y, _w);
 
             double I1 = sqrt(pow(dxdt, 2) + pow(dydt, 2));
 
@@ -125,21 +125,21 @@ arma::vec Lagrange::CurveInterpolant::parametrize(arma::vec s)
                 break;
         }
     }
-    double I2 = sqrt(pow(interpolantDerivative(-1, s, x, w), 2)
-                   + pow(interpolantDerivative(-1, s, y, w), 2));
+    double I2 = sqrt(pow(interpolantDerivative(-1, s, x, _w), 2)
+                   + pow(interpolantDerivative(-1, s, y, _w), 2));
     double I1;
     for (size_t i = 1; i < n-1; i++)
     {
         t(i) = t(i-1) + s(i) - s(i-1);
         for (size_t q = 0; q < 1000; q++)
         {
-            double dxdt = interpolantDerivative((t(i)+t(i-1))/2, s, x, w);
-            double dydt = interpolantDerivative((t(i)+t(i-1))/2, s, y, w);
+            double dxdt = interpolantDerivative((t(i)+t(i-1))/2, s, x, _w);
+            double dydt = interpolantDerivative((t(i)+t(i-1))/2, s, y, _w);
 
             double Im = sqrt(pow(dxdt, 2) + pow(dydt, 2));
 
-            dxdt = interpolantDerivative(t(i), s, x, w);
-            dydt = interpolantDerivative(t(i), s, y, w);
+            dxdt = interpolantDerivative(t(i), s, x, _w);
+            dydt = interpolantDerivative(t(i), s, y, _w);
 
             I1 = sqrt(pow(dxdt, 2) + pow(dydt, 2));
 
@@ -157,13 +157,13 @@ arma::vec Lagrange::CurveInterpolant::parametrize(arma::vec s)
         t(n-1) = t(n-2) + s(n-1) - s(n-2);
         for (size_t q = 0; q < 1000; q++)
         {
-            double dxdt = interpolantDerivative((t(n-1)+t(n-2))/2, s, x, w);
-            double dydt = interpolantDerivative((t(n-1)+t(n-2))/2, s, y, w);
+            double dxdt = interpolantDerivative((t(n-1)+t(n-2))/2, s, x, _w);
+            double dydt = interpolantDerivative((t(n-1)+t(n-2))/2, s, y, _w);
 
             double Im = sqrt(pow(dxdt, 2) + pow(dydt, 2));
 
-            dxdt = interpolantDerivative(t(n-1), s, x, w);
-            dydt = interpolantDerivative(t(n-1), s, y, w);
+            dxdt = interpolantDerivative(t(n-1), s, x, _w);
+            dydt = interpolantDerivative(t(n-1), s, y, _w);
 
             I1 = sqrt(pow(dxdt, 2) + pow(dydt, 2));
 
