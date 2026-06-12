@@ -13,8 +13,8 @@ set palette defined (0  0.0 0.0 1.0, \
                      8  1.0 0.0 0.0 )
 set palette maxcolor 100
 
-set zrange [0:1]
-set cbrange [0:1]
+# set zrange [0:1]
+set cbrange [0:3]
 set ticslevel 0.0
 set xlabel 'y' tc rgb 'gray'
 set ylabel 'x' tc rgb 'gray'

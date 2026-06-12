@@ -2,15 +2,16 @@
 
 int main()
 {
-    switch (2)
+    switch (0)
     {
         case 0: // Rectangle (divided at y=0)
         {
-            size_t nx = 7;
-            size_t ny = 7;
+            size_t nx = 10;
+            size_t ny = 10;
 
             double l = 2;
-            double b = 10;
+            double AR = 5;
+            double b = l * AR;
 
             Point p1(0, 0);
             Point p2(l, 0);
@@ -30,8 +31,11 @@ int main()
             Wing w1({&chi1, &chi2, &chi3, &chi4});
             Wing w2({&chi7, &chi6, &chi1, &chi5});
 
+            Wake wake1(&chi2);
+            Wake wake2(&chi6);
+
             Aerodynamics a({&w1, &w2});
-            a.pitch(2);
+            a.pitch(5);
 
             a.boundary(&chi2, BC::Neumann);
             a.boundary(&chi3, BC::Dirichlet);
@@ -40,8 +44,30 @@ int main()
             a.boundary(&chi6, BC::Neumann);
             a.boundary(&chi7, BC::Dirichlet);
 
+            a.wake(&wake1);
+            a.wake(&wake2);
+
             a.setIterations(100);
             a.linear();
+
+            double area = a.get_area();
+            arma::vec cL = a.get_lift()/area;
+            arma::vec cM = a.get_moment()/area/l;
+
+            std::cout << "A  = " << area << '\n';
+            std::cout << "cL = " << cL   << '\n';
+            std::cout << "cM = " << cM   << '\n';
+
+            double a0 = arma::datum::tau;
+            double cLalpha_A1 = a0/(1 + a0/arma::datum::pi/AR);
+            double cLalpha_A2 = a0/(1 + 1.024*a0/arma::datum::pi/AR);
+            double cLalpha_A3 = a0/(sqrt(1 + pow(a0/arma::datum::pi/AR, 2)) + a0/arma::datum::pi/AR);
+            double cLalpha = cL(0)/(5*arma::datum::pi/180);
+
+            std::cout << "cLalpha    = " << cLalpha   << '\n';
+            std::cout << "cLalpha_A1 = " << cLalpha_A1 << '\n';
+            std::cout << "cLalpha_A2 = " << cLalpha_A2 << '\n';
+            std::cout << "cLalpha_A3 = " << cLalpha_A3 << '\n';
 
             a.output("plot/Data/Aerodynamics/flat");
             break;

@@ -6,8 +6,9 @@ int main()
     {
         case 0: // Rectangular Wing
         {
-            double b = 10;
-            double c = 1;
+            double c = 2;
+            double AR = 5;
+            double b = c*AR;
 
             arma::vec tx = arma::linspace(0, arma::datum::pi, 40);
             arma::vec ty = arma::linspace(arma::datum::pi/2, 0, 60);
@@ -19,19 +20,30 @@ int main()
             VLM wing(x, y);
             wing.pitch(5);
             wing(Symmetry::y);
-            wing(Analysis::nonlinear);
-            Camber cam([&](double xc){ return 0.1*(0.25 - pow(xc-0.5, 2)); },
-                       [&](double xc){ return 0.2*(0.5-xc); });
-            wing(cam);
+            wing(Analysis::linear);
+            // Camber cam([&](double xc){ return 0.1*(0.25 - pow(xc-0.5, 2)); },
+            //            [&](double xc){ return 0.2*(0.5-xc); });
+            // wing(cam);
             wing.vlm();
 
-            double area  = 2*wing.get_area();
+            double area  = wing.get_area();
             arma::vec cL = wing.get_lift()   / area;
             arma::vec cM = wing.get_moment() / area/c;
 
             std::cout << "A  = "    << area   << '\n';
             std::cout << "cL    = " << cL.t() << '\n';
             std::cout << "cM    = " << cM.t() << '\n';
+
+            double a0 = arma::datum::tau;
+            double cLalpha_A1 = a0/(1 + a0/arma::datum::pi/AR);
+            double cLalpha_A2 = a0/(1 + 1.024*a0/arma::datum::pi/AR);
+            double cLalpha_A3 = a0/(sqrt(1 + pow(a0/arma::datum::pi/AR, 2)) + a0/arma::datum::pi/AR);
+            double cLalpha = cL(0)/(5*arma::datum::pi/180);
+
+            std::cout << "cLalpha   = " << cLalpha   << '\n';
+            std::cout << "cLalpha_A1 = " << cLalpha_A1 << '\n';
+            std::cout << "cLalpha_A2 = " << cLalpha_A2 << '\n';
+            std::cout << "cLalpha_A3 = " << cLalpha_A3 << '\n';
 
             wing.output("plot/Data/VLM/vlm");
             break;

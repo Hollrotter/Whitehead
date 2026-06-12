@@ -56,9 +56,18 @@ public:
     template <class C> void boundary(const Lagrange::CurveInterpolant*, const BC, const double, const double, const C);
     void linear();
     void nonlinear();
-    arma::vec get_lift();
-    arma::vec get_moment();
-    double get_area();
+    arma::vec get_lift()
+    {
+        return std::accumulate(wings.begin(), wings.end(), arma::vec(wings[0]->con, arma::fill::zeros), [](arma::vec l, Wing* w){return l + w->lift;});
+    }
+    arma::vec get_moment()
+    {
+        return std::accumulate(wings.begin(), wings.end(), arma::vec(wings[0]->con, arma::fill::zeros), [](arma::vec m, Wing* w){return m + w->moment;});
+    }
+    double get_area()
+    {
+        return std::accumulate(wings.begin(), wings.end(), 0.0, [](double a, Wing* w){return a + w->area;});
+    }
     void output(const std::string&);
     void operator()(Symmetry _sym)
     {

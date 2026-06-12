@@ -13,7 +13,7 @@ DVM = lib/Camber.o lib/DVM.o lib/DVMAerodynamicMatrix.o
 VLM = lib/VLM.o lib/VLMAerodynamicMatrix.o lib/Vortex.o
 AIRFOIL = lib/Airfoil.o lib/AirfoilAerodynamicMatrix.o lib/AirfoilKernel.o
 WING = lib/Wing.o lib/WingAerodynamicMatrix.o lib/WingBoundary.o
-AERODYNAMICS = lib/Aerodynamics.o
+AERODYNAMICS = lib/Aerodynamics.o lib/AerodynamicsBoundary.o lib/AerodynamicsLinear.o lib/AerodynamicsNonlinear.o
 MISC = lib/misc.o lib/fastgl.o
 OBJS = $(STRING) $(MEMBRANE) $(STRUCTURE) $(CHEBYSHEV) $(LAGRANGE) $(METRIC) $(SPLINE) $(DVM) $(VLM) \
 $(AIRFOIL) $(WING) $(AERODYNAMICS) $(MISC)

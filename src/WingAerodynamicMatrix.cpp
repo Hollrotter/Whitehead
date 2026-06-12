@@ -384,7 +384,7 @@ void Wing::aerodynamicMatrix()
                                     {
                                         arma::vec::fixed<2> r = {x_gl(ii, jj) - xC(i, j), y_gl(ii, jj) - yC(i, j)};
                                         double r3 = pow(norm(r), 3);
-                                        A(i+j*nx, p+q*nx) += gl_1[ii].weight*gl_2[jj].weight/r3
+                                        A(i+j*nx, p+q*nx) -= gl_1[ii].weight*gl_2[jj].weight/r3
                                                     *(r(0)*(dy_gldx2(ii, jj)*dmudx1 - dy_gldx1(ii, jj)*dmudx2)
                                                     - r(1)*(dx_gldx2(ii, jj)*dmudx1 - dx_gldx1(ii, jj)*dmudx2));
                                     }
@@ -430,7 +430,7 @@ void Wing::aerodynamicMatrix()
                                                         size_t k = i + j*nx;
                                                         arma::vec::fixed<2> r = {xW - xC(i, j), yw(ii) - yC(i, j)};
                                                         double r3 = pow(norm(r), 3);
-                                                        A(k, p+q*nx) += gl_x[ii].weight*gl_y[jj].weight*dt1*t2*r(1)/pow(1 + x2_gl_w(jj), 2)/r3; 
+                                                        A(k, p+q*nx) -= gl_x[ii].weight*gl_y[jj].weight*dt1*t2*r(1)/pow(1 + x2_gl_w(jj), 2)/r3; 
                                                     }
                                             }
                                         }
@@ -455,7 +455,7 @@ void Wing::aerodynamicMatrix()
                                                     double r3 = pow(norm(r), 3);
                                                     double I = gl_x[ii].weight*gl_y[jj].weight*dt2*r(1)/pow(1 - x1_gl_w(ii), 2)/r3;
                                                     for (size_t p = 0; p < nx; p++)
-                                                        A(k, p+q*nx) += I;
+                                                        A(k, p+q*nx) -= I;
                                                 }
                                         }
                                     }
@@ -479,7 +479,7 @@ void Wing::aerodynamicMatrix()
                                                     double r3 = pow(norm(r), 3);
                                                     double I =-gl_x[ii].weight*gl_y[jj].weight*dt1*r(1)/pow(1 - x2_gl_w(jj), 2)/r3;
                                                     for (size_t q = 0; q < ny; q++)
-                                                        A(k, p+q*nx) += I;
+                                                        A(k, p+q*nx) -= I;
                                                 }
                                         }
                                     }
@@ -504,7 +504,7 @@ void Wing::aerodynamicMatrix()
                                                         size_t k = i + j*nx;
                                                         arma::vec::fixed<2> r = {xW - xC(i, j), yw(jj) - yC(i, j)};
                                                         double r3 = pow(norm(r), 3);
-                                                        A(k, p+q*nx) -= gl_x[ii].weight*gl_y[jj].weight*t1*dt2*r(1)/pow(1 + x1_gl_w(ii), 2)/r3;
+                                                        A(k, p+q*nx) += gl_x[ii].weight*gl_y[jj].weight*t1*dt2*r(1)/pow(1 + x1_gl_w(ii), 2)/r3;
                                                     }
                                             }
                                         }
@@ -729,7 +729,7 @@ void Wing::aerodynamicMatrix()
                                                     arma::vec::fixed<3> gradmu = J_red*dmudxi;
                                                     arma::vec::fixed<3> gamma_W = cross(gradmu, n_W);
                                                     arma::vec q_mu = gl_x_w[ii].weight * gl_y_w[jj].weight * cross(gamma_W, r)/r3;
-                                                    A(k, p+q*nx) -= dot(q_mu, nC.row(k)); 
+                                                    A(k, p+q*nx) += dot(q_mu, nC.row(k)); 
                                                 }
                                         }
                                     }
@@ -783,7 +783,7 @@ void Wing::aerodynamicMatrix()
                                                 arma::vec::fixed<3> gamma_W = cross(gradmu, n_W);
                                                 arma::vec q_mu = gl_x_w[ii].weight * gl_y_w[jj].weight * cross(gamma_W, r)/r3;
                                                 for (size_t p = 0; p < nx; p++)
-                                                    A(k, p+q*nx) -= dot(q_mu, nC.row(k));
+                                                    A(k, p+q*nx) += dot(q_mu, nC.row(k));
                                             }
                                     }
                                 }
@@ -836,7 +836,7 @@ void Wing::aerodynamicMatrix()
                                                 arma::vec::fixed<3> gamma_W = cross(gradmu, n_W);
                                                 arma::vec q_mu = gl_x_w[ii].weight * gl_y_w[jj].weight * cross(gamma_W, r)/r3;
                                                 for (size_t q = 0; q < ny; q++)
-                                                    A(k, p+q*nx) -= dot(q_mu, nC.row(k));
+                                                    A(k, p+q*nx) += dot(q_mu, nC.row(k));
                                             }
                                     }
                                 }
@@ -891,7 +891,7 @@ void Wing::aerodynamicMatrix()
                                                     arma::vec::fixed<3> gradmu = J_red*dmudxi;
                                                     arma::vec::fixed<3> gamma_W = cross(gradmu, n_W);
                                                     arma::vec q_mu = gl_x_w[ii].weight * gl_y_w[jj].weight * cross(gamma_W, r)/r3;
-                                                    A(k, p+q*nx) -= dot(q_mu, nC.row(k)); 
+                                                    A(k, p+q*nx) += dot(q_mu, nC.row(k)); 
                                                 }
                                         }
                                     }
@@ -957,7 +957,7 @@ void Wing::aerodynamicMatrix()
                                         arma::vec::fixed<3> gradmu = J_red*dmudxi;
                                         arma::vec::fixed<3> gamma_gl = cross(gradmu, n_gl);
                                         arma::vec q_mu = gl_x[ii].weight * gl_y[jj].weight * cross(gamma_gl, r)/r3;
-                                        A(i+j*nx, p+q*nx) += dot(q_mu, nC.row(i+j*nx));
+                                        A(i+j*nx, p+q*nx) -= dot(q_mu, nC.row(i+j*nx));
                                     }
                                 }
                             }

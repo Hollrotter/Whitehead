@@ -6,11 +6,14 @@ int main()
     {
         case 0: // Rectangle
         {
-            size_t nx = 20;
-            size_t ny = 50;
+            size_t nx = 15;
+            size_t ny = 20;
 
+            double AR = 5;
             double l = 2;
-            double b = 10;
+            double b = l*AR;
+
+            double alpha = 0.01;
 
             Point p1(0,-b/2);
             Point p2(l,-b/2);
@@ -24,22 +27,37 @@ int main()
 
             Wing w({&chi1, &chi2, &chi3, &chi4});
 
-            w.pitch(2);
+            w.pitch(alpha);
 
             w.boundary(&chi1, BC::Dirichlet);
             w.boundary(&chi2, BC::Neumann);
             w.boundary(&chi3, BC::Dirichlet);
             w.boundary(&chi4, BC::Dirichlet);
 
-            w.linear();
+            Wake w1(&chi2);
+            w.wake(&w1);
+
+            w.nonlinear();
 
             double area = w.get_area();
+
             arma::vec cL = w.get_lift()   / area;
             arma::vec cM = w.get_moment() / area/l;
 
             std::cout << "A  = " << area   << '\n';
             std::cout << "cL = " << cL.t() << '\n';
             std::cout << "cM = " << cM.t() << '\n';
+
+            double a0 = arma::datum::tau;
+            double cLalpha_A1 = a0/(1 + a0/arma::datum::pi/AR);
+            double cLalpha_A2 = a0/(1 + 1.024*a0/arma::datum::pi/AR);
+            double cLalpha_A3 = a0/(sqrt(1 + pow(a0/arma::datum::pi/AR, 2)) + a0/arma::datum::pi/AR);
+            double cLalpha = cL(0)/(alpha*arma::datum::pi/180);
+
+            std::cout << "cLalpha    = " << cLalpha   << '\n';
+            std::cout << "cLalpha_A1 = " << cLalpha_A1 << '\n';
+            std::cout << "cLalpha_A2 = " << cLalpha_A2 << '\n';
+            std::cout << "cLalpha_A3 = " << cLalpha_A3 << '\n';
 
             w.output("plot/Data/Wing/flat");
             break;
@@ -53,16 +71,16 @@ int main()
              * The results do not fit exactly, because the
              * two cases have different grids. For a high
              * number of nodes, we get exact agreement.
-             * For nx = 20 and ny = 25, we got
-             * cL = 0.1677 and cM =-0.0424
-             * and the results do agree.
             */
 
-            size_t nx = 7;
-            size_t ny = 7;
+            size_t nx = 15;
+            size_t ny = 20;
 
+            double AR = 5;
             double l = 2;
-            double b = 10;
+            double b = l*AR;
+
+            double alpha = 0.01;
 
             Point p1(0, 0);
             Point p2(l, 0);
@@ -76,7 +94,7 @@ int main()
 
             Wing w({&chi1, &chi2, &chi3, &chi4});
 
-            w.pitch(2);
+            w.pitch(alpha);
             w(Symmetry::y);
 
             w.boundary(&chi1, BC::Neumann);
@@ -84,7 +102,10 @@ int main()
             w.boundary(&chi3, BC::Dirichlet);
             w.boundary(&chi4, BC::Dirichlet);
 
-            w.linear();
+            Wake w1(&chi2);
+            w.wake(&w1);
+
+            w.nonlinear();
 
             double area = w.get_area();
             arma::vec cL = w.get_lift()   / area;
@@ -93,6 +114,17 @@ int main()
             std::cout << "A  = " << area   << '\n';
             std::cout << "cL = " << cL.t() << '\n';
             std::cout << "cM = " << cM.t() << '\n';
+
+            double a0 = arma::datum::tau;
+            double cLalpha_A1 = a0/(1 + a0/arma::datum::pi/AR);
+            double cLalpha_A2 = a0/(1 + 1.024*a0/arma::datum::pi/AR);
+            double cLalpha_A3 = a0/(sqrt(1 + pow(a0/arma::datum::pi/AR, 2)) + a0/arma::datum::pi/AR);
+            double cLalpha = cL(0)/(alpha*arma::datum::pi/180);
+
+            std::cout << "cLalpha    = " << cLalpha   << '\n';
+            std::cout << "cLalpha_A1 = " << cLalpha_A1 << '\n';
+            std::cout << "cLalpha_A2 = " << cLalpha_A2 << '\n';
+            std::cout << "cLalpha_A3 = " << cLalpha_A3 << '\n';
 
             w.output("plot/Data/Wing/symmetry");
             break;
