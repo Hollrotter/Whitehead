@@ -306,7 +306,7 @@ void Aerodynamics::solve()
             Wing *wingTarget = wings[interface.targetDomain];
             size_t nx = wingSource->nx;
             size_t ny = wingSource->ny;
-            arma::mat mu_hat = wingSource->mu_hat;
+            arma::vec mu_hat = wingSource->mu_hat;
             arma::mat  T1 = wingSource->T1;
             arma::mat  T2 = wingSource->T2;
             arma::mat dT1 = wingSource->dT1;
@@ -325,9 +325,9 @@ void Aerodynamics::solve()
                         for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                             for (size_t i = 0; i < nx; i++) // Loop over Collocation Points in 1-direction
                             {
-                                MU(i)    += mu_hat(p+q*nx, 0) *  T1(i, p) *  t2;
-                                dMUd1(i) += mu_hat(p+q*nx, 0) * dT1(i, p) *  t2;
-                                dMUd2(i) += mu_hat(p+q*nx, 0) *  T1(i, p) * dt2;
+                                MU(i)    += mu_hat(p+q*nx) *  T1(i, p) *  t2;
+                                dMUd1(i) += mu_hat(p+q*nx) * dT1(i, p) *  t2;
+                                dMUd2(i) += mu_hat(p+q*nx) *  T1(i, p) * dt2;
                             }
                     }
                     arma::vec h_2s1 = wingSource->h_2s1_south;
@@ -383,9 +383,9 @@ void Aerodynamics::solve()
                         for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                             for (size_t j = 0; j < ny; j++) // Loop over Collocation Points in 2-direction
                             {
-                                MU(j)    += mu_hat(p+q*nx, 0) *       T2(j, q);
-                                dMUd1(j) += mu_hat(p+q*nx, 0) * dt1 * T2(j, q);
-                                dMUd2(j) += mu_hat(p+q*nx, 0) *      dT2(j, q);
+                                MU(j)    += mu_hat(p+q*nx) *       T2(j, q);
+                                dMUd1(j) += mu_hat(p+q*nx) * dt1 * T2(j, q);
+                                dMUd2(j) += mu_hat(p+q*nx) *      dT2(j, q);
                             }
                     }
                     arma::rowvec h_1s1 = wingSource->h_1s1_east;
@@ -441,9 +441,9 @@ void Aerodynamics::solve()
                         for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                             for (size_t i = 0; i < nx; i++) // Loop over Collocation Points in 1-direction
                             {
-                                MU(i)    += mu_hat(p+q*nx, 0) *  T1(i, p);
-                                dMUd1(i) += mu_hat(p+q*nx, 0) * dT1(i, p);
-                                dMUd2(i) += mu_hat(p+q*nx, 0) *  T1(i, p) * dt2;
+                                MU(i)    += mu_hat(p+q*nx) *  T1(i, p);
+                                dMUd1(i) += mu_hat(p+q*nx) * dT1(i, p);
+                                dMUd2(i) += mu_hat(p+q*nx) *  T1(i, p) * dt2;
                             }
                     }
                     arma::vec h_2s1 = wingSource->h_2s1_north;
@@ -500,9 +500,9 @@ void Aerodynamics::solve()
                         for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                             for (size_t j = 0; j < ny; j++) // Loop over Collocation Points in 2-direction
                             {
-                                MU(j)    += mu_hat(p+q*nx, 0) *  t1 *  T2(j, q);
-                                dMUd1(j) += mu_hat(p+q*nx, 0) * dt1 *  T2(j, q);
-                                dMUd2(j) += mu_hat(p+q*nx, 0) *  t1 * dT2(j, q);
+                                MU(j)    += mu_hat(p+q*nx) *  t1 *  T2(j, q);
+                                dMUd1(j) += mu_hat(p+q*nx) * dt1 *  T2(j, q);
+                                dMUd2(j) += mu_hat(p+q*nx) *  t1 * dT2(j, q);
                             }
                     }
                     arma::rowvec h_1s1 = wingSource->h_1s1_west;
@@ -570,9 +570,9 @@ void Aerodynamics::solve()
                         for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                             for (size_t i = 0; i < nx; i++) // Loop over Collocation Points in 1-direction
                             {
-                                MU(i)    += mu_hat(p+q*nx, 0) *  T1(i, p) *  t2;
-                                dMUd1(i) += mu_hat(p+q*nx, 0) * dT1(i, p) *  t2;
-                                dMUd2(i) += mu_hat(p+q*nx, 0) *  T1(i, p) * dt2;
+                                MU(i)    += mu_hat(p+q*nx) *  T1(i, p) *  t2;
+                                dMUd1(i) += mu_hat(p+q*nx) * dT1(i, p) *  t2;
+                                dMUd2(i) += mu_hat(p+q*nx) *  T1(i, p) * dt2;
                             }
                     }
                     arma::vec h_2s1 = wingTarget->h_2s1_south;
@@ -628,9 +628,9 @@ void Aerodynamics::solve()
                         for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                             for (size_t j = 0; j < ny; j++) // Loop over Collocation Points in 2-direction
                             {
-                                MU(j)    += mu_hat(p+q*nx, 0) *       T2(j, q);
-                                dMUd1(j) += mu_hat(p+q*nx, 0) * dt1 * T2(j, q);
-                                dMUd2(j) += mu_hat(p+q*nx, 0) *      dT2(j, q);
+                                MU(j)    += mu_hat(p+q*nx) *       T2(j, q);
+                                dMUd1(j) += mu_hat(p+q*nx) * dt1 * T2(j, q);
+                                dMUd2(j) += mu_hat(p+q*nx) *      dT2(j, q);
                             }
                     }
                     arma::rowvec h_1s1 = wings[interface.targetDomain]->h_1s1_east;
@@ -686,9 +686,9 @@ void Aerodynamics::solve()
                         for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                             for (size_t i = 0; i < nx; i++) // Loop over Collocation Points in 1-direction
                             {
-                                MU(i)    += mu_hat(p+q*nx, 0) *  T1(i, p);
-                                dMUd1(i) += mu_hat(p+q*nx, 0) * dT1(i, p);
-                                dMUd2(i) += mu_hat(p+q*nx, 0) *  T1(i, p) * dt2;
+                                MU(i)    += mu_hat(p+q*nx) *  T1(i, p);
+                                dMUd1(i) += mu_hat(p+q*nx) * dT1(i, p);
+                                dMUd2(i) += mu_hat(p+q*nx) *  T1(i, p) * dt2;
                             }
                     }
                     arma::vec h_2s1 = wings[interface.targetDomain]->h_2s1_north;
@@ -746,9 +746,9 @@ void Aerodynamics::solve()
                             for (size_t j = 0; j < ny; j++) // Loop over Collocation Points in 2-direction
                             {
 
-                                MU(j)    += mu_hat(p+q*nx, 0) *  t1 *  T2(j, q);
-                                dMUd1(j) += mu_hat(p+q*nx, 0) * dt1 *  T2(j, q);
-                                dMUd2(j) += mu_hat(p+q*nx, 0) *  t1 * dT2(j, q);
+                                MU(j)    += mu_hat(p+q*nx) *  t1 *  T2(j, q);
+                                dMUd1(j) += mu_hat(p+q*nx) * dt1 *  T2(j, q);
+                                dMUd2(j) += mu_hat(p+q*nx) *  t1 * dT2(j, q);
                             }
                     }
                     arma::rowvec h_1s1 = wings[interface.targetDomain]->h_1s1_west;
@@ -799,7 +799,7 @@ void Aerodynamics::solve()
         for (size_t tD = 0; tD < wings.size(); tD++)
             for (size_t sD = 0; sD < wings.size(); sD++)
                 if (sD != tD)
-                    wings[tD]->b = b0(tD) + bw(tD, sD).slice(0)*wings[sD]->mu_hat;
+                    wings[tD]->b = b0(tD) + bw(tD, sD)*wings[sD]->mu_hat;
         // Calculation for each wing surface
         switch (analysis)
         {
@@ -824,7 +824,7 @@ void Aerodynamics::solve()
             const Wing *wingSource = wings[interface.sourceDomain];
             size_t nx = wingSource->nx;
             size_t ny = wingSource->ny;
-            arma::mat mu_hat = wingSource->mu_hat;
+            arma::vec mu_hat = wingSource->mu_hat;
             arma::mat  T1 = wingSource->T1;
             arma::mat  T2 = wingSource->T2;
             arma::mat dT1 = wingSource->dT1;
@@ -843,9 +843,9 @@ void Aerodynamics::solve()
                         for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                             for (size_t i = 0; i < nx; i++) // Loop over Collocation Points in 1-direction
                             {
-                                MU(i)    += mu_hat(p+q*nx, 0) *  T1(i, p) *  t2;
-                                dMUd1(i) += mu_hat(p+q*nx, 0) * dT1(i, p) *  t2;
-                                dMUd2(i) += mu_hat(p+q*nx, 0) *  T1(i, p) * dt2;
+                                MU(i)    += mu_hat(p+q*nx) *  T1(i, p) *  t2;
+                                dMUd1(i) += mu_hat(p+q*nx) * dT1(i, p) *  t2;
+                                dMUd2(i) += mu_hat(p+q*nx) *  T1(i, p) * dt2;
                             }
                     }
                     arma::vec h_2s1 = wingSource->h_2s1_south;
@@ -864,9 +864,9 @@ void Aerodynamics::solve()
                         for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                             for (size_t j = 0; j < ny; j++) // Loop over Collocation Points in 2-direction
                             {                                
-                                MU(j)    += mu_hat(p+q*nx, 0) *       T2(j, q);
-                                dMUd1(j) += mu_hat(p+q*nx, 0) * dt1 * T2(j, q);
-                                dMUd2(j) += mu_hat(p+q*nx, 0) *      dT2(j, q);
+                                MU(j)    += mu_hat(p+q*nx) *       T2(j, q);
+                                dMUd1(j) += mu_hat(p+q*nx) * dt1 * T2(j, q);
+                                dMUd2(j) += mu_hat(p+q*nx) *      dT2(j, q);
                             }
                     }
                     arma::rowvec h_1s1 = wingSource->h_1s1_east;
@@ -885,9 +885,9 @@ void Aerodynamics::solve()
                         for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                             for (size_t i = 0; i < nx; i++) // Loop over Collocation Points in 1-direction
                             {
-                                MU(i)    += mu_hat(p+q*nx, 0) *  T1(i, p);
-                                dMUd1(i) += mu_hat(p+q*nx, 0) * dT1(i, p);
-                                dMUd2(i) += mu_hat(p+q*nx, 0) *  T1(i, p) * dt2;
+                                MU(i)    += mu_hat(p+q*nx) *  T1(i, p);
+                                dMUd1(i) += mu_hat(p+q*nx) * dT1(i, p);
+                                dMUd2(i) += mu_hat(p+q*nx) *  T1(i, p) * dt2;
                             }
                     }
                     arma::vec h_2s1 = wingSource->h_2s1_north;
@@ -907,9 +907,9 @@ void Aerodynamics::solve()
                         for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                             for (size_t j = 0; j < ny; j++) // Loop over Collocation Points in 2-direction
                             {
-                                MU(j)    += mu_hat(p+q*nx, 0) *  t1 *  T2(j, q);
-                                dMUd1(j) += mu_hat(p+q*nx, 0) * dt1 *  T2(j, q);
-                                dMUd2(j) += mu_hat(p+q*nx, 0) *  t1 * dT2(j, q);
+                                MU(j)    += mu_hat(p+q*nx) *  t1 *  T2(j, q);
+                                dMUd1(j) += mu_hat(p+q*nx) * dt1 *  T2(j, q);
+                                dMUd2(j) += mu_hat(p+q*nx) *  t1 * dT2(j, q);
                             }
                     }
                     arma::rowvec h_1s1 = wingSource->h_1s1_west;
@@ -940,9 +940,9 @@ void Aerodynamics::solve()
                         for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                             for (size_t i = 0; i < nx; i++) // Loop over Collocation Points in 1-direction
                             {
-                                MU(i)    += mu_hat(p+q*nx, 0) *  T1(i, p) * t2;
-                                dMUd1(i) += mu_hat(p+q*nx, 0) * dT1(i, p) * t2;
-                                dMUd2(i) += mu_hat(p+q*nx, 0) *  T1(i, p) * dt2;
+                                MU(i)    += mu_hat(p+q*nx) *  T1(i, p) * t2;
+                                dMUd1(i) += mu_hat(p+q*nx) * dT1(i, p) * t2;
+                                dMUd2(i) += mu_hat(p+q*nx) *  T1(i, p) * dt2;
                             }
                     }
                     arma::vec h_2s1 = wingTarget->h_2s1_south;
@@ -963,9 +963,9 @@ void Aerodynamics::solve()
                         for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                             for (size_t j = 0; j < ny; j++) // Loop over Collocation Points in 2-direction
                             {
-                                MU(j)    += mu_hat(p+q*nx, 0) *       T2(j, q);
-                                dMUd1(j) += mu_hat(p+q*nx, 0) * dt1 * T2(j, q);
-                                dMUd2(j) += mu_hat(p+q*nx, 0) *      dT2(j, q);
+                                MU(j)    += mu_hat(p+q*nx) *       T2(j, q);
+                                dMUd1(j) += mu_hat(p+q*nx) * dt1 * T2(j, q);
+                                dMUd2(j) += mu_hat(p+q*nx) *      dT2(j, q);
                             }
                     }
                     arma::rowvec h_1s1 = wingTarget->h_1s1_east;
@@ -986,9 +986,9 @@ void Aerodynamics::solve()
                         for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                             for (size_t i = 0; i < nx; i++) // Loop over Collocation Points in 1-direction
                             {
-                                MU(i)    += mu_hat(p+q*nx, 0) *  T1(i, p);
-                                dMUd1(i) += mu_hat(p+q*nx, 0) * dT1(i, p);
-                                dMUd2(i) += mu_hat(p+q*nx, 0) *  T1(i, p) * dt2;
+                                MU(i)    += mu_hat(p+q*nx) *  T1(i, p);
+                                dMUd1(i) += mu_hat(p+q*nx) * dT1(i, p);
+                                dMUd2(i) += mu_hat(p+q*nx) *  T1(i, p) * dt2;
                             }
                     }
                     arma::vec h_2s1 = wingTarget->h_2s1_north;
@@ -1010,9 +1010,9 @@ void Aerodynamics::solve()
                         for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                             for (size_t j = 0; j < ny; j++) // Loop over Collocation Points in 2-direction
                             {
-                                MU(j)    += mu_hat(p+q*nx, 0) *  t1 *  T2(j, q);
-                                dMUd1(j) += mu_hat(p+q*nx, 0) * dt1 *  T2(j, q);
-                                dMUd2(j) += mu_hat(p+q*nx, 0) *  t1 * dT2(j, q);
+                                MU(j)    += mu_hat(p+q*nx) *  t1 *  T2(j, q);
+                                dMUd1(j) += mu_hat(p+q*nx) * dt1 *  T2(j, q);
+                                dMUd2(j) += mu_hat(p+q*nx) *  t1 * dT2(j, q);
                             }
                     }
                     arma::rowvec h_1s1 = wingTarget->h_1s1_west;

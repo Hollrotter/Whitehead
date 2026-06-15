@@ -2,7 +2,7 @@
 
 int main()
 {
-    switch (2)
+    switch (0)
     {
         case 0: // Rectangle
         {
@@ -40,19 +40,18 @@ int main()
             w.nonlinear();
 
             double area = w.get_area();
+            double cL   = w.get_lift()   / area;
+            double cM   = w.get_moment() / area/l;
 
-            arma::vec cL = w.get_lift()   / area;
-            arma::vec cM = w.get_moment() / area/l;
-
-            std::cout << "A  = " << area   << '\n';
-            std::cout << "cL = " << cL.t() << '\n';
-            std::cout << "cM = " << cM.t() << '\n';
+            std::cout << "A  = " << area << '\n';
+            std::cout << "cL = " << cL   << '\n';
+            std::cout << "cM = " << cM   << '\n';
 
             double a0 = arma::datum::tau;
             double cLalpha_A1 = a0/(1 + a0/arma::datum::pi/AR);
             double cLalpha_A2 = a0/(1 + 1.024*a0/arma::datum::pi/AR);
             double cLalpha_A3 = a0/(sqrt(1 + pow(a0/arma::datum::pi/AR, 2)) + a0/arma::datum::pi/AR);
-            double cLalpha = cL(0)/(alpha*arma::datum::pi/180);
+            double cLalpha = cL/(alpha*arma::datum::pi/180);
 
             std::cout << "cLalpha    = " << cLalpha   << '\n';
             std::cout << "cLalpha_A1 = " << cLalpha_A1 << '\n';
@@ -73,14 +72,14 @@ int main()
              * number of nodes, we get exact agreement.
             */
 
-            size_t nx = 15;
-            size_t ny = 20;
+            size_t nx = 10;
+            size_t ny = 15;
 
             double AR = 5;
             double l = 2;
             double b = l*AR;
 
-            double alpha = 0.01;
+            double alpha = 0.001;
 
             Point p1(0, 0);
             Point p2(l, 0);
@@ -108,18 +107,18 @@ int main()
             w.nonlinear();
 
             double area = w.get_area();
-            arma::vec cL = w.get_lift()   / area;
-            arma::vec cM = w.get_moment() / area/l;
+            double cL   = w.get_lift()   / area;
+            double cM   = w.get_moment() / area/l;
 
-            std::cout << "A  = " << area   << '\n';
-            std::cout << "cL = " << cL.t() << '\n';
-            std::cout << "cM = " << cM.t() << '\n';
+            std::cout << "A  = " << area << '\n';
+            std::cout << "cL = " << cL   << '\n';
+            std::cout << "cM = " << cM   << '\n';
 
             double a0 = arma::datum::tau;
             double cLalpha_A1 = a0/(1 + a0/arma::datum::pi/AR);
             double cLalpha_A2 = a0/(1 + 1.024*a0/arma::datum::pi/AR);
             double cLalpha_A3 = a0/(sqrt(1 + pow(a0/arma::datum::pi/AR, 2)) + a0/arma::datum::pi/AR);
-            double cLalpha = cL(0)/(alpha*arma::datum::pi/180);
+            double cLalpha    = cL/(alpha*arma::datum::pi/180);
 
             std::cout << "cLalpha    = " << cLalpha   << '\n';
             std::cout << "cLalpha_A1 = " << cLalpha_A1 << '\n';
@@ -158,11 +157,11 @@ int main()
             arma::mat z2 = 0.1*cos(arma::datum::pi/4*(1+Chebyshev::gaussLobatto(m))) * cos(arma::datum::pi/4*(1+Chebyshev::gaussLobatto(n))).t();
             arma::mat z3 = arma::flipud(arma::fliplr(z1));
             arma::mat z4 = arma::flipud(arma::fliplr(z2));
-
             std::array<Wing, 4> w({Wing(z1, {&chi1, &chi2, &chi3, &chi4}),
                                    Wing(z2, {&chi2, &chi3, &chi4, &chi1}),
                                    Wing(z3, {&chi3, &chi4, &chi1, &chi2}),
                                    Wing(z4, {&chi4, &chi1, &chi2, &chi3})});
+
             Wake wk(&chi2);
             for (size_t i = 0; i < 4; i++)
             {
@@ -210,12 +209,12 @@ int main()
             w.linear();
 
             double area = w.get_area();
-            arma::vec cL = w.get_lift()   / area;
-            arma::vec cM = w.get_moment() / area/c;
+            double cL   = w.get_lift()   / area;
+            double cM   = w.get_moment() / area/c;
 
-            std::cout << "A  = " << area   << '\n';
-            std::cout << "cL = " << cL.t() << '\n';
-            std::cout << "cM = " << cM.t() << '\n';
+            std::cout << "A  = " << area << '\n';
+            std::cout << "cL = " << cL   << '\n';
+            std::cout << "cM = " << cM   << '\n';
 
             w.output("plot/Data/Wing/EllipticalWing");
             break;
@@ -251,13 +250,13 @@ int main()
 
             w.nonlinear();
 
-            double area = 2*w.get_area();
-            arma::vec cL = w.get_lift()   / area;
-            arma::vec cM = w.get_moment() / area/l;
+            double area = w.get_area();
+            double cL   = w.get_lift()   / area;
+            double cM   = w.get_moment() / area/l;
 
-            std::cout << "A  = " << area   << '\n';
-            std::cout << "cL = " << cL.t() << '\n';
-            std::cout << "cM = " << cM.t() << '\n';
+            std::cout << "A  = " << area << '\n';
+            std::cout << "cL = " << cL   << '\n';
+            std::cout << "cM = " << cM   << '\n';
 
             w.output("plot/Data/Wing/nonlinear");
             break;

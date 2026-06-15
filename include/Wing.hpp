@@ -23,9 +23,8 @@ class Wing
     arma::mat dT2 = Chebyshev::derivative(xi_2);
     arma::mat D1 = Lagrange::derivativeMatrix(xi_1);
     arma::mat D2 = Lagrange::derivativeMatrix(xi_2);
-    size_t con = 1; // Number of configurations
     double qdyn = 1; // Dynamic pressure
-    arma::vec alpha = arma::zeros(con); // Pitch
+    double alpha = 0; // Pitch
     size_t n_theta = 50;
     size_t m_rho = 2;
     std::tuple<arma::mat, arma::mat> xyC = Lagrange::TransfiniteQuadMap(xi_1, xi_2, chi);
@@ -50,13 +49,13 @@ class Wing
     arma::mat L; // Lower triangular matrix
     arma::mat U; // Upper triangular matrix
     arma::mat P; // Permutation matrix
-    arma::mat b = arma::zeros(nxy, con);
+    arma::vec b = arma::zeros(nxy);
     arma::mat nC = calculateNormal(); // Unit normal vector of the wing
-    arma::mat mu_hat = arma::zeros(nxy, con); // Amplitudes of doublet distribution
-    arma::cube dcp = arma::zeros(nx, ny, con); // Difference of non-dimensional pressure
-    double area = 0; // Wing area
-    arma::vec lift   = arma::zeros(con); // Lift in N
-    arma::vec moment = arma::zeros(con); // Moment in Nm
+    arma::vec mu_hat = arma::zeros(nxy); // Amplitudes of doublet distribution
+    arma::mat dcp = arma::zeros(nx, ny); // Difference of non-dimensional pressure
+    double area   = 0; // Wing area
+    double lift   = 0; // Lift in N
+    double moment = 0; // Moment in Nm
     Symmetry sym = Symmetry::none; // Symmetry (no symmetry or symmetry in the y-direction)
     Analysis analysis = Analysis::linear; // Analysis type (linear or nonlinear)
     std::vector<Wake*> wakes;
@@ -74,12 +73,7 @@ public:
     // Sets the dynamic pressure
     void dynamicPressure(double);
     // Sets the pitch in degree
-    void pitch(double _alpha)
-    {
-        pitch(_alpha*arma::ones(1));
-    }
-    // Sets the pitch for multiple configurations
-    void pitch(arma::vec);
+    void pitch(double);
     // Define a symmetry
     void symmetry(Symmetry _sym)
     {
@@ -93,12 +87,12 @@ public:
     void linear();
     void nonlinear();
     // Gets the lift
-    arma::vec get_lift() const
+    double get_lift() const
     {
         return lift;
     }
     // Gets the moment
-    arma::vec get_moment() const
+    double get_moment() const
     {
         return moment;
     }
@@ -108,7 +102,7 @@ public:
         return area;
     }
     // Gets the difference of nondimensional pressure
-    arma::cube get_dcp() const
+    arma::mat get_dcp() const
     {
         return dcp;
     }

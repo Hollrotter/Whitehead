@@ -27,7 +27,7 @@ void Aerodynamics::linear()
                 auto [dx_gldx1, dx_gldx2, dy_gldx1, dy_gldx2] = Lagrange::TransfiniteQuadMetrics(x1_gl, x2_gl, wings[sD]->chi);
                 arma::mat xC = wings[tD]->xC;
                 arma::mat yC = wings[tD]->yC;
-                bw(tD, sD).set_size(wings[tD]->nxy, wings[sD]->nxy, wings[sD]->con);
+                bw(tD, sD).set_size(wings[tD]->nxy, wings[sD]->nxy);
                 for (size_t j = 1; j < wings[tD]->ny-1; j++) // Loop over Collocation Points in 2-direction of target
                     for (size_t i = 1; i < wings[tD]->nx-1; i++) // Loop over Collocation Points in 1-direction of target
                     {
@@ -47,7 +47,7 @@ void Aerodynamics::linear()
                                         double dt1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
                                         double dmudx1 = dt1 *  t2;
                                         double dmudx2 =  t1 * dt2;
-                                        bw(tD, sD)(k, p+q*wings[sD]->nx, 0) -= gl_x[ii].weight * gl_y[jj].weight / r3
+                                        bw(tD, sD)(k, p+q*wings[sD]->nx) -= gl_x[ii].weight * gl_y[jj].weight / r3
                                             *(r(0)*(dy_gldx2(ii, jj)*dmudx1 - dy_gldx1(ii, jj)*dmudx2)
                                             - r(1)*(dx_gldx2(ii, jj)*dmudx1 - dx_gldx1(ii, jj)*dmudx2));
                                     }
@@ -94,7 +94,7 @@ void Aerodynamics::linear()
                                                         size_t k = i + j*wings[tD]->nx;
                                                         arma::vec::fixed<2> r = {xW - xC(i, j), yw(ii) - yC(i, j)};
                                                         double r3 = pow(norm(r), 3);
-                                                        bw(tD, sD)(k, p+q*wings[sD]->nx, 0) -= gl_x_w[ii].weight*gl_y_w[jj].weight*dt1*t2*r(1)/pow(1 + x2_gl_w(jj), 2)/r3; 
+                                                        bw(tD, sD)(k, p+q*wings[sD]->nx) -= gl_x_w[ii].weight*gl_y_w[jj].weight*dt1*t2*r(1)/pow(1 + x2_gl_w(jj), 2)/r3; 
                                                     }
                                             }
                                         }
@@ -119,7 +119,7 @@ void Aerodynamics::linear()
                                                     double r3 = pow(norm(r), 3);
                                                     double I = gl_x_w[ii].weight*gl_y_w[jj].weight*dt2*r(1)/pow(1 - x1_gl_w(ii), 2)/r3;
                                                     for (size_t p = 0; p < wings[sD]->nx; p++)
-                                                        bw(tD, sD)(k, p+q*wings[sD]->nx, 0) -= I;
+                                                        bw(tD, sD)(k, p+q*wings[sD]->nx) -= I;
                                                 }
                                         }
                                     }
@@ -143,7 +143,7 @@ void Aerodynamics::linear()
                                                     double r3 = pow(norm(r), 3);
                                                     double I =-gl_x_w[ii].weight*gl_y_w[jj].weight*dt1*r(1)/pow(1 - x2_gl_w(jj), 2)/r3;
                                                     for (size_t q = 0; q < wings[sD]->ny; q++)
-                                                        bw(tD, sD)(k, p+q*wings[sD]->nx, 0) -= I;
+                                                        bw(tD, sD)(k, p+q*wings[sD]->nx) -= I;
                                                 }
                                         }
                                     }
@@ -168,7 +168,7 @@ void Aerodynamics::linear()
                                                         size_t k = i + j*wings[tD]->nx;
                                                         arma::vec::fixed<2> r = {xW - xC(i, j), yw(jj) - yC(i, j)};
                                                         double r3 = pow(norm(r), 3);
-                                                        bw(tD, sD)(k, p+q*wings[sD]->nx, 0) += gl_x_w[ii].weight*gl_y_w[jj].weight*t1*dt2*r(1)/pow(1 + x1_gl_w(ii), 2)/r3;
+                                                        bw(tD, sD)(k, p+q*wings[sD]->nx) += gl_x_w[ii].weight*gl_y_w[jj].weight*t1*dt2*r(1)/pow(1 + x1_gl_w(ii), 2)/r3;
                                                     }
                                             }
                                         }
@@ -221,7 +221,7 @@ void Aerodynamics::linear()
                                             double dt1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
                                             double dmudx1 = dt1 *  t2;
                                             double dmudx2 =  t1 * dt2;
-                                            bw(tD, sD)(k, p+q*wings[sD]->nx, 0) += gl_x[ii].weight * gl_y[jj].weight / r3
+                                            bw(tD, sD)(k, p+q*wings[sD]->nx) += gl_x[ii].weight * gl_y[jj].weight / r3
                                                 *(r(0)*(dy_gldx2(ii, jj)*dmudx1 - dy_gldx1(ii, jj)*dmudx2)
                                                 - r(1)*(dx_gldx2(ii, jj)*dmudx1 - dx_gldx1(ii, jj)*dmudx2));
                                         }
@@ -268,7 +268,7 @@ void Aerodynamics::linear()
                                                             size_t k = i + j*wings[tD]->nx;
                                                             arma::vec::fixed<2> r = {xW - xC(i, j), yw(ii) - yC(i, j)};
                                                             double r3 = pow(norm(r), 3);
-                                                            bw(tD, sD)(k, p+q*wings[sD]->nx, 0) += gl_x_w[ii].weight*gl_y_w[jj].weight*dt1*t2*r(1)/pow(1 + x2_gl_w(jj), 2)/r3; 
+                                                            bw(tD, sD)(k, p+q*wings[sD]->nx) += gl_x_w[ii].weight*gl_y_w[jj].weight*dt1*t2*r(1)/pow(1 + x2_gl_w(jj), 2)/r3; 
                                                         }
                                                 }
                                             }
@@ -293,7 +293,7 @@ void Aerodynamics::linear()
                                                         double r3 = pow(norm(r), 3);
                                                         double I = gl_x_w[ii].weight*gl_y_w[jj].weight*dt2*r(1)/pow(1 - x1_gl_w(ii), 2)/r3;
                                                         for (size_t p = 0; p < wings[sD]->nx; p++)
-                                                            bw(tD, sD)(k, p+q*wings[sD]->nx, 0) += I;
+                                                            bw(tD, sD)(k, p+q*wings[sD]->nx) += I;
                                                     }
                                             }
                                         }
@@ -317,7 +317,7 @@ void Aerodynamics::linear()
                                                         double r3 = pow(norm(r), 3);
                                                         double I =-gl_x_w[ii].weight*gl_y_w[jj].weight*dt1*r(1)/pow(1 - x2_gl_w(jj), 2)/r3;
                                                         for (size_t q = 0; q < wings[sD]->ny; q++)
-                                                            bw(tD, sD)(k, p+q*wings[sD]->nx, 0) += I;
+                                                            bw(tD, sD)(k, p+q*wings[sD]->nx) += I;
                                                     }
                                             }
                                         }
@@ -342,7 +342,7 @@ void Aerodynamics::linear()
                                                             size_t k = i + j*wings[tD]->nx;
                                                             arma::vec::fixed<2> r = {xW - xC(i, j), yw(jj) - yC(i, j)};
                                                             double r3 = pow(norm(r), 3);
-                                                            bw(tD, sD)(k, p+q*wings[sD]->nx, 0) -= gl_x_w[ii].weight*gl_y_w[jj].weight*t1*dt2*r(1)/pow(1 + x1_gl_w(ii), 2)/r3;
+                                                            bw(tD, sD)(k, p+q*wings[sD]->nx) -= gl_x_w[ii].weight*gl_y_w[jj].weight*t1*dt2*r(1)/pow(1 + x1_gl_w(ii), 2)/r3;
                                                         }
                                                 }
                                             }

@@ -43,18 +43,17 @@ void Wing::dynamicPressure(double _qdyn)
 /**
  * @brief 
  * 
- * @param _alpha Pitch given as vector for multiple configurations.
+ * @param _alpha Sets the pitch in degree.
  */
-void Wing::pitch(arma::vec _alpha)
+void Wing::pitch(double _alpha)
 {
     alpha = arma::datum::pi/180*_alpha;
-    con = alpha.size();
     for (size_t j = 1; j < ny-1; j++)
         for (size_t i = 1; i < nx-1; i++)
-            b.row(i+j*nx) =-4*arma::datum::pi*alpha;
-    lift.zeros(con);
-    moment.zeros(con);
-    dcp.zeros(nx, ny, con);
+            b(i+j*nx) =-4*arma::datum::pi*alpha;
+    lift   = 0;
+    moment = 0;
+    dcp.zeros(nx, ny);
 }
 
 void Wing::checkMesh()
@@ -93,11 +92,7 @@ void Wing::output(std::string filename)
     std::ofstream file(filename);
     for (size_t i = 0; i < nx; i++, file << '\n')
         for (size_t j = 0; j < ny; j++, file << '\n')
-        {
-            file << x(i, j) << ' ' << y(i, j) << ' ' << z(i, j) << ' ' << mu(i, j);
-            for (size_t k = 0; k < con; k++)
-                file << ' ' << dcp(i, j, k);
-        }
+            file << x(i, j) << ' ' << y(i, j) << ' ' << z(i, j) << ' ' << mu(i, j) << ' ' << dcp(i, j);
     file.close();
 }
 
@@ -116,7 +111,7 @@ arma::mat Wing::calculateNormal()
     arma::mat d2zdxi_1dxi_2 = D1*dzdxi_2;
     arma::mat d2zdxi_22 = dzdxi_2*D2.t();
 
-    arma::mat normal(nxy, 3);
+    arma::mat normal(nxy, 3, arma::fill::none);
     for (size_t j = 0; j < ny; j++)
         for (size_t i = 0; i < nx; i++)
         {
@@ -227,10 +222,10 @@ void Wing::nonlinearSolve()
     else
         muBoundaryNorth(nx-1);
 
-    arma::mat Q = join_horiz(cos(alpha), arma::zeros(con), sin(alpha)).t();
+    arma::vec Q = {cos(alpha), 0, sin(alpha)};
     for (size_t j = 1; j < ny-1; j++)
         for (size_t i = 1; i < nx-1; i++)
-            b.row(i+j*nx) =-2*arma::datum::tau*(nC.row(i+j*nx)*Q);
+            b(i+j*nx) =-2*arma::datum::tau*dot(nC.row(i+j*nx), Q);
 
     arma::lu(L, U, P, A);
 }
@@ -265,8 +260,8 @@ void Wing::postprocessing()
                         {
                             double  t1 = boost::math::chebyshev_t(p, x1(i));
                             double dt1 = boost::math::chebyshev_t_prime(p, x1(i));
-                            mu(i, j)       += mu_hat(p+q*nx, 0)  * t1 * t2;
-                            dcp.tube(i, j) += 2*mu_hat.row(p+q*nx) * (J11_inv(i, j)*dt1*t2 + J21_inv(i, j)*t1*dt2);
+                            mu(i, j)  +=   mu_hat(p+q*nx)  * t1 * t2;
+                            dcp(i, j) += 2*mu_hat(p+q*nx) * (J11_inv(i, j)*dt1*t2 + J21_inv(i, j)*t1*dt2);
                         }
                 }
             break;
@@ -277,7 +272,7 @@ void Wing::postprocessing()
             arma::mat d2 = Chebyshev::derivativeMatrix(x2, Derivative::first);
             arma::mat dzdx1 = d1 * z;
             arma::mat dzdx2 = z * d2.t();
-            arma::mat Q = join_horiz(cos(alpha), arma::zeros(con), sin(alpha));
+            arma::vec Q = {cos(alpha), 0, sin(alpha)};
             arma::mat e = e_c.slice(0)%e_c.slice(2) - pow(e_c.slice(1), 2);
             arma::mat sqrt_a = sqrt(e%(1 + ec.slice(0)%pow(dzdx1, 2) + 2*ec.slice(1)%dzdx1%dzdx2 + ec.slice(2)%pow(dzdx2, 2)));
             for (size_t j = 0; j < ny; j++) // Loop over nodes in 2-direction
@@ -301,11 +296,11 @@ void Wing::postprocessing()
                             double dT1dx1 = boost::math::chebyshev_t_prime(p, x1(i));
                             arma::vec::fixed<2> dmudxi = {dT1dx1*t2, t1*dT2dx2};
                             arma::vec::fixed<3> gradmu = J_red*dmudxi;
-                            mu(i, j) += mu_hat(p+q*nx, 0) * t1 * t2;
-                            q_mu     += mu_hat(p+q*nx, 0) * gradmu;
+                            mu(i, j) += mu_hat(p+q*nx) * t1 * t2;
+                            q_mu     += mu_hat(p+q*nx) * gradmu;
                         }
                     }
-                    dcp.tube(i, j) = 2*Q*q_mu;
+                    dcp(i, j) = 2*dot(Q, q_mu);
                 }
             break;
         }
@@ -313,9 +308,9 @@ void Wing::postprocessing()
             std::println("Only linear and nonlinear analysis are implemented for Wing!");
             exit(EXIT_FAILURE);
     }
-    area = 0;
-    lift.zeros();
-    moment.zeros();
+    area   = 0;
+    lift   = 0;
+    moment = 0;
     std::vector<fastgl::QuadPair> gl_x(nx), gl_y(ny);
     arma::vec x1_gl(nx), x2_gl(ny);
     for (size_t i = 0; i < nx; i++)
@@ -341,7 +336,7 @@ void Wing::postprocessing()
                     double detJ = dxdx1_gl(i, j)*dydx2_gl(i, j) - dxdx2_gl(i, j)*dydx1_gl(i, j);
                     double J11_inv = dydx2_gl(i, j)/detJ;
                     double J21_inv =-dydx1_gl(i, j)/detJ;
-                    arma::vec DCP(con, arma::fill::zeros);
+                    double DCP = 0;
                     for (size_t q = 0; q < ny; q++)
                     {
                         double t2 = boost::math::chebyshev_t(q, x2_gl(j));
@@ -350,7 +345,7 @@ void Wing::postprocessing()
                         {
                             double t1 = boost::math::chebyshev_t(p, x1_gl(i));
                             double dT1dx1 = boost::math::chebyshev_t_prime(p, x1_gl(i));
-                            DCP += 2*mu_hat.row(p+q*nx) * (J11_inv*dT1dx1*t2 + J21_inv*t1*dT2dx2);
+                            DCP += 2*mu_hat(p+q*nx) * (J11_inv*dT1dx1*t2 + J21_inv*t1*dT2dx2);
                         }
                     }
                     area   += gl_x[i].weight * gl_y[j].weight * detJ;
@@ -361,9 +356,9 @@ void Wing::postprocessing()
         }
         case Analysis::nonlinear:
         {
-            arma::mat F(3, con);
-            arma::mat M(3, con);
-            arma::mat Q = join_horiz(cos(alpha), arma::zeros(con), sin(alpha));
+            arma::vec F(3);
+            arma::vec M(3);
+            arma::vec Q = {cos(alpha), 0, sin(alpha)};
             arma::mat Tx_gl = Lagrange::interpolationMatrix(x1, x1_gl);
             arma::mat Ty_gl = Lagrange::interpolationMatrix(x2, x2_gl);
             arma::mat z_gl  = Lagrange::interpolation2D(Tx_gl, Ty_gl, z, x1_gl, x2_gl);
@@ -396,17 +391,17 @@ void Wing::postprocessing()
                             double dT1dx1 = boost::math::chebyshev_t_prime(p, x1_gl(i));
                             arma::vec::fixed<2> dmudxi = {dT1dx1*t2, t1*dT2dx2};
                             arma::vec::fixed<3> gradmu = J_red*dmudxi;
-                            q_mu += mu_hat(p+q*nx, 0) * gradmu;
+                            q_mu += mu_hat(p+q*nx) * gradmu;
                         }
                     }
-                    arma::vec DCP = 2*Q*q_mu;
+                    double DCP = 2*dot(Q, q_mu);
                     arma::vec r = {x_gl(i, j), y_gl(i, j), z_gl(i, j)};
                     area += gl_x[i].weight * gl_y[j].weight * sqrt_a(i, j);
                     F    += gl_x[i].weight * gl_y[j].weight * n_gl * DCP;
                     M    -= gl_x[i].weight * gl_y[j].weight * cross(n_gl * DCP, r);
                 }
-            lift   = F.row(2)*cos(alpha) - F.row(0)*sin(alpha);
-            moment = M.row(1);
+            lift   = F(2)*cos(alpha) - F(0)*sin(alpha);
+            moment = M(1);
             break;
         }
         default:

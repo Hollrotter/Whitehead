@@ -11,7 +11,7 @@ class Aerodynamics
     Symmetry sym = Symmetry::none;
     Analysis analysis = Analysis::linear;
     double lambda0 = 2;
-    arma::field<arma::cube> bw;
+    arma::field<arma::mat> bw;
     Aerodynamics fromWings(std::vector<Wing*>);
 public:
     Aerodynamics() = default;
@@ -25,11 +25,6 @@ public:
     }
     // Sets the pitch in degree
     void pitch(const double _alpha)
-    {
-        std::for_each(wings.begin(), wings.end(), [&](auto& w) { w->pitch(_alpha); } );
-    }
-    // Sets the pitch for multiple configurations
-    void pitch(const arma::vec _alpha)
     {
         std::for_each(wings.begin(), wings.end(), [&](auto& w) { w->pitch(_alpha); } );
     }
@@ -56,13 +51,13 @@ public:
     template <class C> void boundary(const Lagrange::CurveInterpolant*, const BC, const double, const double, const C);
     void linear();
     void nonlinear();
-    arma::vec get_lift()
+    double get_lift()
     {
-        return std::accumulate(wings.begin(), wings.end(), arma::vec(wings[0]->con, arma::fill::zeros), [](arma::vec l, Wing* w){return l + w->lift;});
+        return std::accumulate(wings.begin(), wings.end(), 0.0, [](double l, Wing* w){return l + w->lift;});
     }
-    arma::vec get_moment()
+    double get_moment()
     {
-        return std::accumulate(wings.begin(), wings.end(), arma::vec(wings[0]->con, arma::fill::zeros), [](arma::vec m, Wing* w){return m + w->moment;});
+        return std::accumulate(wings.begin(), wings.end(), 0.0, [](double m, Wing* w){return m + w->moment;});
     }
     double get_area()
     {

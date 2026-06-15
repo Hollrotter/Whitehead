@@ -20,12 +20,12 @@ int main()
             airfoil.output("plot/Data/Airfoil/flat");
 
             std::ofstream file("plot/Data/Airfoil/dcp");
-            for (int n = 0; n < N; n++)
+            for (size_t n = 0; n < N; n++)
                 file << x(n) << ' ' << dcp(n) << '\n';
             file.close();
 
-            std::cout << "cL = " << airfoil.get_lift().t()   << std::endl;
-            std::cout << "cM = " << airfoil.get_moment().t() << std::endl;
+            std::cout << "cL = " << airfoil.get_lift()   << std::endl;
+            std::cout << "cM = " << airfoil.get_moment() << std::endl;
             break;
         }
         case 1: // Nonlinear

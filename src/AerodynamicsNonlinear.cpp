@@ -40,7 +40,7 @@ void Aerodynamics::nonlinear()
                 arma::mat xC = wings[tD]->xC;
                 arma::mat yC = wings[tD]->yC;
                 arma::mat zC = wings[tD]->zC;
-                bw(tD, sD).set_size(wings[tD]->nxy, wings[sD]->nxy, wings[sD]->con);
+                bw(tD, sD).set_size(wings[tD]->nxy, wings[sD]->nxy);
                 for (size_t j = 1; j < wings[tD]->ny-1; j++) // Loop over Collocation Points in 2-direction of target
                     for (size_t i = 1; i < wings[tD]->nx-1; i++) // Loop over Collocation Points in 1-direction of target
                     {
@@ -68,7 +68,7 @@ void Aerodynamics::nonlinear()
                                         arma::vec::fixed<3> gradmu = J_red*dmudxi;
                                         arma::vec::fixed<3> gamma_gl = cross(gradmu, n_gl);
                                         arma::vec q_mu = gl_x[ii].weight * gl_y[jj].weight * cross(gamma_gl, r)/r3;
-                                        bw(tD, sD)(k, p+q*wings[sD]->nx, 0) -= dot(q_mu, wings[tD]->nC.row(k));
+                                        bw(tD, sD)(k, p+q*wings[sD]->nx) -= dot(q_mu, wings[tD]->nC.row(k));
                                     }
                                 }
                             } 
@@ -118,10 +118,10 @@ void Aerodynamics::nonlinear()
                                         for (size_t jj = 0; jj < wings[sD]->ny; jj++)
                                         {
                                             double xW = xw(ii) + (1 - x2_gl_w(jj))/(1 + x2_gl_w(jj))/2;
-                                            double zW = zw(ii) + (1 - x2_gl_w(jj))/(1 + x2_gl_w(jj))*tan(wings[sD]->alpha(0))/2;
+                                            double zW = zw(ii) + (1 - x2_gl_w(jj))/(1 + x2_gl_w(jj))*tan(wings[sD]->alpha)/2;
                                             double dxdx2 =-pow(1 + x2_gl_w(jj),-2);
                                             // dydx2 = 0;
-                                            double dzdx2 =-tan(wings[sD]->alpha(0))/pow(1 + x2_gl_w(jj), 2);
+                                            double dzdx2 =-tan(wings[sD]->alpha)/pow(1 + x2_gl_w(jj), 2);
                                             arma::vec::fixed<3> e_2 = {dxdx2, 0, dzdx2};
                                             double e_11 = dot(e_1, e_1);
                                             double e_12 = dot(e_1, e_2);
@@ -150,7 +150,7 @@ void Aerodynamics::nonlinear()
                                                         arma::vec::fixed<3> gradmu = J_red*dmudxi;
                                                         arma::vec::fixed<3> gamma_W = cross(gradmu, n_W);
                                                         arma::vec q_mu = gl_x_w[ii].weight * gl_y_w[jj].weight * cross(gamma_W, r)/r3;
-                                                        bw(tD, sD)(k, p+q*wings[sD]->nx, 0) -= dot(q_mu, wings[tD]->nC.row(k)); 
+                                                        bw(tD, sD)(k, p+q*wings[sD]->nx) -= dot(q_mu, wings[tD]->nC.row(k)); 
                                                     }
                                             }
                                         }
@@ -174,10 +174,10 @@ void Aerodynamics::nonlinear()
                                         for (size_t ii = 0; ii < wings[sD]->nx; ii++)
                                         {
                                             double xW = xw(jj) + (1 + x1_gl_w(ii))/(1 - x1_gl_w(ii))/2;
-                                            double zW = zw(jj) + (1 + x1_gl_w(ii))/(1 - x1_gl_w(ii))*tan(wings[sD]->alpha(0))/2;
+                                            double zW = zw(jj) + (1 + x1_gl_w(ii))/(1 - x1_gl_w(ii))*tan(wings[sD]->alpha)/2;
                                             double dxdx1 = 1/pow(1 - x1_gl_w(ii), 2);
                                             // dydx1 = 0
-                                            double dzdx1 = tan(wings[sD]->alpha(0))/pow(1 - x1_gl_w(ii), 2);
+                                            double dzdx1 = tan(wings[sD]->alpha)/pow(1 - x1_gl_w(ii), 2);
                                             arma::vec::fixed<3> e_1 = {dxdx1, 0, dzdx1};
                                             double e_11 = dot(e_1, e_1);
                                             double e_12 = dot(e_1, e_2);
@@ -204,7 +204,7 @@ void Aerodynamics::nonlinear()
                                                     arma::vec::fixed<3> gamma_W = cross(gradmu, n_W);
                                                     arma::vec q_mu = gl_x_w[ii].weight * gl_y_w[jj].weight * cross(gamma_W, r)/r3;
                                                     for (size_t p = 0; p < wings[sD]->nx; p++)
-                                                        bw(tD, sD)(k, p+q*wings[sD]->nx, 0) -= dot(q_mu, wings[tD]->nC.row(k));
+                                                        bw(tD, sD)(k, p+q*wings[sD]->nx) -= dot(q_mu, wings[tD]->nC.row(k));
                                                 }
                                         }
                                     }
@@ -227,10 +227,10 @@ void Aerodynamics::nonlinear()
                                         for (size_t jj = 0; jj < wings[sD]->ny; jj++)
                                         {
                                             double xW = xw(ii) + (1 + x2_gl_w(jj))/(1 - x2_gl_w(jj))/2;
-                                            double zW = zw(ii) + (1 + x2_gl_w(jj))/(1 - x2_gl_w(jj))*tan(wings[sD]->alpha(0))/2;
+                                            double zW = zw(ii) + (1 + x2_gl_w(jj))/(1 - x2_gl_w(jj))*tan(wings[sD]->alpha)/2;
                                             double dxdx2 = 1/pow(1 - x2_gl_w(jj), 2);
                                             // dydx2 = 0
-                                            double dzdx2 = tan(wings[sD]->alpha(0))/pow(1 - x2_gl_w(jj), 2);
+                                            double dzdx2 = tan(wings[sD]->alpha)/pow(1 - x2_gl_w(jj), 2);
                                             arma::vec::fixed<3> e_2 = {dxdx2, 0, dzdx2};
                                             double e_11 = dot(e_1, e_1);
                                             double e_12 = dot(e_1, e_2);
@@ -257,7 +257,7 @@ void Aerodynamics::nonlinear()
                                                     arma::vec::fixed<3> gamma_W = cross(gradmu, n_W);
                                                     arma::vec q_mu = gl_x_w[ii].weight * gl_y_w[jj].weight * cross(gamma_W, r)/r3;
                                                     for (size_t q = 0; q < wings[sD]->ny; q++)
-                                                        bw(tD, sD)(k, p+q*wings[sD]->nx, 0) -= dot(q_mu, wings[tD]->nC.row(k));
+                                                        bw(tD, sD)(k, p+q*wings[sD]->nx) -= dot(q_mu, wings[tD]->nC.row(k));
                                                 }
                                         }
                                     }
@@ -280,10 +280,10 @@ void Aerodynamics::nonlinear()
                                         for (size_t ii = 0; ii < wings[sD]->nx; ii++)
                                         {
                                             double xW = xw(jj) + (1 - x1_gl_w(ii))/(1 + x1_gl_w(ii))/2;
-                                            double zW = zw(jj) + (1 - x1_gl_w(ii))/(1 + x1_gl_w(ii))*tan(wings[sD]->alpha(0))/2;
+                                            double zW = zw(jj) + (1 - x1_gl_w(ii))/(1 + x1_gl_w(ii))*tan(wings[sD]->alpha)/2;
                                             double dxdx1 =-1/pow(1 + x1_gl_w(ii), 2);
                                             // dydx1 = 0
-                                            double dzdx1 =-tan(wings[sD]->alpha(0))/pow(1 + x1_gl_w(ii), 2);
+                                            double dzdx1 =-tan(wings[sD]->alpha)/pow(1 + x1_gl_w(ii), 2);
                                             arma::vec::fixed<3> e_1 = {dxdx1, 0, dzdx1};
                                             double e_11 = dot(e_1, e_1);
                                             double e_12 = dot(e_1, e_2);
@@ -312,7 +312,7 @@ void Aerodynamics::nonlinear()
                                                         arma::vec::fixed<3> gradmu = J_red*dmudxi;
                                                         arma::vec::fixed<3> gamma_W = cross(gradmu, n_W);
                                                         arma::vec q_mu = gl_x_w[ii].weight * gl_y_w[jj].weight * cross(gamma_W, r)/r3;
-                                                        bw(tD, sD)(k, p+q*wings[sD]->nx, 0) -= dot(q_mu, wings[tD]->nC.row(k)); 
+                                                        bw(tD, sD)(k, p+q*wings[sD]->nx) -= dot(q_mu, wings[tD]->nC.row(k)); 
                                                     }
                                             }
                                         }
@@ -387,7 +387,7 @@ void Aerodynamics::nonlinear()
                                             arma::vec::fixed<3> gradmu = J_red*dmudxi;
                                             arma::vec::fixed<3> gamma_gl = cross(gradmu, n_gl);
                                             arma::vec q_mu = gl_x[ii].weight * gl_y[jj].weight * cross(gamma_gl, r)/r3;
-                                            bw(tD, sD)(k, p+q*wings[sD]->nx, 0) += dot(q_mu, wings[tD]->nC.row(k));
+                                            bw(tD, sD)(k, p+q*wings[sD]->nx) += dot(q_mu, wings[tD]->nC.row(k));
                                         }
                                     }
                                 } 
@@ -437,10 +437,10 @@ void Aerodynamics::nonlinear()
                                             for (size_t jj = 0; jj < wings[sD]->ny; jj++)
                                             {
                                                 double xW = xw(ii) + (1 - x2_gl_w(jj))/(1 + x2_gl_w(jj))/2;
-                                                double zW = zw(ii) + (1 - x2_gl_w(jj))/(1 + x2_gl_w(jj))*tan(wings[sD]->alpha(0))/2;
+                                                double zW = zw(ii) + (1 - x2_gl_w(jj))/(1 + x2_gl_w(jj))*tan(wings[sD]->alpha)/2;
                                                 double dxdx2 =-pow(1 + x2_gl_w(jj),-2);
                                                 // dydx2 = 0;
-                                                double dzdx2 =-tan(wings[sD]->alpha(0))/pow(1 + x2_gl_w(jj), 2);
+                                                double dzdx2 =-tan(wings[sD]->alpha)/pow(1 + x2_gl_w(jj), 2);
                                                 arma::vec::fixed<3> e_2 = {dxdx2, 0, dzdx2};
                                                 double e_11 = dot(e_1, e_1);
                                                 double e_12 = dot(e_1, e_2);
@@ -469,7 +469,7 @@ void Aerodynamics::nonlinear()
                                                             arma::vec::fixed<3> gradmu = J_red*dmudxi;
                                                             arma::vec::fixed<3> gamma_W = cross(gradmu, n_W);
                                                             arma::vec q_mu = gl_x_w[ii].weight * gl_y_w[jj].weight * cross(gamma_W, r)/r3;
-                                                            bw(tD, sD)(k, p+q*wings[sD]->nx, 0) += dot(q_mu, wings[tD]->nC.row(k)); 
+                                                            bw(tD, sD)(k, p+q*wings[sD]->nx) += dot(q_mu, wings[tD]->nC.row(k)); 
                                                         }
                                                 }
                                             }
@@ -493,10 +493,10 @@ void Aerodynamics::nonlinear()
                                             for (size_t ii = 0; ii < wings[sD]->nx; ii++)
                                             {
                                                 double xW = xw(jj) + (1 + x1_gl_w(ii))/(1 - x1_gl_w(ii))/2;
-                                                double zW = zw(jj) + (1 + x1_gl_w(ii))/(1 - x1_gl_w(ii))*tan(wings[sD]->alpha(0))/2;
+                                                double zW = zw(jj) + (1 + x1_gl_w(ii))/(1 - x1_gl_w(ii))*tan(wings[sD]->alpha)/2;
                                                 double dxdx1 = 1/pow(1 - x1_gl_w(ii), 2);
                                                 // dydx1 = 0
-                                                double dzdx1 = tan(wings[sD]->alpha(0))/pow(1 - x1_gl_w(ii), 2);
+                                                double dzdx1 = tan(wings[sD]->alpha)/pow(1 - x1_gl_w(ii), 2);
                                                 arma::vec::fixed<3> e_1 = {dxdx1, 0, dzdx1};
                                                 double e_11 = dot(e_1, e_1);
                                                 double e_12 = dot(e_1, e_2);
@@ -523,7 +523,7 @@ void Aerodynamics::nonlinear()
                                                         arma::vec::fixed<3> gamma_W = cross(gradmu, n_W);
                                                         arma::vec q_mu = gl_x_w[ii].weight * gl_y_w[jj].weight * cross(gamma_W, r)/r3;
                                                         for (size_t p = 0; p < wings[sD]->nx; p++)
-                                                            bw(tD, sD)(k, p+q*wings[sD]->nx, 0) += dot(q_mu, wings[tD]->nC.row(k));
+                                                            bw(tD, sD)(k, p+q*wings[sD]->nx) += dot(q_mu, wings[tD]->nC.row(k));
                                                     }
                                             }
                                         }
@@ -546,10 +546,10 @@ void Aerodynamics::nonlinear()
                                             for (size_t jj = 0; jj < wings[sD]->ny; jj++)
                                             {
                                                 double xW = xw(ii) + (1 + x2_gl_w(jj))/(1 - x2_gl_w(jj))/2;
-                                                double zW = zw(ii) + (1 + x2_gl_w(jj))/(1 - x2_gl_w(jj))*tan(wings[sD]->alpha(0))/2;
+                                                double zW = zw(ii) + (1 + x2_gl_w(jj))/(1 - x2_gl_w(jj))*tan(wings[sD]->alpha)/2;
                                                 double dxdx2 = 1/pow(1 - x2_gl_w(jj), 2);
                                                 // dydx2 = 0
-                                                double dzdx2 = tan(wings[sD]->alpha(0))/pow(1 - x2_gl_w(jj), 2);
+                                                double dzdx2 = tan(wings[sD]->alpha)/pow(1 - x2_gl_w(jj), 2);
                                                 arma::vec::fixed<3> e_2 = {dxdx2, 0, dzdx2};
                                                 double e_11 = dot(e_1, e_1);
                                                 double e_12 = dot(e_1, e_2);
@@ -576,7 +576,7 @@ void Aerodynamics::nonlinear()
                                                         arma::vec::fixed<3> gamma_W = cross(gradmu, n_W);
                                                         arma::vec q_mu = gl_x_w[ii].weight * gl_y_w[jj].weight * cross(gamma_W, r)/r3;
                                                         for (size_t q = 0; q < wings[sD]->ny; q++)
-                                                            bw(tD, sD)(k, p+q*wings[sD]->nx, 0) += dot(q_mu, wings[tD]->nC.row(k));
+                                                            bw(tD, sD)(k, p+q*wings[sD]->nx) += dot(q_mu, wings[tD]->nC.row(k));
                                                     }
                                             }
                                         }
@@ -599,10 +599,10 @@ void Aerodynamics::nonlinear()
                                             for (size_t ii = 0; ii < wings[sD]->nx; ii++)
                                             {
                                                 double xW = xw(jj) + (1 - x1_gl_w(ii))/(1 + x1_gl_w(ii))/2;
-                                                double zW = zw(jj) + (1 - x1_gl_w(ii))/(1 + x1_gl_w(ii))*tan(wings[sD]->alpha(0))/2;
+                                                double zW = zw(jj) + (1 - x1_gl_w(ii))/(1 + x1_gl_w(ii))*tan(wings[sD]->alpha)/2;
                                                 double dxdx1 =-1/pow(1 + x1_gl_w(ii), 2);
                                                 // dydx1 = 0
-                                                double dzdx1 =-tan(wings[sD]->alpha(0))/pow(1 + x1_gl_w(ii), 2);
+                                                double dzdx1 =-tan(wings[sD]->alpha)/pow(1 + x1_gl_w(ii), 2);
                                                 arma::vec::fixed<3> e_1 = {dxdx1, 0, dzdx1};
                                                 double e_11 = dot(e_1, e_1);
                                                 double e_12 = dot(e_1, e_2);
@@ -631,7 +631,7 @@ void Aerodynamics::nonlinear()
                                                             arma::vec::fixed<3> gradmu = J_red*dmudxi;
                                                             arma::vec::fixed<3> gamma_W = cross(gradmu, n_W);
                                                             arma::vec q_mu = gl_x_w[ii].weight * gl_y_w[jj].weight * cross(gamma_W, r)/r3;
-                                                            bw(tD, sD)(k, p+q*wings[sD]->nx, 0) += dot(q_mu, wings[tD]->nC.row(k)); 
+                                                            bw(tD, sD)(k, p+q*wings[sD]->nx) += dot(q_mu, wings[tD]->nC.row(k)); 
                                                         }
                                                 }
                                             }

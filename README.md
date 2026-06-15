@@ -41,28 +41,8 @@ $ make
 $ code .
 ```
 
-The following are example files for running a test file in VSCode:
+The following is an example tasks.json file for running a test file in VSCode:
 
-c_cpp_properties.json
-```
-{
-    "configurations": [
-        {
-            "name": "Linux",
-            "includePath": [
-                "${workspaceFolder}/**",
-                "${workspaceFolder}/../include"
-            ],
-            "defines": [],
-            "compilerPath": "/usr/bin/gcc",
-            "intelliSenseMode": "linux-gcc-x64"
-        }
-    ],
-    "version": 4
-}
-```
-
-tasks.json:
 ```
 {
 	"version": "2.0.0",
@@ -99,41 +79,6 @@ tasks.json:
 			"detail": "compiler: /usr/bin/g++"
 		}
 	]
-}
-```
-
-launch.json
-```
-{
-    "configurations": [
-        {
-            "name": "C/C++: g++ build and debug active file",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${fileDirname}/test",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${fileDirname}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                },
-                {
-                    "description": "Set Disassembly Flavor to Intel",
-                    "text": "-gdb-set disassembly-flavor intel",
-                    "ignoreFailures": true
-                }
-            ],
-            "preLaunchTask": "C/C++: g++ build active file",
-            "miDebuggerPath": "/usr/bin/gdb"
-        }
-    ],
-    "version": "2.0.0"
 }
 ```
 

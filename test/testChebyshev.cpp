@@ -2,7 +2,7 @@
 
 int main()
 {
-    switch (2)
+    switch (6)
     {
         case 0: // Derivative matrices
         {
@@ -112,6 +112,79 @@ int main()
 
 			std::cout << "Boost:     " << dt12.count() << '\n';
 			std::cout << "Armadillo: " << dt23.count() << '\n';
+			break;
+		}
+		case 5: // Clenshaw algorithm
+		{
+			size_t n = 20;
+			size_t k = 10;
+			arma::vec x = Chebyshev::gaussLobatto(n);
+			arma::vec a = arma::randu(k);
+
+			auto t1 = std::chrono::high_resolution_clock::now();
+
+			arma::vec f1(n, arma::fill::value(a(0)/2));
+			for (size_t i = 0; i < n; i++)
+				f1(i) += boost::math::chebyshev_clenshaw_recurrence(a.memptr(), k, x(i));
+
+			auto t2 = std::chrono::high_resolution_clock::now();
+
+			arma::vec f2 = Chebyshev::Polynomial(a, x) * a;
+
+			auto t3 = std::chrono::high_resolution_clock::now();
+
+			std::chrono::duration<double> dt12 = t2 - t1;
+			std::chrono::duration<double> dt23 = t3 - t2;
+
+			std::cout << dt12.count() << '\n';
+			std::cout << dt23.count() << '\n';
+			break;
+		}
+		case 6:
+		{
+			size_t nx = 30;
+			size_t ny = 30;
+
+			arma::vec x1 = Chebyshev::gaussLobatto(nx);
+			arma::vec x2 = Chebyshev::gaussLobatto(ny);
+
+			arma::mat a = arma::randu(nx, ny);
+
+			auto t1 = std::chrono::high_resolution_clock::now();
+
+			arma::mat f1(nx, ny, arma::fill::zeros);
+			for (size_t q = 0; q < ny; q++)
+				for (size_t j = 0; j < ny; j++)
+				{
+					double t2 = boost::math::chebyshev_t(q, x2(j));
+					for (size_t p = 0; p < nx; p++)
+						for (size_t i = 0; i < nx; i++)
+						{
+							double t1 = boost::math::chebyshev_t(p, x1(i));
+							f1(i, j) += a(p, q) * t1 * t2;
+						}
+				}
+						
+			auto t2 = std::chrono::high_resolution_clock::now();
+
+			arma::mat f2(nx, ny, arma::fill::zeros);
+			arma::vec b(ny, arma::fill::zeros);
+
+			for (size_t j = 0; j < ny; j++)
+				for (size_t i = 0; i < nx; i++)
+				{
+					for (size_t q = 0; q < ny; q++)
+						b(q) = a(0, q)/2 + boost::math::chebyshev_clenshaw_recurrence(a.colptr(q), ny, x1(i));
+					f2(i, j) = b(0)/2 + boost::math::chebyshev_clenshaw_recurrence(b.memptr(), nx, x2(j));
+				}
+
+			auto t3 = std::chrono::high_resolution_clock::now();
+
+			std::chrono::duration<double> dt12 = t2 - t1;
+			std::chrono::duration<double> dt23 = t3 - t2;
+
+			std::cout << dt12.count() << '\n';
+			std::cout << dt23.count() << '\n';
 			break;
 		}
     }

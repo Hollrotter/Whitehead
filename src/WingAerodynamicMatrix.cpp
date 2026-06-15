@@ -697,10 +697,10 @@ void Wing::aerodynamicMatrix()
                                     for (size_t jj = 0; jj < ny; jj++)
                                     {
                                         double xW = xw(ii) + (1 - x2_gl_w(jj))/(1 + x2_gl_w(jj))/2;
-                                        double zW = zw(ii) + (1 - x2_gl_w(jj))/(1 + x2_gl_w(jj))*tan(alpha(0))/2;
+                                        double zW = zw(ii) + (1 - x2_gl_w(jj))/(1 + x2_gl_w(jj))*tan(alpha)/2;
                                         double dxdx2 =-pow(1 + x2_gl_w(jj),-2);
                                         // dydx2 = 0;
-                                        double dzdx2 =-tan(alpha(0))/pow(1 + x2_gl_w(jj), 2);
+                                        double dzdx2 =-tan(alpha)/pow(1 + x2_gl_w(jj), 2);
                                         arma::vec::fixed<3> e_2 = {dxdx2, 0, dzdx2};
                                         double e_11 = dot(e_1, e_1);
                                         double e_12 = dot(e_1, e_2);
@@ -753,10 +753,10 @@ void Wing::aerodynamicMatrix()
                                     for (size_t ii = 0; ii < nx; ii++)
                                     {
                                         double xW = xw(jj) + (1 + x1_gl_w(ii))/(1 - x1_gl_w(ii))/2;
-                                        double zW = zw(jj) + (1 + x1_gl_w(ii))/(1 - x1_gl_w(ii))*tan(alpha(0))/2;
+                                        double zW = zw(jj) + (1 + x1_gl_w(ii))/(1 - x1_gl_w(ii))*tan(alpha)/2;
                                         double dxdx1 = 1/pow(1 - x1_gl_w(ii), 2);
                                         // dydx1 = 0
-                                        double dzdx1 = tan(alpha(0))/pow(1 - x1_gl_w(ii), 2);
+                                        double dzdx1 = tan(alpha)/pow(1 - x1_gl_w(ii), 2);
                                         arma::vec::fixed<3> e_1 = {dxdx1, 0, dzdx1};
                                         double e_11 = dot(e_1, e_1);
                                         double e_12 = dot(e_1, e_2);
@@ -806,10 +806,10 @@ void Wing::aerodynamicMatrix()
                                     for (size_t jj = 0; jj < ny; jj++)
                                     {
                                         double xW = xw(ii) + (1 + x2_gl_w(jj))/(1 - x2_gl_w(jj))/2;
-                                        double zW = zw(ii) + (1 + x2_gl_w(jj))/(1 - x2_gl_w(jj))*tan(alpha(0))/2;
+                                        double zW = zw(ii) + (1 + x2_gl_w(jj))/(1 - x2_gl_w(jj))*tan(alpha)/2;
                                         double dxdx2 = 1/pow(1 - x2_gl_w(jj), 2);
                                         // dydx2 = 0
-                                        double dzdx2 = tan(alpha(0))/pow(1 - x2_gl_w(jj), 2);
+                                        double dzdx2 = tan(alpha)/pow(1 - x2_gl_w(jj), 2);
                                         arma::vec::fixed<3> e_2 = {dxdx2, 0, dzdx2};
                                         double e_11 = dot(e_1, e_1);
                                         double e_12 = dot(e_1, e_2);
@@ -859,10 +859,10 @@ void Wing::aerodynamicMatrix()
                                     for (size_t ii = 0; ii < nx; ii++)
                                     {
                                         double xW = xw(jj) + (1 - x1_gl_w(ii))/(1 + x1_gl_w(ii))/2;
-                                        double zW = zw(jj) + (1 - x1_gl_w(ii))/(1 + x1_gl_w(ii))*tan(alpha(0))/2;
+                                        double zW = zw(jj) + (1 - x1_gl_w(ii))/(1 + x1_gl_w(ii))*tan(alpha)/2;
                                         double dxdx1 =-1/pow(1 + x1_gl_w(ii), 2);
                                         // dydx1 = 0
-                                        double dzdx1 =-tan(alpha(0))/pow(1 + x1_gl_w(ii), 2);
+                                        double dzdx1 =-tan(alpha)/pow(1 + x1_gl_w(ii), 2);
                                         arma::vec::fixed<3> e_1 = {dxdx1, 0, dzdx1};
                                         double e_11 = dot(e_1, e_1);
                                         double e_12 = dot(e_1, e_2);
@@ -1006,10 +1006,10 @@ void Wing::aerodynamicMatrix()
                                         for (size_t jj = 0; jj < ny; jj++)
                                         {
                                             double xW = xw(ii) + (1 - x2_gl_w(jj))/(1 + x2_gl_w(jj))/2;
-                                            double zW = zw(ii) + (1 - x2_gl_w(jj))/(1 + x2_gl_w(jj))*tan(alpha(0))/2;
+                                            double zW = zw(ii) + (1 - x2_gl_w(jj))/(1 + x2_gl_w(jj))*tan(alpha)/2;
                                             double dxdx2 =-pow(1 + x2_gl_w(jj),-2);
                                             // dydx2 = 0;
-                                            double dzdx2 =-tan(alpha(0))/pow(1 + x2_gl_w(jj), 2);
+                                            double dzdx2 =-tan(alpha)/pow(1 + x2_gl_w(jj), 2);
                                             arma::vec::fixed<3> e_2 = {dxdx2, 0, dzdx2};
                                             double e_11 = dot(e_1, e_1);
                                             double e_12 = dot(e_1, e_2);
@@ -1062,10 +1062,10 @@ void Wing::aerodynamicMatrix()
                                         for (size_t ii = 0; ii < nx; ii++)
                                         {
                                             double xW = xw(jj) + (1 + x1_gl_w(ii))/(1 - x1_gl_w(ii))/2;
-                                            double zW = zw(jj) + (1 + x1_gl_w(ii))/(1 - x1_gl_w(ii))*tan(alpha(0))/2;
+                                            double zW = zw(jj) + (1 + x1_gl_w(ii))/(1 - x1_gl_w(ii))*tan(alpha)/2;
                                             double dxdx1 = 1/pow(1 - x1_gl_w(ii), 2);
                                             // dydx1 = 0
-                                            double dzdx1 = tan(alpha(0))/pow(1 - x1_gl_w(ii), 2);
+                                            double dzdx1 = tan(alpha)/pow(1 - x1_gl_w(ii), 2);
                                             arma::vec::fixed<3> e_1 = {dxdx1, 0, dzdx1};
                                             double e_11 = dot(e_1, e_1);
                                             double e_12 = dot(e_1, e_2);
@@ -1115,10 +1115,10 @@ void Wing::aerodynamicMatrix()
                                         for (size_t jj = 0; jj < ny; jj++)
                                         {
                                             double xW = xw(ii) + (1 + x2_gl_w(jj))/(1 - x2_gl_w(jj))/2;
-                                            double zW = zw(ii) + (1 + x2_gl_w(jj))/(1 - x2_gl_w(jj))*tan(alpha(0))/2;
+                                            double zW = zw(ii) + (1 + x2_gl_w(jj))/(1 - x2_gl_w(jj))*tan(alpha)/2;
                                             double dxdx2 = 1/pow(1 - x2_gl_w(jj), 2);
                                             // dydx2 = 0
-                                            double dzdx2 = tan(alpha(0))/pow(1 - x2_gl_w(jj), 2);
+                                            double dzdx2 = tan(alpha)/pow(1 - x2_gl_w(jj), 2);
                                             arma::vec::fixed<3> e_2 = {dxdx2, 0, dzdx2};
                                             double e_11 = dot(e_1, e_1);
                                             double e_12 = dot(e_1, e_2);
@@ -1168,10 +1168,10 @@ void Wing::aerodynamicMatrix()
                                         for (size_t ii = 0; ii < nx; ii++)
                                         {
                                             double xW = xw(jj) + (1 - x1_gl_w(ii))/(1 + x1_gl_w(ii))/2;
-                                            double zW = zw(jj) + (1 - x1_gl_w(ii))/(1 + x1_gl_w(ii))*tan(alpha(0))/2;
+                                            double zW = zw(jj) + (1 - x1_gl_w(ii))/(1 + x1_gl_w(ii))*tan(alpha)/2;
                                             double dxdx1 =-1/pow(1 + x1_gl_w(ii), 2);
                                             // dydx1 = 0
-                                            double dzdx1 =-tan(alpha(0))/pow(1 + x1_gl_w(ii), 2);
+                                            double dzdx1 =-tan(alpha)/pow(1 + x1_gl_w(ii), 2);
                                             arma::vec::fixed<3> e_1 = {dxdx1, 0, dzdx1};
                                             double e_11 = dot(e_1, e_1);
                                             double e_12 = dot(e_1, e_2);

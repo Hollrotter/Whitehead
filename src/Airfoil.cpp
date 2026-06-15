@@ -24,14 +24,7 @@ void Airfoil::dynamicPressure(double _qdyn)
 
 void Airfoil::pitch(double _alpha)
 {
-    pitch(_alpha*arma::ones(1));
-    con = 1;
-}
-
-void Airfoil::pitch(arma::vec _alpha)
-{
     alpha = arma::datum::pi/180*_alpha;
-    con   = alpha.size();
 }
 
 void Airfoil::linear()
@@ -46,10 +39,10 @@ void Airfoil::nonlinear()
 {
     analysis = Analysis::nonlinear;
     aerodynamicMatrix();
-    arma::mat Q = join_horiz(cos(alpha), sin(alpha));
-    b.row(0).zeros();
+    arma::vec Q = {cos(alpha), sin(alpha)};
+    b(0) = 0;
     for (size_t i = 1; i < nx; i++)
-        b.row(i) =-arma::datum::tau*(Q*nC.col(i)).t();
+        b(i) =-arma::datum::tau*dot(Q, nC.col(i));
     gamma_hat = solve(A, b);
     postprocessing();
 }
@@ -63,22 +56,22 @@ void Airfoil::output(std::string filename)
 {
     std::ofstream file(filename);
     for (size_t i = 0; i < nx; i++)
-        file << x(i) << dcp.row(i);
+        file << x(i) << ' ' << dcp(i) << '\n';
     file.close();
 }
 
 void Airfoil::postprocessing()
 {
-    dcp.zeros(nx, con);
-    for (size_t k = 0; k < nx; k++)
-        dcp += 2*Chebyshev::Polynomial(k, xi)*gamma_hat.row(k);
-    cL.zeros(con);
-    cM.zeros(con);
-    cM.fill(2./3);
+    dcp.zeros(nx);
+    dcp.fill(gamma_hat(0));
+    for (size_t i = 0; i < nx; i++)
+        dcp(i, 0) += 2*boost::math::chebyshev_clenshaw_recurrence(gamma_hat.memptr(), nx, xi(i));
+    cL = 0;
+    cM = 2./3;
     for (size_t k = 0; k < nx; k+=2)
-        cL += 2./(1.-k*k)*gamma_hat.row(k);
+        cL += 2./(1.-k*k)*gamma_hat(k);
     for (size_t k = 5; k < nx; k+=2)
-        cM += 2./(4.-k*k)*gamma_hat.row(k);
+        cM += 2./(4.-k*k)*gamma_hat(k);
 }
 
 void Airfoil::linearSolve()
@@ -89,8 +82,8 @@ void Airfoil::linearSolve()
 
 void Airfoil::linearEval()
 {
-    b.row(0).zeros();
+    b(0) = 0;
     for (size_t i = 1; i < nx; i++)
-        b.row(i) =-arma::datum::tau*alpha.t();
+        b(i) =-arma::datum::tau*alpha;
     gamma_hat = solve(trimatu(U), solve(trimatl(L), P*b));
 }

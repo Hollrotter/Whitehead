@@ -170,7 +170,7 @@ void VLM::vlmNonlinear()
         RA.col(1) *=-1;
         RB.col(1) *=-1;
     }
-    arma::mat g(nxy, con, arma::fill::zeros);
+    arma::mat g(nxy, con, arma::fill::none);
     for (size_t i = 0; i < alpha.size(); i++)
     {
         #pragma omp parallel for

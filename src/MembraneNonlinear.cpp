@@ -242,7 +242,7 @@ void Membrane::nonlinear()
             arma::mat dsaedv1 = QLM(e11(), dG_11dv1) + QLM(2*e12(), dG_12dv1) + QLM(e22(), dG_22dv1);
             arma::mat dsaedv2 = QLM(e11(), dG_11dv2) + QLM(2*e12(), dG_12dv2) + QLM(e22(), dG_22dv2);
 
-            arma::mat A(nxy3, nxy3, arma::fill::zeros);
+            arma::mat A(nxy3, nxy3, arma::fill::none);
 
             A.submat(   0,    0,  nxy-1,  nxy-1) = (dn11__1dv1 + dn12__2dv1 + QLM(L111, dn11dv1) + QLM(2*L112, dn12dv1) + QLM(L122, dn22dv1) + QLM(sae, ds1dv1) + QLM(s1, dsaedv1) + QLM(n11, dL111dv1) + QLM(2*n12, dL112dv1) + QLM(n22, dL122dv1))/D;
             A.submat(   0,  nxy,  nxy-1, nxy2-1) = (dn11__1dv2 + dn12__2dv2 + QLM(L111, dn11dv2) + QLM(2*L112, dn12dv2) + QLM(L122, dn22dv2) + QLM(sae, ds1dv2) + QLM(s1, dsaedv2) + QLM(n11, dL111dv2) + QLM(2*n12, dL112dv2) + QLM(n22, dL122dv2))/D;
