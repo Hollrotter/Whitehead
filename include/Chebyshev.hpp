@@ -26,8 +26,8 @@ namespace Chebyshev
     arma::vec DiscreteChebyshevTransform(const arma::vec x, const arma::vec u);
     // Calculates the amplitudes for Discrete-Chebyshev-Transform in 2D
     arma::mat DiscreteChebyshevTransform(const arma::vec x, const arma::vec y, const arma::mat u);
-    arma::vec  ChebyshevDerivativeCoefficients(const arma::vec u_hat);
-    arma::cube ChebyshevDerivativeCoefficients(const arma::mat u_hat);
+    arma::vec DerivativeCoefficients(const arma::vec u_hat);
+    std::pair<arma::mat, arma::mat> DerivativeCoefficients(const arma::mat u_hat);
     arma::cx_vec FFFTEO(const arma::vec f);
     std::pair<arma::vec, arma::vec> forwardRealFFT(const arma::vec x);
     arma::vec fastCosineTransform(const arma::vec f, const std::string &s);

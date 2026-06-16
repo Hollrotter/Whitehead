@@ -65,13 +65,12 @@ arma::mat Chebyshev::DiscreteChebyshevTransform(const arma::vec x, const arma::v
  * @param u_hat Amplitudes calculated by DiscreteChebyshevTransform(x, u)
  * @return arma::vec 
  */
-arma::vec Chebyshev::ChebyshevDerivativeCoefficients(const arma::vec u_hat)
+arma::vec Chebyshev::DerivativeCoefficients(const arma::vec u_hat)
 {
 	size_t n = u_hat.size();
-	arma::vec u_bar(n);
+	arma::vec u_bar(n, arma::fill::none);
 	u_bar(n-1) = 0;
-	u_bar(n-2) = 2*n*u_hat(n-1);
-    #pragma omp parallel for
+	u_bar(n-2) = 2*(n-1)*u_hat(n-1);
 	for (size_t k = n-3; k > 0; k--)
 		u_bar(k) = 2*(k+1)*u_hat(k+1) + u_bar(k+2);
 	u_bar(0) = u_hat(1) + u_bar(2)/2;
@@ -84,24 +83,35 @@ arma::vec Chebyshev::ChebyshevDerivativeCoefficients(const arma::vec u_hat)
  * @param u_hat 
  * @return arma::cube 
  */
-arma::cube Chebyshev::ChebyshevDerivativeCoefficients(const arma::mat u_hat)
+std::pair<arma::mat, arma::mat> Chebyshev::DerivativeCoefficients(const arma::mat u_hat)
 {
 	size_t n = u_hat.n_rows;
 	size_t m = u_hat.n_cols;
-	arma::cube u_bar(n, m, 2);
-	u_bar.slice(0).row(n-1).zeros();
-	u_bar.slice(0).row(n-2) = 2*n*u_hat.row(n-1);
-	u_bar.slice(1).col(m-1).zeros();
-	u_bar.slice(1).col(m-2) = 2*m*u_hat.col(m-1);
-    #pragma omp parallel for
-	for (size_t k = n-3; k > 0; k--)
-		u_bar.slice(0).row(k) = 2*(k+1)*u_hat.row(k+1) + u_bar.slice(0).row(k+2);
-    #pragma omp parallel for
-	for (size_t k = m-3; k > 0; k--)
-		u_bar.slice(1).col(k) = 2*(k+1)*u_hat.col(k+1) + u_bar.slice(1).col(k+2);
-	u_bar.slice(0).row(0) = u_hat.row(1) + u_bar.slice(0).row(2)/2;
-	u_bar.slice(1).col(0) = u_hat.col(1) + u_bar.slice(1).col(2)/2;
-	return u_bar;
+	arma::mat u_bar_1(n, m, arma::fill::none);
+    arma::mat u_bar_2(n, m, arma::fill::none);
+    #pragma omp parallel
+    {
+        #pragma omp sections
+        {
+            #pragma omp section
+            {
+                u_bar_1.row(n-1).zeros();
+                u_bar_1.row(n-2) = 2*(n-1)*u_hat.row(n-1);
+                for (size_t k = n-3; k > 0; k--)
+                    u_bar_1.row(k) = 2*(k+1)*u_hat.row(k+1) + u_bar_1.row(k+2);
+                u_bar_1.row(0) = u_hat.row(1) + u_bar_1.row(2)/2;
+            }
+            #pragma omp section
+            {
+                u_bar_2.col(m-1).zeros();
+                u_bar_2.col(m-2) = 2*(m-1)*u_hat.col(m-1);
+                for (size_t k = m-3; k > 0; k--)
+                    u_bar_2.col(k) = 2*(k+1)*u_hat.col(k+1) + u_bar_2.col(k+2);
+                u_bar_2.col(0) = u_hat.col(1) + u_bar_2.col(2)/2;
+            }
+        }
+    }
+	return {u_bar_1, u_bar_2};
 }
 
 /**
