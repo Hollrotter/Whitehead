@@ -112,9 +112,6 @@ void Aerodynamics::solve()
     bool converged = false;
     size_t count = 1;
     arma::field<arma::vec> muTarget(interfaces.size()), muSource(interfaces.size());
-    arma::field<arma::mat> b0(wings.size());
-    for (size_t w = 0; w < wings.size(); w++)
-        b0(w) = wings[w]->b;
     for (const auto& interface:interfaces)
     {
         Direction targetDirection = static_cast<Direction>(interface.targetCurve);
@@ -297,6 +294,9 @@ void Aerodynamics::solve()
             std::println("Only linear and nonlinear analysis is implemented for Aerodynamics!");
             exit(EXIT_FAILURE);
     }
+    arma::field<arma::mat> b0(wings.size());
+    for (size_t w = 0; w < wings.size(); w++)
+        b0(w) = wings[w]->b;
     do
     {
         std::cout << "Iteration " << count << '/' << iterations << std::endl;

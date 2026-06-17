@@ -181,10 +181,10 @@ int main()
 			std::cout << dt45.count() << '\n';
 			break;
 		}
-		case 7:
+		case 7: // Clenshaw algorithm 2D
 		{
-			size_t nx = 20;
-			size_t ny = 20;
+			size_t nx = 10;
+			size_t ny = 8;
 
 			arma::vec x1 = Chebyshev::gaussLobatto(nx);
 			arma::vec x2 = Chebyshev::gaussLobatto(ny);
@@ -199,27 +199,28 @@ int main()
 			for (size_t q = 0; q < ny; q++)
 				for (size_t j = 0; j < ny; j++)
 				{
-					double t2 = boost::math::chebyshev_t(q, x2(j));
+					double T2 = boost::math::chebyshev_t(q, x2(j));
 					for (size_t p = 0; p < nx; p++)
 						for (size_t i = 0; i < nx; i++)
 						{
-							double t1 = boost::math::chebyshev_t(p, x1(i));
-							f1(i, j) += a(p, q) * t1 * t2;
+							double T1 = boost::math::chebyshev_t(p, x1(i));
+							f1(i, j) += a(p, q) * T1 * T2;
 						}
 				}
 						
 			auto t2 = std::chrono::high_resolution_clock::now();
 
-			arma::mat f2(nx, ny, arma::fill::zeros);
-			arma::vec b(ny, arma::fill::zeros);
+			arma::mat f2(nx, ny, arma::fill::none);
+			arma::vec b(ny, arma::fill::none);
 
-			for (size_t j = 0; j < ny; j++)
-				for (size_t i = 0; i < nx; i++)
-				{
-					for (size_t q = 0; q < ny; q++)
-						b(q) = a(0, q)/2 + boost::math::chebyshev_clenshaw_recurrence(a.colptr(q), ny, x1(i));
-					f2(i, j) = b(0)/2 + boost::math::chebyshev_clenshaw_recurrence(b.memptr(), nx, x2(j));
-				}
+			
+			for (size_t i = 0; i < nx; i++)
+			{
+				for (size_t q = 0; q < ny; q++)
+					b(q) = a(0, q)/2 + boost::math::chebyshev_clenshaw_recurrence(a.colptr(q), nx, x1(i));
+				for (size_t j = 0; j < ny; j++)
+					f2(i, j) = b(0)/2 + boost::math::chebyshev_clenshaw_recurrence(b.memptr(), ny, x2(j));
+			}
 
 			auto t3 = std::chrono::high_resolution_clock::now();
 
@@ -228,14 +229,14 @@ int main()
 			for (size_t q = 0; q < ny; q++)
 				for (size_t j = 0; j < ny; j++)
 				{
-					double  t2 = boost::math::chebyshev_t(q, x2(j));
-					double dt2 = boost::math::chebyshev_t_prime(q, x2(j));
+					double  T2 = boost::math::chebyshev_t(q, x2(j));
+					double dT2 = boost::math::chebyshev_t_prime(q, x2(j));
 					for (size_t p = 0; p < nx; p++)
 						for (size_t i = 0; i < nx; i++)
 						{
-							double  t1 = boost::math::chebyshev_t(p, x1(i));
-							double dt1 = boost::math::chebyshev_t_prime(p, x1(i));
-							f3(i, j) += a(p, q) * (c1(i, j)*dt1*t2 + c2(i, j)*t1*dt2);
+							double  T1 = boost::math::chebyshev_t(p, x1(i));
+							double dT1 = boost::math::chebyshev_t_prime(p, x1(i));
+							f3(i, j) += a(p, q) * (c1(i, j)*dT1*T2 + c2(i, j)*T1*dT2);
 						}
 				}
 
@@ -247,17 +248,18 @@ int main()
 
 			arma::vec b1(ny, arma::fill::zeros);
 			arma::vec b2(ny, arma::fill::zeros);
-			for (size_t j = 0; j < ny; j++)
-				for (size_t i = 0; i < nx; i++)
+			
+			for (size_t i = 0; i < nx; i++)
+			{
+				for (size_t q = 0; q < ny; q++)
 				{
-					for (size_t q = 0; q < ny; q++)
-					{
-						b1(q) = a1(0, q)/2 + boost::math::chebyshev_clenshaw_recurrence(a1.colptr(q), ny, x1(i));
-						b2(q) = a2(0, q)/2 + boost::math::chebyshev_clenshaw_recurrence(a2.colptr(q), ny, x1(i));
-					}
-					f4(i, j) = c1(i, j)*(b1(0)/2 + boost::math::chebyshev_clenshaw_recurrence(b1.memptr(), nx, x2(j)))
-					         + c2(i, j)*(b2(0)/2 + boost::math::chebyshev_clenshaw_recurrence(b2.memptr(), nx, x2(j)));
+					b1(q) = a1(0, q)/2 + boost::math::chebyshev_clenshaw_recurrence(a1.colptr(q), nx, x1(i));
+					b2(q) = a2(0, q)/2 + boost::math::chebyshev_clenshaw_recurrence(a2.colptr(q), nx, x1(i));
 				}
+				for (size_t j = 0; j < ny; j++)
+					f4(i, j) = c1(i, j)*(b1(0)/2 + boost::math::chebyshev_clenshaw_recurrence(b1.memptr(), ny, x2(j)))
+							 + c2(i, j)*(b2(0)/2 + boost::math::chebyshev_clenshaw_recurrence(b2.memptr(), ny, x2(j)));
+			}
 
 			auto t5 = std::chrono::high_resolution_clock::now();
 

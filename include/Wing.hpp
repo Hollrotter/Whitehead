@@ -6,8 +6,8 @@
 class Wing
 {
     std::array<Lagrange::CurveInterpolant*, 4> chi;
-    arma::mat x = arma::zeros(2, 2); // x-coordinates of nodes
-    arma::mat y = arma::zeros(2, 2); // y-coordinates of nodes
+    arma::mat x; // x-coordinates of nodes
+    arma::mat y; // y-coordinates of nodes
     size_t nx = x.n_rows; // Number of nodes in x-Direction
     size_t ny = y.n_cols; // Number of nodes in y-Direction
     arma::mat z = arma::zeros(nx, ny); // z-coordinates of nodes
@@ -62,7 +62,6 @@ class Wing
     Wing fromTransfiniteQuadMap(std::array<Lagrange::CurveInterpolant*, 4>);
     Wing fromTransfiniteQuadMap(arma::mat, std::array<Lagrange::CurveInterpolant*, 4>);
 public:
-    Wing() = default;
     Wing(arma::mat _x, arma::mat _y) : x(_x), y(_y) {}
     Wing(std::array<Lagrange::CurveInterpolant*, 4> _chi, arma::mat _x, arma::mat _y, std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::vec, arma::rowvec, arma::rowvec> _h)
         : chi(_chi), x(_x), y(_y), h(_h) {}
@@ -73,7 +72,10 @@ public:
     // Sets the dynamic pressure
     void dynamicPressure(double);
     // Sets the pitch in degree
-    void pitch(double);
+    void pitch(double _alpha)
+    {
+        alpha = arma::datum::pi/180*_alpha;
+    }
     // Define a symmetry
     void symmetry(Symmetry _sym)
     {

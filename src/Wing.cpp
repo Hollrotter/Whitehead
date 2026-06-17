@@ -40,22 +40,6 @@ void Wing::dynamicPressure(double _qdyn)
     }
 }
 
-/**
- * @brief 
- * 
- * @param _alpha Sets the pitch in degree.
- */
-void Wing::pitch(double _alpha)
-{
-    alpha = arma::datum::pi/180*_alpha;
-    for (size_t j = 1; j < ny-1; j++)
-        for (size_t i = 1; i < nx-1; i++)
-            b(i+j*nx) =-4*arma::datum::pi*alpha;
-    lift   = 0;
-    moment = 0;
-    dcp.zeros(nx, ny);
-}
-
 void Wing::checkMesh()
 {
     std::println("Checking for negative volumes...");
@@ -124,8 +108,8 @@ arma::mat Wing::calculateNormal()
             double e = e_11*e_22 - pow(e_12, 2);
             double sqrt_a = sqrt(e*(1 + e11*pow(dzdxi_1(i, j), 2) + 2*e12*dzdxi_1(i, j)*dzdxi_2(i, j) + e22*pow(dzdxi_2(i, j), 2)));
             normal.row(i+j*nx) = arma::rowvec::fixed<3>({dydxi_1(i, j)*dzdxi_2(i, j)-dzdxi_1(i, j)*dydxi_2(i, j),
-                                                        dzdxi_1(i, j)*dxdxi_2(i, j)-dxdxi_1(i, j)*dzdxi_2(i, j),
-                                                        dxdxi_1(i, j)*dydxi_2(i, j)-dydxi_1(i, j)*dxdxi_2(i, j)})/sqrt_a;
+                                                         dzdxi_1(i, j)*dxdxi_2(i, j)-dxdxi_1(i, j)*dzdxi_2(i, j),
+                                                         dxdxi_1(i, j)*dydxi_2(i, j)-dydxi_1(i, j)*dxdxi_2(i, j)})/sqrt_a;
         }
     return normal;
 }
@@ -171,6 +155,10 @@ void Wing::linearSolve()
         muBoundaryEast(ny-1);
     else
         muBoundaryNorth(nx-1);
+
+    for (size_t j = 1; j < ny-1; j++)
+        for (size_t i = 1; i < nx-1; i++)
+            b(i+j*nx) =-2*arma::datum::tau*alpha;
 
     arma::lu(L, U, P, A);
 }
@@ -237,12 +225,15 @@ void Wing::nonlinearEval()
 
 void Wing::postprocessing()
 {
-    mu.zeros();
-    dcp.zeros();
     arma::mat J11 = J(0, 0);
     arma::mat J12 = J(0, 1);
     arma::mat J21 = J(1, 0);
     arma::mat J22 = J(1, 1);
+    arma::mat MU_0 = reshape(mu_hat, nx, ny);
+    auto [MU_1, MU_2] = Chebyshev::DerivativeCoefficients(MU_0);
+    arma::vec MU_0_y(ny, arma::fill::none);
+    arma::vec MU_1_y(ny, arma::fill::none);
+    arma::vec MU_2_y(ny, arma::fill::none);
     switch (analysis)
     {
         case Analysis::linear:
@@ -250,20 +241,21 @@ void Wing::postprocessing()
             arma::mat detJ = J11%J22 - J12%J21;
             arma::mat J11_inv = J22/detJ;
             arma::mat J21_inv =-J21/detJ;
-            for (size_t j = 0; j < ny; j++) // Loop over nodes in 2-direction
+            for (size_t i = 0; i < nx; i++) // Loop over nodes in 1-direction
+            {
                 for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                 {
-                    double  t2 = boost::math::chebyshev_t(q, x2(j));
-                    double dt2 = boost::math::chebyshev_t_prime(q, x2(j));
-                    for (size_t i = 0; i < nx; i++) // Loop over nodes in 1-direction
-                        for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
-                        {
-                            double  t1 = boost::math::chebyshev_t(p, x1(i));
-                            double dt1 = boost::math::chebyshev_t_prime(p, x1(i));
-                            mu(i, j)  +=   mu_hat(p+q*nx)  * t1 * t2;
-                            dcp(i, j) += 2*mu_hat(p+q*nx) * (J11_inv(i, j)*dt1*t2 + J21_inv(i, j)*t1*dt2);
-                        }
+                    MU_0_y(q) = MU_0(0, q)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_0.colptr(q), nx, x1(i));
+                    MU_1_y(q) = MU_1(0, q)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_1.colptr(q), nx, x1(i));
+                    MU_2_y(q) = MU_2(0, q)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_2.colptr(q), nx, x1(i));
                 }
+                for (size_t j = 0; j < ny; j++) // Loop over nodes in 2-direction
+                {
+                    mu(i, j)  = MU_0_y(0)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_0_y.memptr(), ny, x2(j));
+                    dcp(i, j) = 2*(J11_inv(i, j)*(MU_1_y(0)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_1_y.memptr(), ny, x2(j)))
+                                 + J21_inv(i, j)*(MU_2_y(0)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_2_y.memptr(), ny, x2(j))));
+                }
+            }
             break;
         }
         case Analysis::nonlinear:
@@ -275,10 +267,16 @@ void Wing::postprocessing()
             arma::vec Q = {cos(alpha), 0, sin(alpha)};
             arma::mat e = e_c.slice(0)%e_c.slice(2) - pow(e_c.slice(1), 2);
             arma::mat sqrt_a = sqrt(e%(1 + ec.slice(0)%pow(dzdx1, 2) + 2*ec.slice(1)%dzdx1%dzdx2 + ec.slice(2)%pow(dzdx2, 2)));
-            for (size_t j = 0; j < ny; j++) // Loop over nodes in 2-direction
-                for (size_t i = 0; i < nx; i++) // Loop over nodes in 1-direction
+            for (size_t i = 0; i < nx; i++) // Loop over nodes in 1-direction
+            {
+                for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                 {
-                    arma::vec::fixed<3> q_mu(arma::fill::zeros);
+                    MU_0_y(q) = MU_0(0, q)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_0.colptr(q), nx, x1(i));
+                    MU_1_y(q) = MU_1(0, q)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_1.colptr(q), nx, x1(i));
+                    MU_2_y(q) = MU_2(0, q)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_2.colptr(q), nx, x1(i));
+                }
+                for (size_t j = 0; j < ny; j++) // Loop over nodes in 2-direction
+                {
                     arma::vec::fixed<3> n = arma::vec::fixed<3>({J21(i, j)*dzdx2(i, j)-dzdx1(i, j)*J22(i, j),
                                                                  dzdx1(i, j)*J12(i, j)-J11(i, j)*dzdx2(i, j),
                                                                  J11(i, j)*J22(i, j)-J21(i, j)*J12(i, j)})/sqrt_a(i, j);
@@ -286,22 +284,13 @@ void Wing::postprocessing()
                                                     {n(0)*dzdx2(i, j) - J12(i, j)*n(2), J11(i, j)*n(2) - n(0)*dzdx1(i, j)},
                                                     {J12(i, j)*n(1) - n(0)*J22(i, j), n(0)*J21(i, j) - J11(i, j)*n(1)}};
                     J_red/=sqrt_a(i, j);
-                    for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
-                    {
-                        double t2 = boost::math::chebyshev_t(q, x2(j));
-                        double dT2dx2 = boost::math::chebyshev_t_prime(q, x2(j));
-                        for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
-                        {
-                            double t1 = boost::math::chebyshev_t(p, x1(i));
-                            double dT1dx1 = boost::math::chebyshev_t_prime(p, x1(i));
-                            arma::vec::fixed<2> dmudxi = {dT1dx1*t2, t1*dT2dx2};
-                            arma::vec::fixed<3> gradmu = J_red*dmudxi;
-                            mu(i, j) += mu_hat(p+q*nx) * t1 * t2;
-                            q_mu     += mu_hat(p+q*nx) * gradmu;
-                        }
-                    }
+                    mu(i, j) = MU_0_y(0)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_0_y.memptr(), ny, x2(j));
+                    arma::vec::fixed<2> dmudxi = {MU_1_y(0)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_1_y.memptr(), ny, x2(j)),
+                                                  MU_2_y(0)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_2_y.memptr(), ny, x2(j))};
+                    arma::vec::fixed<3> q_mu = J_red*dmudxi;
                     dcp(i, j) = 2*dot(Q, q_mu);
                 }
+            }
             break;
         }
         default:
@@ -330,28 +319,25 @@ void Wing::postprocessing()
     {
         case Analysis::linear:
         {
-            for (size_t j = 0; j < ny; j++)
-                for (size_t i = 0; i < nx; i++)
+            for (size_t i = 0; i < nx; i++)
+            {
+                for (size_t q = 0; q < ny; q++)
+                {
+                    MU_1_y(q) = MU_1(0, q)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_1.colptr(q), nx, x1_gl(i));
+                    MU_2_y(q) = MU_2(0, q)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_2.colptr(q), nx, x1_gl(i));
+                }
+                for (size_t j = 0; j < ny; j++)
                 {
                     double detJ = dxdx1_gl(i, j)*dydx2_gl(i, j) - dxdx2_gl(i, j)*dydx1_gl(i, j);
                     double J11_inv = dydx2_gl(i, j)/detJ;
                     double J21_inv =-dydx1_gl(i, j)/detJ;
-                    double DCP = 0;
-                    for (size_t q = 0; q < ny; q++)
-                    {
-                        double t2 = boost::math::chebyshev_t(q, x2_gl(j));
-                        double dT2dx2 = boost::math::chebyshev_t_prime(q, x2_gl(j));
-                        for (size_t p = 0; p < nx; p++)
-                        {
-                            double t1 = boost::math::chebyshev_t(p, x1_gl(i));
-                            double dT1dx1 = boost::math::chebyshev_t_prime(p, x1_gl(i));
-                            DCP += 2*mu_hat(p+q*nx) * (J11_inv*dT1dx1*t2 + J21_inv*t1*dT2dx2);
-                        }
-                    }
+                    double DCP = 2*(J11_inv*(MU_1_y(0)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_1_y.memptr(), ny, x2_gl(j)))
+                                  + J21_inv*(MU_2_y(0)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_2_y.memptr(), ny, x2_gl(j))));
                     area   += gl_x[i].weight * gl_y[j].weight * detJ;
                     lift   += gl_x[i].weight * gl_y[j].weight * DCP * detJ;
                     moment -= gl_x[i].weight * gl_y[j].weight * DCP * detJ * x_gl(i, j);
                 }
+            }
             break;
         }
         case Analysis::nonlinear:
@@ -371,35 +357,32 @@ void Wing::postprocessing()
             arma::cube ec_gl  = MetricContra(e_c_gl);
             arma::mat e_gl = e_c_gl.slice(0)%e_c_gl.slice(2) - pow(e_c_gl.slice(1), 2);
             arma::mat sqrt_a = sqrt(e_gl%(1 + ec_gl.slice(0)%pow(dzdx1_gl, 2) + 2*ec_gl.slice(1)%dzdx1_gl%dzdx2_gl + ec_gl.slice(2)%pow(dzdx2_gl, 2)));
-            for (size_t j = 0; j < ny; j++)
-                for (size_t i = 0; i < nx; i++)
+            for (size_t i = 0; i < nx; i++)
+            {
+                for (size_t q = 0; q < ny; q++)
+                {
+                    MU_1_y(q) = MU_1(0, q)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_1.colptr(q), nx, x1_gl(i));
+                    MU_2_y(q) = MU_2(0, q)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_2.colptr(q), nx, x1_gl(i));
+                }
+                for (size_t j = 0; j < ny; j++)
                 {
                     arma::vec::fixed<3> n_gl = arma::vec::fixed<3>({dydx1_gl(i, j)*dzdx2_gl(i, j)-dzdx1_gl(i, j)*dydx2_gl(i, j),
                                                                     dzdx1_gl(i, j)*dxdx2_gl(i, j)-dxdx1_gl(i, j)*dzdx2_gl(i, j),
                                                                     dxdx1_gl(i, j)*dydx2_gl(i, j)-dydx1_gl(i, j)*dxdx2_gl(i, j)})/sqrt_a(i, j);
-                    arma::mat::fixed<3, 2> J_red = {{dydx2_gl(i, j)*n_gl(2) - n_gl(1)*dzdx2_gl(i, j),-(dydx1_gl(i, j)*n_gl(2) - n_gl(1)*dzdx1_gl(i, j))},
-                                                    {-(dxdx2_gl(i, j)*n_gl(2) - n_gl(0)*dzdx2_gl(i, j)),dxdx1_gl(i, j)*n_gl(2) - n_gl(0)*dzdx1_gl(i, j)},
-                                                    {dxdx2_gl(i, j)*n_gl(1) - n_gl(0)*dydx2_gl(i, j),-(dxdx1_gl(i, j)*n_gl(1) - n_gl(0)*dydx1_gl(i, j))}};
-                    arma::vec::fixed<3> q_mu(arma::fill::zeros);
-                    for (size_t q = 0; q < ny; q++)
-                    {
-                        double t2 = boost::math::chebyshev_t(q, x2_gl(j));
-                        double dT2dx2 = boost::math::chebyshev_t_prime(q, x2_gl(j));
-                        for (size_t p = 0; p < nx; p++)
-                        {
-                            double t1 = boost::math::chebyshev_t(p, x1_gl(i));
-                            double dT1dx1 = boost::math::chebyshev_t_prime(p, x1_gl(i));
-                            arma::vec::fixed<2> dmudxi = {dT1dx1*t2, t1*dT2dx2};
-                            arma::vec::fixed<3> gradmu = J_red*dmudxi;
-                            q_mu += mu_hat(p+q*nx) * gradmu;
-                        }
-                    }
+                    arma::mat::fixed<3, 2> J_red = {{dydx2_gl(i, j)*n_gl(2)-n_gl(1)*dzdx2_gl(i, j), n_gl(1)*dzdx1_gl(i, j)-dydx1_gl(i, j)*n_gl(2)},
+                                                    {dzdx2_gl(i, j)*n_gl(0)-n_gl(2)*dxdx2_gl(i, j), n_gl(2)*dxdx1_gl(i, j)-dzdx1_gl(i, j)*n_gl(0)},
+                                                    {dxdx2_gl(i, j)*n_gl(1)-n_gl(0)*dydx2_gl(i, j), n_gl(0)*dydx1_gl(i, j)-dxdx1_gl(i, j)*n_gl(1)}};
+
+                    arma::vec::fixed<2> dmudxi = {MU_1_y(0)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_1_y.memptr(), ny, x2_gl(j)),
+                                                  MU_2_y(0)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_2_y.memptr(), ny, x2_gl(j))};
+                    arma::vec::fixed<3> q_mu = J_red*dmudxi;
                     double DCP = 2*dot(Q, q_mu);
                     arma::vec r = {x_gl(i, j), y_gl(i, j), z_gl(i, j)};
                     area += gl_x[i].weight * gl_y[j].weight * sqrt_a(i, j);
                     F    += gl_x[i].weight * gl_y[j].weight * n_gl * DCP;
                     M    -= gl_x[i].weight * gl_y[j].weight * cross(n_gl * DCP, r);
                 }
+            }
             lift   = F(2)*cos(alpha) - F(0)*sin(alpha);
             moment = M(1);
             break;

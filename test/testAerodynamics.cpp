@@ -2,16 +2,18 @@
 
 int main()
 {
-    switch (2)
+    switch (0)
     {
         case 0: // Rectangle (divided at y=0)
         {
-            size_t nx = 10;
-            size_t ny = 10;
+            size_t nx = 25;
+            size_t ny = 20;
 
-            double l = 2;
             double AR = 5;
+            double l = 2;
             double b = l * AR;
+
+            double alpha = 5;
 
             Point p1(0, 0);
             Point p2(l, 0);
@@ -35,7 +37,7 @@ int main()
             Wake wake2(&chi6);
 
             Aerodynamics a({&w1, &w2});
-            a.pitch(5);
+            a.pitch(alpha);
 
             a.boundary(&chi2, BC::Neumann);
             a.boundary(&chi3, BC::Dirichlet);
@@ -62,7 +64,7 @@ int main()
             double cLalpha_A1 = a0/(1 + a0/arma::datum::pi/AR);
             double cLalpha_A2 = a0/(1 + 1.024*a0/arma::datum::pi/AR);
             double cLalpha_A3 = a0/(sqrt(1 + pow(a0/arma::datum::pi/AR, 2)) + a0/arma::datum::pi/AR);
-            double cLalpha = cL/(5*arma::datum::pi/180);
+            double cLalpha = cL/(alpha*arma::datum::pi/180);
 
             std::cout << "cLalpha    = " << cLalpha   << '\n';
             std::cout << "cLalpha_A1 = " << cLalpha_A1 << '\n';

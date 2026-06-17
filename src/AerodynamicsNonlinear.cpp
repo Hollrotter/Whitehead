@@ -56,20 +56,44 @@ void Aerodynamics::nonlinear()
                                 arma::mat::fixed<3, 2> J_red = {{dy_gldx2(ii, jj)*n_gl(2) - n_gl(1)*dz_gldx2(ii, jj),-(dy_gldx1(ii, jj)*n_gl(2) - n_gl(1)*dz_gldx1(ii, jj))},
                                                                 {-(dx_gldx2(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx2(ii, jj)),dx_gldx1(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx1(ii, jj)},
                                                                 {dx_gldx2(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx2(ii, jj),-(dx_gldx1(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx1(ii, jj))}};
+                                double t2   = 1; // First Chebyshev Polynomial (j)
+                                double t2p1 = x2_gl(jj); // Second Chebyshev Polynomial (j+1 -> jp1)
+
+                                double dt2   = 0;
+                                double dt2p1 = 1;
                                 for (size_t q = 0; q < wings[sD]->ny; q++) // Loop over Chebyshev Polynomial 2-direction
                                 {
-                                    double  t2 = boost::math::chebyshev_t(q, x2_gl(jj));
-                                    double dt2 = boost::math::chebyshev_t_prime(q, x2_gl(jj));
+                                    double t1   = 1; // First Chebyshev Polynomial (i)
+                                    double t1p1 = x1_gl(ii); // Second Chebyshev Polynomial (i+1 -> ip1)
+
+                                    double dt1   = 0;
+                                    double dt1p1 = 1;
                                     for (size_t p = 0; p < wings[sD]->nx; p++) // Loop over Chebyshev Polynomial 1-direction
                                     {
-                                        double  t1 = boost::math::chebyshev_t(p, x1_gl(ii));
-                                        double dt1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
                                         arma::vec::fixed<2> dmudxi = {dt1 *  t2, t1 * dt2};
                                         arma::vec::fixed<3> gradmu = J_red*dmudxi;
                                         arma::vec::fixed<3> gamma_gl = cross(gradmu, n_gl);
                                         arma::vec q_mu = gl_x[ii].weight * gl_y[jj].weight * cross(gamma_gl, r)/r3;
                                         bw(tD, sD)(k, p+q*wings[sD]->nx) -= dot(q_mu, wings[tD]->nC.row(k));
+                                        std::swap(t1, t1p1);
+                                        t1p1 = boost::math::chebyshev_next(x1_gl(ii), t1, t1p1);
+
+                                        double dt1m1 = dt1;
+                                        std::swap(dt1, dt1p1);
+                                        if (p == 0)
+                                            dt1p1 = 4*x1_gl(ii);
+                                        else
+                                            dt1p1 = (p+2)*(2*t1 + dt1m1/p);
                                     }
+                                    std::swap(t2, t2p1);
+                                    t2p1 = boost::math::chebyshev_next(x2_gl(jj), t2, t2p1);
+
+                                    double dt2m1 = dt2;
+                                    std::swap(dt2, dt2p1);
+                                    if (q == 0)
+                                        dt2p1 = 4*x2_gl(jj);
+                                    else
+                                        dt2p1 = (q+2)*(2*t2 + dt2m1/q);
                                 }
                             } 
                     }
@@ -375,20 +399,44 @@ void Aerodynamics::nonlinear()
                                     arma::mat::fixed<3, 2> J_red = {{dy_gldx2(ii, jj)*n_gl(2) - n_gl(1)*dz_gldx2(ii, jj),-(dy_gldx1(ii, jj)*n_gl(2) - n_gl(1)*dz_gldx1(ii, jj))},
                                                                     {-(dx_gldx2(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx2(ii, jj)),dx_gldx1(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx1(ii, jj)},
                                                                     {dx_gldx2(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx2(ii, jj),-(dx_gldx1(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx1(ii, jj))}};
+                                    double t2   = 1; // First Chebyshev Polynomial (j)
+                                    double t2p1 = x2_gl(jj); // Second Chebyshev Polynomial (j+1 -> jp1)
+
+                                    double dt2   = 0;
+                                    double dt2p1 = 1;
                                     for (size_t q = 0; q < wings[sD]->ny; q++) // Loop over Chebyshev Polynomial 2-direction
                                     {
-                                        double  t2 = boost::math::chebyshev_t(q, x2_gl(jj));
-                                        double dt2 = boost::math::chebyshev_t_prime(q, x2_gl(jj));
+                                        double t1   = 1; // First Chebyshev Polynomial (i)
+                                        double t1p1 = x1_gl(ii); // Second Chebyshev Polynomial (i+1 -> ip1)
+
+                                        double dt1   = 0;
+                                        double dt1p1 = 1;
                                         for (size_t p = 0; p < wings[sD]->nx; p++) // Loop over Chebyshev Polynomial 1-direction
                                         {
-                                            double  t1 = boost::math::chebyshev_t(p, x1_gl(ii));
-                                            double dt1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
                                             arma::vec::fixed<2> dmudxi = {dt1 *  t2, t1 * dt2};
                                             arma::vec::fixed<3> gradmu = J_red*dmudxi;
                                             arma::vec::fixed<3> gamma_gl = cross(gradmu, n_gl);
                                             arma::vec q_mu = gl_x[ii].weight * gl_y[jj].weight * cross(gamma_gl, r)/r3;
                                             bw(tD, sD)(k, p+q*wings[sD]->nx) += dot(q_mu, wings[tD]->nC.row(k));
+                                            std::swap(t1, t1p1);
+                                            t1p1 = boost::math::chebyshev_next(x1_gl(ii), t1, t1p1);
+
+                                            double dt1m1 = dt1;
+                                            std::swap(dt1, dt1p1);
+                                            if (p == 0)
+                                                dt1p1 = 4*x1_gl(ii);
+                                            else
+                                                dt1p1 = (p+2)*(2*t1 + dt1m1/p);
                                         }
+                                        std::swap(t2, t2p1);
+                                        t2p1 = boost::math::chebyshev_next(x2_gl(jj), t2, t2p1);
+
+                                        double dt2m1 = dt2;
+                                        std::swap(dt2, dt2p1);
+                                        if (q == 0)
+                                            dt2p1 = 4*x2_gl(jj);
+                                        else
+                                            dt2p1 = (q+2)*(2*t2 + dt2m1/q);
                                     }
                                 } 
                         }

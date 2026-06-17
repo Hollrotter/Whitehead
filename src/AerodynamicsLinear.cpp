@@ -37,20 +37,44 @@ void Aerodynamics::linear()
                             {
                                 arma::vec::fixed<2> r = {x_gl(ii, jj) - xC(i, j), y_gl(ii, jj) - yC(i, j)};
                                 double r3 = pow(norm(r), 3);
+                                double t2   = 1; // First Chebyshev Polynomial (j)
+                                double t2p1 = x2_gl(jj); // Second Chebyshev Polynomial (j+1 -> jp1)
+
+                                double dt2   = 0;
+                                double dt2p1 = 1;
                                 for (size_t q = 0; q < wings[sD]->ny; q++) // Loop over Chebyshev Polynomial 2-direction of source
                                 {
-                                    double t2  = boost::math::chebyshev_t(q, x2_gl(jj));
-                                    double dt2 = boost::math::chebyshev_t_prime(q, x2_gl(jj));
+                                    double t1   = 1; // First Chebyshev Polynomial (i)
+                                    double t1p1 = x1_gl(ii); // Second Chebyshev Polynomial (i+1 -> ip1)
+
+                                    double dt1   = 0;
+                                    double dt1p1 = 1;
                                     for (size_t p = 0; p < wings[sD]->nx; p++) // Loop over Chebyshev Polynomial 1-direction of source
                                     {
-                                        double t1  = boost::math::chebyshev_t(p, x1_gl(ii));
-                                        double dt1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
                                         double dmudx1 = dt1 *  t2;
                                         double dmudx2 =  t1 * dt2;
                                         bw(tD, sD)(k, p+q*wings[sD]->nx) -= gl_x[ii].weight * gl_y[jj].weight / r3
                                             *(r(0)*(dy_gldx2(ii, jj)*dmudx1 - dy_gldx1(ii, jj)*dmudx2)
                                             - r(1)*(dx_gldx2(ii, jj)*dmudx1 - dx_gldx1(ii, jj)*dmudx2));
+                                        std::swap(t1, t1p1); // Swap order so the oldes Chebyshev Polynomial will be overwritten
+                                        t1p1 = boost::math::chebyshev_next(x1_gl(ii), t1, t1p1); // Calculate next Chebyshev Polynomial
+
+                                        double dt1m1 = dt1;
+                                        std::swap(dt1, dt1p1);
+                                        if (p == 0)
+                                            dt1p1 = 4*x1_gl(ii);
+                                        else
+                                            dt1p1 = (p+2)*(2*t1 + dt1m1/p);
                                     }
+                                    std::swap(t2, t2p1); // Swap order so the oldest Chebyshev Polynomial will be overwritten
+                                    t2p1 = boost::math::chebyshev_next(x2_gl(jj), t2, t2p1); // Calculate next Chebyshev Polynomial
+
+                                    double dt2m1 = dt2;
+                                    std::swap(dt2, dt2p1);
+                                    if (q == 0)
+                                        dt2p1 = 4*x2_gl(jj);
+                                    else
+                                        dt2p1 = (q+2)*(2*t2 + dt2m1/q);
                                 }
                             }
                     }
@@ -211,20 +235,44 @@ void Aerodynamics::linear()
                                 {
                                     arma::vec::fixed<2> r = {x_gl(ii, jj) - xC(i, j), y_gl(ii, jj) - yC(i, j)};
                                     double r3 = pow(norm(r), 3);
+                                    double t2   = 1; // First Chebyshev Polynomial (j)
+                                    double t2p1 = x2_gl(jj); // Second Chebyshev Polynomial (j+1 -> jp1)
+
+                                    double dt2   = 0;
+                                    double dt2p1 = 1;
                                     for (size_t q = 0; q < wings[sD]->ny; q++) // Loop over Chebyshev Polynomial 2-direction of source
                                     {
-                                        double t2  = boost::math::chebyshev_t(q, x2_gl(jj));
-                                        double dt2 = boost::math::chebyshev_t_prime(q, x2_gl(jj));
+                                        double t1   = 1; // First Chebyshev Polynomial (i)
+                                        double t1p1 = x1_gl(ii); // Second Chebyshev Polynomial (i+1 -> ip1)
+
+                                        double dt1   = 0;
+                                        double dt1p1 = 1;
                                         for (size_t p = 0; p < wings[sD]->nx; p++) // Loop over Chebyshev Polynomial 1-direction of source
                                         {
-                                            double t1  = boost::math::chebyshev_t(p, x1_gl(ii));
-                                            double dt1 = boost::math::chebyshev_t_prime(p, x1_gl(ii));
                                             double dmudx1 = dt1 *  t2;
                                             double dmudx2 =  t1 * dt2;
                                             bw(tD, sD)(k, p+q*wings[sD]->nx) += gl_x[ii].weight * gl_y[jj].weight / r3
                                                 *(r(0)*(dy_gldx2(ii, jj)*dmudx1 - dy_gldx1(ii, jj)*dmudx2)
                                                 - r(1)*(dx_gldx2(ii, jj)*dmudx1 - dx_gldx1(ii, jj)*dmudx2));
+                                            std::swap(t1, t1p1); // Swap order so the oldes Chebyshev Polynomial will be overwritten
+                                            t1p1 = boost::math::chebyshev_next(x1_gl(ii), t1, t1p1); // Calculate next Chebyshev Polynomial
+
+                                            double dt1m1 = dt1;
+                                            std::swap(dt1, dt1p1);
+                                            if (p == 0)
+                                                dt1p1 = 4*x1_gl(ii);
+                                            else
+                                                dt1p1 = (p+2)*(2*t1 + dt1m1/p);
                                         }
+                                        std::swap(t2, t2p1); // Swap order so the oldest Chebyshev Polynomial will be overwritten
+                                        t2p1 = boost::math::chebyshev_next(x2_gl(jj), t2, t2p1); // Calculate next Chebyshev Polynomial
+
+                                        double dt2m1 = dt2;
+                                        std::swap(dt2, dt2p1);
+                                        if (q == 0)
+                                            dt2p1 = 4*x2_gl(jj);
+                                        else
+                                            dt2p1 = (q+2)*(2*t2 + dt2m1/q);
                                     }
                                 }
                         }

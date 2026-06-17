@@ -1,8 +1,7 @@
 set terminal png background rgb 'black' size 2000, 1000
 
 set output '../../png/Aerodynamics/flat.png'
-set cbrange [0:1]
-set ticslevel 0.0
+
 # set palette defined (0 "black", 0.01 "#000080", 0.25 "#0080ff", 1 "white")
 set palette defined (0  0.0 0.0 1.0, \
                      1  0.0 0.698 1.0, \
@@ -13,8 +12,9 @@ set palette defined (0  0.0 0.0 1.0, \
                      6  1.0 1.0 0.0, \
                      7  1.0 0.698 0.0, \
                      8  1.0 0.0 0.0 )
-set palette maxcolor 100
-
+# set palette maxcolor 100
+set cbrange [0:]
+set ticslevel 0.0
 set xlabel 'y' tc rgb 'gray'
 set ylabel 'x' tc rgb 'gray'
 set zlabel 'dcp' tc rgb 'gray'
