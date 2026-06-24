@@ -5,6 +5,18 @@
 #include <omp.h>
 #include "float.h"
 
+#pragma omp declare reduction(+ : arma::vec : omp_out += omp_in) \
+    initializer(omp_priv = omp_orig)
+
+#pragma omp declare reduction(- : arma::vec : omp_out -= omp_in) \
+    initializer(omp_priv = omp_orig)
+
+#pragma omp declare reduction(+ : arma::mat : omp_out += omp_in) \
+    initializer(omp_priv = omp_orig)
+
+#pragma omp declare reduction(- : arma::mat : omp_out -= omp_in) \
+    initializer(omp_priv = omp_orig)
+
 // Comparing two floating point numbers for (almost) equality.
 bool almostEqual(double a, double b);
 inline bool almostEqual(std::pair<double, double> a, std::pair<double, double> b)

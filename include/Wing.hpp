@@ -137,7 +137,7 @@ public:
     friend class Aerodynamics;
 private:
     arma::mat calculateNormal();
-    arma::vec externalContour(double, double, double, double, double, double, arma::vec);
+    arma::vec externalContour(double, double, arma::vec);
     void regularIntegralLinear(size_t, double, double, size_t, size_t, double, double, double, double);
     void regularIntegralNonlinear(size_t, double, double, double, size_t, size_t, double, double, double, double);
     // Calculating the Aerodynamic Matrix for the Panel Method

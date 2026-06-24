@@ -2,7 +2,7 @@ set terminal png background rgb 'black' size 1000, 500
 set output '../../png/Wing/square.png'
 
 set palette defined (0 "blue", 0.5 "green", 0.8 "yellow", 1 "red")
-set cbrange [0:0.1]
+set cbrange [0:0.01]
 set xlabel 'x' tc rgb 'gray'
 set ylabel 'y' tc rgb 'gray'
 set zlabel 'dcp' tc rgb 'gray'

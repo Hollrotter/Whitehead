@@ -18,7 +18,11 @@ Validation/plot/Gnuplot/Lilienthal_mesh.plt
 Validation/plot/Gnuplot/Whitehead.plt
 Validation/plot/Gnuplot/Whitehead_mesh.plt
 Verification/.vscode/
+Verification/plot/Gnuplot/WingLinear.plt
+Verification/plot/Gnuplot/WingNonlinear.plt
 Verification/plot/Data/
 Verification/plot/png/
 Verification/plot/svg/
+Verification/WingLinear.cpp
+Verification/WingNonlinear.cpp
 Verification/Verification

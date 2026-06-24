@@ -2,7 +2,7 @@
 
 int main()
 {
-    switch (0)
+    switch (2)
     {
         case 0: // Rectangle
         {
@@ -173,6 +173,7 @@ int main()
                 w[i].wake(&wk);
                 w[i](Symmetry::y);
                 w[i].nonlinear();
+                std::cout << w[i].get_lift() << ' ' << w[i].get_moment() << std::endl;
                 w[i].output("plot/Data/Wing/square"+std::to_string(i));
             }
 
@@ -221,27 +222,33 @@ int main()
         }
         case 4: // Nonlinear
         {
-            size_t nx = 10;
-            size_t ny = 10;
+            size_t nx = 15;
+            size_t ny = 15;
 
-            double l = 1;
-            double b = 10;
+            double alpha = 5;
 
-            Point p1(-l/4, 0);
-            Point p2(3*l/4, 0);
-            Point p3(3*l/4, b/2);
-            Point p4(-l/4, b/2);
+            double AR = 5;
+            double l = 2;
+            double b = l*AR;
+
+            Point p1(0, 0);
+            Point p2(l, 0);
+            Point p3(l, b/2);
+            Point p4(0, b/2);
 
             Lagrange::CurveInterpolant chi1(p1, p2, nx);
             Lagrange::CurveInterpolant chi2(p2, p3, ny);
             Lagrange::CurveInterpolant chi3(p3, p4, nx);
             Lagrange::CurveInterpolant chi4(p4, p1, ny);
 
-            arma::mat z = 0.2 * cos(arma::datum::pi/2* Chebyshev::gaussLobatto(nx))
-                              * cos(arma::datum::pi/4*(Chebyshev::gaussLobatto(ny)+1)).t();
+            arma::mat z = arma::datum::pi*atan(alpha*arma::datum::pi/180) * (1 - pow(Chebyshev::gaussLobatto(nx), 2)) * arma::ones(1, ny);
             Wing w(z, {&chi1, &chi2, &chi3, &chi4});
 
-            w.pitch(5);
+            w.pitch(alpha);
+
+            w(Symmetry::y);
+            Wake w1(&chi2);
+            w.wake(&w1);
 
             w.boundary(&chi1, BC::Neumann);
             w.boundary(&chi2, BC::Neumann);

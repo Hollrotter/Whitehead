@@ -214,11 +214,13 @@ void VLM::postprocessing(arma::mat &g)
             switch(analysis)
             {
                 case Analysis::linear:
-                    for (size_t n = 0, k = 0; n < ny; n++)
+                    #pragma omp parallel for reduction(+:lift) reduction(-:moment)
+                    for (size_t n = 0; n < ny; n++)
                     {
                         double dy = y(n+1) - y(n);
-                        for (size_t m = 0; m < nx; m++, k++)
+                        for (size_t m = 0; m < nx; m++)
                         {
+                            size_t k = m + n*nx;
                             double dx = (x(m+1, n) - x(m, n) + x(m+1, n+1) - x(m, n+1))/2;
                             area += dx*dy;
                             dcp.tube(m, n) = 2/dx*g.row(k);
@@ -228,11 +230,13 @@ void VLM::postprocessing(arma::mat &g)
                     }
                     break;
                 case Analysis::nonlinear:
-                    for (size_t n = 0, k = 0; n < ny; n++)
+                    #pragma omp parallel for reduction(+:lift)
+                    for (size_t n = 0; n < ny; n++)
                     {
                         double dy = y(n+1) - y(n);
-                        for (size_t m = 0; m < nx; m++, k++)
+                        for (size_t m = 0; m < nx; m++)
                         {
+                            size_t k = m + n*nx;
                             // double g_k = g(k, 0);
                             arma::vec::fixed<3> v1 = {x(m+1,   n) - x(m, n+1), y(n) - y(n+1), z(m+1,   n) - z(m, n+1)};
                             arma::vec::fixed<3> v2 = {x(m+1, n+1) - x(m,   n), y(n+1) - y(n), z(m+1, n+1) - z(m,   n)};

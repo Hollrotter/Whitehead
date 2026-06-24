@@ -15,8 +15,8 @@ arma::mat ChebyshevInterpolation(arma::vec x1, arma::vec x2, arma::mat xs, arma:
         x_m_hat = Chebyshev::fastChebyshevTransform(xs, "FORWARD");
         y_m_hat = Chebyshev::fastChebyshevTransform(ys, "FORWARD");
     }
-    arma::cube x_m_bar = Chebyshev::ChebyshevDerivativeCoefficients(x_m_hat);
-    arma::cube y_m_bar = Chebyshev::ChebyshevDerivativeCoefficients(y_m_hat);
+    auto [x1_m_bar, x2_m_bar] = Chebyshev::DerivativeCoefficients(x_m_hat);
+    auto [y1_m_bar, y2_m_bar] = Chebyshev::DerivativeCoefficients(y_m_hat);
 
     arma::mat xC = repelem(Chebyshev::gaussLobatto(nx),     1, ny);
     arma::mat yC = repelem(Chebyshev::gaussLobatto(ny).t(), nx, 1);
@@ -34,8 +34,8 @@ arma::mat ChebyshevInterpolation(arma::vec x1, arma::vec x2, arma::mat xs, arma:
                     for (size_t q = 0; q < ny; q++)
                     {
                         double Txy = Tx*boost::math::chebyshev_t(q,-yC(i, j));
-                        J += Txy*arma::mat{{x_m_bar(p, q, 0), x_m_bar(p, q, 1)},
-                                           {y_m_bar(p, q, 0), y_m_bar(p, q, 1)}};
+                        J += Txy*arma::mat{{x1_m_bar(p, q), x2_m_bar(p, q)},
+                                           {y1_m_bar(p, q), y2_m_bar(p, q)}};
                         b -= Txy*arma::vec{x_m_hat(p, q), y_m_hat(p, q)};
                     }
                 }

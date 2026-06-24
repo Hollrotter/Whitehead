@@ -231,9 +231,6 @@ void Wing::postprocessing()
     arma::mat J22 = J(1, 1);
     arma::mat MU_0 = reshape(mu_hat, nx, ny);
     auto [MU_1, MU_2] = Chebyshev::DerivativeCoefficients(MU_0);
-    arma::vec MU_0_y(ny, arma::fill::none);
-    arma::vec MU_1_y(ny, arma::fill::none);
-    arma::vec MU_2_y(ny, arma::fill::none);
     switch (analysis)
     {
         case Analysis::linear:
@@ -241,8 +238,12 @@ void Wing::postprocessing()
             arma::mat detJ = J11%J22 - J12%J21;
             arma::mat J11_inv = J22/detJ;
             arma::mat J21_inv =-J21/detJ;
+            #pragma omp parallel for
             for (size_t i = 0; i < nx; i++) // Loop over nodes in 1-direction
             {
+                arma::vec MU_0_y(ny, arma::fill::none);
+                arma::vec MU_1_y(ny, arma::fill::none);
+                arma::vec MU_2_y(ny, arma::fill::none);
                 for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                 {
                     MU_0_y(q) = MU_0(0, q)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_0.colptr(q), nx, x1(i));
@@ -267,8 +268,12 @@ void Wing::postprocessing()
             arma::vec Q = {cos(alpha), 0, sin(alpha)};
             arma::mat e = e_c.slice(0)%e_c.slice(2) - pow(e_c.slice(1), 2);
             arma::mat sqrt_a = sqrt(e%(1 + ec.slice(0)%pow(dzdx1, 2) + 2*ec.slice(1)%dzdx1%dzdx2 + ec.slice(2)%pow(dzdx2, 2)));
+            #pragma omp parallel for
             for (size_t i = 0; i < nx; i++) // Loop over nodes in 1-direction
             {
+                arma::vec MU_0_y(ny, arma::fill::none);
+                arma::vec MU_1_y(ny, arma::fill::none);
+                arma::vec MU_2_y(ny, arma::fill::none);
                 for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                 {
                     MU_0_y(q) = MU_0(0, q)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_0.colptr(q), nx, x1(i));
@@ -319,8 +324,11 @@ void Wing::postprocessing()
     {
         case Analysis::linear:
         {
+            #pragma omp parallel for reduction(+:area) reduction(+:lift) reduction(-:moment)
             for (size_t i = 0; i < nx; i++)
             {
+                arma::vec MU_1_y(ny, arma::fill::none);
+                arma::vec MU_2_y(ny, arma::fill::none);
                 for (size_t q = 0; q < ny; q++)
                 {
                     MU_1_y(q) = MU_1(0, q)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_1.colptr(q), nx, x1_gl(i));
@@ -333,9 +341,10 @@ void Wing::postprocessing()
                     double J21_inv =-dydx1_gl(i, j)/detJ;
                     double DCP = 2*(J11_inv*(MU_1_y(0)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_1_y.memptr(), ny, x2_gl(j)))
                                   + J21_inv*(MU_2_y(0)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_2_y.memptr(), ny, x2_gl(j))));
-                    area   += gl_x[i].weight * gl_y[j].weight * detJ;
-                    lift   += gl_x[i].weight * gl_y[j].weight * DCP * detJ;
-                    moment -= gl_x[i].weight * gl_y[j].weight * DCP * detJ * x_gl(i, j);
+                    double dA = gl_x[i].weight * gl_y[j].weight * detJ;
+                    area   += dA;
+                    lift   += dA * DCP;
+                    moment -= dA * DCP * x_gl(i, j);
                 }
             }
             break;
@@ -357,8 +366,11 @@ void Wing::postprocessing()
             arma::cube ec_gl  = MetricContra(e_c_gl);
             arma::mat e_gl = e_c_gl.slice(0)%e_c_gl.slice(2) - pow(e_c_gl.slice(1), 2);
             arma::mat sqrt_a = sqrt(e_gl%(1 + ec_gl.slice(0)%pow(dzdx1_gl, 2) + 2*ec_gl.slice(1)%dzdx1_gl%dzdx2_gl + ec_gl.slice(2)%pow(dzdx2_gl, 2)));
+            #pragma omp parallel for reduction(+:area) reduction(+:F) reduction(-:M)
             for (size_t i = 0; i < nx; i++)
             {
+                arma::vec MU_1_y(ny, arma::fill::none);
+                arma::vec MU_2_y(ny, arma::fill::none);
                 for (size_t q = 0; q < ny; q++)
                 {
                     MU_1_y(q) = MU_1(0, q)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_1.colptr(q), nx, x1_gl(i));
