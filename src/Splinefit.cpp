@@ -75,7 +75,7 @@ double Splinefit::operator()(const double x)
  */
 arma::vec Splinefit::operator()(const arma::vec x)
 {
-    arma::vec y_dach(x.size());
+    arma::vec y_dach(x.size(), arma::fill::none);
     #pragma omp parallel for
     for (size_t i = 0; i < x.size(); i++)
         y_dach(i) = operator()(x(i));
@@ -108,7 +108,7 @@ double Splinefit::operator()(const double x, const double y)
  */
 arma::mat Splinefit::operator()(const arma::vec x, const arma::vec y)
 {
-    arma::mat z_dach(x.size(), y.size());
+    arma::mat z_dach(x.size(), y.size(), arma::fill::none);
     #pragma omp parallel for
     for (size_t i = 0; i < x.size(); i++)
         for (size_t j = 0; j < y.size(); j++)

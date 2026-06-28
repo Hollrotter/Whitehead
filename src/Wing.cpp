@@ -306,7 +306,7 @@ void Wing::postprocessing()
     lift   = 0;
     moment = 0;
     std::vector<fastgl::QuadPair> gl_x(nx), gl_y(ny);
-    arma::vec x1_gl(nx), x2_gl(ny);
+    arma::vec x1_gl(nx, arma::fill::none), x2_gl(ny, arma::fill::none);
     for (size_t i = 0; i < nx; i++)
     {
         gl_x[i] = fastgl::GLPair(nx, i+1);
@@ -351,8 +351,7 @@ void Wing::postprocessing()
         }
         case Analysis::nonlinear:
         {
-            arma::vec F(3);
-            arma::vec M(3);
+            arma::vec F(3, arma::fill::zeros), M(3, arma::fill::zeros);
             arma::vec Q = {cos(alpha), 0, sin(alpha)};
             arma::mat Tx_gl = Lagrange::interpolationMatrix(x1, x1_gl);
             arma::mat Ty_gl = Lagrange::interpolationMatrix(x2, x2_gl);

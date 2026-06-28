@@ -188,9 +188,7 @@ void Membrane::principalStrains(const std::string &fileV, const std::string &fil
     arma::mat epsilon_1 = (epsilon_x + epsilon_y)/2 + sqrt((epsilon_x - epsilon_y)%(epsilon_x - epsilon_y)/4 + gam_xy%gam_xy);
     arma::mat epsilon_2 = (epsilon_x + epsilon_y)/2 - sqrt((epsilon_x - epsilon_y)%(epsilon_x - epsilon_y)/4 + gam_xy%gam_xy);
     arma::mat gam_12    = (epsilon_1 - epsilon_2)/2;
-    std::ofstream file_v(fileV);
-    std::ofstream file_k(fileEx);
-    std::ofstream file_p(fileE1);
+    std::ofstream file_v(fileV), file_k(fileEx), file_p(fileE1);
     for (size_t i = 0; i < nx; i++, file_v<<'\n', file_k<<'\n', file_p<<'\n')
         for (size_t j = 0; j < ny; j++, file_v<<'\n', file_k<<'\n', file_p<<'\n')
         {

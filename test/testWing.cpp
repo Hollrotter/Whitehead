@@ -2,7 +2,7 @@
 
 int main()
 {
-    switch (2)
+    switch (4)
     {
         case 0: // Rectangle
         {
@@ -222,10 +222,10 @@ int main()
         }
         case 4: // Nonlinear
         {
-            size_t nx = 15;
-            size_t ny = 15;
+            size_t nx = 20;
+            size_t ny = 20;
 
-            double alpha = 5;
+            double alpha = 10;
 
             double AR = 5;
             double l = 2;
@@ -241,7 +241,7 @@ int main()
             Lagrange::CurveInterpolant chi3(p3, p4, nx);
             Lagrange::CurveInterpolant chi4(p4, p1, ny);
 
-            arma::mat z = arma::datum::pi*atan(alpha*arma::datum::pi/180) * (1 - pow(Chebyshev::gaussLobatto(nx), 2)) * arma::ones(1, ny);
+            arma::mat z = 4*atan(alpha*arma::datum::pi/180) * (1 - pow(Chebyshev::gaussLobatto(nx), 2)) * arma::ones(1, ny);
             Wing w(z, {&chi1, &chi2, &chi3, &chi4});
 
             w.pitch(alpha);

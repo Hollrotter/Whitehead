@@ -23,7 +23,7 @@ double Splinefit::diff(const double x)
  */
 arma::vec Splinefit::diff(const arma::vec x)
 {
-    arma::vec dydx(x.size());
+    arma::vec dydx(x.size(), arma::fill::none);
     #pragma omp parallel for
     for (size_t i = 0; i < x.size(); i++)
         dydx(i) = diff(x(i));
@@ -39,7 +39,7 @@ arma::vec Splinefit::diff(const arma::vec x)
  */
 arma::vec Splinefit::diff(const double x, const double y)
 {
-    arma::vec gradZ(2);
+    arma::vec gradZ(2, arma::fill::zeros);
     #pragma omp parallel for
     for (size_t m = 0; m < M-1+order; m++)
         for (size_t n = 0; n < N-1+order; n++)
@@ -56,7 +56,7 @@ arma::vec Splinefit::diff(const double x, const double y)
  */
 arma::cube Splinefit::diff(const arma::vec x, const arma::vec y)
 {
-    arma::cube gradZ(x.size(), y.size(), 2);
+    arma::cube gradZ(x.size(), y.size(), 2, arma::fill::none);
     #pragma omp parallel for
     for (size_t i = 0; i < x.size(); i++)
         for (size_t j = 0; j < y.size(); j++)

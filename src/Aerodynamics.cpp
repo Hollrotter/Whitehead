@@ -562,7 +562,6 @@ void Aerodynamics::solve()
                     arma::vec    MU(nx, arma::fill::zeros);
                     arma::vec dMUd1(nx, arma::fill::zeros);
                     arma::vec dMUd2(nx, arma::fill::zeros);
-                    
                     for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                     {
                         double t2  = pow(-1, q);

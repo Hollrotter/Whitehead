@@ -9,7 +9,7 @@
  */
 arma::mat VLM::line(arma::rowvec rA, arma::rowvec rB)
 {
-    arma::mat v(nxy, 3);
+    arma::mat v(nxy, 3, arma::fill::none);
     #pragma omp parallel for
     for (size_t k = 0; k < nxy; k++)
     {
@@ -34,7 +34,7 @@ arma::mat VLM::line(arma::rowvec rA, arma::rowvec rB)
  */
 arma::mat VLM::horseshoe(arma::rowvec rA, arma::rowvec rB)
 {
-    arma::mat v(nxy, 3);
+    arma::mat v(nxy, 3, arma::fill::none);
     const arma::rowvec::fixed<3> ex = {1, 0, 0};
     arma::rowvec::fixed<3> rAB = rB - rA;
     #pragma omp parallel for
@@ -76,7 +76,7 @@ arma::mat VLM::ring(arma::field<arma::rowvec> r)
  */
 arma::mat VLM::wake(size_t i, arma::rowvec rA, arma::rowvec rB)
 {
-    arma::mat v(nxy, 3);
+    arma::mat v(nxy, 3, arma::fill::none);
     arma::rowvec::fixed<3> e = {cos(alpha(i)), 0, sin(alpha(i))};
     #pragma omp parallel for
     for (size_t k = 0; k < nxy; k++)

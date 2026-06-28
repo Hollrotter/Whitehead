@@ -44,7 +44,7 @@ std::tuple<arma::cube, arma::cube> Metric(const arma::field<arma::mat> J)
  */
 arma::cube MetricContra(const arma::cube &g)
 {
-	arma::cube gc(g.n_rows, g.n_cols, 3);
+	arma::cube gc(g.n_rows, g.n_cols, 3, arma::fill::none);
 
 	#pragma omp parallel for
 	for (size_t i = 0; i < g.n_rows; i++)

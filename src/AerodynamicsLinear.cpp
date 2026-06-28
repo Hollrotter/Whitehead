@@ -12,7 +12,7 @@ void Aerodynamics::linear()
             if (sD != tD)
             {
                 std::vector<fastgl::QuadPair> gl_x(wings[sD]->nx), gl_y(wings[sD]->ny);
-                arma::vec x1_gl(wings[sD]->nx), x2_gl(wings[sD]->ny);
+                arma::vec x1_gl(wings[sD]->nx, arma::fill::none), x2_gl(wings[sD]->ny, arma::fill::none);
                 for (size_t ii = 0; ii < wings[sD]->nx; ii++)
                 {
                     gl_x[ii] = fastgl::GLPair(wings[sD]->nx, ii+1);
@@ -59,22 +59,14 @@ void Aerodynamics::linear()
                                         std::swap(t1, t1p1); // Swap order so the oldes Chebyshev Polynomial will be overwritten
                                         t1p1 = boost::math::chebyshev_next(x1_gl(ii), t1, t1p1); // Calculate next Chebyshev Polynomial
 
-                                        double dt1m1 = dt1;
                                         std::swap(dt1, dt1p1);
-                                        if (p == 0)
-                                            dt1p1 = 4*x1_gl(ii);
-                                        else
-                                            dt1p1 = (p+2)*(2*t1 + dt1m1/p);
+                                        dt1p1 = (p == 0) ? 4*x1_gl(ii) : (p+2)*(2*t1 + dt1p1/p);
                                     }
                                     std::swap(t2, t2p1); // Swap order so the oldest Chebyshev Polynomial will be overwritten
                                     t2p1 = boost::math::chebyshev_next(x2_gl(jj), t2, t2p1); // Calculate next Chebyshev Polynomial
 
-                                    double dt2m1 = dt2;
                                     std::swap(dt2, dt2p1);
-                                    if (q == 0)
-                                        dt2p1 = 4*x2_gl(jj);
-                                    else
-                                        dt2p1 = (q+2)*(2*t2 + dt2m1/q);
+                                    dt2p1 = (q == 0) ? 4*x2_gl(jj) : (q+2)*(2*t2 + dt2p1/q);
                                 }
                             }
                     }
@@ -83,7 +75,7 @@ void Aerodynamics::linear()
                         if (wings[sD]->chi[c] == w->chi)
                         {
                             std::vector<fastgl::QuadPair> gl_x_w(wings[sD]->nx), gl_y_w(wings[sD]->ny);
-                            arma::vec x1_gl_w(wings[sD]->nx), x2_gl_w(wings[sD]->ny);
+                            arma::vec x1_gl_w(wings[sD]->nx, arma::fill::none), x2_gl_w(wings[sD]->ny, arma::fill::none);
                             for (size_t ii = 0; ii < wings[sD]->nx; ii++)
                             {
                                 gl_x_w[ii] = fastgl::GLPair(wings[sD]->nx, ii+1);
@@ -208,7 +200,7 @@ void Aerodynamics::linear()
                 if (sD != tD)
                 {
                     std::vector<fastgl::QuadPair> gl_x(wings[sD]->nx), gl_y(wings[sD]->ny);
-                    arma::vec x1_gl(wings[sD]->nx), x2_gl(wings[sD]->ny);
+                    arma::vec x1_gl(wings[sD]->nx, arma::fill::none), x2_gl(wings[sD]->ny, arma::fill::none);
                     for (size_t ii = 0; ii < wings[sD]->nx; ii++)
                     {
                         gl_x[ii] = fastgl::GLPair(wings[sD]->nx, ii+1);
@@ -257,22 +249,14 @@ void Aerodynamics::linear()
                                             std::swap(t1, t1p1); // Swap order so the oldes Chebyshev Polynomial will be overwritten
                                             t1p1 = boost::math::chebyshev_next(x1_gl(ii), t1, t1p1); // Calculate next Chebyshev Polynomial
 
-                                            double dt1m1 = dt1;
                                             std::swap(dt1, dt1p1);
-                                            if (p == 0)
-                                                dt1p1 = 4*x1_gl(ii);
-                                            else
-                                                dt1p1 = (p+2)*(2*t1 + dt1m1/p);
+                                            dt1p1 = (p == 0) ? 4*x1_gl(ii) : (p+2)*(2*t1 + dt1p1/p);
                                         }
                                         std::swap(t2, t2p1); // Swap order so the oldest Chebyshev Polynomial will be overwritten
                                         t2p1 = boost::math::chebyshev_next(x2_gl(jj), t2, t2p1); // Calculate next Chebyshev Polynomial
 
-                                        double dt2m1 = dt2;
                                         std::swap(dt2, dt2p1);
-                                        if (q == 0)
-                                            dt2p1 = 4*x2_gl(jj);
-                                        else
-                                            dt2p1 = (q+2)*(2*t2 + dt2m1/q);
+                                        dt2p1 = (q == 0) ? 4*x2_gl(jj) : (q+2)*(2*t2 + dt2p1/q);
                                     }
                                 }
                         }
@@ -281,7 +265,7 @@ void Aerodynamics::linear()
                             if (wings[sD]->chi[c] == w->chi)
                             {
                                 std::vector<fastgl::QuadPair> gl_x_w(wings[sD]->nx), gl_y_w(wings[sD]->ny);
-                                arma::vec x1_gl_w(wings[sD]->nx), x2_gl_w(wings[sD]->ny);
+                                arma::vec x1_gl_w(wings[sD]->nx, arma::fill::none), x2_gl_w(wings[sD]->ny, arma::fill::none);
                                 for (size_t ii = 0; ii < wings[sD]->nx; ii++)
                                 {
                                     gl_x_w[ii] = fastgl::GLPair(wings[sD]->nx, ii+1);

@@ -16,7 +16,7 @@ arma::cube MetricCo(const arma::mat &y1, const arma::mat &y2, arma::mat &D1, arm
 	arma::mat dydx1 = D1 * y2;
 	arma::mat dydx2 = y2 * D2.t();
 
-	arma::cube g_c(D1.n_rows, D2.n_rows, 3);
+	arma::cube g_c(D1.n_rows, D2.n_rows, 3, arma::fill::none);
 	#pragma omp parallel for
 	for (size_t i = 0; i < D1.n_rows; i++)
 		for (size_t j = 0; j < D2.n_rows; j++)
@@ -32,7 +32,7 @@ arma::cube MetricCo(const std::array<Lagrange::CurveInterpolant*, 4> chi)
 {
 	size_t nx = chi[1]->getNodes().size();
 	size_t ny = chi[0]->getNodes().size();
-	arma::cube g_c(nx, ny, 3);
+	arma::cube g_c(nx, ny, 3, arma::fill::none);
 	auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(chi);
 	#pragma omp parallel for
 	for (size_t i = 0; i < nx; i++)
@@ -53,7 +53,7 @@ arma::cube MetricCo(const std::array<Lagrange::CurveInterpolant*, 4> chi)
  */
 arma::cube MetricCo(const arma::field<arma::mat> J)
 {
-	arma::cube g_c(J(0, 0).n_rows, J(0, 0).n_cols, 3);
+	arma::cube g_c(J(0, 0).n_rows, J(0, 0).n_cols, 3, arma::fill::none);
 
 	g_c.slice(0) = pow(J(0, 0), 2) + pow(J(1, 0), 2);
 	g_c.slice(1) = J(0, 0)%J(0, 1) + J(1, 0)%J(1, 1);

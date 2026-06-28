@@ -7,7 +7,7 @@
  */
 void Splinefit::setQR(const arma::vec x)
 {
-    arma::mat S(x.size(), M-1+order);
+    arma::mat S(x.size(), M-1+order, arma::fill::none);
     B1 = B_Spline(arma::linspace(x.front(), x.back(), M), order);
     #pragma omp parallel for
     for (size_t m = 0; m < M-1+order; m++)
@@ -24,7 +24,7 @@ void Splinefit::setQR(const arma::vec x)
  */
 void Splinefit::setQR(const arma::vec x, const arma::vec y)
 {
-    arma::mat S(x.size()*y.size(), (M-1+order)*(N-1+order));
+    arma::mat S(x.size()*y.size(), (M-1+order)*(N-1+order), arma::fill::none);
     B1 = B_Spline(arma::linspace(x.front(), x.back(), M), order);
     B2 = B_Spline(arma::linspace(y.front(), y.back(), N), order);
     #pragma omp parallel for

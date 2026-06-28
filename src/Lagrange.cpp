@@ -21,7 +21,7 @@ arma::vec Lagrange::barycentricWeights(const arma::vec x)
 arma::vec Lagrange::barycentricWeights(const size_t n)
 {
     auto delta = [](const size_t i, const size_t n) { return (i == 0 || i == n-1) ? 0.5 : 1; };
-    arma::vec w(n);
+    arma::vec w(n, arma::fill::none);
     for (size_t i = 0; i < n; i++)
         w(i) =-pow(-1, n-i)*delta(i, n);
     return w;
@@ -58,7 +58,7 @@ double Lagrange::interpolation(const double x, const arma::vec X, const arma::ve
 
 arma::vec Lagrange::interpolation(const arma::vec x, const arma::vec X, const arma::vec f, const arma::vec w)
 {
-    arma::vec xi(x.size());
+    arma::vec xi(x.size(), arma::fill::none);
     for (size_t i = 0; i < x.size(); i++)
         xi(i) = interpolation(x(i), X, f, w);
     return xi;
@@ -104,7 +104,7 @@ double Lagrange::interpolantDerivative(const double x, const arma::vec X, const 
 
 arma::vec Lagrange::interpolantDerivative(const arma::vec x, const arma::vec X, const arma::vec f, const arma::vec w)
 {
-    arma::vec dx(x.size());
+    arma::vec dx(x.size(), arma::fill::none);
     for (size_t i = 0; i < x.size(); i++)
         dx(i) = interpolantDerivative(x(i), X, f, w);
     return dx;
@@ -172,7 +172,7 @@ arma::mat Lagrange::interpolationMatrix(const arma::vec x1, const arma::vec x2, 
     size_t ny = x.n_cols;
 
     // Initialization of the interpolation matrix
-    arma::mat T(nx*ny, n1*n2);
+    arma::mat T(nx*ny, n1*n2, arma::fill::none);
 
     // Interpolation in x1-direction
     for (size_t n = 0; n < ny; n++)
@@ -206,10 +206,10 @@ arma::mat Lagrange::interpolationMatrix(const arma::vec x1, const arma::vec x2, 
  */
 arma::mat Lagrange::interpolation2D(const arma::mat Tx, const arma::mat Ty, const arma::mat z, const arma::vec xi, const arma::vec eta)
 {
-    arma::mat Z_bar(xi.size(), Ty.n_cols);
+    arma::mat Z_bar(xi.size(), Ty.n_cols, arma::fill::none);
     for (size_t j = 0; j < Ty.n_cols; j++)
         Z_bar.col(j) = Tx*z.col(j);
-    arma::mat Z(xi.size(), eta.size());
+    arma::mat Z(xi.size(), eta.size(), arma::fill::none);
     for (size_t n = 0; n < xi.size(); n++)
         Z.row(n) = Z_bar.row(n)*Ty.t();
     return Z;
@@ -284,8 +284,9 @@ std::pair<arma::mat, arma::mat> Lagrange::TransfiniteQuadMap(const arma::vec &x1
     auto [x_2, y_2] = chi[0]->evaluate( sign1);
     auto [x_3, y_3] = chi[2]->evaluate( sign3);
     auto [x_4, y_4] = chi[2]->evaluate(-sign3);
-    arma::mat x(x1.size(), x2.size());
-    arma::mat y(x1.size(), x2.size());
+    arma::mat x(x1.size(), x2.size(), arma::fill::none);
+    arma::mat y(x1.size(), x2.size(), arma::fill::none);
+    #pragma omp parallel for
     for (size_t i = 0; i < x1.size(); i++)
     {
         double x1i = x1(i);
@@ -342,7 +343,7 @@ std::tuple<double, double, double, double> Lagrange::TransfiniteQuadMetrics(cons
     }
     else
     {
-        std::println("TransfiniteQuadMaps: chi1 and chi4 mismatch!");
+        std::println("TransfiniteQuadMetrics: chi1 and chi4 mismatch!");
         exit(EXIT_FAILURE);
     }
     if (almostEqual(chi[1]->evaluate(1.0), chi[2]->evaluate(1.0)))
@@ -367,7 +368,7 @@ std::tuple<double, double, double, double> Lagrange::TransfiniteQuadMetrics(cons
     }
     else
     {
-        std::println("TransfiniteQuadMaps: chi2 and chi3 mismatch!");
+        std::println("TransfiniteQuadMetrics: chi2 and chi3 mismatch!");
         exit(EXIT_FAILURE);
     }
     auto [x_1,  y_1] = chi[0]->evaluate(-sign1);
@@ -428,7 +429,7 @@ std::tuple<arma::mat, arma::mat, arma::mat, arma::mat> Lagrange::TransfiniteQuad
     }
     else
     {
-        std::println("TransfiniteQuadMaps: chi1 and chi4 mismatch!");
+        std::println("TransfiniteQuadMetrics: chi1 and chi4 mismatch!");
         exit(EXIT_FAILURE);
     }
     if (almostEqual(chi[1]->evaluate(1.0), chi[2]->evaluate(1.0)))
@@ -453,17 +454,16 @@ std::tuple<arma::mat, arma::mat, arma::mat, arma::mat> Lagrange::TransfiniteQuad
     }
     else
     {
-        std::println("TransfiniteQuadMaps: chi2 and chi3 mismatch!");
+        std::println("TransfiniteQuadMetrics: chi2 and chi3 mismatch!");
         exit(EXIT_FAILURE);
     }
     auto [x_1,  y_1] = chi[0]->evaluate(-sign1);
     auto [x_2,  y_2] = chi[0]->evaluate( sign1);
     auto [x_3,  y_3] = chi[2]->evaluate( sign3);
     auto [x_4,  y_4] = chi[2]->evaluate(-sign3);
-    arma::mat dxdx1(x1.size(), x2.size());
-    arma::mat dydx1(x1.size(), x2.size());
-    arma::mat dxdx2(x1.size(), x2.size());
-    arma::mat dydx2(x1.size(), x2.size());
+    arma::mat dxdx1(x1.size(), x2.size(), arma::fill::none), dxdx2(x1.size(), x2.size(), arma::fill::none),
+              dydx1(x1.size(), x2.size(), arma::fill::none), dydx2(x1.size(), x2.size(), arma::fill::none);
+    #pragma omp parallel for
     for (size_t i = 0; i < x1.size(); i++)
     {
         double x1i = x1(i);
@@ -508,7 +508,7 @@ std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::ve
 {
     if (chi[0]->getNodes().size() != chi[2]->getNodes().size() || chi[1]->getNodes().size() != chi[3]->getNodes().size())
     {
-        std::println("TransfiniteQuadMetrics: size mismatch!");
+        std::println("covariantScaleFactors: size mismatch!");
         exit(EXIT_FAILURE);
     }
     double sign1, sign2, sign3, sign4;
@@ -534,7 +534,7 @@ std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::ve
     }
     else
     {
-        std::println("TransfiniteQuadMaps: chi1 and chi4 mismatch!");
+        std::println("covariantScaleFactors: chi1 and chi4 mismatch!");
         exit(EXIT_FAILURE);
     }
     if (almostEqual(chi[1]->evaluate(1.0), chi[2]->evaluate(1.0)))
@@ -559,17 +559,19 @@ std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::ve
     }
     else
     {
-        std::println("TransfiniteQuadMaps: chi2 and chi3 mismatch!");
+        std::println("covariantScaleFactors: chi2 and chi3 mismatch!");
         exit(EXIT_FAILURE);
     }
     auto [x_1, y_1] = chi[0]->evaluate(-sign1);
     auto [x_2, y_2] = chi[0]->evaluate( sign1);
     auto [x_3, y_3] = chi[2]->evaluate( sign3);
     auto [x_4, y_4] = chi[2]->evaluate(-sign3);
-    arma::vec    dxdx1_south(x1.size()), dydx1_south(x1.size()), dxdx2_south(x1.size()), dydx2_south(x1.size());
-    arma::rowvec dxdx1_east(x2.size()),  dydx1_east(x2.size()),  dxdx2_east(x2.size()),  dydx2_east(x2.size());
-    arma::vec    dxdx1_north(x1.size()), dydx1_north(x1.size()), dxdx2_north(x1.size()), dydx2_north(x1.size());
-    arma::rowvec dxdx1_west(x2.size()),  dydx1_west(x2.size()),  dxdx2_west(x2.size()),  dydx2_west(x2.size());
+
+    arma::rowvec dxdx1_east(x2.size(), arma::fill::none), dydx1_east(x2.size(), arma::fill::none),
+                 dxdx2_east(x2.size(), arma::fill::none), dydx2_east(x2.size(), arma::fill::none);
+    arma::rowvec dxdx1_west(x2.size(), arma::fill::none), dydx1_west(x2.size(), arma::fill::none),
+                 dxdx2_west(x2.size(), arma::fill::none), dydx2_west(x2.size(), arma::fill::none);
+    #pragma omp parallel for
     for (size_t j = 0; j < x2.size(); j++)
     {
         auto [X_1,  Y_1]  = chi[0]->evaluate(-sign1);
@@ -610,6 +612,11 @@ std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::ve
         dxdx2_east(j) = (2*Xs_2 + X_3 - X_1)/2 - (x_3 - x_2)/2;
         dydx2_east(j) = (2*Ys_2 + Y_3 - Y_1)/2 - (y_3 - y_2)/2;
     }
+    arma::vec dxdx1_south(x1.size(), arma::fill::none), dydx1_south(x1.size(), arma::fill::none),
+              dxdx2_south(x1.size(), arma::fill::none), dydx2_south(x1.size(), arma::fill::none);
+    arma::vec dxdx1_north(x1.size(), arma::fill::none), dydx1_north(x1.size(), arma::fill::none),
+              dxdx2_north(x1.size(), arma::fill::none), dydx2_north(x1.size(), arma::fill::none);
+    #pragma omp parallel for
     for (size_t i = 0; i < x1.size(); i++)
     {
         auto [X_2,  Y_2]  = chi[1]->evaluate(-sign2);
@@ -708,7 +715,7 @@ std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::ve
 {
     if (chi[0]->getNodes().size() != chi[2]->getNodes().size() || chi[1]->getNodes().size() != chi[3]->getNodes().size())
     {
-        std::println("TransfiniteQuadMetrics: size mismatch!");
+        std::println("covariantScaleFactors: size mismatch!");
         exit(EXIT_FAILURE);
     }
     double sign1, sign2, sign3, sign4;
@@ -734,7 +741,7 @@ std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::ve
     }
     else
     {
-        std::println("TransfiniteQuadMaps: chi1 and chi4 mismatch!");
+        std::println("covariantScaleFactors: chi1 and chi4 mismatch!");
         exit(EXIT_FAILURE);
     }
     if (almostEqual(chi[1]->evaluate(1.0), chi[2]->evaluate(1.0)))
@@ -759,17 +766,18 @@ std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::ve
     }
     else
     {
-        std::println("TransfiniteQuadMaps: chi2 and chi3 mismatch!");
+        std::println("covariantScaleFactors: chi2 and chi3 mismatch!");
         exit(EXIT_FAILURE);
     }
     auto [x_1, y_1] = chi[0]->evaluate(-sign1);
     auto [x_2, y_2] = chi[0]->evaluate( sign1);
     auto [x_3, y_3] = chi[2]->evaluate( sign3);
     auto [x_4, y_4] = chi[2]->evaluate(-sign3);
-    arma::vec    dxdx1_south(x1.size()), dydx1_south(x1.size()), dxdx2_south(x1.size()), dydx2_south(x1.size());
-    arma::rowvec dxdx1_east(x2.size()),  dydx1_east(x2.size()),  dxdx2_east(x2.size()),  dydx2_east(x2.size());
-    arma::vec    dxdx1_north(x1.size()), dydx1_north(x1.size()), dxdx2_north(x1.size()), dydx2_north(x1.size());
-    arma::rowvec dxdx1_west(x2.size()),  dydx1_west(x2.size()),  dxdx2_west(x2.size()),  dydx2_west(x2.size());
+    arma::rowvec dxdx1_east(x2.size(), arma::fill::none), dydx1_east(x2.size(), arma::fill::none),
+                 dxdx2_east(x2.size(), arma::fill::none), dydx2_east(x2.size(), arma::fill::none),
+                 dxdx1_west(x2.size(), arma::fill::none), dydx1_west(x2.size(), arma::fill::none),
+                 dxdx2_west(x2.size(), arma::fill::none), dydx2_west(x2.size(), arma::fill::none);
+    #pragma omp parallel for
     for (size_t j = 0; j < x2.size(); j++)
     {
         auto [X_1,  Y_1]  = chi[0]->evaluate(-sign1);
@@ -810,6 +818,11 @@ std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::ve
         dxdx2_east(j) = (2*Xs_2 + X_3 - X_1)/2 - (x_3 - x_2)/2;
         dydx2_east(j) = (2*Ys_2 + Y_3 - Y_1)/2 - (y_3 - y_2)/2;
     }
+    arma::vec dxdx1_south(x1.size(), arma::fill::none), dydx1_south(x1.size(), arma::fill::none),
+              dxdx2_south(x1.size(), arma::fill::none), dydx2_south(x1.size(), arma::fill::none),
+              dxdx1_north(x1.size(), arma::fill::none), dydx1_north(x1.size(), arma::fill::none),
+              dxdx2_north(x1.size(), arma::fill::none), dydx2_north(x1.size(), arma::fill::none);
+    #pragma omp parallel for
     for (size_t i = 0; i < x1.size(); i++)
     {
         auto [X_2,  Y_2]  = chi[1]->evaluate(-sign2);
@@ -856,13 +869,13 @@ std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::ve
     arma::mat dzdx1 = D1 * z;
     arma::mat dzdx2 = z * D2.t();
 
-    arma::vec a_11_south = pow(dxdx1_south, 2) + pow(dydx1_south, 2) + pow(dzdx1.col(0), 2);
-    arma::vec a_12_south = dxdx1_south%dxdx2_south + dydx1_south%dydx2_south + dzdx1.col(0)%dzdx2.col(0);
-    arma::vec a_22_south = pow(dxdx2_south, 2) + pow(dydx2_south, 2) + pow(dzdx2.col(0), 2);
+    arma::vec    a_11_south = pow(dxdx1_south, 2) + pow(dydx1_south, 2) + pow(dzdx1.col(0), 2);
+    arma::vec    a_12_south = dxdx1_south%dxdx2_south + dydx1_south%dydx2_south + dzdx1.col(0)%dzdx2.col(0);
+    arma::vec    a_22_south = pow(dxdx2_south, 2) + pow(dydx2_south, 2) + pow(dzdx2.col(0), 2);
 
-    arma::vec a_11_north = pow(dxdx1_north, 2) + pow(dydx1_north, 2) + pow(dzdx1.col(x2.size()-1), 2);
-    arma::vec a_12_north = dxdx1_north%dxdx2_north + dydx1_north%dydx2_north + dzdx1.col(x2.size()-1)%dzdx2.col(x2.size()-1);
-    arma::vec a_22_north = pow(dxdx2_north, 2) + pow(dydx2_north, 2) + pow(dzdx2.col(x2.size()-1), 2);
+    arma::vec    a_11_north = pow(dxdx1_north, 2) + pow(dydx1_north, 2) + pow(dzdx1.col(x2.size()-1), 2);
+    arma::vec    a_12_north = dxdx1_north%dxdx2_north + dydx1_north%dydx2_north + dzdx1.col(x2.size()-1)%dzdx2.col(x2.size()-1);
+    arma::vec    a_22_north = pow(dxdx2_north, 2) + pow(dydx2_north, 2) + pow(dzdx2.col(x2.size()-1), 2);
 
     arma::rowvec a_11_west = pow(dxdx1_west, 2) + pow(dydx1_west, 2) + pow(dzdx1.row(0), 2);
     arma::rowvec a_12_west = dxdx1_west%dxdx2_west + dydx1_west%dydx2_west + dzdx1.row(0)%dzdx2.row(0);
@@ -877,11 +890,11 @@ std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::ve
     arma::rowvec a_west  = a_11_west %a_22_west  - pow(a_12_west,  2);
     arma::rowvec a_east  = a_11_east %a_22_east  - pow(a_12_east,  2);
 
-    arma::vec a12_south =-a_12_south/a_south;
-    arma::vec a22_south = a_11_south/a_south;
+    arma::vec    a12_south =-a_12_south/a_south;
+    arma::vec    a22_south = a_11_south/a_south;
 
-    arma::vec a12_north =-a_12_north/a_north;
-    arma::vec a22_north = a_11_north/a_north;
+    arma::vec    a12_north =-a_12_north/a_north;
+    arma::vec    a22_north = a_11_north/a_north;
 
     arma::rowvec a11_west = a_22_west/a_west;
     arma::rowvec a12_west =-a_12_west/a_west;
@@ -889,14 +902,14 @@ std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::ve
     arma::rowvec a11_east = a_22_east/a_east;
     arma::rowvec a12_east =-a_12_east/a_east;
 
-    arma::rowvec h_1s1_east = sqrt(a11_east);
-    arma::rowvec h_1s2_east = a12_east/sqrt(a11_east);
-    arma::rowvec h_1s1_west = sqrt(a11_west);
-    arma::rowvec h_1s2_west = a12_west/sqrt(a11_west);
-    arma::vec h_2s2_south = sqrt(a22_south);
-    arma::vec h_2s1_south = a12_south/sqrt(a22_south);
-    arma::vec h_2s2_north = sqrt(a22_north);
-    arma::vec h_2s1_north = a12_north/sqrt(a22_north);
+    arma::rowvec h_1s1_east  = sqrt(a11_east);
+    arma::rowvec h_1s2_east  = a12_east/sqrt(a11_east);
+    arma::rowvec h_1s1_west  = sqrt(a11_west);
+    arma::rowvec h_1s2_west  = a12_west/sqrt(a11_west);
+    arma::vec    h_2s2_south = sqrt(a22_south);
+    arma::vec    h_2s1_south = a12_south/sqrt(a22_south);
+    arma::vec    h_2s2_north = sqrt(a22_north);
+    arma::vec    h_2s1_north = a12_north/sqrt(a22_north);
 
     return std::make_tuple(h_2s2_south, h_2s1_south, h_1s1_east, h_1s2_east, h_2s2_north, h_2s1_north, h_1s1_west, h_1s2_west);
 }

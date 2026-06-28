@@ -25,8 +25,8 @@ class Wing
     arma::mat D2 = Lagrange::derivativeMatrix(xi_2);
     double qdyn = 1; // Dynamic pressure
     double alpha = 0; // Pitch
-    size_t n_theta = 50;
-    size_t m_rho = 2;
+    size_t n_theta = 57;
+    double delta = 0.4;
     std::tuple<arma::mat, arma::mat> xyC = Lagrange::TransfiniteQuadMap(xi_1, xi_2, chi);
     arma::mat xC = std::get<0>(xyC);
     arma::mat yC = std::get<1>(xyC);
@@ -137,7 +137,7 @@ public:
     friend class Aerodynamics;
 private:
     arma::mat calculateNormal();
-    arma::vec externalContour(double, double, arma::vec);
+    arma::vec externalContour(double, double, double, double, double, double, arma::vec);
     void regularIntegralLinear(size_t, double, double, size_t, size_t, double, double, double, double);
     void regularIntegralNonlinear(size_t, double, double, double, size_t, size_t, double, double, double, double);
     // Calculating the Aerodynamic Matrix for the Panel Method

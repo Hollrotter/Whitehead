@@ -1,24 +1,24 @@
 #include "Wing.hpp"
 
-arma::vec Wing::externalContour(double eta_1, double eta_2, arma::vec theta)
+arma::vec Wing::externalContour(double x_min, double x_max, double y_min, double y_max, double eta_1, double eta_2, arma::vec theta)
 {
-    arma::vec rho(theta.size());
+    arma::vec rho(theta.size(), arma::fill::none);
     for (size_t n = 0; n < theta.size(); n++)
         if ((-arma::datum::pi < theta(n) && theta(n) <=-arma::datum::pi/2) || (arma::datum::pi < theta(n) && theta(n) <= 3*arma::datum::pi/2))
-            rho(n) = std::min(fabs((1+eta_1)/cos(theta(n))), fabs((1+eta_2)/sin(theta(n))));
+            rho(n) = std::min(fabs((x_min-eta_1)/cos(theta(n))), fabs((y_min-eta_2)/sin(theta(n))));
         else if ((-arma::datum::pi/2 < theta(n) && theta(n) <= 0) || (3*arma::datum::pi/2 < theta(n) && theta(n) <= 2*arma::datum::pi))
-            rho(n) = std::min(fabs((1-eta_1)/cos(theta(n))), fabs((1+eta_2)/sin(theta(n))));
+            rho(n) = std::min(fabs((x_max-eta_1)/cos(theta(n))), fabs((y_min-eta_2)/sin(theta(n))));
         else if (0 < theta(n) && theta(n) <= arma::datum::pi/2)
-            rho(n) = std::min(fabs((1-eta_1)/cos(theta(n))), fabs((1-eta_2)/sin(theta(n))));
+            rho(n) = std::min(fabs((x_max-eta_1)/cos(theta(n))), fabs((y_max-eta_2)/sin(theta(n))));
         else
-            rho(n) = std::min(fabs((1+eta_1)/cos(theta(n))), fabs((1-eta_2)/sin(theta(n))));
+            rho(n) = std::min(fabs((x_min-eta_1)/cos(theta(n))), fabs((y_max-eta_2)/sin(theta(n))));
     return rho;
 }
 
 void Wing::regularIntegralLinear(size_t k, double xC, double yC, size_t nx_ii, size_t ny_jj, double xm, double xp, double ym, double yp)
 {
     std::vector<fastgl::QuadPair> gl_x(nx_ii), gl_y(ny_jj);
-    arma::vec x1_gl(nx_ii), x2_gl(ny_jj);
+    arma::vec x1_gl(nx_ii, arma::fill::none), x2_gl(ny_jj, arma::fill::none);
     for (size_t ii = 0; ii < nx_ii; ii++)
     {
         gl_x[ii] = fastgl::GLPair(nx_ii, ii+1);
@@ -59,23 +59,15 @@ void Wing::regularIntegralLinear(size_t k, double xC, double yC, size_t nx_ii, s
                     std::swap(t1, t1p1); // Swap order so the oldes Chebyshev Polynomial will be overwritten
                     t1p1 = boost::math::chebyshev_next(x1_gl(ii), t1, t1p1); // Calculate next Chebyshev Polynomial
 
-                    double dt1m1 = dt1;
                     std::swap(dt1, dt1p1);
-                    if (p == 0)
-                        dt1p1 = 4*x1_gl(ii);
-                    else
-                        dt1p1 = (p+2)*(2*t1 + dt1m1/p);
+                    dt1p1 = (p == 0) ? 4*x1_gl(ii) : (p+2)*(2*t1 + dt1p1/p);
                 }
             }
             std::swap(t2, t2p1); // Swap order so the oldest Chebyshev Polynomial will be overwritten
             t2p1 = boost::math::chebyshev_next(x2_gl(jj), t2, t2p1); // Calculate next Chebyshev Polynomial
 
-            double dt2m1 = dt2;
             std::swap(dt2, dt2p1);
-            if (q == 0)
-                dt2p1 = 4*x2_gl(jj);
-            else
-                dt2p1 = (q+2)*(2*t2 + dt2m1/q);
+            dt2p1 = (q == 0) ? 4*x2_gl(jj) : (q+2)*(2*t2 + dt2p1/q);
         }
     }
 }
@@ -83,7 +75,7 @@ void Wing::regularIntegralLinear(size_t k, double xC, double yC, size_t nx_ii, s
 void Wing::regularIntegralNonlinear(size_t k, double xC, double yC, double zC, size_t nx_ii, size_t ny_jj, double xm, double xp, double ym, double yp)
 {
     std::vector<fastgl::QuadPair> gl_x(nx_ii), gl_y(ny_jj);
-    arma::vec x1_gl(nx_ii), x2_gl(ny_jj);
+    arma::vec x1_gl(nx_ii, arma::fill::none), x2_gl(ny_jj, arma::fill::none);
     for (size_t ii = 0; ii < nx_ii; ii++)
     {
         gl_x[ii] = fastgl::GLPair(nx_ii, ii+1);
@@ -141,22 +133,14 @@ void Wing::regularIntegralNonlinear(size_t k, double xC, double yC, double zC, s
                     std::swap(t1, t1p1);
                     t1p1 = boost::math::chebyshev_next(x1_gl(ii), t1, t1p1);
 
-                    double dt1m1 = dt1;
                     std::swap(dt1, dt1p1);
-                    if (p == 0)
-                        dt1p1 = 4*x1_gl(ii);
-                    else
-                        dt1p1 = (p+2)*(2*t1 + dt1m1/p);
+                    dt1p1 = (p == 0) ? 4*x1_gl(ii) : (p+2)*(2*t1 + dt1p1/p);
                 }
                 std::swap(t2, t2p1);
                 t2p1 = boost::math::chebyshev_next(x2_gl(jj), t2, t2p1);
 
-                double dt2m1 = dt2;
                 std::swap(dt2, dt2p1);
-                if (q == 0)
-                    dt2p1 = 4*x2_gl(jj);
-                else
-                    dt2p1 = (q+2)*(2*t2 + dt2m1/q);
+                dt2p1 = (q == 0) ? 4*x2_gl(jj) : (q+2)*(2*t2 + dt2p1/q);
             }
         }
 }
@@ -169,21 +153,20 @@ void Wing::aerodynamicMatrix()
 {
     arma::vec theta = arma::linspace(0, arma::datum::tau, n_theta);
     double dtheta = theta(1) - theta(0);
-    std::vector<fastgl::QuadPair> gl_rho(m_rho);
-    for (size_t m = 0; m < m_rho; m++)
-        gl_rho[m] = fastgl::GLPair(m_rho, m+1);
     arma::vec cT = cos(theta);
     arma::vec sT = sin(theta);
-    arma::vec scT = sin(theta)%cos(theta);
-    arma::vec c2T = pow(cos(theta), 2)/2;
-    arma::vec s2T = pow(sin(theta), 2)/2;
-    auto [dxdxi_1, dxdxi_2, dydxi_1, dydxi_2] = Lagrange::TransfiniteQuadMetrics(xi_1, xi_2, chi);
-    arma::mat d2xdxi_12     = D1*dxdxi_1;
-    arma::mat d2xdxi_1dxi_2 = dxdxi_1*D2.t();
-    arma::mat d2xdxi_22     = dxdxi_2*D2.t();
-    arma::mat d2ydxi_12     = D1*dydxi_1;
-    arma::mat d2ydxi_1dxi_2 = D1*dydxi_2;
-    arma::mat d2ydxi_22     = dydxi_2*D2.t();
+    arma::vec scT = sT%cT;
+    arma::vec c2T = pow(cT, 2)/2;
+    arma::vec s2T = pow(sT, 2)/2;
+    auto [J11, J12, J21, J22] = Lagrange::TransfiniteQuadMetrics(xi_1, xi_2, chi);
+    arma::mat dJ11dxi_1 = D1*J11;
+    arma::mat dJ11dxi_2 = J11*D2.t();
+    arma::mat dJ12dxi_1 = dJ11dxi_2;
+    arma::mat dJ12dxi_2 = J12*D2.t();
+    arma::mat dJ21dxi_1 = D1*J21;
+    arma::mat dJ22dxi_1 = D1*J22;
+    arma::mat dJ22dxi_2 = J22*D2.t();
+    arma::mat dJ21dxi_2 = dJ22dxi_1;
     switch (analysis)
     {
         case Analysis::linear:
@@ -191,52 +174,42 @@ void Wing::aerodynamicMatrix()
             #pragma omp parallel for reduction(+:A)
             for (size_t j = 1; j < ny-1; j++) // Loop over Collocation Points in 2-direction
             {
-                double y_lower = std::max(-1., xi_2(j)-0.2);
-                double y_upper = std::min(xi_2(j)+0.2, 1.);
+                double y_lower = std::max(-1., xi_2(j)-delta/2);
+                double y_upper = std::min(xi_2(j)+delta/2, 1.);
                 for (size_t i = 1; i < nx-1; i++) // Loop over Collocation Points in 1-direction
                 {
-                    double x_left  = std::max(-1., xi_1(i)-0.2);
-                    double x_right = std::min(xi_1(i)+0.2, 1.);
+                    double x_left  = std::max(-1., xi_1(i)-delta/2);
+                    double x_right = std::min(xi_1(i)+delta/2, 1.);
 
-                    dxdxi_1(i, j) *= (x_right - x_left)/2;
-                    dydxi_1(i, j) *= (x_right - x_left)/2;
-                    dxdxi_2(i, j) *= (y_upper - y_lower)/2;
-                    dydxi_2(i, j) *= (y_upper - y_lower)/2;
+                    arma::vec::fixed<2> dXdxi_1 = {J11(i, j), J21(i, j)};
+                    arma::vec::fixed<2> dXdxi_2 = {J12(i, j), J22(i, j)};
+                    arma::vec::fixed<2> d2Xdxi_12     = {dJ11dxi_1(i, j), dJ21dxi_1(i, j)};
+                    arma::vec::fixed<2> d2Xdxi_1dxi_2 = {dJ11dxi_2(i, j), dJ22dxi_1(i, j)};
+                    arma::vec::fixed<2> d2Xdxi_22     = {dJ12dxi_2(i, j), dJ22dxi_2(i, j)};
 
-                    d2xdxi_1dxi_2(i, j) *= (x_right - x_left)*(y_upper - y_lower)/4;
-                    d2ydxi_1dxi_2(i, j) *= (x_right - x_left)*(y_upper - y_lower)/4;
-
-                    d2xdxi_12(i, j) *= pow(x_right - x_left,  2)/4;
-                    d2ydxi_12(i, j) *= pow(x_right - x_left,  2)/4;
-                    d2xdxi_22(i, j) *= pow(y_upper - y_lower, 2)/4;
-                    d2ydxi_22(i, j) *= pow(y_upper - y_lower, 2)/4;
-
-                    arma::vec::fixed<2> dXdxi_1 = {dxdxi_1(i, j), dydxi_1(i, j)};
-                    arma::vec::fixed<2> dXdxi_2 = {dxdxi_2(i, j), dydxi_2(i, j)};
-                    arma::vec::fixed<2> d2Xdxi_12     = {d2xdxi_12(i, j),     d2ydxi_12(i, j)};
-                    arma::vec::fixed<2> d2Xdxi_1dxi_2 = {d2xdxi_1dxi_2(i, j), d2ydxi_1dxi_2(i, j)};
-                    arma::vec::fixed<2> d2Xdxi_22     = {d2xdxi_22(i, j),     d2ydxi_22(i, j)};
-
-                    arma::vec rho_tilde = externalContour(2*(xi_1(i)-x_left)/(x_right-x_left)-1, 2*(xi_2(j)-y_lower)/(y_upper-y_lower)-1, theta);
+                    arma::vec rho_tilde = externalContour(x_left, x_right, y_lower, y_upper, xi_1(i), xi_2(j), theta);
 
                     size_t k = i+j*nx;
+                    double d2T2   = 0;
+                    double d2T2p1 = 0;
                     for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                     {
-                        double d2T2 = q<2 ? 0 : q/4.*((q+1)*boost::math::chebyshev_t(q-2, xi_2(j)) - 2*q*T2(j, q) + (q-1)*boost::math::chebyshev_t(q+2, xi_2(j)))/pow(1-pow(xi_2(j), 2), 2);
+                        double d2T1   = 0;
+                        double d2T1p1 = 0;
                         for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                         {
-                            double d2T1 = p<2 ? 0 : p/4.*((p+1)*boost::math::chebyshev_t(p-2, xi_1(i)) - 2*p*T1(i, p) + (p-1)*boost::math::chebyshev_t(p+2, xi_1(i)))/pow(1-pow(xi_1(i), 2), 2);
-                            double T_1  = dT1(i, p) *  T2(j, q);
-                            double T_2  =  T1(i, p) * dT2(j, q);
-                            double T_11 =      d2T1 *  T2(j, q);
-                            double T_12 = dT1(i, p) * dT2(j, q);
-                            double T_22 =  T1(i, p) * d2T2;
-                            double gammax =-(dxdxi_2(i, j)*T_1 - dxdxi_1(i, j)*T_2);
-                            double gammay =-(dydxi_2(i, j)*T_1 - dydxi_1(i, j)*T_2);
-                            double dgammaxdxi_1 =-(d2xdxi_1dxi_2(i, j)*T_1 - d2xdxi_12(i, j)*T_2 + dxdxi_2(i, j)*T_11 - dxdxi_1(i, j)*T_12);
-                            double dgammaxdxi_2 =-(d2xdxi_22(i, j)*T_1 - d2xdxi_1dxi_2(i, j)*T_2 + dxdxi_2(i, j)*T_12 - dxdxi_1(i, j)*T_22);
-                            double dgammaydxi_1 =-(d2ydxi_1dxi_2(i, j)*T_1 - d2ydxi_12(i, j)*T_2 + dydxi_2(i, j)*T_11 - dydxi_1(i, j)*T_12);
-                            double dgammaydxi_2 =-(d2ydxi_22(i, j)*T_1 - d2ydxi_1dxi_2(i, j)*T_2 + dydxi_2(i, j)*T_12 - dydxi_1(i, j)*T_22);
+                            double m1  = dT1(i, p) *  T2(j, q);
+                            double m2  =  T1(i, p) * dT2(j, q);
+                            double m11 =      d2T1 *  T2(j, q);
+                            double m12 = dT1(i, p) * dT2(j, q);
+                            double m22 =  T1(i, p) * d2T2;
+
+                            double gammax = J11(i, j)*m2 - J12(i, j)*m1;
+                            double gammay = J21(i, j)*m2 - J22(i, j)*m1;
+                            double dgammaxdxi_1 = dJ11dxi_1(i, j)*m2 - dJ12dxi_1(i, j)*m1 - J12(i, j)*m11 + J11(i, j)*m12;
+                            double dgammaxdxi_2 = dJ11dxi_2(i, j)*m2 - dJ12dxi_2(i, j)*m1 - J12(i, j)*m12 + J11(i, j)*m22;
+                            double dgammaydxi_1 = dJ21dxi_1(i, j)*m2 - dJ22dxi_1(i, j)*m1 - J22(i, j)*m11 + J21(i, j)*m12;
+                            double dgammaydxi_2 = dJ21dxi_2(i, j)*m2 - dJ22dxi_2(i, j)*m1 - J22(i, j)*m12 + J21(i, j)*m22;
                             arma::vec gamma_1x = dgammaxdxi_1*cT + dgammaxdxi_2*sT;
                             arma::vec gamma_1y = dgammaydxi_1*cT + dgammaydxi_2*sT;
                             double I0  = 0;
@@ -256,28 +229,30 @@ void Wing::aerodynamicMatrix()
                                 double F0  = gammax*c2(1) - gammay*c2(0) + gamma_1x(n)*c1(1) - gamma_1y(n)*c1(0);
                                 double F1  = gammax*c3(1) - gammay*c3(0) + gamma_1x(n)*c2(1) - gamma_1y(n)*c2(0);
                                 double F2  =                               gamma_1x(n)*c3(1) - gamma_1y(n)*c3(0);
-
-                                double I_r = 0;
-                                for (size_t m = 0; m < m_rho; m++)
-                                {
-                                    double rho = rho_tilde(n)/2*(1 - gl_rho[m].x());
-                                    I_r += gl_rho[m].weight * (F0 + F1*rho + F2*pow(rho, 2));
-                                }
-                                I_r *= rho_tilde(n)/2;
-                                I0  += I_r;
+                                I0  += F0*rho_tilde(n) + F1*pow(rho_tilde(n), 2)/2 + F2*pow(rho_tilde(n), 3)/3;
                                 I_1 += F_1*log(fabs(rho_tilde(n)*A_abs));
                             }
-                            A(k, p+q*nx) = dtheta*(I0 + I_1) * (x_right-x_left)*(y_upper-y_lower)/4;
+                            A(k, p+q*nx) = dtheta*(I0 + I_1);
+                            std::swap(d2T1, d2T1p1);
+                            if (p == 0)
+                                d2T1p1 = 4;
+                            else if (p < nx-1)
+                                d2T1p1 = (p+2)*(2*dT1(i, p+1) + d2T1p1/p);
                         }
+                        std::swap(d2T2, d2T2p1);
+                        if (q == 0)
+                            d2T2p1 = 4;
+                        else if (q < ny-1)
+                            d2T2p1 = (q+2)*(2*dT2(j, q+1) + d2T2p1/q);
                     }
                     if (y_lower > -1)
-                        regularIntegralLinear(k, xC(i, j), yC(i, j),    i+2,    j+2, -1, x_right, -1, y_lower);
+                        regularIntegralLinear(k, xC(i, j), yC(i, j), std::ceil((x_right+1)/2*nx), std::ceil((y_lower+1)/2*ny), -1, x_right, -1, y_lower);
                     if (y_upper < 1)
-                        regularIntegralLinear(k, xC(i, j), yC(i, j), nx-i+2, ny-j+2,  x_left,  1, y_upper,  1);
+                        regularIntegralLinear(k, xC(i, j), yC(i, j), std::ceil((1-x_left )/2*nx), std::ceil((1-y_upper)/2*ny),  x_left,  1, y_upper,  1);
                     if (x_left > -1)
-                        regularIntegralLinear(k, xC(i, j), yC(i, j),    i+2, ny-j+2, -1,  x_left, y_lower,  1);
+                        regularIntegralLinear(k, xC(i, j), yC(i, j), std::ceil((x_left+1 )/2*nx), std::ceil((1-y_lower)/2*ny), -1,  x_left, y_lower,  1);
                     if (x_right < 1)
-                        regularIntegralLinear(k, xC(i, j), yC(i, j), nx-i+2,    j+2, x_right,  1, -1, y_upper);
+                        regularIntegralLinear(k, xC(i, j), yC(i, j), std::ceil((1-x_right)/2*nx), std::ceil((y_upper+1)/2*ny), x_right,  1, -1, y_upper);
                 }
             }
             for (const Wake* w:wakes)
@@ -285,7 +260,7 @@ void Wing::aerodynamicMatrix()
                     if (chi[c] == w->chi)
                     {
                         std::vector<fastgl::QuadPair> gl_x_w(nx), gl_y_w(ny);
-                        arma::vec x1_gl_w(nx), x2_gl_w(ny);
+                        arma::vec x1_gl_w(nx, arma::fill::none), x2_gl_w(ny, arma::fill::none);
                         for (size_t ii = 0; ii < nx; ii++)
                         {
                             gl_x_w[ii] = fastgl::GLPair(nx, ii+1);
@@ -404,7 +379,7 @@ void Wing::aerodynamicMatrix()
             if (sym == Symmetry::y)
             {
                 std::vector<fastgl::QuadPair> gl_1(nx), gl_2(ny);
-                arma::vec x1_gl(nx), x2_gl(ny);
+                arma::vec x1_gl(nx, arma::fill::none), x2_gl(ny, arma::fill::none);
                 for (size_t ii = 0; ii < nx; ii++)
                 {
                     gl_1[ii] = fastgl::GLPair(nx, ii+1);
@@ -453,23 +428,15 @@ void Wing::aerodynamicMatrix()
                                 std::swap(t1, t1p1); // Swap order so the oldes Chebyshev Polynomial will be overwritten
                                 t1p1 = boost::math::chebyshev_next(x1_gl(ii), t1, t1p1); // Calculate next Chebyshev Polynomial
 
-                                double dt1m1 = dt1;
                                 std::swap(dt1, dt1p1);
-                                if (p == 0)
-                                    dt1p1 = 4*x1_gl(ii);
-                                else
-                                    dt1p1 = (p+2)*(2*t1 + dt1m1/p);
+                                dt1p1 = (p == 0) ? 4*x1_gl(ii) : (p+2)*(2*t1 + dt1p1/p);
                             }
                         }
                         std::swap(t2, t2p1); // Swap order so the oldest Chebyshev Polynomial will be overwritten
                         t2p1 = boost::math::chebyshev_next(x2_gl(jj), t2, t2p1); // Calculate next Chebyshev Polynomial
 
-                        double dt2m1 = dt2;
                         std::swap(dt2, dt2p1);
-                        if (q == 0)
-                            dt2p1 = 4*x2_gl(jj);
-                        else
-                            dt2p1 = (q+2)*(2*t2 + dt2m1/q);
+                        dt2p1 = (q == 0) ? 4*x2_gl(jj) : (q+2)*(2*t2 + dt2p1/q);
                     }
                 }
                 for (const Wake* w:wakes)
@@ -477,7 +444,7 @@ void Wing::aerodynamicMatrix()
                         if (chi[c] == w->chi)
                         {
                             std::vector<fastgl::QuadPair> gl_x(nx), gl_y(ny);
-                            arma::vec x1_gl_w(nx), x2_gl_w(ny);
+                            arma::vec x1_gl_w(nx, arma::fill::none), x2_gl_w(ny, arma::fill::none);
                             for (size_t ii = 0; ii < nx; ii++)
                             {
                                 gl_x[ii] = fastgl::GLPair(nx, ii+1);
@@ -613,91 +580,62 @@ void Wing::aerodynamicMatrix()
             #pragma omp parallel for reduction(+:A)
             for (size_t j = 1; j < ny-1; j++) // Loop over Collocation Points in 2-direction
             {
-                double y_lower = std::max(-1., xi_2(j)-0.2);
-                double y_upper = std::min(xi_2(j)+0.2, 1.);
+                double y_lower = std::max(-1., xi_2(j)-delta/2);
+                double y_upper = std::min(xi_2(j)+delta/2, 1.);
                 for (size_t i = 1; i < nx-1; i++) // Loop over Collocation Points in 1-direction
                 {
-                    double x_left  = std::max(-1., xi_1(i)-0.2);
-                    double x_right = std::min(xi_1(i)+0.2, 1.);
+                    double x_left  = std::max(-1., xi_1(i)-delta/2);
+                    double x_right = std::min(xi_1(i)+delta/2, 1.);
 
-                    dxdxi_1(i, j) *= (x_right - x_left)/2;
-                    dydxi_1(i, j) *= (x_right - x_left)/2;
-                    dzdxi_1(i, j) *= (x_right - x_left)/2;
-                    dxdxi_2(i, j) *= (y_upper - y_lower)/2;
-                    dydxi_2(i, j) *= (y_upper - y_lower)/2;
-                    dzdxi_2(i, j) *= (y_upper - y_lower)/2;
+                    arma::vec::fixed<3> dXdxi_1       = {J11(i, j), J21(i, j), dzdxi_1(i, j)};
+                    arma::vec::fixed<3> dXdxi_2       = {J12(i, j), J22(i, j), dzdxi_2(i, j)};
+                    arma::vec::fixed<3> d2Xdxi_12     = {dJ11dxi_1(i, j), dJ21dxi_1(i, j), d2zdxi_12(i, j)};
+                    arma::vec::fixed<3> d2Xdxi_1dxi_2 = {dJ11dxi_2(i, j), dJ22dxi_1(i, j), d2zdxi_1dxi_2(i, j)};
+                    arma::vec::fixed<3> d2Xdxi_22     = {dJ12dxi_2(i, j), dJ22dxi_2(i, j), d2zdxi_22(i, j)};
 
-                    d2xdxi_1dxi_2(i, j) *= (x_right - x_left)*(y_upper - y_lower)/4;
-                    d2ydxi_1dxi_2(i, j) *= (x_right - x_left)*(y_upper - y_lower)/4;
-                    d2zdxi_1dxi_2(i, j) *= (x_right - x_left)*(y_upper - y_lower)/4;
-
-                    d2xdxi_12(i, j) *= pow(x_right - x_left,  2)/4;
-                    d2ydxi_12(i, j) *= pow(x_right - x_left,  2)/4;
-                    d2zdxi_12(i, j) *= pow(x_right - x_left,  2)/4;
-                    d2xdxi_22(i, j) *= pow(y_upper - y_lower, 2)/4;
-                    d2ydxi_22(i, j) *= pow(y_upper - y_lower, 2)/4;
-                    d2zdxi_22(i, j) *= pow(y_upper - y_lower, 2)/4;
-
-                    dnxdxi_1(i, j) *= (x_right - x_left)/2;
-                    dnxdxi_2(i, j) *= (y_upper - y_lower)/2;
-                    dnydxi_1(i, j) *= (x_right - x_left)/2;
-                    dnydxi_2(i, j) *= (y_upper - y_lower)/2;
-                    dnzdxi_1(i, j) *= (x_right - x_left)/2;
-                    dnzdxi_2(i, j) *= (y_upper - y_lower)/2;
-
-                    arma::vec::fixed<3> dXdxi_1 = {dxdxi_1(i, j), dydxi_1(i, j), dzdxi_1(i, j)};
-                    arma::vec::fixed<3> dXdxi_2 = {dxdxi_2(i, j), dydxi_2(i, j), dzdxi_2(i, j)};
-                    arma::vec::fixed<3> d2Xdxi_12 = {d2xdxi_12(i, j), d2ydxi_12(i, j), d2zdxi_12(i, j)};
-                    arma::vec::fixed<3> d2Xdxi_1dxi_2 = {d2xdxi_1dxi_2(i, j), d2ydxi_1dxi_2(i, j), d2zdxi_1dxi_2(i, j)};
-                    arma::vec::fixed<3> d2Xdxi_22 = {d2xdxi_22(i, j), d2ydxi_22(i, j), d2zdxi_22(i, j)};
-
-                    arma::vec rho_tilde = externalContour(2*(xi_1(i)-x_left)/(x_right-x_left)-1, 2*(xi_2(j)-y_lower)/(y_upper-y_lower)-1, theta); 
+                    arma::vec rho_tilde = externalContour(x_left, x_right, y_lower, y_upper, xi_1(i), xi_2(j), theta); 
 
                     size_t k = i+j*nx;
+                    double d2T2   = 0;
+                    double d2T2p1 = 0;
                     for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                     {
-                        double d2T2 = q<2 ? 0 : q/4.*((q+1)*boost::math::chebyshev_t(q-2, xi_2(j)) - 2*q*T2(j, q) + (q-1)*boost::math::chebyshev_t(q+2, xi_2(j)))/pow(1-pow(xi_2(j), 2), 2);
+                        double d2T1   = 0;
+                        double d2T1p1 = 0;
                         for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                         {
-                            double d2T1 = p<2 ? 0 : p/4.*((p+1)*boost::math::chebyshev_t(p-2, xi_1(i)) - 2*p*T1(i, p) + (p-1)*boost::math::chebyshev_t(p+2, xi_1(i)))/pow(1-pow(xi_1(i), 2), 2);
-                            double T_1  = dT1(i, p) *  T2(j, q);
-                            double T_2  =  T1(i, p) * dT2(j, q);
-                            double T_11 =      d2T1 *  T2(j, q);
-                            double T_12 = dT1(i, p) * dT2(j, q);
-                            double T_22 =  T1(i, p) * d2T2;
-                            double dmudx = (dydxi_2(i, j)*nC(k, 2) - nC(k, 1)*dzdxi_2(i, j))*T_1
-                                         - (dydxi_1(i, j)*nC(k, 2) - nC(k, 1)*dzdxi_1(i, j))*T_2;
-                            double dmudy = (dxdxi_1(i, j)*nC(k, 2) - nC(k, 0)*dzdxi_1(i, j))*T_2
-                                         - (dxdxi_2(i, j)*nC(k, 2) - nC(k, 0)*dzdxi_2(i, j))*T_1;
-                            double dmudz = (dxdxi_2(i, j)*nC(k, 1) - nC(k, 0)*dydxi_2(i, j))*T_1
-                                         - (dxdxi_1(i, j)*nC(k, 1) - nC(k, 0)*dydxi_1(i, j))*T_2;
+                            double m1  = dT1(i, p) *  T2(j, q);
+                            double m2  =  T1(i, p) * dT2(j, q);
+                            double m11 =      d2T1 *  T2(j, q);
+                            double m12 = dT1(i, p) * dT2(j, q);
+                            double m22 =  T1(i, p) * d2T2;
+                            double dmudx = (J22(i, j)*nC(k, 2) - nC(k, 1)*dzdxi_2(i, j))*m1
+                                         - (J21(i, j)*nC(k, 2) - nC(k, 1)*dzdxi_1(i, j))*m2;
+                            double dmudy = (J11(i, j)*nC(k, 2) - nC(k, 0)*dzdxi_1(i, j))*m2
+                                         - (J12(i, j)*nC(k, 2) - nC(k, 0)*dzdxi_2(i, j))*m1;
+                            double dmudz = (J12(i, j)*nC(k, 1) - nC(k, 0)*J22(i, j))*m1
+                                         - (J11(i, j)*nC(k, 1) - nC(k, 0)*J21(i, j))*m2;
                             arma::vec::fixed<3> gamma_0 = {dmudy*nC(k, 2) - dmudz*nC(k, 1),
                                                            dmudz*nC(k, 0) - dmudx*nC(k, 2),
                                                            dmudx*nC(k, 1) - dmudy*nC(k, 0)};
-                            double dmudxdxi_1 = (dydxi_2(i, j)*nC(k, 2) - nC(k, 1)*dzdxi_2(i, j))*T_11
-                                              + (d2ydxi_1dxi_2(i, j)*nC(k, 2) + dydxi_2(i, j)*dnzdxi_1(i, j) - dnydxi_1(i, j)*dzdxi_2(i, j) - nC(k, 1)*d2zdxi_1dxi_2(i, j))*T_1
-                                              - (dydxi_1(i, j)*nC(k, 2) - nC(k, 1)*dzdxi_1(i, j))*T_12
-                                              - (d2ydxi_12(i, j)*nC(k, 2) + dydxi_1(i, j)*dnzdxi_1(i, j) - dnydxi_1(i, j)*dzdxi_1(i, j) - nC(k, 1)*d2zdxi_12(i, j))*T_2;
-                            double dmudxdxi_2 = (dydxi_2(i, j)*nC(k, 2) - nC(k, 1)*dzdxi_2(i, j))*T_12
-                                              + (d2ydxi_22(i, j)*nC(k, 2) + dydxi_2(i, j)*dnzdxi_2(i, j) - dnydxi_2(i, j)*dzdxi_2(i, j) - nC(k, 1)*d2zdxi_22(i, j))*T_1
-                                              - (dydxi_1(i, j)*nC(k, 2) - nC(k, 1)*dzdxi_1(i, j))*T_22
-                                              - (d2ydxi_1dxi_2(i, j)*nC(k, 2) + dydxi_1(i, j)*dnzdxi_2(i, j) - dnydxi_2(i, j)*dzdxi_1(i, j) - nC(k, 1)*d2zdxi_1dxi_2(i, j))*T_2;
-                            double dmudydxi_1 = (dxdxi_1(i, j)*nC(k, 2) - nC(k, 0)*dzdxi_1(i, j))*T_12
-                                              + (d2xdxi_12(i, j)*nC(k, 2) + dxdxi_1(i, j)*dnzdxi_1(i, j) - dnxdxi_1(i, j)*dzdxi_1(i, j) - nC(k, 0)*d2zdxi_12(i, j))*T_2
-                                              - (dxdxi_2(i, j)*nC(k, 2) - nC(k, 0)*dzdxi_2(i, j))*T_11
-                                              - (d2xdxi_1dxi_2(i, j)*nC(k, 2) + dxdxi_2(i, j)*dnzdxi_1(i, j) - dnxdxi_1(i, j)*dzdxi_2(i, j) - nC(k, 0)*d2zdxi_1dxi_2(i, j))*T_1;
-                            double dmudydxi_2 = (dxdxi_1(i, j)*nC(k, 2) - nC(k, 0)*dzdxi_1(i, j))*T_22
-                                              + (d2xdxi_1dxi_2(i, j)*nC(k, 2) + dxdxi_1(i, j)*dnzdxi_2(i, j) - dnxdxi_2(i, j)*dzdxi_1(i, j) - nC(k, 0)*d2zdxi_1dxi_2(i, j))*T_2
-                                              - (dxdxi_2(i, j)*nC(k, 2) - nC(k, 0)*dzdxi_2(i, j))*T_12
-                                              - (d2xdxi_22(i, j)*nC(k, 2) + dxdxi_2(i, j)*dnzdxi_2(i, j) - dnxdxi_2(i, j)*dzdxi_2(i, j) - nC(k, 0)*d2zdxi_22(i, j))*T_1;
-                            double dmudzdxi_1 = (dxdxi_2(i, j)*nC(k, 1) - nC(k, 0)*dydxi_2(i, j))*T_11
-                                              + (d2xdxi_1dxi_2(i, j)*nC(k, 1) + dxdxi_2(i, j)*dnydxi_1(i, j) - dnxdxi_1(i, j)*dydxi_2(i, j) - nC(k, 0)*d2ydxi_1dxi_2(i, j))*T_1
-                                              - (dxdxi_1(i, j)*nC(k, 1) - nC(k, 0)*dydxi_1(i, j))*T_12
-                                              - (d2xdxi_12(i, j)*nC(k, 1) + dxdxi_1(i, j)*dnydxi_1(i, j) - dnxdxi_1(i, j)*dydxi_1(i, j) - nC(k, 0)*d2ydxi_12(i, j))*T_2;
-                            double dmudzdxi_2 = (dxdxi_2(i, j)*nC(k, 1) - nC(k, 0)*dydxi_2(i, j))*T_12
-                                              + (d2xdxi_22(i, j)*nC(k, 1) + dxdxi_2(i, j)*dnydxi_2(i, j) - dnxdxi_2(i, j)*dydxi_2(i, j) - nC(k, 0)*d2ydxi_22(i, j))*T_1
-                                              - (dxdxi_1(i, j)*nC(k, 1) - nC(k, 0)*dydxi_1(i, j))*T_22
-                                              - (d2xdxi_1dxi_2(i, j)*nC(k, 1) + dxdxi_1(i, j)*dnydxi_2(i, j) - dnxdxi_2(i, j)*dydxi_1(i, j) - nC(k, 0)*d2ydxi_1dxi_2(i, j))*T_2;
+                            double dmudxdxi_1 = (J22(i, j)*nC(k, 2) - nC(k, 1)*dzdxi_2(i, j))*m11 - (J21(i, j)*nC(k, 2) - nC(k, 1)*dzdxi_1(i, j))*m12
+                                              + (dJ22dxi_1(i, j)*nC(k, 2) + J22(i, j)*dnzdxi_1(i, j) - dnydxi_1(i, j)*dzdxi_2(i, j) - nC(k, 1)*d2zdxi_1dxi_2(i, j))*m1
+                                              - (dJ21dxi_1(i, j)*nC(k, 2) + J21(i, j)*dnzdxi_1(i, j) - dnydxi_1(i, j)*dzdxi_1(i, j) - nC(k, 1)*d2zdxi_12(i, j))*m2;
+                            double dmudxdxi_2 = (J22(i, j)*nC(k, 2) - nC(k, 1)*dzdxi_2(i, j))*m12 - (J21(i, j)*nC(k, 2) - nC(k, 1)*dzdxi_1(i, j))*m22
+                                              + (dJ22dxi_2(i, j)*nC(k, 2) + J22(i, j)*dnzdxi_2(i, j) - dnydxi_2(i, j)*dzdxi_2(i, j) - nC(k, 1)*d2zdxi_22(i, j))*m1
+                                              - (dJ22dxi_1(i, j)*nC(k, 2) + J21(i, j)*dnzdxi_2(i, j) - dnydxi_2(i, j)*dzdxi_1(i, j) - nC(k, 1)*d2zdxi_1dxi_2(i, j))*m2;
+                            double dmudydxi_1 = (J11(i, j)*nC(k, 2) - nC(k, 0)*dzdxi_1(i, j))*m12 - (J12(i, j)*nC(k, 2) - nC(k, 0)*dzdxi_2(i, j))*m11
+                                              + (dJ11dxi_1(i, j)*nC(k, 2) + J11(i, j)*dnzdxi_1(i, j) - dnxdxi_1(i, j)*dzdxi_1(i, j) - nC(k, 0)*d2zdxi_12(i, j))*m2
+                                              - (dJ11dxi_2(i, j)*nC(k, 2) + J12(i, j)*dnzdxi_1(i, j) - dnxdxi_1(i, j)*dzdxi_2(i, j) - nC(k, 0)*d2zdxi_1dxi_2(i, j))*m1;
+                            double dmudydxi_2 = (J11(i, j)*nC(k, 2) - nC(k, 0)*dzdxi_1(i, j))*m22 - (J12(i, j)*nC(k, 2) - nC(k, 0)*dzdxi_2(i, j))*m12
+                                              + (dJ11dxi_2(i, j)*nC(k, 2) + J11(i, j)*dnzdxi_2(i, j) - dnxdxi_2(i, j)*dzdxi_1(i, j) - nC(k, 0)*d2zdxi_1dxi_2(i, j))*m2
+                                              - (dJ12dxi_2(i, j)*nC(k, 2) + J12(i, j)*dnzdxi_2(i, j) - dnxdxi_2(i, j)*dzdxi_2(i, j) - nC(k, 0)*d2zdxi_22(i, j))*m1;
+                            double dmudzdxi_1 = (J12(i, j)*nC(k, 1) - nC(k, 0)*J22(i, j))*m11 - (J11(i, j)*nC(k, 1) - nC(k, 0)*J21(i, j))*m12
+                                              + (dJ11dxi_2(i, j)*nC(k, 1) + J12(i, j)*dnydxi_1(i, j) - dnxdxi_1(i, j)*J22(i, j) - nC(k, 0)*dJ22dxi_1(i, j))*m1
+                                              - (dJ11dxi_1(i, j)*nC(k, 1) + J11(i, j)*dnydxi_1(i, j) - dnxdxi_1(i, j)*J21(i, j) - nC(k, 0)*dJ21dxi_1(i, j))*m2;
+                            double dmudzdxi_2 = (J12(i, j)*nC(k, 1) - nC(k, 0)*J22(i, j))*m12 - (J11(i, j)*nC(k, 1) - nC(k, 0)*J21(i, j))*m22
+                                              + (dJ12dxi_2(i, j)*nC(k, 1) + J12(i, j)*dnydxi_2(i, j) - dnxdxi_2(i, j)*J22(i, j) - nC(k, 0)*dJ22dxi_2(i, j))*m1
+                                              - (dJ11dxi_2(i, j)*nC(k, 1) + J11(i, j)*dnydxi_2(i, j) - dnxdxi_2(i, j)*J21(i, j) - nC(k, 0)*dJ22dxi_1(i, j))*m2;
                             arma::vec::fixed<3> gamma_1_1 = {dmudydxi_1*nC(k, 2) + dmudy*dnzdxi_1(i, j) - dmudzdxi_1*nC(k, 1) - dmudz*dnydxi_1(i, j),
                                                              dmudzdxi_1*nC(k, 0) + dmudz*dnxdxi_1(i, j) - dmudxdxi_1*nC(k, 2) - dmudx*dnzdxi_1(i, j),
                                                              dmudxdxi_1*nC(k, 1) + dmudx*dnydxi_1(i, j) - dmudydxi_1*nC(k, 0) - dmudy*dnxdxi_1(i, j)};
@@ -705,9 +643,7 @@ void Wing::aerodynamicMatrix()
                                                              dmudzdxi_2*nC(k, 0) + dmudz*dnxdxi_2(i, j) - dmudxdxi_2*nC(k, 2) - dmudx*dnzdxi_2(i, j),
                                                              dmudxdxi_2*nC(k, 1) + dmudx*dnydxi_2(i, j) - dmudydxi_2*nC(k, 0) - dmudy*dnxdxi_2(i, j)};
                             arma::mat gamma_1 = gamma_1_1*cT.t() + gamma_1_2*sT.t();
-                            arma::vec::fixed<3>  I0(arma::fill::zeros);
-                            arma::vec::fixed<3> I_1(arma::fill::zeros);
-                            arma::vec mu1 = T_1*cT + T_2*sT;
+                            arma::vec::fixed<3> I0(arma::fill::zeros), I_1(arma::fill::zeros);
                             for (size_t n = 0; n < n_theta-1; n++)
                             {
                                 arma::vec::fixed<3> A_t = dXdxi_1*cT(n) + dXdxi_2*sT(n);
@@ -723,29 +659,31 @@ void Wing::aerodynamicMatrix()
                                 arma::vec::fixed<3> F0  = cross(gamma_0, c2) + cross(gamma_1.col(n), c1);
                                 arma::vec::fixed<3> F1  = cross(gamma_0, c3) + cross(gamma_1.col(n), c2);
                                 arma::vec::fixed<3> F2  =                      cross(gamma_1.col(n), c3);
-
-                                arma::vec::fixed<3> I_r(arma::fill::zeros);
-                                for (size_t m = 0; m < m_rho; m++)
-                                {
-                                    double rho = rho_tilde(n)*(1 - gl_rho[m].x())/2;
-                                    I_r += gl_rho[m].weight * (F0 + F1*rho + F2*pow(rho, 2));
-                                }
-                                I_r *= rho_tilde(n)/2;
-                                I0  += I_r;
+                                I0  += F0*rho_tilde(n) + F1*pow(rho_tilde(n), 2)/2 + F2*pow(rho_tilde(n), 3)/3;
                                 I_1 += F_1*log(fabs(rho_tilde(n)*A_abs));
                             }
                             arma::vec::fixed<3> q_mu = dtheta*(I0 + I_1);
-                            A(k, p+q*nx) = dot(q_mu, nC.row(k)) * (x_right-x_left)*(y_upper-y_lower)/4;
+                            A(k, p+q*nx) = dot(q_mu, nC.row(k));
+                            std::swap(d2T1, d2T1p1);
+                            if (p == 0)
+                                d2T1p1 = 4;
+                            else if (p < nx-1)
+                                d2T1p1 = (p+2)*(2*dT1(i, p+1) + d2T1p1/p);
                         }
+                        std::swap(d2T2, d2T2p1);
+                        if (q == 0)
+                            d2T2p1 = 4;
+                        else if (q < ny-1)
+                            d2T2p1 = (q+2)*(2*dT2(j, q+1) + d2T2p1/q);
                     }
                     if (y_lower > -1)
-                        regularIntegralNonlinear(k, xC(i, j), yC(i, j), zC(i, j),    i+2,    j+2, -1, x_right, -1, y_lower);
+                        regularIntegralNonlinear(k, xC(i, j), yC(i, j), zC(i, j), std::ceil((x_right+1)/2*nx), std::ceil((y_lower+1)/2*ny), -1, x_right, -1, y_lower);
                     if (y_upper < 1)
-                        regularIntegralNonlinear(k, xC(i, j), yC(i, j), zC(i, j), nx-i+2, ny-j+2,  x_left,  1, y_upper,  1);
+                        regularIntegralNonlinear(k, xC(i, j), yC(i, j), zC(i, j), std::ceil((1-x_left )/2*nx), std::ceil((1-y_upper)/2*ny),  x_left,  1, y_upper,  1);
                     if (x_left > -1)
-                        regularIntegralNonlinear(k, xC(i, j), yC(i, j), zC(i, j),    i+2, ny-j+2, -1,  x_left, y_lower,  1);
+                        regularIntegralNonlinear(k, xC(i, j), yC(i, j), zC(i, j), std::ceil((x_left+1 )/2*nx), std::ceil((1-y_lower)/2*ny), -1,  x_left, y_lower,  1);
                     if (x_right < 1)
-                        regularIntegralNonlinear(k, xC(i, j), yC(i, j), zC(i, j), nx-i+2,    j+2, x_right,  1, -1, y_upper);
+                        regularIntegralNonlinear(k, xC(i, j), yC(i, j), zC(i, j), std::ceil((1-x_right)/2*nx), std::ceil((y_upper+1)/2*ny), x_right,  1, -1, y_upper);
                 }
             }
             for (const Wake* w:wakes)
@@ -753,7 +691,7 @@ void Wing::aerodynamicMatrix()
                     if (chi[c] == w->chi)
                     {
                         std::vector<fastgl::QuadPair> gl_x_w(nx), gl_y_w(ny);
-                        arma::vec x1_gl_w(nx), x2_gl_w(ny);
+                        arma::vec x1_gl_w(nx, arma::fill::none), x2_gl_w(ny, arma::fill::none);
                         for (size_t ii = 0; ii < nx; ii++)
                         {
                             gl_x_w[ii] = fastgl::GLPair(nx, ii+1);
@@ -998,7 +936,7 @@ void Wing::aerodynamicMatrix()
             if (sym == Symmetry::y)
             {
                 std::vector<fastgl::QuadPair> gl_x(nx), gl_y(ny);
-                arma::vec x1_gl(nx), x2_gl(ny);
+                arma::vec x1_gl(nx, arma::fill::none), x2_gl(ny, arma::fill::none);
                 for (size_t ii = 0; ii < nx; ii++)
                 {
                     gl_x[ii] = fastgl::GLPair(nx, ii+1);
@@ -1064,22 +1002,14 @@ void Wing::aerodynamicMatrix()
                                         std::swap(t1, t1p1);
                                         t1p1 = boost::math::chebyshev_next(x1_gl(ii), t1, t1p1);
 
-                                        double dt1m1 = dt1;
                                         std::swap(dt1, dt1p1);
-                                        if (p == 0)
-                                            dt1p1 = 4*x1_gl(ii);
-                                        else
-                                            dt1p1 = (p+2)*(2*t1 + dt1m1/p);
+                                        dt1p1 = (p == 0) ? 4*x1_gl(ii) : (p+2)*(2*t1 + dt1p1/p);
                                     }
                                     std::swap(t2, t2p1);
                                     t2p1 = boost::math::chebyshev_next(x2_gl(jj), t2, t2p1);
 
-                                    double dt2m1 = dt2;
                                     std::swap(dt2, dt2p1);
-                                    if (q == 0)
-                                        dt2p1 = 4*x2_gl(jj);
-                                    else
-                                        dt2p1 = (q+2)*(2*t2 + dt2m1/q);
+                                    dt2p1 = (q == 0) ? 4*x2_gl(jj) : (q+2)*(2*t2 + dt2p1/q);
                                 }
                             }
                 for (const Wake* w:wakes)
@@ -1087,7 +1017,7 @@ void Wing::aerodynamicMatrix()
                         if (chi[c] == w->chi)
                         {
                             std::vector<fastgl::QuadPair> gl_x_w(nx), gl_y_w(ny);
-                            arma::vec x1_gl_w(nx), x2_gl_w(ny);
+                            arma::vec x1_gl_w(nx, arma::fill::none), x2_gl_w(ny, arma::fill::none);
                             for (size_t ii = 0; ii < nx; ii++)
                             {
                                 gl_x_w[ii] = fastgl::GLPair(nx, ii+1);
