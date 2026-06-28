@@ -108,9 +108,9 @@ void Wing::regularIntegralNonlinear(size_t k, double xC, double yC, double zC, s
             arma::vec::fixed<3> n_gl = arma::vec::fixed<3>({dy_gldx1(ii, jj)*dz_gldx2(ii, jj)-dz_gldx1(ii, jj)*dy_gldx2(ii, jj),
                                                             dz_gldx1(ii, jj)*dx_gldx2(ii, jj)-dx_gldx1(ii, jj)*dz_gldx2(ii, jj),
                                                             dx_gldx1(ii, jj)*dy_gldx2(ii, jj)-dy_gldx1(ii, jj)*dx_gldx2(ii, jj)})/sqrt_a(ii, jj);
-            arma::mat::fixed<3, 2> J_red = {{dy_gldx2(ii, jj)*n_gl(2) - n_gl(1)*dz_gldx2(ii, jj),-(dy_gldx1(ii, jj)*n_gl(2) - n_gl(1)*dz_gldx1(ii, jj))},
-                                            {-(dx_gldx2(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx2(ii, jj)),dx_gldx1(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx1(ii, jj)},
-                                            {dx_gldx2(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx2(ii, jj),-(dx_gldx1(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx1(ii, jj))}};
+            arma::mat::fixed<3, 2> J_red = {{dy_gldx2(ii, jj)*n_gl(2) - n_gl(1)*dz_gldx2(ii, jj),n_gl(1)*dz_gldx1(ii, jj) - dy_gldx1(ii, jj)*n_gl(2)},
+                                            {n_gl(0)*dz_gldx2(ii, jj) - dx_gldx2(ii, jj)*n_gl(2),dx_gldx1(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx1(ii, jj)},
+                                            {dx_gldx2(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx2(ii, jj),n_gl(0)*dy_gldx1(ii, jj) - dx_gldx1(ii, jj)*n_gl(1)}};
             double t2   = 1; // First Chebyshev Polynomial (j)
             double t2p1 = x2_gl(jj); // Second Chebyshev Polynomial (j+1 -> jp1)
 
@@ -171,7 +171,7 @@ void Wing::aerodynamicMatrix()
     {
         case Analysis::linear:
         {
-            #pragma omp parallel for reduction(+:A)
+            #pragma omp parallel for
             for (size_t j = 1; j < ny-1; j++) // Loop over Collocation Points in 2-direction
             {
                 double y_lower = std::max(-1., xi_2(j)-delta/2);
@@ -230,7 +230,7 @@ void Wing::aerodynamicMatrix()
                                 double F1  = gammax*c3(1) - gammay*c3(0) + gamma_1x(n)*c2(1) - gamma_1y(n)*c2(0);
                                 double F2  =                               gamma_1x(n)*c3(1) - gamma_1y(n)*c3(0);
                                 I0  += F0*rho_tilde(n) + F1*pow(rho_tilde(n), 2)/2 + F2*pow(rho_tilde(n), 3)/3;
-                                I_1 += F_1*log(fabs(rho_tilde(n)*A_abs));
+                                I_1 += F_1*log(rho_tilde(n)*A_abs);
                             }
                             A(k, p+q*nx) = dtheta*(I0 + I_1);
                             std::swap(d2T1, d2T1p1);
@@ -395,7 +395,6 @@ void Wing::aerodynamicMatrix()
                 y_gl     =-y_gl;
                 dy_gldx1 =-dy_gldx1;
                 dy_gldx2 =-dy_gldx2;
-                #pragma omp parallel for reduction(+:A)
                 for (size_t jj = 0; jj < ny; jj++)
                 {
                     double t2   = 1; // First Chebyshev Polynomial (j)
@@ -416,6 +415,7 @@ void Wing::aerodynamicMatrix()
                             {
                                 double dmudx1 = dt1 *  t2;
                                 double dmudx2 =  t1 * dt2;
+                                #pragma omp parallel for default(shared)
                                 for (size_t j = 1; j < ny-1; j++) // Loop over Collocation Points in 2-direction
                                     for (size_t i = 1; i < nx-1; i++) // Loop over Collocation Points in 1-direction
                                     {
@@ -577,7 +577,7 @@ void Wing::aerodynamicMatrix()
             arma::mat dnydxi_2 = reshape(nC.col(1), nx, ny)*D2.t();
             arma::mat dnzdxi_1 = D1*reshape(nC.col(2), nx, ny);
             arma::mat dnzdxi_2 = reshape(nC.col(2), nx, ny)*D2.t();
-            #pragma omp parallel for reduction(+:A)
+            // #pragma omp parallel // This one does not work properly for some reason!
             for (size_t j = 1; j < ny-1; j++) // Loop over Collocation Points in 2-direction
             {
                 double y_lower = std::max(-1., xi_2(j)-delta/2);
@@ -654,13 +654,13 @@ void Wing::aerodynamicMatrix()
                                 double A5 = pow(A_abs, 5);
                                 arma::vec::fixed<3> c1 = A_t/A3;
                                 arma::vec::fixed<3> c2 = B_t/A3 - 3*A_t*C_t/A5;
-                                arma::vec::fixed<3> c3 = -3*B_t*C_t/A5;
+                                arma::vec::fixed<3> c3 =-3*B_t*C_t/A5;
                                 arma::vec::fixed<3> F_1 = cross(gamma_0, c1);
                                 arma::vec::fixed<3> F0  = cross(gamma_0, c2) + cross(gamma_1.col(n), c1);
                                 arma::vec::fixed<3> F1  = cross(gamma_0, c3) + cross(gamma_1.col(n), c2);
                                 arma::vec::fixed<3> F2  =                      cross(gamma_1.col(n), c3);
                                 I0  += F0*rho_tilde(n) + F1*pow(rho_tilde(n), 2)/2 + F2*pow(rho_tilde(n), 3)/3;
-                                I_1 += F_1*log(fabs(rho_tilde(n)*A_abs));
+                                I_1 += F_1*log(rho_tilde(n)*A_abs);
                             }
                             arma::vec::fixed<3> q_mu = dtheta*(I0 + I_1);
                             A(k, p+q*nx) = dot(q_mu, nC.row(k));
@@ -964,7 +964,7 @@ void Wing::aerodynamicMatrix()
                 arma::cube ec_gl  = MetricContra(e_c_gl);
                 arma::mat e_gl = e_c_gl.slice(0)%e_c_gl.slice(2) - pow(e_c_gl.slice(1), 2);
                 arma::mat sqrt_a = sqrt(e_gl%(1 + ec_gl.slice(0)%pow(dz_gldx1, 2) + 2*ec_gl.slice(1)%dz_gldx1%dz_gldx2 + ec_gl.slice(2)%pow(dz_gldx2, 2)));
-                #pragma omp parallel for reduction(+:A)
+                #pragma omp parallel for default(shared)
                 for (size_t j = 1; j < ny-1; j++) // Loop over Collocation Points in 2-direction
                     for (size_t i = 1; i < nx-1; i++) // Loop over Collocation Points in 1-direction
                         for (size_t ii = 0; ii < nx; ii++)

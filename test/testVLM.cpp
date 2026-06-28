@@ -30,15 +30,15 @@ int main()
             arma::vec cL = wing.get_lift()   / area;
             arma::vec cM = wing.get_moment() / area/c;
 
-            std::cout << "A  = "    << area   << '\n';
-            std::cout << "cL    = " << cL.t() << '\n';
-            std::cout << "cM    = " << cM.t() << '\n';
+            std::cout << "A  = " << area   << '\n';
+            std::cout << "cL = " << cL.t() << '\n';
+            std::cout << "cM = " << cM.t() << '\n';
 
             double a0 = arma::datum::tau;
             double cLalpha_A1 = a0/(1 + a0/arma::datum::pi/AR);
             double cLalpha_A2 = a0/(1 + 1.024*a0/arma::datum::pi/AR);
             double cLalpha_A3 = a0/(sqrt(1 + pow(a0/arma::datum::pi/AR, 2)) + a0/arma::datum::pi/AR);
-            double cLalpha = cL(0)/(5*arma::datum::pi/180);
+            double cLalpha    = cL(0)/(5*arma::datum::pi/180);
 
             std::cout << "cLalpha   = " << cLalpha   << '\n';
             std::cout << "cLalpha_A1 = " << cLalpha_A1 << '\n';

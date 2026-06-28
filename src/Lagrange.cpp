@@ -122,7 +122,7 @@ arma::mat Lagrange::interpolationMatrix(const arma::vec x, const arma::vec xi)
     size_t n = x.size();
     arma::vec w = barycentricWeights(x);
     arma::mat T(xi.size(), n, arma::fill::zeros);
-    #pragma omp parallel for
+    #pragma omp parallel for default(shared)
     for (size_t k = 0; k < xi.size(); k++)
     {
         bool rowHasMatch = false;
@@ -286,7 +286,7 @@ std::pair<arma::mat, arma::mat> Lagrange::TransfiniteQuadMap(const arma::vec &x1
     auto [x_4, y_4] = chi[2]->evaluate(-sign3);
     arma::mat x(x1.size(), x2.size(), arma::fill::none);
     arma::mat y(x1.size(), x2.size(), arma::fill::none);
-    #pragma omp parallel for
+    #pragma omp parallel for default(shared)
     for (size_t i = 0; i < x1.size(); i++)
     {
         double x1i = x1(i);
@@ -463,7 +463,7 @@ std::tuple<arma::mat, arma::mat, arma::mat, arma::mat> Lagrange::TransfiniteQuad
     auto [x_4,  y_4] = chi[2]->evaluate(-sign3);
     arma::mat dxdx1(x1.size(), x2.size(), arma::fill::none), dxdx2(x1.size(), x2.size(), arma::fill::none),
               dydx1(x1.size(), x2.size(), arma::fill::none), dydx2(x1.size(), x2.size(), arma::fill::none);
-    #pragma omp parallel for
+    #pragma omp parallel for default(shared)
     for (size_t i = 0; i < x1.size(); i++)
     {
         double x1i = x1(i);
@@ -571,7 +571,7 @@ std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::ve
                  dxdx2_east(x2.size(), arma::fill::none), dydx2_east(x2.size(), arma::fill::none);
     arma::rowvec dxdx1_west(x2.size(), arma::fill::none), dydx1_west(x2.size(), arma::fill::none),
                  dxdx2_west(x2.size(), arma::fill::none), dydx2_west(x2.size(), arma::fill::none);
-    #pragma omp parallel for
+    #pragma omp parallel for default(shared)
     for (size_t j = 0; j < x2.size(); j++)
     {
         auto [X_1,  Y_1]  = chi[0]->evaluate(-sign1);
@@ -616,7 +616,7 @@ std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::ve
               dxdx2_south(x1.size(), arma::fill::none), dydx2_south(x1.size(), arma::fill::none);
     arma::vec dxdx1_north(x1.size(), arma::fill::none), dydx1_north(x1.size(), arma::fill::none),
               dxdx2_north(x1.size(), arma::fill::none), dydx2_north(x1.size(), arma::fill::none);
-    #pragma omp parallel for
+    #pragma omp parallel for default(shared)
     for (size_t i = 0; i < x1.size(); i++)
     {
         auto [X_2,  Y_2]  = chi[1]->evaluate(-sign2);
@@ -777,7 +777,7 @@ std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::ve
                  dxdx2_east(x2.size(), arma::fill::none), dydx2_east(x2.size(), arma::fill::none),
                  dxdx1_west(x2.size(), arma::fill::none), dydx1_west(x2.size(), arma::fill::none),
                  dxdx2_west(x2.size(), arma::fill::none), dydx2_west(x2.size(), arma::fill::none);
-    #pragma omp parallel for
+    #pragma omp parallel for default(shared)
     for (size_t j = 0; j < x2.size(); j++)
     {
         auto [X_1,  Y_1]  = chi[0]->evaluate(-sign1);
@@ -822,7 +822,7 @@ std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::ve
               dxdx2_south(x1.size(), arma::fill::none), dydx2_south(x1.size(), arma::fill::none),
               dxdx1_north(x1.size(), arma::fill::none), dydx1_north(x1.size(), arma::fill::none),
               dxdx2_north(x1.size(), arma::fill::none), dydx2_north(x1.size(), arma::fill::none);
-    #pragma omp parallel for
+    #pragma omp parallel for default(shared)
     for (size_t i = 0; i < x1.size(); i++)
     {
         auto [X_2,  Y_2]  = chi[1]->evaluate(-sign2);

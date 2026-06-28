@@ -214,7 +214,7 @@ void VLM::postprocessing(arma::mat &g)
     switch(analysis)
     {
         case Analysis::linear:
-            #pragma omp parallel for reduction(+:lift) reduction(-:moment)
+            #pragma omp parallel for reduction(+:area) reduction(+:lift) reduction(-:moment)
             for (size_t n = 0; n < ny; n++)
             {
                 double dy = y(n+1) - y(n);
@@ -230,7 +230,7 @@ void VLM::postprocessing(arma::mat &g)
             }
             break;
         case Analysis::nonlinear:
-            #pragma omp parallel for reduction(+:lift)
+            #pragma omp parallel for reduction(+:area) reduction(+:lift)
             for (size_t n = 0; n < ny; n++)
             {
                 double dy = y(n+1) - y(n);

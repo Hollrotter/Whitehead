@@ -2,7 +2,7 @@
 
 int main()
 {
-    switch (4)
+    switch (1)
     {
         case 0: // Rectangle
         {
@@ -13,7 +13,7 @@ int main()
             double l = 2;
             double b = l*AR;
 
-            double alpha = 0.01;
+            double alpha = 5;
 
             Point p1(0,-b/2);
             Point p2(l,-b/2);
@@ -37,7 +37,7 @@ int main()
             Wake w1(&chi2);
             w.wake(&w1);
 
-            w.nonlinear();
+            w.linear();
 
             double area = w.get_area();
             double cL   = w.get_lift()   / area;
@@ -51,7 +51,7 @@ int main()
             double cLalpha_A1 = a0/(1 + a0/arma::datum::pi/AR);
             double cLalpha_A2 = a0/(1 + 1.024*a0/arma::datum::pi/AR);
             double cLalpha_A3 = a0/(sqrt(1 + pow(a0/arma::datum::pi/AR, 2)) + a0/arma::datum::pi/AR);
-            double cLalpha = cL/(alpha*arma::datum::pi/180);
+            double cLalpha    = cL/(alpha*arma::datum::pi/180);
 
             std::cout << "cLalpha    = " << cLalpha   << '\n';
             std::cout << "cLalpha_A1 = " << cLalpha_A1 << '\n';
@@ -72,14 +72,14 @@ int main()
              * number of nodes, we get exact agreement.
             */
 
-            size_t nx = 10;
-            size_t ny = 15;
+            size_t nx = 15;
+            size_t ny = 20;
 
             double AR = 5;
             double l = 2;
             double b = l*AR;
 
-            double alpha = 0.001;
+            double alpha = 5;
 
             Point p1(0, 0);
             Point p2(l, 0);
@@ -104,7 +104,7 @@ int main()
             Wake w1(&chi2);
             w.wake(&w1);
 
-            w.nonlinear();
+            w.linear();
 
             double area = w.get_area();
             double cL   = w.get_lift()   / area;
