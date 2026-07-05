@@ -40,7 +40,7 @@ void Aerodynamics::nonlinear()
                 arma::mat xC = wings[tD]->xC;
                 arma::mat yC = wings[tD]->yC;
                 arma::mat zC = wings[tD]->zC;
-                bw(tD, sD).set_size(wings[tD]->nxy, wings[sD]->nxy);
+                bw(tD, sD).zeros(wings[tD]->nxy, wings[sD]->nxy);
                 for (size_t j = 1; j < wings[tD]->ny-1; j++) // Loop over Collocation Points in 2-direction of target
                     for (size_t i = 1; i < wings[tD]->nx-1; i++) // Loop over Collocation Points in 1-direction of target
                     {

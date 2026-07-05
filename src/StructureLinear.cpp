@@ -181,8 +181,10 @@ void Structure::linear()
         {
             Membrane *membraneSource = membranes[interface.sourceDomain];
             Membrane *membraneTarget = membranes[interface.targetDomain];
-            size_t nx = membraneSource->nx;
-            size_t ny = membraneSource->ny;
+            size_t nxS = membraneSource->nx;
+            size_t nyS = membraneSource->ny;
+            size_t nxT = membraneTarget->nx;
+            size_t nyT = membraneTarget->ny;
             arma::mat D1 = membraneSource->D1;
             arma::mat D2 = membraneSource->D2;
             arma::mat Z  = membraneSource->z;
@@ -199,129 +201,129 @@ void Structure::linear()
                     {
                         case 0: // South
                             sourceZ = reverse(sourceZ);
-                            for (size_t i = 1; i < nx-1; i++)
+                            for (size_t i = 1; i < nxT-1; i++)
                                 membraneTarget->b(i) = sourceZ(i);
                             if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Interface)
                                 membraneTarget->b(0) = sourceZ(0);
                             if (membraneTarget->chi[0]->curveType == CurveType::Boundary  && membraneTarget->chi[1]->curveType == CurveType::Interface)
-                                membraneTarget->b(nx-1) = sourceZ(nx-1);
+                                membraneTarget->b(nxT-1) = sourceZ.back();
                             break;
                         case 1: // East
                             sourceZ = reverse(sourceZ);
-                            for (size_t j = 1; j < ny-1; j++)
-                                membraneTarget->b(membraneTarget->nx-1+j*membraneTarget->nx) = sourceZ(j);
+                            for (size_t j = 1; j < nyT-1; j++)
+                                membraneTarget->b(nxT-1+j*nxT) = sourceZ(j);
                             if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Interface)
-                                membraneTarget->b(membraneTarget->nx-1) = sourceZ(0);
+                                membraneTarget->b(nxT-1) = sourceZ(0);
                             if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Boundary)
-                                membraneTarget->b(membraneTarget->nx-1+(ny-1)*membraneTarget->nx) = sourceZ(ny-1);
+                                membraneTarget->b(nxT-1+(nyT-1)*nxT) = sourceZ.back();
                             break;
                         case 2: // North
-                            for (size_t i = 1; i < nx-1; i++)
-                                membraneTarget->b(i+(membraneTarget->ny-1)*nx) = sourceZ(i);
+                            for (size_t i = 1; i < nxT-1; i++)
+                                membraneTarget->b(i+(nyT-1)*nxT) = sourceZ(i);
                             if (membraneTarget->chi[2]->curveType == CurveType::Boundary  && membraneTarget->chi[3]->curveType == CurveType::Interface)
-                                membraneTarget->b((membraneTarget->ny-1)*nx) = sourceZ(0);
+                                membraneTarget->b((nyT-1)*nxT) = sourceZ(0);
                             if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Interface)
-                                membraneTarget->b(nx-1+(membraneTarget->ny-1)*nx) = sourceZ(nx-1);
+                                membraneTarget->b(nxT-1+(nyT-1)*nxT) = sourceZ.back();
                             break;
                         case 3: // West
-                            for (size_t j = 1; j < ny-1; j++)
-                                membraneTarget->b(j*membraneTarget->nx) = sourceZ(j);
+                            for (size_t j = 1; j < nyT-1; j++)
+                                membraneTarget->b(j*nxT) = sourceZ(j);
                             if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Boundary)
                                 membraneTarget->b(0) = sourceZ(0);
                             if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Interface)
-                                membraneTarget->b((ny-1)*membraneTarget->nx) = sourceZ(ny-1);
+                                membraneTarget->b((nyT-1)*nxT) = sourceZ.back();
                             break;
                     }
                     break;
                 }
                 case 1: // East
                 {
-                    arma::rowvec dZd1 = D1.row(nx-1)*Z;
-                    arma::rowvec dZd2 = Z.row(nx-1)*D2.t();
+                    arma::rowvec dZd1 = D1.row(nxS-1)*Z;
+                    arma::rowvec dZd2 = Z.row(nxS-1)*D2.t();
                     arma::rowvec h_1s1 = membraneSource->h_1s1_east;
                     arma::rowvec h_1s2 = membraneSource->h_1s2_east;
-                    arma::vec sourceZ = (interface.lambdaSource*Z.row(nx-1) - (h_1s1%dZd1 + h_1s2%dZd2)).t();
+                    arma::vec sourceZ = (interface.lambdaSource*Z.row(nxS-1) - (h_1s1%dZd1 + h_1s2%dZd2)).t();
                     switch (interface.targetCurve)
                     {
                         case 0: // South
                             sourceZ = reverse(sourceZ);
-                            for (size_t i = 1; i < nx-1; i++)
+                            for (size_t i = 1; i < nxT-1; i++)
                                 membraneTarget->b(i) = sourceZ(i);
                             if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Interface)
                                 membraneTarget->b(0) = sourceZ(0);
                             if (membraneTarget->chi[0]->curveType == CurveType::Boundary  && membraneTarget->chi[1]->curveType == CurveType::Interface)
-                                membraneTarget->b(nx-1) = sourceZ(nx-1);
+                                membraneTarget->b(nxT-1) = sourceZ.back();
                             break;
                         case 1: // East
                             sourceZ = reverse(sourceZ);
-                            for (size_t j = 1; j < ny-1; j++)
-                                membraneTarget->b(membraneTarget->nx-1+j*membraneTarget->nx) = sourceZ(j);
+                            for (size_t j = 1; j < nyT-1; j++)
+                                membraneTarget->b(nxT-1+j*nxT) = sourceZ(j);
                             if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Interface)
-                                membraneTarget->b(membraneTarget->nx-1) = sourceZ(0);
+                                membraneTarget->b(nxT-1) = sourceZ(0);
                             if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Boundary)
-                                membraneTarget->b(membraneTarget->nx-1+(ny-1)*membraneTarget->nx) = sourceZ(ny-1);
+                                membraneTarget->b(nxT-1+(nyT-1)*nxT) = sourceZ.back();
                             break;
                         case 2: // North
-                            for (size_t i = 1; i < nx-1; i++)
-                                membraneTarget->b(i+(membraneTarget->ny-1)*nx) = sourceZ(i);
+                            for (size_t i = 1; i < nxT-1; i++)
+                                membraneTarget->b(i+(nyT-1)*nxT) = sourceZ(i);
                             if (membraneTarget->chi[2]->curveType == CurveType::Boundary  && membraneTarget->chi[3]->curveType == CurveType::Interface)
-                                membraneTarget->b((membraneTarget->ny-1)*nx) = sourceZ(0);
+                                membraneTarget->b((nyT-1)*nxT) = sourceZ(0);
                             if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Interface)
-                                membraneTarget->b(nx-1+(membraneTarget->ny-1)*nx) = sourceZ(nx-1);
+                                membraneTarget->b(nxT-1+(nyT-1)*nxT) = sourceZ.back();
                             break;
                         case 3: // West
-                            for (size_t j = 1; j < ny-1; j++)
-                                membraneTarget->b(j*membraneTarget->nx) = sourceZ(j);
+                            for (size_t j = 1; j < nyT-1; j++)
+                                membraneTarget->b(j*nxT) = sourceZ(j);
                             if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Boundary)
                                 membraneTarget->b(0) = sourceZ(0);
                             if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Interface)
-                                membraneTarget->b((ny-1)*membraneTarget->nx) = sourceZ(ny-1);
+                                membraneTarget->b((nyT-1)*nxT) = sourceZ.back();
                             break;
                     }
                     break;
                 }
                 case 2: // North
                 {
-                    arma::vec dZd1 = D1*Z.col(ny-1);
-                    arma::vec dZd2 = Z*D2.row(ny-1).t();
+                    arma::vec dZd1 = D1*Z.col(nyS-1);
+                    arma::vec dZd2 = Z*D2.row(nyS-1).t();
                     arma::vec h_2s1 = membraneSource->h_2s1_north;
                     arma::vec h_2s2 = membraneSource->h_2s2_north;
-                    arma::vec sourceZ = interface.lambdaSource*Z.col(ny-1) - (h_2s1%dZd1 + h_2s2%dZd2);
+                    arma::vec sourceZ = interface.lambdaSource*Z.col(nyS-1) - (h_2s1%dZd1 + h_2s2%dZd2);
                     switch (interface.targetCurve)
                     {
                         case 0: // South
-                            for (size_t i = 1; i < nx-1; i++)
+                            for (size_t i = 1; i < nxT-1; i++)
                                 membraneTarget->b(i) = sourceZ(i);
                             if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Interface)
                                 membraneTarget->b(0) = sourceZ(0);
                             if (membraneTarget->chi[0]->curveType == CurveType::Boundary  && membraneTarget->chi[1]->curveType == CurveType::Interface)
-                                membraneTarget->b(nx-1) = sourceZ(nx-1);
+                                membraneTarget->b(nxT-1) = sourceZ.back();
                             break;
                         case 1: // East
-                            for (size_t j = 1; j < ny-1; j++)
-                                membraneTarget->b(membraneTarget->nx-1+j*membraneTarget->nx) = sourceZ(j);
+                            for (size_t j = 1; j < nyT-1; j++)
+                                membraneTarget->b(nxT-1+j*nxT) = sourceZ(j);
                             if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Interface)
-                                membraneTarget->b(membraneTarget->nx-1) = sourceZ(0);
+                                membraneTarget->b(nxT-1) = sourceZ(0);
                             if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Boundary)
-                                membraneTarget->b(membraneTarget->nx-1+(ny-1)*membraneTarget->nx) = sourceZ(ny-1);
+                                membraneTarget->b(nxT-1+(nyT-1)*nxT) = sourceZ.back();
                             break;
                         case 2: // North
                             sourceZ = reverse(sourceZ);
-                            for (size_t i = 1; i < nx-1; i++)
-                                membraneTarget->b(i+(membraneTarget->ny-1)*nx) = sourceZ(i);
+                            for (size_t i = 1; i < nxT-1; i++)
+                                membraneTarget->b(i+(nyT-1)*nxT) = sourceZ(i);
                             if (membraneTarget->chi[2]->curveType == CurveType::Boundary  && membraneTarget->chi[3]->curveType == CurveType::Interface)
-                                membraneTarget->b((membraneTarget->ny-1)*nx) = sourceZ(0);
+                                membraneTarget->b((nyT-1)*nxT) = sourceZ(0);
                             if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Interface)
-                                membraneTarget->b(nx-1+(membraneTarget->ny-1)*nx) = sourceZ(nx-1);
+                                membraneTarget->b(nxT-1+(nyT-1)*nxT) = sourceZ.back();
                             break;
                         case 3: // West
                             sourceZ = reverse(sourceZ);
-                            for (size_t j = 1; j < ny-1; j++)
-                                membraneTarget->b(j*membraneTarget->nx) = sourceZ(j);
+                            for (size_t j = 1; j < nyT-1; j++)
+                                membraneTarget->b(j*nxT) = sourceZ(j);
                             if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Boundary)
                                 membraneTarget->b(0) = sourceZ(0);
                             if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Interface)
-                                membraneTarget->b((ny-1)*membraneTarget->nx) = sourceZ(ny-1);
+                                membraneTarget->b((nyT-1)*nxT) = sourceZ.back();
                             break;
                     }
                     break;
@@ -336,45 +338,43 @@ void Structure::linear()
                     switch (interface.targetCurve)
                     {
                         case 0: // South
-                            for (size_t i = 1; i < nx-1; i++)
+                            for (size_t i = 1; i < nxT-1; i++)
                                 membraneTarget->b(i) = sourceZ(i);
                             if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Interface)
                                 membraneTarget->b(0) = sourceZ(0);
                             if (membraneTarget->chi[0]->curveType == CurveType::Boundary  && membraneTarget->chi[1]->curveType == CurveType::Interface)
-                                membraneTarget->b(nx-1) = sourceZ(nx-1);
+                                membraneTarget->b(nxT-1) = sourceZ.back();
                             break;
                         case 1: // East
-                            for (size_t j = 1; j < ny-1; j++)
-                                membraneTarget->b(membraneTarget->nx-1+j*membraneTarget->nx) = sourceZ(j);
+                            for (size_t j = 1; j < nyT-1; j++)
+                                membraneTarget->b(nxT-1+j*nxT) = sourceZ(j);
                             if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Interface)
-                                membraneTarget->b(membraneTarget->nx-1) = sourceZ(0);
+                                membraneTarget->b(nxT-1) = sourceZ(0);
                             if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Boundary)
-                                membraneTarget->b(membraneTarget->nx-1+(ny-1)*membraneTarget->nx) = sourceZ(ny-1);
+                                membraneTarget->b(nxT-1+(nyT-1)*nxT) = sourceZ.back();
                             break;
                         case 2: // North
                             sourceZ = reverse(sourceZ);
-                            for (size_t i = 1; i < nx-1; i++)
-                                membraneTarget->b(i+(membraneTarget->ny-1)*nx) = sourceZ(i);
+                            for (size_t i = 1; i < nxT-1; i++)
+                                membraneTarget->b(i+(nyT-1)*nxT) = sourceZ(i);
                             if (membraneTarget->chi[2]->curveType == CurveType::Boundary  && membraneTarget->chi[3]->curveType == CurveType::Interface)
-                                membraneTarget->b((membraneTarget->ny-1)*nx) = sourceZ(0);
+                                membraneTarget->b((nyT-1)*nxT) = sourceZ(0);
                             if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Interface)
-                                membraneTarget->b(nx-1+(membraneTarget->ny-1)*nx) = sourceZ(nx-1);
+                                membraneTarget->b(nxT-1+(nyT-1)*nxT) = sourceZ.back();
                             break;
                         case 3: // West
                             sourceZ = reverse(sourceZ);
-                            for (size_t j = 1; j < ny-1; j++)
-                                membraneTarget->b(j*membraneTarget->nx) = sourceZ(j);
+                            for (size_t j = 1; j < nyT-1; j++)
+                                membraneTarget->b(j*nxT) = sourceZ(j);
                             if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Boundary)
                                 membraneTarget->b(0) = sourceZ(0);
                             if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Interface)
-                                membraneTarget->b((ny-1)*membraneTarget->nx) = sourceZ(ny-1);
+                                membraneTarget->b((nyT-1)*nxT) = sourceZ.back();
                             break;
                     }
                     break;
                 }
             }
-            nx = membraneTarget->nx;
-            ny = membraneTarget->ny;
             D1 = membraneTarget->D1;
             D2 = membraneTarget->D2;
             Z  = membraneTarget->z;
@@ -391,129 +391,129 @@ void Structure::linear()
                     {
                         case 0: // South
                             targetZ = reverse(targetZ);
-                            for (size_t i = 1; i < nx-1; i++)
+                            for (size_t i = 1; i < nxS-1; i++)
                                 membraneSource->b(i) = targetZ(i);
                             if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Interface)
                                 membraneSource->b(0) = targetZ(0);
                             if (membraneSource->chi[0]->curveType == CurveType::Boundary  && membraneSource->chi[1]->curveType == CurveType::Interface)
-                                membraneSource->b(nx-1) = targetZ(nx-1);
+                                membraneSource->b(nxS-1) = targetZ.back();
                             break;
                         case 1: // East
                             targetZ = reverse(targetZ);
-                            for (size_t j = 1; j < ny-1; j++)
-                                membraneSource->b(membraneSource->nx-1+j*membraneSource->nx) = targetZ(j);
+                            for (size_t j = 1; j < nyS-1; j++)
+                                membraneSource->b(nxS-1+j*nxS) = targetZ(j);
                             if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Interface)
-                                membraneSource->b(membraneSource->nx-1) = targetZ(0);
+                                membraneSource->b(nxS-1) = targetZ(0);
                             if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Boundary)
-                                membraneSource->b(membraneSource->nx-1+(ny-1)*membraneSource->nx) = targetZ(ny-1);
+                                membraneSource->b(nxS-1+(nyS-1)*nxS) = targetZ.back();
                             break;
                         case 2: // North
-                            for (size_t i = 1; i < nx-1; i++)
-                                membraneSource->b(i+(membraneSource->ny-1)*nx) = targetZ(i);
+                            for (size_t i = 1; i < nxS-1; i++)
+                                membraneSource->b(i+(nyS-1)*nxS) = targetZ(i);
                             if (membraneSource->chi[2]->curveType == CurveType::Boundary  && membraneSource->chi[3]->curveType == CurveType::Interface)
-                                membraneSource->b((membraneSource->ny-1)*nx) = targetZ(0);
+                                membraneSource->b((nyS-1)*nxS) = targetZ(0);
                             if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Interface)
-                                membraneSource->b(nx-1+(membraneSource->ny-1)*nx) = targetZ(nx-1);
+                                membraneSource->b(nxS-1+(nyS-1)*nxS) = targetZ.back();
                             break;
                         case 3: // West
-                            for (size_t j = 1; j < ny-1; j++)
-                                membraneSource->b(j*membraneSource->nx) = targetZ(j);
+                            for (size_t j = 1; j < nyS-1; j++)
+                                membraneSource->b(j*nxS) = targetZ(j);
                             if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Boundary)
                                 membraneSource->b(0) = targetZ(0);
                             if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Interface)
-                                membraneSource->b((ny-1)*membraneSource->nx) = targetZ(ny-1);
+                                membraneSource->b((nyS-1)*nxS) = targetZ.back();
                             break;
                     }
                     break;
                 }
                 case 1: // East
                 {
-                    arma::rowvec dZd1 = D1.row(nx-1)*Z;
-                    arma::rowvec dZd2 = Z.row(nx-1)*D2.t();
+                    arma::rowvec dZd1 = D1.row(nxT-1)*Z;
+                    arma::rowvec dZd2 = Z.row(nxT-1)*D2.t();
                     arma::rowvec h_1s1 = membraneTarget->h_1s1_east;
                     arma::rowvec h_1s2 = membraneTarget->h_1s2_east;
-                    arma::vec targetZ = (interface.lambdaTarget*Z.row(nx-1) - (h_1s1%dZd1 + h_1s2%dZd2)).t();
+                    arma::vec targetZ = (interface.lambdaTarget*Z.row(nxT-1) - (h_1s1%dZd1 + h_1s2%dZd2)).t();
                     switch (interface.sourceCurve)
                     {
                         case 0: // South
                             targetZ = reverse(targetZ);
-                            for (size_t i = 1; i < nx-1; i++)
+                            for (size_t i = 1; i < nxS-1; i++)
                                 membraneSource->b(i) = targetZ(i);
                             if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Interface)
                                 membraneSource->b(0) = targetZ(0);
                             if (membraneSource->chi[0]->curveType == CurveType::Boundary  && membraneSource->chi[1]->curveType == CurveType::Interface)
-                                membraneSource->b(nx-1) = targetZ(nx-1);
+                                membraneSource->b(nxS-1) = targetZ.back();
                             break;
                         case 1: // East
                             targetZ = reverse(targetZ);
-                            for (size_t j = 1; j < ny-1; j++)
-                                membraneSource->b(membraneSource->nx-1+j*membraneSource->nx) = targetZ(j);
+                            for (size_t j = 1; j < nyS-1; j++)
+                                membraneSource->b(nxS-1+j*nxS) = targetZ(j);
                             if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Interface)
-                                membraneSource->b(membraneSource->nx-1) = targetZ(0);
+                                membraneSource->b(nxS-1) = targetZ(0);
                             if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Boundary)
-                                membraneSource->b(membraneSource->nx-1+(ny-1)*membraneSource->nx) = targetZ(ny-1);
+                                membraneSource->b(nxS-1+(nyS-1)*nxS) = targetZ.back();
                             break;
                         case 2: // North
-                            for (size_t i = 1; i < nx-1; i++)
-                                membraneSource->b(i+(membraneSource->ny-1)*nx) = targetZ(i);
+                            for (size_t i = 1; i < nxS-1; i++)
+                                membraneSource->b(i+(nyS-1)*nxS) = targetZ(i);
                             if (membraneSource->chi[2]->curveType == CurveType::Boundary  && membraneSource->chi[3]->curveType == CurveType::Interface)
-                                membraneSource->b((membraneSource->ny-1)*nx) = targetZ(0);
+                                membraneSource->b((nyS-1)*nxS) = targetZ(0);
                             if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Interface)
-                                membraneSource->b(nx-1+(membraneSource->ny-1)*nx) = targetZ(nx-1);
+                                membraneSource->b(nxS-1+(nyS-1)*nxS) = targetZ.back();
                             break;
                         case 3: // West
-                            for (size_t j = 1; j < ny-1; j++)
-                                membraneSource->b(j*membraneSource->nx) = targetZ(j);
+                            for (size_t j = 1; j < nyS-1; j++)
+                                membraneSource->b(j*nxS) = targetZ(j);
                             if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Boundary)
                                 membraneSource->b(0) = targetZ(0);
                             if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Interface)
-                                membraneSource->b((ny-1)*membraneSource->nx) = targetZ(ny-1);
+                                membraneSource->b((nyS-1)*nxS) = targetZ.back();
                             break;
                     }
                     break;
                 }
                 case 2: // North
                 {
-                    arma::vec dZd1 = D1*Z.col(ny-1);
-                    arma::vec dZd2 = Z*D2.row(ny-1).t();
+                    arma::vec dZd1 = D1*Z.col(nyT-1);
+                    arma::vec dZd2 = Z*D2.row(nyT-1).t();
                     arma::vec h_2s1 = membraneTarget->h_2s1_north;
                     arma::vec h_2s2 = membraneTarget->h_2s2_north;
-                    arma::vec targetZ = interface.lambdaTarget*Z.col(ny-1) - (h_2s1%dZd1 + h_2s2%dZd2);
+                    arma::vec targetZ = interface.lambdaTarget*Z.col(nyT-1) - (h_2s1%dZd1 + h_2s2%dZd2);
                     switch (interface.sourceCurve)
                     {
                         case 0: // South
-                            for (size_t i = 1; i < nx-1; i++)
+                            for (size_t i = 1; i < nxS-1; i++)
                                 membraneSource->b(i) = targetZ(i);
                             if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Interface)
                                 membraneSource->b(0) = targetZ(0);
                             if (membraneSource->chi[0]->curveType == CurveType::Boundary  && membraneSource->chi[1]->curveType == CurveType::Interface)
-                                membraneSource->b(nx-1) = targetZ(nx-1);
+                                membraneSource->b(nxS-1) = targetZ.back();
                             break;
                         case 1: // East
-                            for (size_t j = 1; j < ny-1; j++)
-                                membraneSource->b(membraneSource->nx-1+j*membraneSource->nx) = targetZ(j);
+                            for (size_t j = 1; j < nyS-1; j++)
+                                membraneSource->b(nxS-1+j*nxS) = targetZ(j);
                             if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Interface)
-                                membraneSource->b(membraneSource->nx-1) = targetZ(0);
+                                membraneSource->b(nxS-1) = targetZ(0);
                             if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Boundary)
-                                membraneSource->b(membraneSource->nx-1+(ny-1)*membraneSource->nx) = targetZ(ny-1);
+                                membraneSource->b(nxS-1+(nyS-1)*nxS) = targetZ.back();
                             break;
                         case 2: // North
                             targetZ = reverse(targetZ);
-                            for (size_t i = 1; i < nx-1; i++)
-                                membraneSource->b(i+(membraneSource->ny-1)*nx) = targetZ(i);
+                            for (size_t i = 1; i < nxS-1; i++)
+                                membraneSource->b(i+(nyS-1)*nxS) = targetZ(i);
                             if (membraneSource->chi[2]->curveType == CurveType::Boundary  && membraneSource->chi[3]->curveType == CurveType::Interface)
-                                membraneSource->b((membraneSource->ny-1)*nx) = targetZ(0);
+                                membraneSource->b((nyS-1)*nxS) = targetZ(0);
                             if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Interface)
-                                membraneSource->b(nx-1+(membraneSource->ny-1)*nx) = targetZ(nx-1);
+                                membraneSource->b(nxS-1+(nyS-1)*nxS) = targetZ.back();
                             break;
                         case 3: // West
                             targetZ = reverse(targetZ);
-                            for (size_t j = 1; j < ny-1; j++)
-                                membraneSource->b(j*membraneSource->nx) = targetZ(j);
+                            for (size_t j = 1; j < nyS-1; j++)
+                                membraneSource->b(j*nxS) = targetZ(j);
                             if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Boundary)
                                 membraneSource->b(0) = targetZ(0);
                             if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Interface)
-                                membraneSource->b((ny-1)*membraneSource->nx) = targetZ(ny-1);
+                                membraneSource->b((nyS-1)*nxS) = targetZ.back();
                             break;
                     }
                     break;
@@ -528,38 +528,38 @@ void Structure::linear()
                     switch (interface.sourceCurve)
                     {
                         case 0: // South
-                            for (size_t i = 1; i < nx-1; i++)
+                            for (size_t i = 1; i < nxS-1; i++)
                                 membraneSource->b(i) = targetZ(i);
                             if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Interface)
                                 membraneSource->b(0) = targetZ(0);
                             if (membraneSource->chi[0]->curveType == CurveType::Boundary  && membraneSource->chi[1]->curveType == CurveType::Interface)
-                                membraneSource->b(nx-1) = targetZ(nx-1);
+                                membraneSource->b(nxS-1) = targetZ.back();
                             break;
                         case 1: // East
-                            for (size_t j = 1; j < ny-1; j++)
-                                membraneSource->b(membraneSource->nx-1+j*membraneSource->nx) = targetZ(j);
+                            for (size_t j = 1; j < nyS-1; j++)
+                                membraneSource->b(nxS-1+j*nxS) = targetZ(j);
                             if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Interface)
-                                membraneSource->b(membraneSource->nx-1) = targetZ(0);
+                                membraneSource->b(nxS-1) = targetZ(0);
                             if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Boundary)
-                                membraneSource->b(membraneSource->nx-1+(ny-1)*membraneSource->nx) = targetZ(ny-1);
+                                membraneSource->b(nxS-1+(nyS-1)*nxS) = targetZ.back();
                             break;
                         case 2: // North
                             targetZ = reverse(targetZ);
-                            for (size_t i = 1; i < nx-1; i++)
-                                membraneSource->b(i+(membraneSource->ny-1)*nx) = targetZ(i);
+                            for (size_t i = 1; i < nxS-1; i++)
+                                membraneSource->b(i+(nyS-1)*nxS) = targetZ(i);
                             if (membraneSource->chi[2]->curveType == CurveType::Boundary  && membraneSource->chi[3]->curveType == CurveType::Interface)
-                                membraneSource->b((membraneSource->ny-1)*nx) = targetZ(0);
+                                membraneSource->b((nyS-1)*nxS) = targetZ(0);
                             if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Interface)
-                                membraneSource->b(nx-1+(membraneSource->ny-1)*nx) = targetZ(nx-1);
+                                membraneSource->b(nxS-1+(nyS-1)*nxS) = targetZ.back();
                             break;
                         case 3: // West
                             targetZ = reverse(targetZ);
-                            for (size_t j = 1; j < ny-1; j++)
-                                membraneSource->b(j*membraneSource->nx) = targetZ(j);
+                            for (size_t j = 1; j < nyS-1; j++)
+                                membraneSource->b(j*nxS) = targetZ(j);
                             if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Boundary)
                                 membraneSource->b(0) = targetZ(0);
                             if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Interface)
-                                membraneSource->b((ny-1)*membraneSource->nx) = targetZ(ny-1);
+                                membraneSource->b((nyS-1)*nxS) = targetZ.back();
                             break;
                     }
                     break;

@@ -246,13 +246,13 @@ void Wing::aerodynamicMatrix()
                             d2T2p1 = (q+2)*(2*dT2(j, q+1) + d2T2p1/q);
                     }
                     if (y_lower > -1)
-                        regularIntegralLinear(k, xC(i, j), yC(i, j), std::ceil((x_right+1)/2*nx), std::ceil((y_lower+1)/2*ny), -1, x_right, -1, y_lower);
+                        regularIntegralLinear(k, xC(i, j), yC(i, j), std::ceil((x_right+1)/2*nx)+5, std::ceil((y_lower+1)/2*ny)+5, -1, x_right, -1, y_lower);
                     if (y_upper < 1)
-                        regularIntegralLinear(k, xC(i, j), yC(i, j), std::ceil((1-x_left )/2*nx), std::ceil((1-y_upper)/2*ny),  x_left,  1, y_upper,  1);
+                        regularIntegralLinear(k, xC(i, j), yC(i, j), std::ceil((1-x_left )/2*nx)+5, std::ceil((1-y_upper)/2*ny)+5,  x_left,  1, y_upper,  1);
                     if (x_left > -1)
-                        regularIntegralLinear(k, xC(i, j), yC(i, j), std::ceil((x_left+1 )/2*nx), std::ceil((1-y_lower)/2*ny), -1,  x_left, y_lower,  1);
+                        regularIntegralLinear(k, xC(i, j), yC(i, j), std::ceil((x_left+1 )/2*nx)+5, std::ceil((1-y_lower)/2*ny)+5, -1,  x_left, y_lower,  1);
                     if (x_right < 1)
-                        regularIntegralLinear(k, xC(i, j), yC(i, j), std::ceil((1-x_right)/2*nx), std::ceil((y_upper+1)/2*ny), x_right,  1, -1, y_upper);
+                        regularIntegralLinear(k, xC(i, j), yC(i, j), std::ceil((1-x_right)/2*nx)+5, std::ceil((y_upper+1)/2*ny)+5, x_right,  1, -1, y_upper);
                 }
             }
             for (const Wake* w:wakes)
@@ -677,13 +677,13 @@ void Wing::aerodynamicMatrix()
                             d2T2p1 = (q+2)*(2*dT2(j, q+1) + d2T2p1/q);
                     }
                     if (y_lower > -1)
-                        regularIntegralNonlinear(k, xC(i, j), yC(i, j), zC(i, j), std::ceil((x_right+1)/2*nx), std::ceil((y_lower+1)/2*ny), -1, x_right, -1, y_lower);
+                        regularIntegralNonlinear(k, xC(i, j), yC(i, j), zC(i, j), std::ceil((x_right+1)/2*nx)+5, std::ceil((y_lower+1)/2*ny)+5, -1, x_right, -1, y_lower);
                     if (y_upper < 1)
-                        regularIntegralNonlinear(k, xC(i, j), yC(i, j), zC(i, j), std::ceil((1-x_left )/2*nx), std::ceil((1-y_upper)/2*ny),  x_left,  1, y_upper,  1);
+                        regularIntegralNonlinear(k, xC(i, j), yC(i, j), zC(i, j), std::ceil((1-x_left )/2*nx)+5, std::ceil((1-y_upper)/2*ny)+5,  x_left,  1, y_upper,  1);
                     if (x_left > -1)
-                        regularIntegralNonlinear(k, xC(i, j), yC(i, j), zC(i, j), std::ceil((x_left+1 )/2*nx), std::ceil((1-y_lower)/2*ny), -1,  x_left, y_lower,  1);
+                        regularIntegralNonlinear(k, xC(i, j), yC(i, j), zC(i, j), std::ceil((x_left+1 )/2*nx)+5, std::ceil((1-y_lower)/2*ny)+5, -1,  x_left, y_lower,  1);
                     if (x_right < 1)
-                        regularIntegralNonlinear(k, xC(i, j), yC(i, j), zC(i, j), std::ceil((1-x_right)/2*nx), std::ceil((y_upper+1)/2*ny), x_right,  1, -1, y_upper);
+                        regularIntegralNonlinear(k, xC(i, j), yC(i, j), zC(i, j), std::ceil((1-x_right)/2*nx)+5, std::ceil((y_upper+1)/2*ny)+5, x_right,  1, -1, y_upper);
                 }
             }
             for (const Wake* w:wakes)

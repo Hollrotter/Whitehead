@@ -294,7 +294,7 @@ void Aerodynamics::solve()
             std::println("Only linear and nonlinear analysis is implemented for Aerodynamics!");
             exit(EXIT_FAILURE);
     }
-    arma::field<arma::mat> b0(wings.size());
+    arma::field<arma::vec> b0(wings.size());
     for (size_t w = 0; w < wings.size(); w++)
         b0(w) = wings[w]->b;
     do
@@ -304,8 +304,10 @@ void Aerodynamics::solve()
         {
             Wing *wingSource = wings[interface.sourceDomain];
             Wing *wingTarget = wings[interface.targetDomain];
-            size_t nx = wingSource->nx;
-            size_t ny = wingSource->ny;
+            size_t nxS = wingSource->nx;
+            size_t nyS = wingSource->ny;
+            size_t nxT = wingTarget->nx;
+            size_t nyT = wingTarget->ny;
             arma::vec mu_hat = wingSource->mu_hat;
             arma::mat  T1 = wingSource->T1;
             arma::mat  T2 = wingSource->T2;
@@ -315,19 +317,19 @@ void Aerodynamics::solve()
             {
                 case 0: // South
                 {
-                    arma::vec    MU(nx, arma::fill::zeros);
-                    arma::vec dMUd1(nx, arma::fill::zeros);
-                    arma::vec dMUd2(nx, arma::fill::zeros);
-                    for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+                    arma::vec    MU(nxS, arma::fill::zeros);
+                    arma::vec dMUd1(nxS, arma::fill::zeros);
+                    arma::vec dMUd2(nxS, arma::fill::zeros);
+                    for (size_t q = 0; q < nyS; q++) // Loop over Chebyshev Polynomial 2-direction
                     {
                         double  t2 = pow(-1, q);
                         double dt2 = pow(-1, q+1) * pow(q, 2);
-                        for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
-                            for (size_t i = 0; i < nx; i++) // Loop over Collocation Points in 1-direction
+                        for (size_t p = 0; p < nxS; p++) // Loop over Chebyshev Polynomial 1-direction
+                            for (size_t i = 0; i < nxS; i++) // Loop over Collocation Points in 1-direction
                             {
-                                MU(i)    += mu_hat(p+q*nx) *  T1(i, p) *  t2;
-                                dMUd1(i) += mu_hat(p+q*nx) * dT1(i, p) *  t2;
-                                dMUd2(i) += mu_hat(p+q*nx) *  T1(i, p) * dt2;
+                                MU(i)    += mu_hat(p+q*nxS) *  T1(i, p) *  t2;
+                                dMUd1(i) += mu_hat(p+q*nxS) * dT1(i, p) *  t2;
+                                dMUd2(i) += mu_hat(p+q*nxS) *  T1(i, p) * dt2;
                             }
                     }
                     arma::vec h_2s1 = wingSource->h_2s1_south;
@@ -337,55 +339,55 @@ void Aerodynamics::solve()
                     {
                         case 0: // South
                             sourceMU = reverse(sourceMU);
-                            for (size_t i = 1; i < nx-1; i++)
+                            for (size_t i = 1; i < nxT-1; i++)
                                 b0(interface.targetDomain)(i) = sourceMU(i);
                             if (wingTarget->chi[0]->curveType == CurveType::Interface && wingTarget->chi[3]->curveType == CurveType::Interface)
                                 b0(interface.targetDomain)(0) = sourceMU(0);
                             if (wingTarget->chi[0]->curveType == CurveType::Boundary  && wingTarget->chi[1]->curveType == CurveType::Interface)
-                                b0(interface.targetDomain)(nx-1) = sourceMU(nx-1);
+                                b0(interface.targetDomain)(nxT-1) = sourceMU.back();
                             break;
                         case 1: // East
                             sourceMU = reverse(sourceMU);
-                            for (size_t j = 1; j < ny-1; j++)
-                                b0(interface.targetDomain)(wingTarget->nx-1+j*wingTarget->nx) = sourceMU(j);
+                            for (size_t j = 1; j < nyT-1; j++)
+                                b0(interface.targetDomain)(nxT-1+j*nxT) = sourceMU(j);
                             if (wingTarget->chi[0]->curveType == CurveType::Interface && wingTarget->chi[1]->curveType == CurveType::Interface)
-                                b0(interface.targetDomain)(wingTarget->nx-1) = sourceMU(0);
+                                b0(interface.targetDomain)(nxT-1) = sourceMU(0);
                             if (wingTarget->chi[2]->curveType == CurveType::Interface && wingTarget->chi[1]->curveType == CurveType::Boundary)
-                                b0(interface.targetDomain)(wingTarget->nx-1+(ny-1)*wingTarget->nx) = sourceMU(ny-1);
+                                b0(interface.targetDomain)(nxT-1+(nyT-1)*nxT) = sourceMU.back();
                             break;
                         case 2: // North
-                            for (size_t i = 1; i < nx-1; i++)
-                                b0(interface.targetDomain)(i+(wingTarget->ny-1)*nx) = sourceMU(i);
+                            for (size_t i = 1; i < nxT-1; i++)
+                                b0(interface.targetDomain)(i+(nyT-1)*nxT) = sourceMU(i);
                             if (wingTarget->chi[2]->curveType == CurveType::Boundary  && wingTarget->chi[3]->curveType == CurveType::Interface)
-                                b0(interface.targetDomain)((wingTarget->ny-1)*nx) = sourceMU(0);
+                                b0(interface.targetDomain)((nyT-1)*nxT) = sourceMU(0);
                             if (wingTarget->chi[2]->curveType == CurveType::Interface && wingTarget->chi[1]->curveType == CurveType::Interface)
-                                b0(interface.targetDomain)(nx-1+(wingTarget->ny-1)*nx) = sourceMU(nx-1);
+                                b0(interface.targetDomain)(nxT-1+(nyT-1)*nxT) = sourceMU.back();
                             break;
                         case 3: // West
-                            for (size_t j = 1; j < ny-1; j++)
-                                b0(interface.targetDomain)(j*wingTarget->nx) = sourceMU(j);
+                            for (size_t j = 1; j < nyT-1; j++)
+                                b0(interface.targetDomain)(j*nxT) = sourceMU(j);
                             if (wingTarget->chi[0]->curveType == CurveType::Interface && wingTarget->chi[3]->curveType == CurveType::Boundary)
                                 b0(interface.targetDomain)(0) = sourceMU(0);
                             if (wingTarget->chi[2]->curveType == CurveType::Interface && wingTarget->chi[3]->curveType == CurveType::Interface)
-                                b0(interface.targetDomain)((ny-1)*wingTarget->nx) = sourceMU(ny-1);
+                                b0(interface.targetDomain)((nyT-1)*nxT) = sourceMU.back();
                             break;
                     }
                     break;
                 }
                 case 1: // East
                 {
-                    arma::rowvec    MU(ny, arma::fill::zeros);
-                    arma::rowvec dMUd1(ny, arma::fill::zeros);
-                    arma::rowvec dMUd2(ny, arma::fill::zeros);
-                    for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                    arma::rowvec    MU(nyS, arma::fill::zeros);
+                    arma::rowvec dMUd1(nyS, arma::fill::zeros);
+                    arma::rowvec dMUd2(nyS, arma::fill::zeros);
+                    for (size_t p = 0; p < nxS; p++) // Loop over Chebyshev Polynomial 1-direction
                     {
                         double dt1 = pow(p, 2);
-                        for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
-                            for (size_t j = 0; j < ny; j++) // Loop over Collocation Points in 2-direction
+                        for (size_t q = 0; q < nyS; q++) // Loop over Chebyshev Polynomial 2-direction
+                            for (size_t j = 0; j < nyS; j++) // Loop over Collocation Points in 2-direction
                             {
-                                MU(j)    += mu_hat(p+q*nx) *       T2(j, q);
-                                dMUd1(j) += mu_hat(p+q*nx) * dt1 * T2(j, q);
-                                dMUd2(j) += mu_hat(p+q*nx) *      dT2(j, q);
+                                MU(j)    += mu_hat(p+q*nxS) *       T2(j, q);
+                                dMUd1(j) += mu_hat(p+q*nxS) * dt1 * T2(j, q);
+                                dMUd2(j) += mu_hat(p+q*nxS) *      dT2(j, q);
                             }
                     }
                     arma::rowvec h_1s1 = wingSource->h_1s1_east;
@@ -395,55 +397,55 @@ void Aerodynamics::solve()
                     {
                         case 0: // South
                             sourceMU = reverse(sourceMU);
-                            for (size_t i = 1; i < nx-1; i++)
+                            for (size_t i = 1; i < nxT-1; i++)
                                 b0(interface.targetDomain)(i) = sourceMU(i);
                             if (wingTarget->chi[0]->curveType == CurveType::Interface && wingTarget->chi[3]->curveType == CurveType::Interface)
                                 b0(interface.targetDomain)(0) = sourceMU(0);
                             if (wingTarget->chi[0]->curveType == CurveType::Boundary  && wingTarget->chi[1]->curveType == CurveType::Interface)
-                                b0(interface.targetDomain)(nx-1) = sourceMU(nx-1);
+                                b0(interface.targetDomain)(nxT-1) = sourceMU.back();
                             break;
                         case 1: // East
                             sourceMU = reverse(sourceMU);
-                            for (size_t j = 1; j < ny-1; j++)
-                                b0(interface.targetDomain)(wingTarget->nx-1+j*wingTarget->nx) = sourceMU(j);
+                            for (size_t j = 1; j < nyT-1; j++)
+                                b0(interface.targetDomain)(nxT-1+j*nxT) = sourceMU(j);
                             if (wingTarget->chi[0]->curveType == CurveType::Interface && wingTarget->chi[1]->curveType == CurveType::Interface)
-                                b0(interface.targetDomain)(wingTarget->nx-1) = sourceMU(0);
+                                b0(interface.targetDomain)(nxT-1) = sourceMU(0);
                             if (wingTarget->chi[2]->curveType == CurveType::Interface && wingTarget->chi[1]->curveType == CurveType::Boundary)
-                                b0(interface.targetDomain)(wingTarget->nx-1+(ny-1)*wingTarget->nx) = sourceMU(ny-1);
+                                b0(interface.targetDomain)(nxT-1+(nyT-1)*nxT) = sourceMU.back();
                             break;
                         case 2: // North
-                            for (size_t i = 1; i < nx-1; i++)
-                                b0(interface.targetDomain)(i+(wingTarget->ny-1)*nx) = sourceMU(i);
+                            for (size_t i = 1; i < nxT-1; i++)
+                                b0(interface.targetDomain)(i+(nyT-1)*nxT) = sourceMU(i);
                             if (wingTarget->chi[2]->curveType == CurveType::Boundary  && wingTarget->chi[3]->curveType == CurveType::Interface)
-                                b0(interface.targetDomain)((wingTarget->ny-1)*nx) = sourceMU(0);
+                                b0(interface.targetDomain)((nyT-1)*nxT) = sourceMU(0);
                             if (wingTarget->chi[2]->curveType == CurveType::Interface && wingTarget->chi[1]->curveType == CurveType::Interface)
-                                b0(interface.targetDomain)(nx-1+(wingTarget->ny-1)*nx) = sourceMU(nx-1);
+                                b0(interface.targetDomain)(nxT-1+(nyT-1)*nxT) = sourceMU.back();
                             break;
                         case 3: // West
-                            for (size_t j = 1; j < ny-1; j++)
-                                b0(interface.targetDomain)(j*wingTarget->nx) = sourceMU(j);
+                            for (size_t j = 1; j < nyT-1; j++)
+                                b0(interface.targetDomain)(j*nxT) = sourceMU(j);
                             if (wingTarget->chi[0]->curveType == CurveType::Interface && wingTarget->chi[3]->curveType == CurveType::Boundary)
                                 b0(interface.targetDomain)(0) = sourceMU(0);
                             if (wingTarget->chi[2]->curveType == CurveType::Interface && wingTarget->chi[3]->curveType == CurveType::Interface)
-                                b0(interface.targetDomain)((ny-1)*wingTarget->nx) = sourceMU(ny-1);
+                                b0(interface.targetDomain)((nyT-1)*nxT) = sourceMU.back();
                             break;
                     }
                     break;
                 }
                 case 2: // North
                 {
-                    arma::vec    MU(nx, arma::fill::zeros);
-                    arma::vec dMUd1(nx, arma::fill::zeros);
-                    arma::vec dMUd2(nx, arma::fill::zeros);
-                    for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+                    arma::vec    MU(nxS, arma::fill::zeros);
+                    arma::vec dMUd1(nxS, arma::fill::zeros);
+                    arma::vec dMUd2(nxS, arma::fill::zeros);
+                    for (size_t q = 0; q < nyS; q++) // Loop over Chebyshev Polynomial 2-direction
                     {
                         double dt2 = pow(q, 2);
-                        for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
-                            for (size_t i = 0; i < nx; i++) // Loop over Collocation Points in 1-direction
+                        for (size_t p = 0; p < nxS; p++) // Loop over Chebyshev Polynomial 1-direction
+                            for (size_t i = 0; i < nxS; i++) // Loop over Collocation Points in 1-direction
                             {
-                                MU(i)    += mu_hat(p+q*nx) *  T1(i, p);
-                                dMUd1(i) += mu_hat(p+q*nx) * dT1(i, p);
-                                dMUd2(i) += mu_hat(p+q*nx) *  T1(i, p) * dt2;
+                                MU(i)    += mu_hat(p+q*nxS) *  T1(i, p);
+                                dMUd1(i) += mu_hat(p+q*nxS) * dT1(i, p);
+                                dMUd2(i) += mu_hat(p+q*nxS) *  T1(i, p) * dt2;
                             }
                     }
                     arma::vec h_2s1 = wingSource->h_2s1_north;
@@ -452,57 +454,57 @@ void Aerodynamics::solve()
                     switch (interface.targetCurve)
                     {
                         case 0: // South
-                            for (size_t i = 1; i < nx-1; i++)
+                            for (size_t i = 1; i < nxT-1; i++)
                                 b0(interface.targetDomain)(i) = sourceMU(i);
                             if (wingTarget->chi[0]->curveType == CurveType::Interface && wingTarget->chi[3]->curveType == CurveType::Interface)
                                 b0(interface.targetDomain)(0) = sourceMU(0);
                             if (wingTarget->chi[0]->curveType == CurveType::Boundary  && wingTarget->chi[1]->curveType == CurveType::Interface)
-                                b0(interface.targetDomain)(nx-1) = sourceMU(nx-1);
+                                b0(interface.targetDomain)(nxT-1) = sourceMU.back();
                             break;
                         case 1: // East
-                            for (size_t j = 1; j < ny-1; j++)
-                                b0(interface.targetDomain)(wingTarget->nx-1+j*wingTarget->nx) = sourceMU(j);
+                            for (size_t j = 1; j < nyT-1; j++)
+                                b0(interface.targetDomain)(nxT-1+j*nxT) = sourceMU(j);
                             if (wingTarget->chi[0]->curveType == CurveType::Interface && wingTarget->chi[1]->curveType == CurveType::Interface)
-                                b0(interface.targetDomain)(wingTarget->nx-1) = sourceMU(0);
+                                b0(interface.targetDomain)(nxT-1) = sourceMU(0);
                             if (wingTarget->chi[2]->curveType == CurveType::Interface && wingTarget->chi[1]->curveType == CurveType::Boundary)
-                                b0(interface.targetDomain)(wingTarget->nx-1+(ny-1)*wingTarget->nx) = sourceMU(ny-1);
+                                b0(interface.targetDomain)(nxT-1+(nyT-1)*nxT) = sourceMU.back();
                             break;
                         case 2: // North
                             sourceMU = reverse(sourceMU);
-                            for (size_t i = 1; i < nx-1; i++)
-                                b0(interface.targetDomain)(i+(wingTarget->ny-1)*nx) = sourceMU(i);
+                            for (size_t i = 1; i < nxT-1; i++)
+                                b0(interface.targetDomain)(i+(nyT-1)*nxT) = sourceMU(i);
                             if (wingTarget->chi[2]->curveType == CurveType::Boundary  && wingTarget->chi[3]->curveType == CurveType::Interface)
-                                b0(interface.targetDomain)((wingTarget->ny-1)*nx) = sourceMU(0);
+                                b0(interface.targetDomain)((nyT-1)*nxT) = sourceMU(0);
                             if (wingTarget->chi[2]->curveType == CurveType::Interface && wingTarget->chi[1]->curveType == CurveType::Interface)
-                                b0(interface.targetDomain)(nx-1+(wingTarget->ny-1)*nx) = sourceMU(nx-1);
+                                b0(interface.targetDomain)(nxT-1+(nyT-1)*nxT) = sourceMU.back();
                             break;
                         case 3: // West
                             sourceMU = reverse(sourceMU);
-                            for (size_t j = 1; j < ny-1; j++)
-                                b0(interface.targetDomain)(j*wingTarget->nx) = sourceMU(j);
+                            for (size_t j = 1; j < nyT-1; j++)
+                                b0(interface.targetDomain)(j*nxT) = sourceMU(j);
                             if (wingTarget->chi[0]->curveType == CurveType::Interface && wingTarget->chi[3]->curveType == CurveType::Boundary)
                                 b0(interface.targetDomain)(0) = sourceMU(0);
                             if (wingTarget->chi[2]->curveType == CurveType::Interface && wingTarget->chi[3]->curveType == CurveType::Interface)
-                                b0(interface.targetDomain)((ny-1)*wingTarget->nx) = sourceMU(ny-1);
+                                b0(interface.targetDomain)((nyT-1)*nxT) = sourceMU.back();
                             break;
                     }
                     break;
                 }
                 case 3: // West
                 {
-                    arma::rowvec    MU(ny, arma::fill::zeros);
-                    arma::rowvec dMUd1(ny, arma::fill::zeros);
-                    arma::rowvec dMUd2(ny, arma::fill::zeros);
-                    for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                    arma::rowvec    MU(nyS, arma::fill::zeros);
+                    arma::rowvec dMUd1(nyS, arma::fill::zeros);
+                    arma::rowvec dMUd2(nyS, arma::fill::zeros);
+                    for (size_t p = 0; p < nxS; p++) // Loop over Chebyshev Polynomial 1-direction
                     {
                         double  t1 = pow(-1, p);
                         double dt1 = pow(-1, p+1) * pow(p, 2);
-                        for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
-                            for (size_t j = 0; j < ny; j++) // Loop over Collocation Points in 2-direction
+                        for (size_t q = 0; q < nyS; q++) // Loop over Chebyshev Polynomial 2-direction
+                            for (size_t j = 0; j < nyS; j++) // Loop over Collocation Points in 2-direction
                             {
-                                MU(j)    += mu_hat(p+q*nx) *  t1 *  T2(j, q);
-                                dMUd1(j) += mu_hat(p+q*nx) * dt1 *  T2(j, q);
-                                dMUd2(j) += mu_hat(p+q*nx) *  t1 * dT2(j, q);
+                                MU(j)    += mu_hat(p+q*nxS) *  t1 *  T2(j, q);
+                                dMUd1(j) += mu_hat(p+q*nxS) * dt1 *  T2(j, q);
+                                dMUd2(j) += mu_hat(p+q*nxS) *  t1 * dT2(j, q);
                             }
                     }
                     arma::rowvec h_1s1 = wingSource->h_1s1_west;
@@ -511,67 +513,65 @@ void Aerodynamics::solve()
                     switch (interface.targetCurve)
                     {
                         case 0: // South
-                            for (size_t i = 1; i < nx-1; i++)
+                            for (size_t i = 1; i < nxT-1; i++)
                                 b0(interface.targetDomain)(i) = sourceMU(i);
                             if (wingTarget->chi[0]->curveType == CurveType::Interface && wingTarget->chi[3]->curveType == CurveType::Interface)
                                 b0(interface.targetDomain)(0) = sourceMU(0);
                             if (wingTarget->chi[0]->curveType == CurveType::Boundary  && wingTarget->chi[1]->curveType == CurveType::Interface)
-                                b0(interface.targetDomain)(nx-1) = sourceMU(nx-1);
+                                b0(interface.targetDomain)(nxT-1) = sourceMU.back();
                             break;
                         case 1: // East
-                            for (size_t j = 1; j < ny-1; j++)
-                                b0(interface.targetDomain)(wingTarget->nx-1+j*wingTarget->nx) = sourceMU(j);
+                            for (size_t j = 1; j < nyT-1; j++)
+                                b0(interface.targetDomain)(nxT-1+j*nxT) = sourceMU(j);
                             if (wingTarget->chi[0]->curveType == CurveType::Interface && wingTarget->chi[1]->curveType == CurveType::Interface)
-                                b0(interface.targetDomain)(wingTarget->nx-1) = sourceMU(0);
+                                b0(interface.targetDomain)(nxT-1) = sourceMU(0);
                             if (wingTarget->chi[2]->curveType == CurveType::Interface && wingTarget->chi[1]->curveType == CurveType::Boundary)
-                                b0(interface.targetDomain)(wingTarget->nx-1+(ny-1)*wingTarget->nx) = sourceMU(ny-1);
+                                b0(interface.targetDomain)(nxT-1+(nyT-1)*nxT) = sourceMU.back();
                             break;
                         case 2: // North
                             sourceMU = reverse(sourceMU);
-                            for (size_t i = 1; i < nx-1; i++)
-                                b0(interface.targetDomain)(i+(wingTarget->ny-1)*nx) = sourceMU(i);
+                            for (size_t i = 1; i < nxT-1; i++)
+                                b0(interface.targetDomain)(i+(nyT-1)*nxT) = sourceMU(i);
                             if (wingTarget->chi[2]->curveType == CurveType::Boundary  && wingTarget->chi[3]->curveType == CurveType::Interface)
-                                b0(interface.targetDomain)((wingTarget->ny-1)*nx) = sourceMU(0);
+                                b0(interface.targetDomain)((nyT-1)*nxT) = sourceMU(0);
                             if (wingTarget->chi[2]->curveType == CurveType::Interface && wingTarget->chi[1]->curveType == CurveType::Interface)
-                                b0(interface.targetDomain)(nx-1+(wingTarget->ny-1)*nx) = sourceMU(nx-1);
+                                b0(interface.targetDomain)(nxT-1+(nyT-1)*nxT) = sourceMU.back();
                             break;
                         case 3: // West
                             sourceMU = reverse(sourceMU);
-                            for (size_t j = 1; j < ny-1; j++)
-                                b0(interface.targetDomain)(j*wingTarget->nx) = sourceMU(j);
+                            for (size_t j = 1; j < nyT-1; j++)
+                                b0(interface.targetDomain)(j*nxT) = sourceMU(j);
                             if (wingTarget->chi[0]->curveType == CurveType::Interface && wingTarget->chi[3]->curveType == CurveType::Boundary)
                                 b0(interface.targetDomain)(0) = sourceMU(0);
                             if (wingTarget->chi[2]->curveType == CurveType::Interface && wingTarget->chi[3]->curveType == CurveType::Interface)
-                                b0(interface.targetDomain)((ny-1)*wingTarget->nx) = sourceMU(ny-1);
+                                b0(interface.targetDomain)((nyT-1)*nxT) = sourceMU.back();
                             break;
                     }
                     break;
                 }
             }
-            nx     = wingTarget->nx;
-            ny     = wingTarget->ny;
             mu_hat = wingTarget->mu_hat;
-             T1    = wingTarget->T1;
-             T2    = wingTarget->T2;
+            T1     = wingTarget->T1;
+            T2     = wingTarget->T2;
             dT1    = wingTarget->dT1;
             dT2    = wingTarget->dT2;
             switch (interface.targetCurve)
             {
                 case 0: // South
                 {
-                    arma::vec    MU(nx, arma::fill::zeros);
-                    arma::vec dMUd1(nx, arma::fill::zeros);
-                    arma::vec dMUd2(nx, arma::fill::zeros);
-                    for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+                    arma::vec    MU(nxT, arma::fill::zeros);
+                    arma::vec dMUd1(nxT, arma::fill::zeros);
+                    arma::vec dMUd2(nxT, arma::fill::zeros);
+                    for (size_t q = 0; q < nyT; q++) // Loop over Chebyshev Polynomial 2-direction
                     {
                         double t2  = pow(-1, q);
                         double dt2 = pow(-1, q+1) * pow(q, 2);
-                        for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
-                            for (size_t i = 0; i < nx; i++) // Loop over Collocation Points in 1-direction
+                        for (size_t p = 0; p < nxT; p++) // Loop over Chebyshev Polynomial 1-direction
+                            for (size_t i = 0; i < nxT; i++) // Loop over Collocation Points in 1-direction
                             {
-                                MU(i)    += mu_hat(p+q*nx) *  T1(i, p) *  t2;
-                                dMUd1(i) += mu_hat(p+q*nx) * dT1(i, p) *  t2;
-                                dMUd2(i) += mu_hat(p+q*nx) *  T1(i, p) * dt2;
+                                MU(i)    += mu_hat(p+q*nxT) *  T1(i, p) *  t2;
+                                dMUd1(i) += mu_hat(p+q*nxT) * dT1(i, p) *  t2;
+                                dMUd2(i) += mu_hat(p+q*nxT) *  T1(i, p) * dt2;
                             }
                     }
                     arma::vec h_2s1 = wingTarget->h_2s1_south;
@@ -581,55 +581,55 @@ void Aerodynamics::solve()
                     {
                         case 0: // South
                             targetMU = reverse(targetMU);
-                            for (size_t i = 1; i < nx-1; i++)
+                            for (size_t i = 1; i < nxS-1; i++)
                                 b0(interface.sourceDomain)(i) = targetMU(i);
                             if (wingSource->chi[0]->curveType == CurveType::Interface && wingSource->chi[3]->curveType == CurveType::Interface)
                                 b0(interface.sourceDomain)(0) = targetMU(0);
                             if (wingSource->chi[0]->curveType == CurveType::Boundary  && wingSource->chi[1]->curveType == CurveType::Interface)
-                                b0(interface.sourceDomain)(nx-1) = targetMU(nx-1);
+                                b0(interface.sourceDomain)(nxS-1) = targetMU.back();
                             break;
                         case 1: // East
                             targetMU = reverse(targetMU);
-                            for (size_t j = 1; j < ny-1; j++)
-                                b0(interface.sourceDomain)(wingSource->nx-1+j*wingSource->nx) = targetMU(j);
+                            for (size_t j = 1; j < nyS-1; j++)
+                                b0(interface.sourceDomain)(nxS-1+j*nxS) = targetMU(j);
                             if (wingSource->chi[0]->curveType == CurveType::Interface && wingSource->chi[1]->curveType == CurveType::Interface)
-                                b0(interface.sourceDomain)(wingSource->nx-1) = targetMU(0);
+                                b0(interface.sourceDomain)(nxS-1) = targetMU(0);
                             if (wingSource->chi[2]->curveType == CurveType::Interface && wingSource->chi[1]->curveType == CurveType::Boundary)
-                                b0(interface.sourceDomain)(wingSource->nx-1+(ny-1)*wingSource->nx) = targetMU(ny-1);
+                                b0(interface.sourceDomain)(nxS-1+(nyS-1)*nxS) = targetMU.back();
                             break;
                         case 2: // North
-                            for (size_t i = 1; i < nx-1; i++)
-                                b0(interface.sourceDomain)(i+(wingSource->ny-1)*nx) = targetMU(i);
+                            for (size_t i = 1; i < nxS-1; i++)
+                                b0(interface.sourceDomain)(i+(nyS-1)*nxS) = targetMU(i);
                             if (wingSource->chi[2]->curveType == CurveType::Boundary  && wingSource->chi[3]->curveType == CurveType::Interface)
-                                b0(interface.sourceDomain)((wingSource->ny-1)*nx) = targetMU(0);
+                                b0(interface.sourceDomain)((nyS-1)*nxS) = targetMU(0);
                             if (wingSource->chi[2]->curveType == CurveType::Interface && wingSource->chi[1]->curveType == CurveType::Interface)
-                                b0(interface.sourceDomain)(nx-1+(wingSource->ny-1)*nx) = targetMU(nx-1);
+                                b0(interface.sourceDomain)(nxS-1+(nyS-1)*nxS) = targetMU.back();
                             break;
                         case 3: // West
-                            for (size_t j = 1; j < ny-1; j++)
-                                b0(interface.sourceDomain)(j*wingSource->nx) = targetMU(j);
+                            for (size_t j = 1; j < nyS-1; j++)
+                                b0(interface.sourceDomain)(j*nxS) = targetMU(j);
                             if (wingSource->chi[0]->curveType == CurveType::Interface && wingSource->chi[3]->curveType == CurveType::Boundary)
                                 b0(interface.sourceDomain)(0) = targetMU(0);
                             if (wingSource->chi[2]->curveType == CurveType::Interface && wingSource->chi[3]->curveType == CurveType::Interface)
-                                b0(interface.sourceDomain)((ny-1)*wingSource->nx) = targetMU(ny-1);
+                                b0(interface.sourceDomain)((nyS-1)*nxS) = targetMU.back();
                             break;
                     }
                     break;
                 }
                 case 1: // East
                 {
-                    arma::rowvec    MU(ny, arma::fill::zeros);
-                    arma::rowvec dMUd1(ny, arma::fill::zeros);
-                    arma::rowvec dMUd2(ny, arma::fill::zeros);
-                    for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                    arma::rowvec    MU(nyT, arma::fill::zeros);
+                    arma::rowvec dMUd1(nyT, arma::fill::zeros);
+                    arma::rowvec dMUd2(nyT, arma::fill::zeros);
+                    for (size_t p = 0; p < nxT; p++) // Loop over Chebyshev Polynomial 1-direction
                     {
                         double dt1 = pow(p, 2);
-                        for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
-                            for (size_t j = 0; j < ny; j++) // Loop over Collocation Points in 2-direction
+                        for (size_t q = 0; q < nyT; q++) // Loop over Chebyshev Polynomial 2-direction
+                            for (size_t j = 0; j < nyT; j++) // Loop over Collocation Points in 2-direction
                             {
-                                MU(j)    += mu_hat(p+q*nx) *       T2(j, q);
-                                dMUd1(j) += mu_hat(p+q*nx) * dt1 * T2(j, q);
-                                dMUd2(j) += mu_hat(p+q*nx) *      dT2(j, q);
+                                MU(j)    += mu_hat(p+q*nxT) *       T2(j, q);
+                                dMUd1(j) += mu_hat(p+q*nxT) * dt1 * T2(j, q);
+                                dMUd2(j) += mu_hat(p+q*nxT) *      dT2(j, q);
                             }
                     }
                     arma::rowvec h_1s1 = wings[interface.targetDomain]->h_1s1_east;
@@ -639,55 +639,55 @@ void Aerodynamics::solve()
                     {
                         case 0: // South
                             targetMU = reverse(targetMU);
-                            for (size_t i = 1; i < nx-1; i++)
+                            for (size_t i = 1; i < nxS-1; i++)
                                 b0(interface.sourceDomain)(i) = targetMU(i);
                             if (wingSource->chi[0]->curveType == CurveType::Interface && wingSource->chi[3]->curveType == CurveType::Interface)
                                 b0(interface.sourceDomain)(0) = targetMU(0);
                             if (wingSource->chi[0]->curveType == CurveType::Boundary  && wingSource->chi[1]->curveType == CurveType::Interface)
-                                b0(interface.sourceDomain)(nx-1) = targetMU(nx-1);
+                                b0(interface.sourceDomain)(nxS-1) = targetMU.back();
                             break;
                         case 1: // East
                             targetMU = reverse(targetMU);
-                            for (size_t j = 1; j < ny-1; j++)
-                                b0(interface.sourceDomain)(wingSource->nx-1+j*wingSource->nx) = targetMU(j);
+                            for (size_t j = 1; j < nyS-1; j++)
+                                b0(interface.sourceDomain)(nxS-1+j*nxS) = targetMU(j);
                             if (wingSource->chi[0]->curveType == CurveType::Interface && wingSource->chi[1]->curveType == CurveType::Interface)
-                                b0(interface.sourceDomain)(wingSource->nx-1) = targetMU(0);
+                                b0(interface.sourceDomain)(nxS-1) = targetMU(0);
                             if (wingSource->chi[2]->curveType == CurveType::Interface && wingSource->chi[1]->curveType == CurveType::Boundary)
-                                b0(interface.sourceDomain)(wingSource->nx-1+(ny-1)*wingSource->nx) = targetMU(ny-1);
+                                b0(interface.sourceDomain)(nxS-1+(nyS-1)*nxS) = targetMU.back();
                             break;
                         case 2: // North
-                            for (size_t i = 1; i < nx-1; i++)
-                                b0(interface.sourceDomain)(i+(wingSource->ny-1)*nx) = targetMU(i);
+                            for (size_t i = 1; i < nxS-1; i++)
+                                b0(interface.sourceDomain)(i+(nyS-1)*nxS) = targetMU(i);
                             if (wingSource->chi[2]->curveType == CurveType::Boundary  && wingSource->chi[3]->curveType == CurveType::Interface)
-                                b0(interface.sourceDomain)((wingSource->ny-1)*nx) = targetMU(0);
+                                b0(interface.sourceDomain)((nyS-1)*nxS) = targetMU(0);
                             if (wingSource->chi[2]->curveType == CurveType::Interface && wingSource->chi[1]->curveType == CurveType::Interface)
-                                b0(interface.sourceDomain)(nx-1+(wingSource->ny-1)*nx) = targetMU(nx-1);
+                                b0(interface.sourceDomain)(nxS-1+(nyS-1)*nxS) = targetMU.back();
                             break;
                         case 3: // West
-                            for (size_t j = 1; j < ny-1; j++)
-                                b0(interface.sourceDomain)(j*wingSource->nx) = targetMU(j);
+                            for (size_t j = 1; j < nyS-1; j++)
+                                b0(interface.sourceDomain)(j*nxS) = targetMU(j);
                             if (wingSource->chi[0]->curveType == CurveType::Interface && wingSource->chi[3]->curveType == CurveType::Boundary)
                                 b0(interface.sourceDomain)(0) = targetMU(0);
                             if (wingSource->chi[2]->curveType == CurveType::Interface && wingSource->chi[3]->curveType == CurveType::Interface)
-                                b0(interface.sourceDomain)((ny-1)*wingSource->nx) = targetMU(ny-1);
+                                b0(interface.sourceDomain)((nyS-1)*nxS) = targetMU.back();
                             break;
                     }
                     break;
                 }
                 case 2: // North
                 {
-                    arma::vec    MU(nx, arma::fill::zeros);
-                    arma::vec dMUd1(nx, arma::fill::zeros);
-                    arma::vec dMUd2(nx, arma::fill::zeros);
-                    for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+                    arma::vec    MU(nxT, arma::fill::zeros);
+                    arma::vec dMUd1(nxT, arma::fill::zeros);
+                    arma::vec dMUd2(nxT, arma::fill::zeros);
+                    for (size_t q = 0; q < nyT; q++) // Loop over Chebyshev Polynomial 2-direction
                     {
                         double dt2 = pow(q, 2);
-                        for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
-                            for (size_t i = 0; i < nx; i++) // Loop over Collocation Points in 1-direction
+                        for (size_t p = 0; p < nxT; p++) // Loop over Chebyshev Polynomial 1-direction
+                            for (size_t i = 0; i < nxT; i++) // Loop over Collocation Points in 1-direction
                             {
-                                MU(i)    += mu_hat(p+q*nx) *  T1(i, p);
-                                dMUd1(i) += mu_hat(p+q*nx) * dT1(i, p);
-                                dMUd2(i) += mu_hat(p+q*nx) *  T1(i, p) * dt2;
+                                MU(i)    += mu_hat(p+q*nxT) *  T1(i, p);
+                                dMUd1(i) += mu_hat(p+q*nxT) * dT1(i, p);
+                                dMUd2(i) += mu_hat(p+q*nxT) *  T1(i, p) * dt2;
                             }
                     }
                     arma::vec h_2s1 = wings[interface.targetDomain]->h_2s1_north;
@@ -696,58 +696,58 @@ void Aerodynamics::solve()
                     switch (interface.sourceCurve)
                     {
                         case 0: // South
-                            for (size_t i = 1; i < nx-1; i++)
+                            for (size_t i = 1; i < nxS-1; i++)
                                 b0(interface.sourceDomain)(i) = targetMU(i);
                             if (wingSource->chi[0]->curveType == CurveType::Interface && wingSource->chi[3]->curveType == CurveType::Interface)
                                 b0(interface.sourceDomain)(0) = targetMU(0);
                             if (wingSource->chi[0]->curveType == CurveType::Boundary  && wingSource->chi[1]->curveType == CurveType::Interface)
-                                b0(interface.sourceDomain)(nx-1) = targetMU(nx-1);
+                                b0(interface.sourceDomain)(nxS-1) = targetMU.back();
                             break;
                         case 1: // East
-                            for (size_t j = 1; j < ny-1; j++)
-                                b0(interface.sourceDomain)(wingSource->nx-1+j*wingSource->nx) = targetMU(j);
+                            for (size_t j = 1; j < nyS-1; j++)
+                                b0(interface.sourceDomain)(nxS-1+j*nxS) = targetMU(j);
                             if (wingSource->chi[0]->curveType == CurveType::Interface && wingSource->chi[1]->curveType == CurveType::Interface)
-                                b0(interface.sourceDomain)(wingSource->nx-1) = targetMU(0);
+                                b0(interface.sourceDomain)(nxS-1) = targetMU(0);
                             if (wingSource->chi[2]->curveType == CurveType::Interface && wingSource->chi[1]->curveType == CurveType::Boundary)
-                                b0(interface.sourceDomain)(wingSource->nx-1+(ny-1)*wingSource->nx) = targetMU(ny-1);
+                                b0(interface.sourceDomain)(nxS-1+(nyS-1)*nxS) = targetMU.back();
                             break;
                         case 2: // North
                             targetMU = reverse(targetMU);
-                            for (size_t i = 1; i < nx-1; i++)
-                                b0(interface.sourceDomain)(i+(wingSource->ny-1)*nx) = targetMU(i);
+                            for (size_t i = 1; i < nxS-1; i++)
+                                b0(interface.sourceDomain)(i+(nyS-1)*nxS) = targetMU(i);
                             if (wingSource->chi[2]->curveType == CurveType::Boundary  && wingSource->chi[3]->curveType == CurveType::Interface)
-                                b0(interface.sourceDomain)((wingSource->ny-1)*nx) = targetMU(0);
+                                b0(interface.sourceDomain)((nyS-1)*nxS) = targetMU(0);
                             if (wingSource->chi[2]->curveType == CurveType::Interface && wingSource->chi[1]->curveType == CurveType::Interface)
-                                b0(interface.sourceDomain)(nx-1+(wingSource->ny-1)*nx) = targetMU(nx-1);
+                                b0(interface.sourceDomain)(nxS-1+(nyS-1)*nxS) = targetMU.back();
                             break;
                         case 3: // West
                             targetMU = reverse(targetMU);
-                            for (size_t j = 1; j < ny-1; j++)
-                                b0(interface.sourceDomain)(j*wingSource->nx) = targetMU(j);
+                            for (size_t j = 1; j < nyS-1; j++)
+                                b0(interface.sourceDomain)(j*nxS) = targetMU(j);
                             if (wingSource->chi[0]->curveType == CurveType::Interface && wingSource->chi[3]->curveType == CurveType::Boundary)
                                 b0(interface.sourceDomain)(0) = targetMU(0);
                             if (wingSource->chi[2]->curveType == CurveType::Interface && wingSource->chi[3]->curveType == CurveType::Interface)
-                                b0(interface.sourceDomain)((ny-1)*wingSource->nx) = targetMU(ny-1);
+                                b0(interface.sourceDomain)((nyS-1)*nxS) = targetMU.back();
                             break;
                     }
                     break;
                 }
                 case 3: // West
                 {
-                    arma::rowvec    MU(ny, arma::fill::zeros);
-                    arma::rowvec dMUd1(ny, arma::fill::zeros);
-                    arma::rowvec dMUd2(ny, arma::fill::zeros);
-                    for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                    arma::rowvec    MU(nyT, arma::fill::zeros);
+                    arma::rowvec dMUd1(nyT, arma::fill::zeros);
+                    arma::rowvec dMUd2(nyT, arma::fill::zeros);
+                    for (size_t p = 0; p < nxT; p++) // Loop over Chebyshev Polynomial 1-direction
                     {
                         double  t1 = pow(-1, p);
                         double dt1 = pow(-1, p+1) * pow(p, 2);
-                        for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
-                            for (size_t j = 0; j < ny; j++) // Loop over Collocation Points in 2-direction
+                        for (size_t q = 0; q < nyT; q++) // Loop over Chebyshev Polynomial 2-direction
+                            for (size_t j = 0; j < nyT; j++) // Loop over Collocation Points in 2-direction
                             {
 
-                                MU(j)    += mu_hat(p+q*nx) *  t1 *  T2(j, q);
-                                dMUd1(j) += mu_hat(p+q*nx) * dt1 *  T2(j, q);
-                                dMUd2(j) += mu_hat(p+q*nx) *  t1 * dT2(j, q);
+                                MU(j)    += mu_hat(p+q*nxT) *  t1 *  T2(j, q);
+                                dMUd1(j) += mu_hat(p+q*nxT) * dt1 *  T2(j, q);
+                                dMUd2(j) += mu_hat(p+q*nxT) *  t1 * dT2(j, q);
                             }
                     }
                     arma::rowvec h_1s1 = wings[interface.targetDomain]->h_1s1_west;
@@ -756,38 +756,38 @@ void Aerodynamics::solve()
                     switch (interface.sourceCurve)
                     {
                         case 0: // South
-                            for (size_t i = 1; i < nx-1; i++)
+                            for (size_t i = 1; i < nxS-1; i++)
                                 b0(interface.sourceDomain)(i) = targetMU(i);
                             if (wingSource->chi[0]->curveType == CurveType::Interface && wingSource->chi[3]->curveType == CurveType::Interface)
                                 b0(interface.sourceDomain)(0) = targetMU(0);
                             if (wingSource->chi[0]->curveType == CurveType::Boundary  && wingSource->chi[1]->curveType == CurveType::Interface)
-                                b0(interface.sourceDomain)(nx-1) = targetMU(nx-1);
+                                b0(interface.sourceDomain)(nxS-1) = targetMU.back();
                             break;
                         case 1: // East
-                            for (size_t j = 1; j < ny-1; j++)
-                                b0(interface.sourceDomain)(wingSource->nx-1+j*wingSource->nx) = targetMU(j);
+                            for (size_t j = 1; j < nyS-1; j++)
+                                b0(interface.sourceDomain)(nxS-1+j*nxS) = targetMU(j);
                             if (wingSource->chi[0]->curveType == CurveType::Interface && wingSource->chi[1]->curveType == CurveType::Interface)
-                                b0(interface.sourceDomain)(nx-1) = targetMU(0);
+                                b0(interface.sourceDomain)(nxS-1) = targetMU(0);
                             if (wingSource->chi[2]->curveType == CurveType::Interface && wingSource->chi[1]->curveType == CurveType::Boundary)
-                                b0(interface.sourceDomain)(wingSource->nx-1+(ny-1)*wingSource->nx) = targetMU(ny-1);
+                                b0(interface.sourceDomain)(nxS-1+(nyS-1)*nxS) = targetMU.back();
                             break;
                         case 2: // North
                             targetMU = reverse(targetMU);
-                            for (size_t i = 1; i < nx-1; i++)
-                                b0(interface.sourceDomain)(i+(wingSource->ny-1)*nx) = targetMU(i);
+                            for (size_t i = 1; i < nxS-1; i++)
+                                b0(interface.sourceDomain)(i+(nyS-1)*nxS) = targetMU(i);
                             if (wingSource->chi[2]->curveType == CurveType::Boundary  && wingSource->chi[3]->curveType == CurveType::Interface)
-                                b0(interface.sourceDomain)((wingSource->ny-1)*nx) = targetMU(0);
+                                b0(interface.sourceDomain)((nyS-1)*nxS) = targetMU(0);
                             if (wingSource->chi[2]->curveType == CurveType::Interface && wingSource->chi[1]->curveType == CurveType::Interface)
-                                b0(interface.sourceDomain)(nx-1+(wingSource->ny-1)*nx) = targetMU(nx-1);
+                                b0(interface.sourceDomain)(nxS-1+(nyS-1)*nxS) = targetMU.back();
                             break;
                         case 3: // West
                             targetMU = reverse(targetMU);
-                            for (size_t j = 1; j < ny-1; j++)
-                                b0(interface.sourceDomain)(j*wingSource->nx) = targetMU(j);
+                            for (size_t j = 1; j < nyS-1; j++)
+                                b0(interface.sourceDomain)(j*nxS) = targetMU(j);
                             if (wingSource->chi[0]->curveType == CurveType::Interface && wingSource->chi[3]->curveType == CurveType::Boundary)
                                 b0(interface.sourceDomain)(0) = targetMU(0);
                             if (wingSource->chi[2]->curveType == CurveType::Interface && wingSource->chi[3]->curveType == CurveType::Interface)
-                                b0(interface.sourceDomain)((ny-1)*wingSource->nx) = targetMU(ny-1);
+                                b0(interface.sourceDomain)((nyS-1)*nxS) = targetMU.back();
                             break;
                     }
                     break;
@@ -921,8 +921,8 @@ void Aerodynamics::solve()
             nx = wingTarget->nx;
             ny = wingTarget->ny;
             mu_hat = wingTarget->mu_hat;
-             T1 = wingTarget->T1;
-             T2 = wingTarget->T2;
+            T1  = wingTarget->T1;
+            T2  = wingTarget->T2;
             dT1 = wingTarget->dT1;
             dT2 = wingTarget->dT2;
             switch (interface.targetCurve)

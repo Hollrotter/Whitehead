@@ -1,4 +1,4 @@
-set terminal png size 2000, 1000
+set terminal png background rgb 'black' size 2000, 1000
 
 set output '../../png/Aerodynamics/v.png'
 set cbrange [-0.5:]
