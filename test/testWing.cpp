@@ -203,7 +203,7 @@ int main()
             w.pitch(5);
 
             w.boundary(&chi1, BC::Neumann);
-            w.boundary(&chi2, BC::Derivative_x);
+            w.boundary(&chi2, BC::Kutta);
             w.boundary(&chi3, BC::Dirichlet);
             w.boundary(&chi4, BC::Dirichlet);
 

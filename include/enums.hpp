@@ -14,8 +14,7 @@ enum class BC
     Dirichlet, // Boundary condition with precribed value
     Neumann, // Boundary condition with precribed derivative/gradient
     Robin, // Mixed boundary condition
-    Derivative_x, // Boundary conidtion with prescribed derivative in x-direction
-    Derivative_y, // Boundary condition with prescribed derivative in y-direction
+    Kutta, // Boundary conidtion for Kutta condition at Wing trailing edge
     None // No boundary condition
 };
 

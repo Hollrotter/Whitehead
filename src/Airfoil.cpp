@@ -65,7 +65,7 @@ void Airfoil::postprocessing()
     dcp.zeros(nx);
     dcp.fill(gamma_hat(0));
     for (size_t i = 0; i < nx; i++)
-        dcp(i, 0) += 2*boost::math::chebyshev_clenshaw_recurrence(gamma_hat.memptr(), nx, xi(i));
+        dcp(i) += 2*boost::math::chebyshev_clenshaw_recurrence(gamma_hat.memptr(), nx, xi(i));
     cL = 0;
     cM = 2./3;
     for (size_t k = 0; k < nx; k+=2)

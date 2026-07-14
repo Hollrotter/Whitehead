@@ -140,7 +140,7 @@ void Wing::muBoundarySouth(const size_t i)
             }
             b(i) = mu.south(i);
             break;
-        case BC::Derivative_x:
+        case BC::Kutta:
         {
             auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(xi_1(i), -1, chi);
             double detJ = dxdx1*dydx2 - dxdx2*dydx1;
@@ -152,22 +152,6 @@ void Wing::muBoundarySouth(const size_t i)
                 double dt2 = pow(-1, q+1)*pow(q, 2);
                 for (size_t p = 0; p < nx; p++)
                     A(i, p+q*nx) = J11_inv*dT1(i, p)*t2 + J21_inv*T1(i, p)*dt2;
-            }
-            b(i) = mu.south(i);
-            break;
-        }
-        case BC::Derivative_y:
-        {
-            auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(xi_1(i), -1, chi);
-            double detJ = dxdx1*dydx2 - dxdx2*dydx1;
-            double J12_inv =-dxdx2/detJ;
-            double J22_inv = dxdx1/detJ;
-            for (size_t q = 0; q < ny; q++)
-            {
-                double  t2 = pow(-1, q);
-                double dt2 = pow(-1, q+1)*pow(q, 2);
-                for (size_t p = 0; p < nx; p++)
-                    A(i, p+q*nx) = J12_inv*dT1(i, p)*t2 + J22_inv*T1(i, p)*dt2;
             }
             b(i) = mu.south(i);
             break;
@@ -206,7 +190,7 @@ void Wing::muBoundaryNorth(const size_t i)
             }
             b(k) = mu.north(i);
             break;
-        case BC::Derivative_x:
+        case BC::Kutta:
         {
             auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(xi_1(i), 1, chi);
             double detJ = dxdx1*dydx2 - dxdx2*dydx1;
@@ -217,21 +201,6 @@ void Wing::muBoundaryNorth(const size_t i)
                 double dt2 = pow(q, 2);
                 for (size_t p = 0; p < nx; p++)
                     A(k, p+q*nx) = J11_inv*dT1(i, p) + J21_inv*T1(i, p)*dt2;
-            }
-            b(k) = mu.north(i);
-            break;
-        }
-        case BC::Derivative_y:
-        {
-            auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(xi_1(i), 1, chi);
-            double detJ = dxdx1*dydx2 - dxdx2*dydx1;
-            double J12_inv =-dxdx2/detJ;
-            double J22_inv = dxdx1/detJ;
-            for (size_t q = 0; q < ny; q++)
-            {
-                double dt2 = pow(q, 2);
-                for (size_t p = 0; p < nx; p++)
-                    A(k, p+q*nx) = J12_inv*dT1(i, p) + J22_inv*T1(i, p)*dt2;
             }
             b(k) = mu.north(i);
             break;
@@ -276,7 +245,7 @@ void Wing::muBoundaryWest(const size_t j)
             }
             b(k) = mu.west(j);
             break;
-        case BC::Derivative_x:
+        case BC::Kutta:
         {
             auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(-1, xi_2(j), chi);
             double detJ = dxdx1*dydx2 - dxdx2*dydx1;
@@ -288,22 +257,6 @@ void Wing::muBoundaryWest(const size_t j)
                 double dt1 = pow(-1, p+1)*pow(p, 2);
                 for (size_t q = 0; q < ny; q++)
                     A(k, p+q*nx) = J11_inv*dt1*T2(j, q) + J21_inv*t1*dT2(j, q);
-            }
-            b(k) = mu.west(j);
-            break;
-        }
-        case BC::Derivative_y:
-        {
-            auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(-1, xi_2(j), chi);
-            double detJ = dxdx1*dydx2 - dxdx2*dydx1;
-            double J12_inv =-dxdx2/detJ;
-            double J22_inv = dxdx1/detJ;
-            for (size_t p = 0; p < nx; p++)
-            {
-                double  t1 = pow(-1, p);
-                double dt1 = pow(-1, p+1)*pow(p, 2);
-                for (size_t q = 0; q < ny; q++)
-                    A(k, p+q*nx) = J12_inv*dt1*T2(j, q) + J22_inv*t1*dT2(j, q);
             }
             b(k) = mu.west(j);
             break;
@@ -342,7 +295,7 @@ void Wing::muBoundaryEast(const size_t j)
             }
             b(k) = mu.east(j);
             break;
-        case BC::Derivative_x:
+        case BC::Kutta:
         {
             auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(1, xi_2(j), chi);
             double detJ = dxdx1*dydx2 - dxdx2*dydx1;
@@ -353,21 +306,6 @@ void Wing::muBoundaryEast(const size_t j)
                 double dt1 = pow(p, 2);
                 for (size_t q = 0; q < ny; q++)
                     A(k, p+q*nx) = J11_inv*dt1*T2(j, q) + J21_inv*dT2(j, q);
-            }
-            b(k) = mu.east(j);
-            break;
-        }
-        case BC::Derivative_y:
-        {
-            auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(1, xi_2(j), chi);
-            double detJ = dxdx1*dydx2 - dxdx2*dydx1;
-            double J12_inv =-dxdx2/detJ;
-            double J22_inv = dxdx1/detJ;
-            for (size_t p = 0; p < nx; p++)
-            {
-                double dt1 = pow(p, 2);
-                for (size_t q = 0; q < ny; q++)
-                    A(k, p+q*nx) = J12_inv*dt1*T2(j, q) + J22_inv*dT2(j, q);
             }
             b(k) = mu.east(j);
             break;

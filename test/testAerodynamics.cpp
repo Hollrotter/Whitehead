@@ -152,11 +152,11 @@ int main()
             Aerodynamics a({&w1, &w2});
             a.pitch(2);
 
-            a.boundary(&chi2, BC::Derivative_x);
+            a.boundary(&chi2, BC::Kutta);
             a.boundary(&chi3, BC::Dirichlet);
             a.boundary(&chi4, BC::Dirichlet);
             a.boundary(&chi5, BC::Dirichlet);
-            a.boundary(&chi6, BC::Derivative_x);
+            a.boundary(&chi6, BC::Kutta);
             a.boundary(&chi7, BC::Dirichlet);
 
             a.setIterations(100);
