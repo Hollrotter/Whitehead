@@ -22,7 +22,8 @@ set key tc rgb 'gray'
 set border lc rgb 'gray'
 
 # set view map
+set pm3d depthorder base
 set pm3d interpolate 10,10 corners2color mean
 
-splot '../../Data/Aerodynamics/nonsmooth_1' u 2:1:3:5 notitle with pm3d,\
-      '../../Data/Aerodynamics/nonsmooth_0' u 2:1:3:5 notitle with pm3d
+splot '../../Data/Aerodynamics/nonsmooth_0' u 2:1:3:5 notitle with pm3d,\
+      '../../Data/Aerodynamics/nonsmooth_1' u 2:1:3:5 notitle with pm3d

@@ -2,7 +2,7 @@
 
 int main()
 {
-    switch (0)
+    switch (3)
     {
         case 0: // Rectangle (divided at y=0)
         {
@@ -163,6 +163,80 @@ int main()
             a.nonlinear();
 
             a.output("plot/Data/Aerodynamics/nonsmooth");
+            break;
+        }
+        case 3: // Panel
+        {
+            /**
+             * Rectangular Wing split up into an arbitrary number of Panels.
+             * This will in practice never be done. The purpose of this test
+             * is to see the results with multiple surfaces and interfaces.
+             */
+            double x_min =-1;
+            double x_max = 1;
+            double y_min =-1;
+            double y_max = 1;
+
+            const size_t nx = 6; // Number of Panels in x-direction
+            const size_t ny = 6; // Number of Panels in y-direction
+
+            double dx = (x_max-x_min)/nx;
+            double dy = (y_max-y_min)/ny;
+
+            size_t n1 = 10; // Number of nodes per panel in x-direction
+            size_t n2 = 10; // Number of nodes per panel in y-direction
+
+            std::array<std::array<Point, ny+1>, nx+1> points;
+            std::array<std::array<Lagrange::CurveInterpolant, ny+1>, nx> chiH;
+            std::array<std::array<Lagrange::CurveInterpolant, ny>, nx+1> chiV;
+            std::vector<Wing> wings;
+            wings.reserve(nx*ny);
+
+            for (size_t j = 0; j < ny; j++)
+                for (size_t i = 0; i < nx; i++)
+                {
+                    points[i][j]     = Point(x_min+i*dx, y_min+j*dy);
+                    points[i+1][j]   = Point(x_min+(i+1)*dx, y_min+j*dy);
+                    points[i][j+1]   = Point(x_min+i*dx, y_min+(j+1)*dy);
+                    points[i+1][j+1] = Point(x_min+(i+1)*dx, y_min+(j+1)*dy);
+                }
+            
+            for (size_t j = 0; j < ny; j++)
+                for (size_t i = 0; i < nx; i++)
+                {
+                    chiH[i][j]   = Lagrange::CurveInterpolant(points[i][j],   points[i+1][j],   n1);
+                    chiH[i][j+1] = Lagrange::CurveInterpolant(points[i][j+1], points[i+1][j+1], n1);
+                    chiV[i][j]   = Lagrange::CurveInterpolant(points[i][j],   points[i][j+1],   n2);
+                    chiV[i+1][j] = Lagrange::CurveInterpolant(points[i+1][j], points[i+1][j+1], n2);
+                    Wing w({&chiH[i][j], &chiV[i+1][j], &chiH[i][j+1], &chiV[i][j]});
+                    wings.emplace_back(w);
+                }
+
+            std::vector<Wing*> wings_ptr;
+            for (size_t j = 0; j < ny; j++)
+                for (size_t i = 0; i < nx; i++)
+                    wings_ptr.push_back(&wings[i+j*nx]);
+
+            Aerodynamics panel(wings_ptr);
+            panel.setIterations(500);
+            panel.setlambda(10);
+            panel.pitch(5);
+
+            for (size_t j = 0; j < ny; j++)
+            {
+                panel.boundary(&chiV[0][j],  BC::Dirichlet);
+                panel.boundary(&chiV[nx][j], BC::Dirichlet);
+            }
+
+            for (size_t i = 0; i < nx; i++)
+            {
+                panel.boundary(&chiH[i][0],  BC::Dirichlet);
+                panel.boundary(&chiH[i][ny], BC::Dirichlet);
+            }
+
+            panel.linear();
+
+            panel.output("plot/Data/Aerodynamics/panel");
             break;
         }
     }

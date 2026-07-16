@@ -796,9 +796,12 @@ void Aerodynamics::solve()
         }
         // Calculate the influence of the wing surfaces on each other
         for (size_t tD = 0; tD < wings.size(); tD++)
+        {
+            wings[tD]->b = b0(tD);
             for (size_t sD = 0; sD < wings.size(); sD++)
                 if (sD != tD)
-                    wings[tD]->b = b0(tD) + bw(tD, sD)*wings[sD]->mu_hat;
+                    wings[tD]->b += bw(tD, sD)*wings[sD]->mu_hat;
+        }
         // Calculation for each wing surface
         switch (analysis)
         {

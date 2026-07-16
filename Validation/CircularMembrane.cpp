@@ -110,8 +110,8 @@ int main()
         arma::mat vx_1 = (J22_1%m1.V1() - J21_1%m1.V2())/(J11_1%J22_1 - J12_1%J21_1);
         arma::mat vx_2 = (J22_2%m2.V1() - J21_2%m2.V2())/(J11_2%J22_2 - J12_2%J21_2);
 
-        arma::vec x = join_vert(m1.X().col(0)+vx_1.col(0), m2.X().col(0)+vx_2.col(0));
-        arma::vec z = join_vert(m1.Z().col(0), m2.Z().col(0));
+        x = join_vert(m1.X().col(0)+vx_1.col(0), m2.X().col(0)+vx_2.col(0));
+        z = join_vert(m1.Z().col(0), m2.Z().col(0));
 
         std::ofstream file("plot/Data/CircularMembrane_"+std::to_string(k+1)+".txt");
         for (size_t i = 0; i < z.size(); i++)

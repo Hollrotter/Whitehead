@@ -341,9 +341,9 @@ int main()
         // Boundary Conditions
 
         // West and East
-        arma::mat h_11s = sqrt(1/e11ss);
-        arma::mat h_12s = e_12ss/sqrt(e_22ss);
-        arma::mat h_22s = sqrt(e_22ss);
+        // arma::mat h_11s = sqrt(1/e11ss);
+        // arma::mat h_12s = e_12ss/sqrt(e_22ss);
+        // arma::mat h_22s = sqrt(e_22ss);
         
         arma::mat h_1s1 = sqrt(e11ss);
         arma::mat h_1s2 = e12ss/sqrt(e11ss);
@@ -359,9 +359,9 @@ int main()
         // arma::mat n_1s2s_WE = h_11s%h_12s%n11_A + h_11s%h_22s%n12_A;
 
         // North and South
-        h_11s    = sqrt(e_11ss);
-        arma::mat h_21s = e_12ss/sqrt(e_11ss);
-        h_22s    = sqrt(1/e22ss);
+        // h_11s    = sqrt(e_11ss);
+        // arma::mat h_21s = e_12ss/sqrt(e_11ss);
+        // h_22s    = sqrt(1/e22ss);
         
         h_1s1    = 1/sqrt(e_11ss);
         arma::mat h_2s1 = e12ss/sqrt(e22ss);

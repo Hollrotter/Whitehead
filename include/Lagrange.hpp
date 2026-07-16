@@ -27,15 +27,15 @@ namespace Lagrange
     arma::mat interpolation2D(const arma::mat Tx, const arma::mat Ty, const arma::mat z, const arma::vec xi, const arma::vec eta);
     class CurveInterpolant
     {
-        arma::vec x = arma::zeros(1);
-        arma::vec y = arma::zeros(1);
+        arma::vec x;
+        arma::vec y;
         arma::vec nodes;
         arma::vec w = barycentricWeights(nodes);
         CurveType curveType = CurveType::Boundary;
         CurveInterpolant(arma::vec _x, arma::vec _y, double r) : x(_x), y(_y), nodes(Chebyshev::gaussLobatto(x.size())) {}
         CurveInterpolant arc(Point p1, Point p2, Point pm, double r, size_t n);
     public:
-        CurveInterpolant() = default;
+        CurveInterpolant() : x(arma::zeros(1)), y(arma::zeros(1)), nodes(arma::zeros(1)) {}
         // Constructor assuming a gauss Lobatto distribution of the nodes along the curve
         CurveInterpolant(arma::vec _x, arma::vec _y) : x(_x), y(_y), nodes(parametrize()) {}
         // Constructor to set an arbitrary node distribution by inserting s

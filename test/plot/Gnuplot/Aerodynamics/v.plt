@@ -14,8 +14,11 @@ set palette defined (0  0.0 0.0 1.0, \
                      8  1.0 0.0 0.0 )
 set palette maxcolor 100
 
-set xlabel 'y/m'
-set ylabel 'x/m'
+set xlabel 'y/m' tc rgb 'gray'
+set ylabel 'x/m' tc rgb 'gray'
+set zlabel 'dcp' tc rgb 'gray'
+set key tc rgb 'gray'
+set border lc rgb 'gray'
 
 set view map
 set pm3d interpolate 10,10 corners2color mean

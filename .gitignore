@@ -21,10 +21,13 @@ Verification/.vscode/
 Verification/plot/Gnuplot/VLMLinear.plt
 Verification/plot/Gnuplot/WingLinear.plt
 Verification/plot/Gnuplot/WingNonlinear.plt
+Verification/plot/Gnuplot/EllipticWing.plt
+Verification/plot/Gnuplot/EllipticWingMesh.plt
 Verification/plot/Data/
 Verification/plot/png/
 Verification/plot/svg/
 Verification/VLMLinear.cpp
 Verification/WingLinear.cpp
 Verification/WingNonlinear.cpp
+Verification/EllipticWing.cpp
 Verification/Verification
