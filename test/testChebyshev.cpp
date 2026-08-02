@@ -192,10 +192,12 @@ int main()
 			arma::mat a  = arma::randu(nx, ny);
 			arma::mat c1 = arma::randu(nx, ny);
 			arma::mat c2 = arma::randu(nx, ny);
+			
+			arma::mat f1(nx, ny, arma::fill::zeros), f2(nx, ny, arma::fill::none);
+			arma::mat f3(nx, ny, arma::fill::zeros), f4(nx, ny, arma::fill::zeros);
 
 			auto t1 = std::chrono::high_resolution_clock::now();
-
-			arma::mat f1(nx, ny, arma::fill::zeros);
+			
 			for (size_t q = 0; q < ny; q++)
 				for (size_t j = 0; j < ny; j++)
 				{
@@ -209,10 +211,8 @@ int main()
 				}
 						
 			auto t2 = std::chrono::high_resolution_clock::now();
-
-			arma::mat f2(nx, ny, arma::fill::none);
+			
 			arma::vec b(ny, arma::fill::none);
-
 			
 			for (size_t i = 0; i < nx; i++)
 			{
@@ -223,8 +223,6 @@ int main()
 			}
 
 			auto t3 = std::chrono::high_resolution_clock::now();
-
-			arma::mat f3(nx, ny, arma::fill::zeros);
 
 			for (size_t q = 0; q < ny; q++)
 				for (size_t j = 0; j < ny; j++)
@@ -242,12 +240,9 @@ int main()
 
 			auto t4 = std::chrono::high_resolution_clock::now();
 
-			arma::mat f4(nx, ny, arma::fill::zeros);
-
 			auto [a1, a2] = Chebyshev::DerivativeCoefficients(a);
 
-			arma::vec b1(ny, arma::fill::zeros);
-			arma::vec b2(ny, arma::fill::zeros);
+			arma::vec b1(ny, arma::fill::zeros), b2(ny, arma::fill::zeros);
 			
 			for (size_t i = 0; i < nx; i++)
 			{

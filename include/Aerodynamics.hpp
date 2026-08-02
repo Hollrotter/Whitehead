@@ -11,6 +11,7 @@ class Aerodynamics
     Symmetry sym = Symmetry::none;
     Analysis analysis = Analysis::linear;
     double lambda0 = 2;
+    double omega = 0.9;
     arma::field<arma::mat> bw;
     Aerodynamics fromWings(std::vector<Wing*>);
 public:

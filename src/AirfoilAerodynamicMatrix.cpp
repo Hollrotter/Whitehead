@@ -32,8 +32,8 @@ void Airfoil::aerodynamicMatrix()
                 {
                     double F0 = boost::math::chebyshev_t(j, xi(i));
                     double F1 = boost::math::chebyshev_t_prime(j, xi(i));
-                    double tau = (xi_max + xi_min)/2;
-                    A(i, j) += d2r0/dr0*(F0 + F1*tau) * (xi_max - xi_min);
+                    double rho = xi_max - xi_min;
+                    A(i, j) += d2r0/dr0*(F0*rho + F1*pow(rho, 2)/2);
                     if (i > 0)
                     {
                         double I = 0;

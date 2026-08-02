@@ -41,6 +41,9 @@ int main()
             airfoil.pitch(0);
             airfoil.nonlinear();
             airfoil.output("plot/Data/Airfoil/nonlinear");
+
+            std::cout << "cL = " << airfoil.get_lift()   << '\n';
+            std::cout << "cM = " << airfoil.get_moment() << '\n';
             break;
         }
     }

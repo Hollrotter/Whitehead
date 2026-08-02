@@ -87,8 +87,7 @@ std::pair<arma::mat, arma::mat> Chebyshev::DerivativeCoefficients(const arma::ma
 {
 	size_t n = u_hat.n_rows;
 	size_t m = u_hat.n_cols;
-	arma::mat u_bar_1(n, m, arma::fill::none);
-    arma::mat u_bar_2(n, m, arma::fill::none);
+	arma::mat u_bar_1(n, m, arma::fill::none), u_bar_2(n, m, arma::fill::none);
     #pragma omp parallel
     {
         #pragma omp sections

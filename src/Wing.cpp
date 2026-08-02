@@ -241,10 +241,8 @@ void Wing::postprocessing()
             #pragma omp parallel for
             for (size_t i = 0; i < nx; i++) // Loop over nodes in 1-direction
             {
-                arma::vec MU_0_y(ny, arma::fill::none);
-                arma::vec MU_1_y(ny, arma::fill::none);
-                arma::vec MU_2_y(ny, arma::fill::none);
-                for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+                arma::vec MU_0_y(ny, arma::fill::none), MU_1_y(ny, arma::fill::none), MU_2_y(ny, arma::fill::none);
+                for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomials in 2-direction
                 {
                     MU_0_y(q) = MU_0(0, q)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_0.colptr(q), nx, x1(i));
                     MU_1_y(q) = MU_1(0, q)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_1.colptr(q), nx, x1(i));
@@ -271,10 +269,8 @@ void Wing::postprocessing()
             #pragma omp parallel for
             for (size_t i = 0; i < nx; i++) // Loop over nodes in 1-direction
             {
-                arma::vec MU_0_y(ny, arma::fill::none);
-                arma::vec MU_1_y(ny, arma::fill::none);
-                arma::vec MU_2_y(ny, arma::fill::none);
-                for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+                arma::vec MU_0_y(ny, arma::fill::none), MU_1_y(ny, arma::fill::none), MU_2_y(ny, arma::fill::none);
+                for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomials in 2-direction
                 {
                     MU_0_y(q) = MU_0(0, q)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_0.colptr(q), nx, x1(i));
                     MU_1_y(q) = MU_1(0, q)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_1.colptr(q), nx, x1(i));
