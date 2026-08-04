@@ -81,7 +81,7 @@ void DVM::dvmSolve()
  */
 void DVM::dvmEval()
 {
-    arma::vec w = diff(xC/c);
+    arma::vec w = camber.diff(xC/c);
     arma::mat g = solve(trimatu(U), solve(trimatl(L), P*(repelem(w, 1, con) - repelem(alpha.t(), nx, 1))));
     postprocessing(g);
 }
@@ -92,7 +92,7 @@ void DVM::dvmEval()
  */
 void DVM::dvmNonlinear()
 {
-    z = c*camber(x/c);
+    z = camber(x/c);
     geometry();
     nC.zeros(2, nx);
     #pragma omp parallel for

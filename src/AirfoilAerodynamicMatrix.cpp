@@ -21,20 +21,20 @@ void Airfoil::aerodynamicMatrix()
             arma::mat D = Lagrange::derivativeMatrix(xi);
             arma::vec d2xdxi2 = D*dxdxi;
             arma::vec d2zdxi2 = D*dzdxi;
+            nC.col(0) = arma::vec::fixed<2>{-dzdxi(0), dxdxi(0)}/sqrt(pow(dxdxi(0), 2) + pow(dzdxi(0), 2));
             for (size_t i = 1; i < nx; i++)
             {
-                double xi_min = i == 0    ? -1 : xi(i-1);
+                double xi_min = i == 1    ? -1 : xi(i-1);
                 double xi_max = i == nx-1 ?  1 : xi(i+1);
                 double dr0 = sqrt(pow(dxdxi(i), 2) + pow(dzdxi(i), 2));
                 double d2r0 = (dxdxi(i)*d2xdxi2(i) + dzdxi(i)*d2zdxi2(i))/dr0;
-                nC.col(i) = arma::vec{-dzdxi(i), dxdxi(i)}/dr0;
+                nC.col(i) = arma::vec::fixed<2>{-dzdxi(i), dxdxi(i)}/dr0;
                 for (size_t j = 0; j < nx; j++)
                 {
                     double F0 = boost::math::chebyshev_t(j, xi(i));
                     double F1 = boost::math::chebyshev_t_prime(j, xi(i));
-                    double rho = xi_max - xi_min;
-                    A(i, j) += d2r0/dr0*(F0*rho + F1*pow(rho, 2)/2);
-                    if (i > 0)
+                    A(i, j) -= d2r0/dr0*(F0*(xi_max - xi_min) + F1*(pow(xi_max, 2) - pow(xi_min, 2))/2);
+                    if (i > 1)
                     {
                         double I = 0;
                         for (size_t n = 0; n < nx-i; n++)
@@ -47,7 +47,7 @@ void Airfoil::aerodynamicMatrix()
                             double T = boost::math::chebyshev_t(j, xi_gl);
                             I += gl.weight * k1(dr0, dr, dxdxi(i), dzdxi(i), x(i), x_gl, z(i), z_gl, xi(i), xi_gl) * T;
                         }
-                        A(i, j) += I * (xi_min+1)/2;
+                        A(i, j) -= I * (xi_min+1)/2;
                     }
                     if (i < nx-1)
                     {
@@ -62,7 +62,7 @@ void Airfoil::aerodynamicMatrix()
                             double T = boost::math::chebyshev_t(j, xi_gl);
                             I += gl.weight * k1(dr0, dr, dxdxi(i), dzdxi(i), x(i), x_gl, z(i), z_gl, xi(i), xi_gl) * T;
                         }
-                        A(i, j) += I * (1-xi_max)/2;
+                        A(i, j) -= I * (1-xi_max)/2;
                     }
                 }
             }
