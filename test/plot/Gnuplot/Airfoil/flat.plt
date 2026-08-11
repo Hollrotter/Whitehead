@@ -11,5 +11,5 @@ set xtics 0,0.5,2
 set grid
 set output '../../png/Airfoil/flat.png'
 
-plot '../../Data/Airfoil/flat' notitle with lines lw 4 lc rgb 'red',\
-     '../../Data/Airfoil/dcp'  notitle with lines lw 4 lc rgb 'blue'
+plot '../../Data/Airfoil/flat1'     notitle pt 6 lw 4 lc rgb 'red',\
+     '../../Data/Airfoil/dcp' u 1:2 notitle with lines lw 4 lc rgb 'blue'

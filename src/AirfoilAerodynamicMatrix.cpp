@@ -6,13 +6,16 @@
  */
 void Airfoil::aerodynamicMatrix()
 {
-        A.row(0).ones();
-        for (size_t i = 1; i < nx; i++)
+        for (size_t i = 0; i < nx; i++)
         {
-            A(i, 0) = log((1 - xi(i))/(1 + xi(i)));
-            A(i, 1) = 2 + xi(i)*A(i, 0);
-            for (size_t j = 2; j < nx; j++)
-                A(i, j) = 2*(Chebyshev::integral(j-1) + xi(i)*A(i, j-1)) - A(i, j-2);
+            double v = 1; // V_j(xi): Chebyshev Polynomial of the third kind
+            double vp1 = 2*xi(i) - 1; // V_j+1(xi): Next Chebyshev Polynomial
+            for (size_t j = 0; j < nx; j++)
+            {
+                A(i, j) = v;
+                std::swap(v, vp1);
+                vp1 = boost::math::chebyshev_next(xi(i), v, vp1);
+            }
         }
         if (analysis == Analysis::nonlinear)
         {
@@ -22,47 +25,23 @@ void Airfoil::aerodynamicMatrix()
             arma::vec d2xdxi2 = D*dxdxi;
             arma::vec d2zdxi2 = D*dzdxi;
             nC.col(0) = arma::vec::fixed<2>{-dzdxi(0), dxdxi(0)}/sqrt(pow(dxdxi(0), 2) + pow(dzdxi(0), 2));
-            for (size_t i = 1; i < nx; i++)
+            for (size_t i = 0; i < nx; i++)
             {
-                double xi_min = i == 1    ? -1 : xi(i-1);
-                double xi_max = i == nx-1 ?  1 : xi(i+1);
                 double dr0 = sqrt(pow(dxdxi(i), 2) + pow(dzdxi(i), 2));
-                double d2r0 = (dxdxi(i)*d2xdxi2(i) + dzdxi(i)*d2zdxi2(i))/dr0;
                 nC.col(i) = arma::vec::fixed<2>{-dzdxi(i), dxdxi(i)}/dr0;
-                for (size_t j = 0; j < nx; j++)
+                for (size_t n = 0; n < nx; n++)
                 {
-                    double F0 = boost::math::chebyshev_t(j, xi(i));
-                    double F1 = boost::math::chebyshev_t_prime(j, xi(i));
-                    A(i, j) -= d2r0/dr0*(F0*(xi_max - xi_min) + F1*(pow(xi_max, 2) - pow(xi_min, 2))/2);
-                    if (i > 1)
+                    double xi_w = cos(arma::datum::pi*(nx - n)/(nx+0.5));
+                    auto [ x_gl,  z_gl] = chi->evaluate(xi_w);
+                    auto [dx_gl, dz_gl] = chi->derivative(xi_w);
+                    double dr = sqrt(pow(dx_gl, 2) + pow(dz_gl, 2));
+                    double w = 1;
+                    double wp1 = 2*xi_w + 1;
+                    for (size_t j = 0; j < nx; j++)
                     {
-                        double I = 0;
-                        for (size_t n = 0; n < nx-i; n++)
-                        {
-                            fastgl::QuadPair gl = fastgl::GLPair(nx-i, n+1);
-                            double xi_gl = (1 - gl.x())/2*(xi_min + 1) - 1;
-                            auto [ x_gl,  z_gl] = chi->evaluate(xi_gl);
-                            auto [dx_gl, dz_gl] = chi->derivative(xi_gl);
-                            double dr = sqrt(pow(dx_gl, 2) + pow(dz_gl, 2));
-                            double T = boost::math::chebyshev_t(j, xi_gl);
-                            I += gl.weight * k1(dr0, dr, dxdxi(i), dzdxi(i), x(i), x_gl, z(i), z_gl, xi(i), xi_gl) * T;
-                        }
-                        A(i, j) -= I * (xi_min+1)/2;
-                    }
-                    if (i < nx-1)
-                    {
-                        double I = 0;
-                        for (size_t n = 0; n < i+2; n++)
-                        {
-                            fastgl::QuadPair gl = fastgl::GLPair(i+2, n+1);
-                            double xi_gl = (1 - gl.x())/2*(1 - xi_max) + xi_max;
-                            auto [ x_gl,  z_gl] = chi->evaluate(xi_gl);
-                            auto [dx_gl, dz_gl] = chi->derivative(xi_gl);
-                            double dr = sqrt(pow(dx_gl, 2) + pow(dz_gl, 2));
-                            double T = boost::math::chebyshev_t(j, xi_gl);
-                            I += gl.weight * k1(dr0, dr, dxdxi(i), dzdxi(i), x(i), x_gl, z(i), z_gl, xi(i), xi_gl) * T;
-                        }
-                        A(i, j) -= I * (1-xi_max)/2;
+                        A(i, j) += (1-xi_w)/(nx+0.5) * k1(dr0, dr, dxdxi(i), dzdxi(i), x(i), x_gl, z(i), z_gl, xi(i), xi_w) * w;
+                        std::swap(w, wp1);
+                        wp1 = boost::math::chebyshev_next(xi_w, w, wp1);
                     }
                 }
             }

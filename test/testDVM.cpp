@@ -30,9 +30,15 @@ int main()
             dvm1.dvm();
             dvm1.output("plot/Data/DVM/dvm1");
 
+            std::cout << "dcLdalpha_exact      = " << arma::datum::tau         << '\n';
+            std::cout << "dcLdalpha_numerical  = " << dvm1.get_lift()(0)/alpha << '\n';
+
             DVM dvm2(c, N, [&](double xc){ return 4*h/c*(1 - 2*xc); });
             dvm2.dvm();
             dvm2.output("plot/Data/DVM/dvm2");
+
+            std::cout << "dcLdalpha_exact      = " << 2*h/c*arma::datum::tau/alpha << '\n';
+            std::cout << "dcLdalpha_numerical  = " << dvm2.get_lift()(0)/alpha   << '\n';
 
             std::ofstream file("plot/Data/DVM/dcp");
             for (int n = 0; n < N; n++)

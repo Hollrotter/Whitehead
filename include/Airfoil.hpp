@@ -1,8 +1,10 @@
 #pragma once
+#include "Camber.hpp"
 #include "Lagrange.hpp"
 
 class Airfoil
 {
+    Camber camber;
     double c; // Chord length
     double qdyn = 1; // Dynamic pressure
     double alpha; // Pitch
@@ -24,7 +26,9 @@ class Airfoil
     Analysis analysis = Analysis::linear; // Analysis type (linear or nonlinear)
     Airfoil fromLagrangeCurveInterpolant(Lagrange::CurveInterpolant*);
 public:
-    Airfoil(double _c, size_t _nx) : c(_c), nx(_nx) {}
+    Airfoil() : camber(Camber()) {}
+    Airfoil(double _c, size_t _nx) : camber(Camber()), c(_c), nx(_nx) {}
+    Airfoil(double _c, size_t _nx, std::function<double(double)> dF) : camber(Camber(dF)), c(_c), nx(_nx) {}
     Airfoil(arma::vec _x, arma::vec _z, Lagrange::CurveInterpolant* _chi) : c(_x.back()-_x.front()), nx(_x.size()), chi(_chi), x(_x), z(_z) {};
     explicit Airfoil(Lagrange::CurveInterpolant* _chi) : Airfoil(fromLagrangeCurveInterpolant(_chi)) {}
     // Set dynamic pressure
