@@ -44,14 +44,14 @@ int main()
         case 1: // Nonlinear
         {
             double c = 1;
-            size_t n = 19;
-            double h = 0.5;
+            size_t n = 20;
+            double h = 0.1;
             arma::vec s = Chebyshev::gauss(n);
             arma::vec x = c/2*(1+s);
             arma::vec z = h*(1-pow(s, 2));
             Lagrange::CurveInterpolant chi(x, z, s);
             Airfoil airfoil(&chi);
-            airfoil.pitch(10);
+            airfoil.pitch(0);
             airfoil.nonlinear();
             airfoil.output("plot/Data/Airfoil/nonlinear");
 

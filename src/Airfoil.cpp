@@ -93,18 +93,47 @@ void Airfoil::postprocessing()
             dcp(i) *= 2*cos(alpha + alpha_panel(i))*sqrt((1-xi(i))/(1+xi(i)));
         }
     }
-    cL = arma::datum::pi * gamma_hat(0);
-    cM = 0;
-    for (size_t k = 0; k < nx; k++)
+    if (analysis == Analysis::linear)
     {
-        double x_k = cos(arma::datum::pi*(nx-1)/(nx+0.5));
-        double W = 1;
-        double Wp1 = 2*x_k + 1;
-        for (size_t j = 0; j < nx; j++)
+        cL = arma::datum::pi * gamma_hat(0);
+        cM = 0;
+        for (size_t k = 0; k < nx; k++)
         {
-            cM += arma::datum::pi*(1-x_k)/(nx+0.5) * x_k*gamma_hat(j)*W;
-            std::swap(W, Wp1);
-            Wp1 = boost::math::chebyshev_next(x_k, W, Wp1);
+            double x_k = cos(arma::datum::pi*(nx-k)/(nx+0.5));
+            double w_k = arma::datum::pi*(1-x_k)/(nx+0.5);
+            double W = 1;
+            double Wp1 = 2*x_k + 1;
+            double I = 0;
+            for (size_t j = 0; j < nx; j++)
+            {
+                I += gamma_hat(j)*W;
+                std::swap(W, Wp1);
+                Wp1 = boost::math::chebyshev_next(x_k, W, Wp1);
+            }
+            cM -= w_k/2 * I * (x_k+0.5);
+        }
+    }
+    else
+    {
+        cL = 0;
+        cM = 0;
+        for (size_t k = 0; k < nx; k++)
+        {
+            double x_k = cos(arma::datum::pi*(nx-k)/(nx+0.5));
+            auto [  xt,   zt] = chi->evaluate(x_k);
+            auto [dxdt, dzdt] = chi->derivative(x_k);
+            double W = 1;
+            double Wp1 = 2*x_k + 1;
+            double w_k = arma::datum::pi*(1-x_k)/(nx+0.5);
+            double I = 0;
+            for (size_t j = 0; j < nx; j++)
+            {
+                I += gamma_hat(j)*W;
+                std::swap(W, Wp1);
+                Wp1 = boost::math::chebyshev_next(x_k, W, Wp1);
+            }
+            cL += 2*w_k * I * (dxdt*cos(alpha) - dzdt*sin(alpha))/c;
+            cM -= 2*w_k * I * ((xt-c/4) * dxdt + zt * dzdt)/c/c;
         }
     }
 }

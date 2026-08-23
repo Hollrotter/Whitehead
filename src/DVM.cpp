@@ -124,20 +124,19 @@ void DVM::output(std::string filename)
  */
 void DVM::postprocessing(arma::mat &g)
 {
-    cL = 2*sum(g).t()/c;
     switch(analysis)
     {
         case Analysis::linear:
+            cL  = 2*sum(g).t()/c;
             cM  = 2*g.t()*(c/4-xg)/pow(c, 2);
             dcp = 2*g/repelem(arma::diff(x), 1, con);
             break;
         case Analysis::nonlinear:
         {
-            cM  = 2*sum((c/4-xg*cos(alpha).t())%g).t()/pow(c, 2);
-            dcp.zeros(nx, con);
             arma::vec alpha_panel =-atan(camber.diff(xC/c));
-            for (size_t i = 0; i < nx; i++)
-                dcp.row(i) = 2*cos(alpha + alpha_panel(i))%g.row(i)/sqrt(pow(x(i+1)-x(i), 2) + pow(z(i+1)-z(i), 2)); // Maybe wrong in Katz & Plotkin!
+            cL  = 2*sum(cos(repelem(alpha.t(), nx, 1)-repelem(alpha_panel, 1, con))%g).t()/c; // Katz & Plotkin neglect the angles!
+            cM  = 2*g.t()*((c/4-xg)%cos(alpha_panel) + zg%sin(alpha_panel))/pow(c, 2); // Katz & Plotkin neglect the angles!
+            dcp = 2*cos(repelem(alpha.t(), nx, 1)-repelem(alpha_panel, 1, con))%g/repelem(sqrt(pow(arma::diff(x), 2) + pow(arma::diff(z), 2)), 1, con); // Maybe wrong in Katz & Plotkin!
             break;
         }
         default:

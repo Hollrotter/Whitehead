@@ -44,7 +44,7 @@ int main()
             for (int n = 0; n < N; n++)
                 file << xg(n) << ' ' << dcp1(n) << ' ' << dcp2(n) << '\n';
             file.close();
-        
+
             break;
         }
         case 1: // A test for the nonlinear DVM
