@@ -25,8 +25,8 @@ class Wing
     arma::mat D2 = Lagrange::derivativeMatrix(xi_2);
     double qdyn = 1; // Dynamic pressure
     double alpha = 0; // Pitch
-    size_t n_theta = 57;
-    double delta = 0.2;
+    size_t n_theta = 97;
+    double delta = 0.5;
     std::tuple<arma::mat, arma::mat> xyC = Lagrange::TransfiniteQuadMap(xi_1, xi_2, chi);
     arma::mat xC = std::get<0>(xyC);
     arma::mat yC = std::get<1>(xyC);

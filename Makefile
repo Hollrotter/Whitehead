@@ -18,7 +18,7 @@ MISC = lib/misc.o lib/fastgl.o
 OBJS = $(STRING) $(MEMBRANE) $(STRUCTURE) $(CHEBYSHEV) $(LAGRANGE) $(METRIC) $(SPLINE) $(DVM) $(VLM) \
 $(AIRFOIL) $(WING) $(AERODYNAMICS) $(MISC)
 BINS = $(OBJS) lib/libWhitehead.a
-OPTIONS = g++ -Ofast -Wall -c
+OPTIONS = g++ -Ofast -march=native -Wall -c
 INCLUDE = -I./include -fopenmp -std=c++23
 
 all: $(BINS)

@@ -53,7 +53,7 @@ int main()
             double cLalpha_A3 = a0/(sqrt(1 + pow(a0/arma::datum::pi/AR, 2)) + a0/arma::datum::pi/AR);
             double cLalpha    = cL/(alpha*arma::datum::pi/180);
 
-            std::cout << "cLalpha    = " << cLalpha   << '\n';
+            std::cout << "cLalpha    = " << cLalpha    << '\n';
             std::cout << "cLalpha_A1 = " << cLalpha_A1 << '\n';
             std::cout << "cLalpha_A2 = " << cLalpha_A2 << '\n';
             std::cout << "cLalpha_A3 = " << cLalpha_A3 << '\n';
@@ -222,8 +222,8 @@ int main()
         }
         case 4: // Nonlinear
         {
-            size_t nx = 20;
-            size_t ny = 20;
+            size_t nx = 10;
+            size_t ny = 10;
 
             double alpha = 10;
 
