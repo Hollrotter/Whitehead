@@ -7,21 +7,6 @@ Airfoil Airfoil::fromLagrangeCurveInterpolant(Lagrange::CurveInterpolant* _chi)
     return {_x, _z, _chi};
 }
 
-/**
- * @brief 
- * 
- * @param _qdyn Dynamic pressure of the inflow.
- */
-void Airfoil::dynamicPressure(double _qdyn)
-{
-    if (qdyn <= 0)
-    {
-        std::println("Dynamic pressure must be positive!");
-        exit(EXIT_FAILURE);
-    }
-    qdyn = _qdyn;
-}
-
 void Airfoil::pitch(double _alpha)
 {
     alpha = arma::datum::pi/180*_alpha;

@@ -19,21 +19,6 @@ String::String(double _c, size_t _n, double _sigma) : c(_c), n(_n), sigma(_sigma
 /**
  * @brief 
  * 
- * @param _Et 
- */
-void String::youngsModulus(double _Et)
-{
-    if (_Et < 0)
-    {
-        std::println("Young's modulus times thickness must be positive!");
-        exit(EXIT_FAILURE);
-    }
-    Et = _Et;
-}
-
-/**
- * @brief 
- * 
  * @param _omega 
  */
 void String::relaxationFactor(double _omega)

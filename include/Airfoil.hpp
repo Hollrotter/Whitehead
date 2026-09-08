@@ -32,7 +32,10 @@ public:
     Airfoil(arma::vec _x, arma::vec _z, Lagrange::CurveInterpolant* _chi) : c(_x.back()-_x.front()), nx(_x.size()), chi(_chi), x(_x), z(_z) {};
     explicit Airfoil(Lagrange::CurveInterpolant* _chi) : Airfoil(fromLagrangeCurveInterpolant(_chi)) {}
     // Set dynamic pressure
-    void dynamicPressure(double);
+    void dynamicPressure(double _qdyn) pre(_qdyn > 0 && "Dynamic pressure must be positive!")
+    {
+        qdyn = _qdyn;
+    }
     // Set pitch in degree
     void pitch(double);
     void linear();

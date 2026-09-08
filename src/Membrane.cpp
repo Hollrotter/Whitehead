@@ -13,11 +13,6 @@ Membrane Membrane::fromTransfiniteQuadMap(std::array<Lagrange::CurveInterpolant*
  */
 void Membrane::youngsModulus(const double _Et)
 {
-    if (_Et < 0)
-    {
-        std::println("Young's modulus times thickness must be positive!");
-        exit(EXIT_FAILURE);
-    }
     Et = _Et;
     D = Et/(1 - nu*nu);
 }
@@ -29,11 +24,6 @@ void Membrane::youngsModulus(const double _Et)
  */
 void Membrane::poissonsRatio(const double _nu)
 {
-    if (_nu < 0 || _nu > 0.5)
-    {
-        std::println("Poisson's ratio must lie between 0 and 0.5!");
-        exit(EXIT_FAILURE);
-    }
     nu = _nu;
     D = Et/(1 - nu*nu);
 }

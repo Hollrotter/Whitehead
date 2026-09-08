@@ -19,7 +19,7 @@ OBJS = $(STRING) $(MEMBRANE) $(STRUCTURE) $(CHEBYSHEV) $(LAGRANGE) $(METRIC) $(S
 $(AIRFOIL) $(WING) $(AERODYNAMICS) $(MISC)
 BINS = $(OBJS) lib/libWhitehead.a
 OPTIONS = g++ -Ofast -march=native -Wall -c
-INCLUDE = -I./include -fopenmp -std=c++23
+INCLUDE = -I./include -fopenmp -fcontracts -std=c++26
 
 all: $(BINS)
 

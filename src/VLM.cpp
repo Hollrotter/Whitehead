@@ -3,26 +3,6 @@
 /**
  * @brief 
  * 
- * @param _qdyn Dynamic pressure of the inflow.
- */
-void VLM::dynamicPressure(double _qdyn)
-{
-    qdyn = _qdyn;
-    try
-    {
-        if (qdyn <= 0)
-            throw std::runtime_error("Dynamic pressure must be positive!");
-    }
-    catch(const std::exception &e)
-    {
-        std::cerr << e.what() << '\n';
-        exit(EXIT_FAILURE);
-    }
-}
-
-/**
- * @brief 
- * 
  * @param _alpha Pitch given as vector for multiple configurations.
  */
 void VLM::pitch(arma::vec _alpha)
@@ -214,7 +194,7 @@ void VLM::postprocessing(arma::mat &g)
     switch(analysis)
     {
         case Analysis::linear:
-            #pragma omp parallel for reduction(+:area) reduction(+:lift) reduction(-:moment)
+            #pragma omp parallel for reduction(+:area) reduction(+:lift) reduction(+:moment)
             for (size_t n = 0; n < ny; n++)
             {
                 double dy = y(n+1) - y(n);

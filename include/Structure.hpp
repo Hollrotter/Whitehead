@@ -17,11 +17,11 @@ public:
     Structure(const std::vector<Membrane*> &_m, const std::vector<Interface> &_i) : membranes(_m), interfaces(_i) {};
     explicit Structure(const std::vector<Membrane*> &_m) : Structure(fromMembranes(_m)) {};
     // Sets the number of substeps for nonlinear analysis (default: substeps = 1)
-    void substepControl(const double _substeps)
+    void substepControl(const size_t _substeps)
     {
         substeps = _substeps;
     }
-    void setlambda(double);
+    void setlambda(double l) pre(l > 0 && "lambda must be postiive!");
     void youngsModulus(const double _Et)
     {
         std::for_each(membranes.begin(), membranes.end(), [&](auto& m) { m->youngsModulus(_Et); } );

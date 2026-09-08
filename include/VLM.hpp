@@ -38,7 +38,10 @@ public:
     /// Constructor for an aerodynamic model with z-coordinate
     VLM(arma::mat _x, arma::vec _y, arma::vec _z) : x(_x), y(_y), z0(_z) {}
     // Sets the dynamic pressure
-    void dynamicPressure(double);
+    void dynamicPressure(double _qdyn) pre(_qdyn > 0 && "Dynamic pressure must be positive!")
+    {
+        qdyn = _qdyn;
+    }
     // Sets the pitch in degree
     void pitch(double _alpha)
     {

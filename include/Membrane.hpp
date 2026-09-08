@@ -110,9 +110,11 @@ public:
     Membrane(std::array<Lagrange::CurveInterpolant*, 4> _chi, arma::mat _x, arma::mat _y) : chi(_chi), x(_x), y(_y) {}
     explicit Membrane(std::array<Lagrange::CurveInterpolant*, 4> _chi) : Membrane(fromTransfiniteQuadMap(_chi)) {}
     // Sets the Young's modulus times thickness (Et)
-    void youngsModulus(const double _Et);
+    void youngsModulus(const double _Et) pre(_Et > 0 && "Young's modulus times thickness must be positive!");
     // Sets the Poisson's ratio (nu)
-    void poissonsRatio(const double _nu);
+    void poissonsRatio(const double _nu)
+        pre(_nu < 0 && "Poisson's ratio must be positive!")
+        pre(_nu > 0.5 && "Poisson's ratio must be smaller than 0.5!");
     // Sets the number of iterations for nonlinear analysis (default: iter = 100)
     void iterations(size_t _iter)
     {

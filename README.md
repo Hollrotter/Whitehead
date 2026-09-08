@@ -62,7 +62,8 @@ The following is an example tasks.json file for running a test file in VSCode:
 				"-l:libWhitehead.a",
 				"-larmadillo",
 				"-fopenmp",
-				"-std=c++23",
+				"-fcontracts",
+				"-std=c++26",
 				"-o",
 				"${fileDirname}/test"
 			],
@@ -84,7 +85,7 @@ The following is an example tasks.json file for running a test file in VSCode:
 
 ## Build Dependencies
 
-* C++ compiler (g++, C++23)
+* C++ compiler (g++, C++26)
 * openMP
 * Armadillo
 

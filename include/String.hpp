@@ -32,7 +32,11 @@ public:
     // Constructor for a String giving the chord length, the number of nodes and pretension
     String(double, size_t, double);
     // Sets the young's modulus times thickness (Et)
-    void youngsModulus(double _Et);
+    void youngsModulus(double _Et)
+        pre(_Et > 0 && "Young's modulus times thickness must be positive!")
+    {
+        Et = _Et;
+    }
     // Sets the material model (inextensible or extensible)
     void material(Material _materialModel)
     {

@@ -20,26 +20,6 @@ Wing Wing::fromTransfiniteQuadMap(arma::mat _z, std::array<Lagrange::CurveInterp
     return {_chi, _x, _y, _z, _h};
 }
 
-/**
- * @brief 
- * 
- * @param _qdyn Dynamic pressure of the inflow.
- */
-void Wing::dynamicPressure(double _qdyn)
-{
-    qdyn = _qdyn;
-    try
-    {
-        if (qdyn <= 0)
-            throw std::runtime_error("Dynamic pressure must be positive!");
-    }
-    catch(const std::exception &e)
-    {
-        std::cerr << e.what() << '\n';
-        exit(EXIT_FAILURE);
-    }
-}
-
 void Wing::checkMesh()
 {
     std::println("Checking for negative volumes...");
@@ -320,7 +300,7 @@ void Wing::postprocessing()
     {
         case Analysis::linear:
         {
-            #pragma omp parallel for reduction(+:area) reduction(+:lift) reduction(-:moment)
+            #pragma omp parallel for reduction(+:area) reduction(+:lift) reduction(+:moment)
             for (size_t i = 0; i < nx; i++)
             {
                 arma::vec MU_1_y(ny, arma::fill::none);
@@ -361,7 +341,7 @@ void Wing::postprocessing()
             arma::cube ec_gl  = MetricContra(e_c_gl);
             arma::mat e_gl = e_c_gl.slice(0)%e_c_gl.slice(2) - pow(e_c_gl.slice(1), 2);
             arma::mat sqrt_a = sqrt(e_gl%(1 + ec_gl.slice(0)%pow(dzdx1_gl, 2) + 2*ec_gl.slice(1)%dzdx1_gl%dzdx2_gl + ec_gl.slice(2)%pow(dzdx2_gl, 2)));
-            #pragma omp parallel for reduction(+:area) reduction(+:F) reduction(-:M)
+            #pragma omp parallel for reduction(+:area) reduction(+:F) reduction(+:M)
             for (size_t i = 0; i < nx; i++)
             {
                 arma::vec MU_1_y(ny, arma::fill::none);

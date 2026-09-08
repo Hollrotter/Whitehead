@@ -70,7 +70,10 @@ public:
     explicit Wing(std::array<Lagrange::CurveInterpolant*, 4> _chi) : Wing(fromTransfiniteQuadMap(_chi)) {}
     Wing(arma::mat _z, std::array<Lagrange::CurveInterpolant*, 4> _chi) : Wing(fromTransfiniteQuadMap(_z, _chi)) {}
     // Sets the dynamic pressure
-    void dynamicPressure(double);
+    void dynamicPressure(double _qdyn) pre(_qdyn > 0 && "Dynamic pressure must be positive!")
+    {
+        qdyn = _qdyn;
+    }
     // Sets the pitch in degree
     void pitch(double _alpha)
     {

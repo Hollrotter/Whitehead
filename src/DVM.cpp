@@ -1,20 +1,5 @@
 #include "DVM.hpp"
 
-/**
- * @brief 
- * 
- * @param _qdyn Dynamic pressure of the inflow.
- */
-void DVM::dynamicPressure(double _qdyn)
-{
-    if (qdyn <= 0)
-    {
-        std::println("Dynamic pressure must be positive!");
-        exit(EXIT_FAILURE);
-    }
-    qdyn = _qdyn;
-}
-
 void DVM::pitch(double _alpha)
 {
     pitch(_alpha*arma::ones(1));

@@ -44,7 +44,10 @@ public:
     explicit DVM(const Camber &_camber) : camber(_camber) {}
     DVM(double _c, size_t _nx, const Camber &_camber) : camber(_camber), c(_c), nx(_nx) {}
     // Set dynamic pressure
-    void dynamicPressure(double);
+    void dynamicPressure(double _qdyn) pre(_qdyn > 0 && "Dynamic pressure must be positive!")
+    {
+        qdyn = _qdyn;
+    }
     // Set pitch in degree
     void pitch(double);
     // Set pitch in degree
