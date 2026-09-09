@@ -11,55 +11,29 @@
  */
 arma::cube Christoffel(const arma::cube &g_c, const arma::cube &gc, const arma::mat &D1, const arma::mat &D2)
 {
-	arma::mat dg11d1, dg11d2, dg12d1, dg12d2, dg22d1, dg22d2;
+	arma::cube dgd1, dgd2;
 	try
 	{
-		dg11d1 = D1*g_c.slice(0);
+		dgd1 = arma::cubemul(D1, g_c);
 	}
 	catch(const std::exception& e)
 	{
-		std::println("D1({} x {}) and g_11({} x {}) mismatch for christoffel!", D1.n_rows, D1.n_cols, g_c.slice(0).n_rows, g_c.slice(0).n_cols);
+		std::println("Size mismatch in calculation of Christoffel Symbols!");
 	}
 	try
 	{
-		dg11d2 = g_c.slice(0)*D2.t();
+		dgd2 = arma::cubemul(g_c, D2.t());
 	}
 	catch(const std::exception& e)
 	{
-		std::println("g_11({} x {}) and D2.t()({} x {}) mismatch for christoffel!", g_c.slice(0).n_rows, g_c.slice(0).n_cols, D2.n_cols, D2.n_rows);
+		std::println("Size mismatch in calculation of Christoffel Symbols!");
 	}
-	try
-	{
-		dg12d1 = D1*g_c.slice(1);
-	}
-	catch(const std::exception& e)
-	{
-		std::println("D1({} x {}) and g_12({} x {}) mismatch for christoffel!", D1.n_rows, D1.n_cols, g_c.slice(1).n_rows, g_c.slice(1).n_cols);
-	}
-	try
-	{
-		dg12d2 = g_c.slice(1)*D2.t();
-	}
-	catch(const std::exception& e)
-	{
-		std::println("g_12({} x {}) and D2.t()({} x {}) mismatch for christoffel!", g_c.slice(1).n_rows, g_c.slice(1).n_cols, D2.n_cols, D2.n_rows);
-	}
-	try
-	{
-		dg22d1 = D1*g_c.slice(2);
-	}
-	catch(const std::exception& e)
-	{
-		std::println("D1({} x {}) and g_22({} x {}) mismatch for christoffel!", D1.n_rows, D1.n_cols, g_c.slice(2).n_rows, g_c.slice(2).n_cols);
-	}
-	try
-	{
-		dg22d2 = g_c.slice(2)*D2.t();
-	}
-	catch(const std::exception& e)
-	{
-		std::println("g_22({} x {}) and D2.t()({} x {}) mismatch for christoffel!", g_c.slice(2).n_rows, g_c.slice(2).n_cols, D2.n_cols, D2.n_rows);
-	}
+	arma::mat dg11d1 = dgd1.slice(0);
+	arma::mat dg12d1 = dgd1.slice(1);
+	arma::mat dg22d1 = dgd1.slice(2);
+	arma::mat dg11d2 = dgd2.slice(0);
+	arma::mat dg12d2 = dgd2.slice(1);
+	arma::mat dg22d2 = dgd2.slice(2);
 	arma::cube gam(g_c.n_rows, g_c.n_cols, 6);
 	arma::mat g11 = gc.slice(0);
 	arma::mat g12 = gc.slice(1);

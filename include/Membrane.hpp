@@ -113,8 +113,8 @@ public:
     void youngsModulus(const double _Et) pre(_Et > 0 && "Young's modulus times thickness must be positive!");
     // Sets the Poisson's ratio (nu)
     void poissonsRatio(const double _nu)
-        pre(_nu < 0 && "Poisson's ratio must be positive!")
-        pre(_nu > 0.5 && "Poisson's ratio must be smaller than 0.5!");
+        pre(_nu > 0 && "Poisson's ratio must be positive!")
+        pre(_nu < 0.5 && "Poisson's ratio must be smaller than 0.5!");
     // Sets the number of iterations for nonlinear analysis (default: iter = 100)
     void iterations(size_t _iter)
     {

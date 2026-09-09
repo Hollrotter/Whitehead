@@ -26,17 +26,17 @@ arma::mat ChebyshevInterpolation(arma::vec x1, arma::vec x2, arma::mat xs, arma:
         for (size_t j = 0; j < ny; j++)
             for (size_t iter = 0; iter < 1000; iter++)
             {
-                arma::mat J(2, 2, arma::fill::zeros);
-                arma::vec b = {xss(i, j), yss(i, j)};
+                arma::mat::fixed<2, 2> J(arma::fill::zeros);
+                arma::vec::fixed<2> b = {xss(i, j), yss(i, j)};
                 for (size_t p = 0; p < nx; p++)
                 {
                     double Tx = boost::math::chebyshev_t(p,-xC(i, j));
                     for (size_t q = 0; q < ny; q++)
                     {
                         double Txy = Tx*boost::math::chebyshev_t(q,-yC(i, j));
-                        J += Txy*arma::mat{{x1_m_bar(p, q), x2_m_bar(p, q)},
-                                           {y1_m_bar(p, q), y2_m_bar(p, q)}};
-                        b -= Txy*arma::vec{x_m_hat(p, q), y_m_hat(p, q)};
+                        J += Txy*arma::mat::fixed<2, 2>{{x1_m_bar(p, q), x2_m_bar(p, q)},
+                                                        {y1_m_bar(p, q), y2_m_bar(p, q)}};
+                        b -= Txy*arma::vec::fixed<2>{x_m_hat(p, q), y_m_hat(p, q)};
                     }
                 }
                 b = solve(J, b);
@@ -76,15 +76,15 @@ arma::mat LagrangeInterpolation(arma::vec x1, arma::vec x2, arma::mat xs, arma::
                 double dyCd1 = dot(D1.row(i), yC.col(j));
                 double dxCd2 = dot(xC.row(i), D2.row(j));
                 double dyCd2 = dot(yC.row(i), D2.row(j));
-                arma::mat J(2, 2, arma::fill::zeros);
-                arma::vec b = {xss(i, j), yss(i, j)};
+                arma::mat::fixed<2, 2> J(arma::fill::zeros);
+                arma::vec::fixed<2> b = {xss(i, j), yss(i, j)};
                 for (size_t p = 0; p < nx; p++)
                 {
                     for (size_t q = 0; q < ny; q++)
                     {
-                        J += arma::mat{{dxCd1, dxCd2},
-                                       {dyCd1, dyCd2}};
-                        b -= arma::vec{dot(Tx.row(q+ny*p), vectorise(xC)), dot(Ty.row(1+ny*p), vectorise(yC))};
+                        J += arma::mat::fixed<2, 2>{{dxCd1, dxCd2},
+                                                    {dyCd1, dyCd2}};
+                        b -= arma::vec::fixed<2>{dot(Tx.row(q+ny*p), vectorise(xC)), dot(Ty.row(1+ny*p), vectorise(yC))};
                     }
                 }
                 b = solve(J, b);
