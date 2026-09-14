@@ -2,11 +2,11 @@
 
 Lagrange::CurveInterpolant Lagrange::CurveInterpolant::arc(Point p1, Point p2, Point p0, double r, size_t n)
 {
-    Point pm = (p1+p2)/2;
+    const Point pm = (p1+p2)/2;
     Point p12 = p1-p2;
     p12.perpendicular();
-    double dp12 = distance(p1, p2);
-    double discriminant = pow(r/dp12, 2) - 0.25;
+    const double dp12 = distance(p1, p2);
+    const double discriminant = pow(r/dp12, 2) - 0.25;
     if (discriminant < 0)
     {
         std::println("Radius too small!");
@@ -19,10 +19,10 @@ Lagrange::CurveInterpolant Lagrange::CurveInterpolant::arc(Point p1, Point p2, P
     else
         p0 = pm2;
 
-    double cos_phi1 = std::max(-1., std::min(1., (p1.X()-p0.X())/r));
-    double cos_phi2 = std::max(-1., std::min(1., (p2.X()-p0.X())/r));
-    double sin_phi1 = std::max(-1., std::min(1., (p1.Y()-p0.Y())/r));
-    double sin_phi2 = std::max(-1., std::min(1., (p2.Y()-p0.Y())/r));
+    const double cos_phi1 = std::max(-1., std::min(1., (p1.X()-p0.X())/r));
+    const double cos_phi2 = std::max(-1., std::min(1., (p2.X()-p0.X())/r));
+    const double sin_phi1 = std::max(-1., std::min(1., (p1.Y()-p0.Y())/r));
+    const double sin_phi2 = std::max(-1., std::min(1., (p2.Y()-p0.Y())/r));
 
     double phi1, phi2;
     if (almostEqual(cos_phi1, cos_phi2))
@@ -62,8 +62,8 @@ Lagrange::CurveInterpolant Lagrange::CurveInterpolant::arc(Point p1, Point p2, P
     phi = phi1 + (phi2-phi1)/2*(1+Chebyshev::gaussLobatto(n));
     arma::vec sin_phi = sin(phi);
 
-    arma::vec _x = r*cos_phi + p0.X();
-    arma::vec _y = r*sin_phi + p0.Y();
+    const arma::vec _x = r*cos_phi + p0.X();
+    const arma::vec _y = r*sin_phi + p0.Y();
     return {_x, _y, r};
 }
 

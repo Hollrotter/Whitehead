@@ -34,7 +34,7 @@ public:
     {
         sym = _sym;
     }
-    void checkMesh();
+    void checkMesh() const;
     void wake(Wake*);
     void setIterations(const size_t itt)
     {

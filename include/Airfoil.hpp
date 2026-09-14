@@ -53,18 +53,18 @@ public:
         return dcp;
     }
     // output x and dcp to given file
-    void output(std::string);
+    void output(std::string) const;
 private:
-    double x1(double, double);
-    double z1(double, double);
-    double x2(double, double, double, double);
-    double z2(double, double, double, double);
-    double x3(double, double, double, double, double);
-    double z3(double, double, double, double, double);
-    double r2(double, double, double, double, double, double);
-    double k1(double, double, double, double, double, double, double, double, double, double);
-    double k2(double, double, double, double, double, double, double, double, double, double);
-    double k3(double, double, double, double, double, double, double, double, double);
+    double x1(double, double) const;
+    double z1(double, double) const;
+    double x2(double, double, double, double) const;
+    double z2(double, double, double, double) const;
+    double x3(double, double, double, double, double) const;
+    double z3(double, double, double, double, double) const;
+    double r2(double, double, double, double, double, double) const;
+    double k1(double, double, double, double, double, double, double, double, double, double) const;
+    double k2(double, double, double, double, double, double, double, double, double, double) const;
+    double k3(double, double, double, double, double, double, double, double, double) const;
     // Calculates the Aerodynamic Matrix needed for the Discrete-Vortex-Method
     void aerodynamicMatrix();
     void linearSolve();

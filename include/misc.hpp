@@ -8,13 +8,7 @@
 #pragma omp declare reduction(+ : arma::vec : omp_out += omp_in) \
     initializer(omp_priv = omp_orig)
 
-#pragma omp declare reduction(- : arma::vec : omp_out -= omp_in) \
-    initializer(omp_priv = omp_orig)
-
 #pragma omp declare reduction(+ : arma::mat : omp_out += omp_in) \
-    initializer(omp_priv = omp_orig)
-
-#pragma omp declare reduction(- : arma::mat : omp_out -= omp_in) \
     initializer(omp_priv = omp_orig)
 
 // Comparing two floating point numbers for (almost) equality.

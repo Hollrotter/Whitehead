@@ -18,7 +18,7 @@ B_Spline::B_Spline(arma::vec v, size_t _order) : order(_order), X(arma::zeros(v.
     }
 }
 
-arma::vec B_Spline::operator()(const double x)
+arma::vec B_Spline::operator()(const double x) const
 {
     arma::vec y(X.size()-1-order);
     #pragma omp parallel for
@@ -35,7 +35,7 @@ arma::vec B_Spline::operator()(const double x)
  * @param k 
  * @return double 
  */
-double B_Spline::operator()(const double x, const size_t i, const size_t k)
+double B_Spline::operator()(const double x, const size_t i, const size_t k) const
 {
     if (k == 0)
     {
@@ -49,7 +49,7 @@ double B_Spline::operator()(const double x, const size_t i, const size_t k)
     return c1 + c2;
 }
 
-arma::mat B_Spline::operator()(const arma::vec x)
+arma::mat B_Spline::operator()(const arma::vec x) const
 {
     arma::mat y(X.size()-1-order, x.size());
     for (size_t i = 0; i < x.size(); i++)
@@ -65,7 +65,7 @@ arma::mat B_Spline::operator()(const arma::vec x)
  * @param k 
  * @return arma::vec 
  */
-arma::vec B_Spline::operator()(const arma::vec x, const size_t i, const size_t k)
+arma::vec B_Spline::operator()(const arma::vec x, const size_t i, const size_t k) const
 {
     arma::vec y(x.size());
     #pragma omp parallel for
@@ -74,7 +74,7 @@ arma::vec B_Spline::operator()(const arma::vec x, const size_t i, const size_t k
     return y;
 }
 
-arma::vec B_Spline::diff(const double x)
+arma::vec B_Spline::diff(const double x) const
 {
     arma::vec dy(X.size()-1-order);
     #pragma omp parallel for
@@ -91,7 +91,7 @@ arma::vec B_Spline::diff(const double x)
  * @param k 
  * @return double 
  */
-double B_Spline::diff(const double x, const size_t i, const size_t k)
+double B_Spline::diff(const double x, const size_t i, const size_t k) const
 {
     double c1 = (almostEqual(X(i+k),   X(i))   == false) ? operator()(x, i,   k-1)/(X(i+k)   - X(i))   : 0;
     double c2 = (almostEqual(X(i+k+1), X(i+1)) == false) ? operator()(x, i+1, k-1)/(X(i+k+1) - X(i+1)) : 0;
@@ -106,7 +106,7 @@ double B_Spline::diff(const double x, const size_t i, const size_t k)
  * @param k 
  * @return arma::vec 
  */
-arma::vec B_Spline::diff(const arma::vec x, const size_t i, const size_t k)
+arma::vec B_Spline::diff(const arma::vec x, const size_t i, const size_t k) const
 {
     arma::vec y(x.size());
     #pragma omp parallel for
@@ -115,7 +115,7 @@ arma::vec B_Spline::diff(const arma::vec x, const size_t i, const size_t k)
     return y;
 }
 
-double B_Spline::integrate(const size_t i, const size_t j)
+double B_Spline::integrate(const size_t i, const size_t j) const
 {
     double integral = 0;
     B_Spline B(X.subvec(order, X.size()-1-order), order+1);
@@ -125,7 +125,7 @@ double B_Spline::integrate(const size_t i, const size_t j)
     return (X(j+order+1) - X(j))/(order+1)*integral;
 }
 
-double B_Spline::integrate(const size_t i, const size_t j, const size_t k)
+double B_Spline::integrate(const size_t i, const size_t j, const size_t k) const
 {
     double integral = 0;
     #pragma omp parallel for reduction (+:integral)
@@ -134,7 +134,7 @@ double B_Spline::integrate(const size_t i, const size_t j, const size_t k)
     return (X(j+k+1) - X(j))/(k+1)*integral;
 }
 
-double B_Spline::integrate(const double x1, const double x2, const size_t j)
+double B_Spline::integrate(const double x1, const double x2, const size_t j) const
 {
     double integral = 0;
     B_Spline B(X.subvec(order, X.size()-1-order), order+1);
@@ -144,7 +144,7 @@ double B_Spline::integrate(const double x1, const double x2, const size_t j)
     return (X(j+order+1) - X(j))/(order+1)*integral;
 }
 
-double B_Spline::integrate(const double x1, const double x2, const size_t j, const size_t k)
+double B_Spline::integrate(const double x1, const double x2, const size_t j, const size_t k) const
 {
     double integral = 0;
     #pragma omp parallel for reduction (+:integral)
@@ -153,7 +153,7 @@ double B_Spline::integrate(const double x1, const double x2, const size_t j, con
     return (X(j+k+1) - X(j))/(k+1)*integral;
 }
 
-double B_Spline::integrate_x(const double x1, const double x2, const size_t j)
+double B_Spline::integrate_x(const double x1, const double x2, const size_t j) const
 {
     double integral = 0;
     B_Spline B1(X.subvec(order, X.size()-1-order), order+1);

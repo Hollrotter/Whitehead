@@ -25,8 +25,8 @@ class Wing
     arma::mat D2 = Lagrange::derivativeMatrix(xi_2);
     double qdyn = 1; // Dynamic pressure
     double alpha = 0; // Pitch
-    size_t n_theta = 97;
-    double delta = 0.5;
+    static const size_t n_theta = 97;
+    static constexpr double delta = 0.5;
     std::tuple<arma::mat, arma::mat> xyC = Lagrange::TransfiniteQuadMap(xi_1, xi_2, chi);
     arma::mat xC = std::get<0>(xyC);
     arma::mat yC = std::get<1>(xyC);
@@ -84,7 +84,7 @@ public:
     {
         sym = _sym;
     }
-    void checkMesh();
+    void checkMesh() const;
     void wake(Wake* w)
     {
         wakes.push_back(w);
@@ -132,7 +132,7 @@ public:
     template <class C> void boundary(const Direction, const BC, const double, const double, const C);
     template <class C> void boundary(const Lagrange::CurveInterpolant*, const BC, const double, const double, const C);
     // Output x, y and dcp for surface plots
-    void output(std::string);
+    void output(std::string) const;
     void operator()(Symmetry _sym)
     {
         sym = _sym;

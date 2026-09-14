@@ -92,7 +92,7 @@ public:
         return dcp;
     }
     // Output x, y and dcp for surface plots
-    void output(std::string);
+    void output(std::string) const;
     void operator()(const Camber& _c)
     {
         c = _c;

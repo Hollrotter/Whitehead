@@ -75,7 +75,7 @@ public:
         return dcp;
     }
     // output x and dcp to given file
-    void output(std::string);
+    void output(std::string) const;
     void operator()(Analysis _analysis)
     {
         analysis = _analysis;

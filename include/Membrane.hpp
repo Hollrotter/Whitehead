@@ -116,7 +116,7 @@ public:
         pre(_nu > 0 && "Poisson's ratio must be positive!")
         pre(_nu < 0.5 && "Poisson's ratio must be smaller than 0.5!");
     // Sets the number of iterations for nonlinear analysis (default: iter = 100)
-    void iterations(size_t _iter)
+    void iterations(const size_t _iter)
     {
         iter = _iter;
     }
@@ -125,7 +125,7 @@ public:
     {
         substeps = _substeps;
     }
-    void checkMesh();
+    void checkMesh() const;
     // Calculates prestrain and pretension (not properly tested)
     void planeStrain();
     // Apply a constant load
@@ -420,14 +420,14 @@ public:
     // Nonlinear analysis
     void nonlinear();
     // Calculates the integral of a given matrix over the surface of the membrane
-    double integrate(arma::mat);
+    double integrate(arma::mat) const;
     // Calculates the integral of a given field over the surface of the membrane
     double integrate(const Field);
     // Calculates the elastic potential or strain energy per unit area of the middle surface
-    double elasticPotential();
-    std::pair<arma::mat, arma::mat> kartesianDisplacements();
-    void principalStresses(const std::string&, const std::string&);
-    void principalStrains(const std::string&, const std::string&, const std::string&);
+    double elasticPotential() const;
+    std::pair<arma::mat, arma::mat> kartesianDisplacements() const;
+    void principalStresses(const std::string&, const std::string&) const;
+    void principalStrains(const std::string&, const std::string&, const std::string&) const;
     // Output y, x and a chosen field to chosen file
     void output(const std::string&, const Field);
     void output(const Field field, const std::string &filename)
@@ -444,32 +444,32 @@ public:
     TensorField operator()(const Field);
     friend class Structure;
 private:
-    arma::mat ddx()
+    arma::mat ddx() const
     {
         return arma::kron(arma::eye(ny, ny), D1);
     }
-    arma::mat ddx(const arma::mat);
-    arma::mat ddy()
+    arma::mat ddx(const arma::mat) const;
+    arma::mat ddy() const
     {
         return arma::kron(D2, arma::eye(nx, nx));
     }
-    arma::mat ddy(const arma::mat);
-    arma::mat d2dx2()
+    arma::mat ddy(const arma::mat) const;
+    arma::mat d2dx2() const
     {
         return arma::kron(arma::eye(ny, ny), D11);
     }
-    arma::mat d2dx2(const arma::mat);
-    arma::mat d2dy2()
+    arma::mat d2dx2(const arma::mat) const;
+    arma::mat d2dy2() const
     {
         return arma::kron(D22, arma::eye(nx, nx));
     }
-    arma::mat d2dy2(const arma::mat);
-    arma::mat d2dxdy()
+    arma::mat d2dy2(const arma::mat) const;
+    arma::mat d2dxdy() const
     {
         return arma::kron(D2, D1);
     }
-    arma::mat d2dxdy(const arma::mat);
-    arma::mat constant(const arma::mat H)
+    arma::mat d2dxdy(const arma::mat) const;
+    arma::mat constant(const arma::mat H) const
     {
         return arma::diagmat(arma::vectorise(H));
     }

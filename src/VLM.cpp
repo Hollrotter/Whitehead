@@ -36,7 +36,7 @@ void VLM::vlm()
  * 
  * @param filename Path for the file data will be written to.
  */
-void VLM::output(std::string filename)
+void VLM::output(std::string filename) const
 {
     std::ofstream file(filename);
     for (size_t m = 0; m < nx; m++, file << '\n')

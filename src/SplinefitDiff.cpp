@@ -6,7 +6,7 @@
  * @param x 
  * @return double 
  */
-double Splinefit::diff(const double x)
+double Splinefit::diff(const double x) const
 {
     double dydx = 0;
     #pragma omp parallel for
@@ -21,7 +21,7 @@ double Splinefit::diff(const double x)
  * @param x 
  * @return arma::vec 
  */
-arma::vec Splinefit::diff(const arma::vec x)
+arma::vec Splinefit::diff(const arma::vec x) const
 {
     arma::vec dydx(x.size(), arma::fill::none);
     #pragma omp parallel for
@@ -37,7 +37,7 @@ arma::vec Splinefit::diff(const arma::vec x)
  * @param y 
  * @return arma::vec 
  */
-arma::vec Splinefit::diff(const double x, const double y)
+arma::vec Splinefit::diff(const double x, const double y) const
 {
     arma::vec gradZ(2, arma::fill::zeros);
     #pragma omp parallel for
@@ -54,7 +54,7 @@ arma::vec Splinefit::diff(const double x, const double y)
  * @param y 
  * @return arma::cube 
  */
-arma::cube Splinefit::diff(const arma::vec x, const arma::vec y)
+arma::cube Splinefit::diff(const arma::vec x, const arma::vec y) const
 {
     arma::cube gradZ(x.size(), y.size(), 2, arma::fill::none);
     #pragma omp parallel for

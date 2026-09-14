@@ -12,7 +12,7 @@ Aerodynamics Aerodynamics::fromWings(std::vector<Wing*> _wings)
                         _interfaces.push_back(Interface(sD, tD, sC, tC));
                         _wings[sD]->chi[sC]->curveType = CurveType::Interface;
                     }
-    double l0 = 2;
+    const double l0 = 2;
     for (Interface& interface:_interfaces)
     {
         switch (interface.sourceCurve)
@@ -87,7 +87,7 @@ void Aerodynamics::setlambda(double l)
     }
 }
 
-void Aerodynamics::checkMesh()
+void Aerodynamics::checkMesh() const
 {
     for (size_t i = 0; i < wings.size(); i++)
     {
@@ -300,7 +300,7 @@ void Aerodynamics::solve()
     do
     {
         std::cout << "Iteration " << count << '/' << iterations << std::endl;
-        for (auto& interface:interfaces)
+        for (Interface& interface:interfaces)
         {
             size_t interSource = interface.sourceDomain;
             size_t interTarget = interface.targetDomain;

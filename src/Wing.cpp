@@ -20,7 +20,7 @@ Wing Wing::fromTransfiniteQuadMap(arma::mat _z, std::array<Lagrange::CurveInterp
     return {_chi, _x, _y, _z, _h};
 }
 
-void Wing::checkMesh()
+void Wing::checkMesh() const
 {
     std::println("Checking for negative volumes...");
     bool negativeVolumes = false;
@@ -51,7 +51,7 @@ void Wing::nonlinear()
     postprocessing();
 }
 
-void Wing::output(std::string filename)
+void Wing::output(std::string filename) const
 {
     std::ofstream file(filename);
     for (size_t i = 0; i < nx; i++, file << '\n')

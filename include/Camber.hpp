@@ -14,11 +14,11 @@ public:
     Camber(std::function<double(double)> F, std::function<double(double)> dF) : camberType(CamberType::function), f(F), df(dF) {}
     explicit Camber(const Splinefit &S) : camberType(CamberType::b_spline), s(S) {}
     // Compute z coordinate at given x value
-    double operator() (double);
+    double operator() (double) const;
     // Compute z coordinates at given vector x
-    arma::vec operator() (arma::vec);
+    arma::vec operator() (arma::vec) const;
     // Compute derivative at given x value
-    double diff(double);
+    double diff(double) const;
     // Compute derivatives at given vector x
-    arma::vec diff(arma::vec);
+    arma::vec diff(arma::vec) const;
 };

@@ -6,7 +6,7 @@
  * @param x Normalized x-coordinate where the camber height will be evaluated.
  * @return double 
  */
-double Camber::operator() (double x)
+double Camber::operator() (double x) const
 {
     switch(camberType)
     {
@@ -26,7 +26,7 @@ double Camber::operator() (double x)
  * @param x Vector of normalized x-coordinates where the camber height will be evaluated.
  * @return arma::vec 
  */
-arma::vec Camber::operator() (arma::vec x)
+arma::vec Camber::operator() (arma::vec x) const
 {
     arma::vec z(x.size());
     #pragma omp parallel for
@@ -41,7 +41,7 @@ arma::vec Camber::operator() (arma::vec x)
  * @param x Normalized x-coordinate where the camber slope will be evaluated.
  * @return double 
  */
-double Camber::diff(double x)
+double Camber::diff(double x) const
 {
     switch(camberType)
     {
@@ -61,7 +61,7 @@ double Camber::diff(double x)
  * @param x Vector of normalized x-coordinates where the camber slope will be evaluated.
  * @return arma::vec 
  */
-arma::vec Camber::diff(arma::vec x)
+arma::vec Camber::diff(arma::vec x) const
 {
     arma::vec dz(x.size());
     #pragma omp parallel for

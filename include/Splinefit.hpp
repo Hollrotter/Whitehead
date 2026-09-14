@@ -34,19 +34,19 @@ public:
         h = solve(trimatu(R), Q*vectorise(z));
     }
     // Evaluate 1D splinefitting at given value x returning a scalar z
-    double operator()(const double);
+    double operator()(const double) const;
     // Evaluate 1D splinefitting at given vector x returning a vector z
-    arma::vec operator()(const arma::vec);
+    arma::vec operator()(const arma::vec) const;
     // Evaluate 2D splinefitting at given values x and y returning a scalar z
-    double operator()(const double, const double);
+    double operator()(const double, const double) const;
     // Evaluate 2D splinefitting at given vectors x and y returning a matrix z
-    arma::mat operator()(const arma::vec, const arma::vec);
+    arma::mat operator()(const arma::vec, const arma::vec) const;
     // Compute derivative of 1D splinefitting at given value x returning a scalar dz/dx
-    double diff(const double);
+    double diff(const double) const;
     // Compute derivaitve of 1D splinefitting at given vector x returing a vector dz/dx
-    arma::vec diff(const arma::vec);
+    arma::vec diff(const arma::vec) const;
     // Compute derivative of 2D splinefitting at given values x and y returning gradient vector
-    arma::vec diff(const double, const double);
+    arma::vec diff(const double, const double) const;
     // Compute derivative of 2D splinefitting at given vectors x and y returning gradient cube
-    arma::cube diff(const arma::vec, const arma::vec);
+    arma::cube diff(const arma::vec, const arma::vec) const;
 };

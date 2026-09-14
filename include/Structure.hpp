@@ -122,10 +122,10 @@ public:
     void linear();
     void semilinear();
     void nonlinear();
-    void principalStresses(const std::string&, const std::string&);
-    void principalStrains(const std::string&, const std::string&, const std::string&);
-    void output(const std::string&, const Field);
-    void output(const Field field, const std::string &filename)
+    void principalStresses(const std::string&, const std::string&) const;
+    void principalStrains(const std::string&, const std::string&, const std::string&) const;
+    void output(const std::string&, const Field) const;
+    void output(const Field field, const std::string &filename) const
     {
         output(filename, field);
     }

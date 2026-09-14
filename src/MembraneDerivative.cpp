@@ -1,6 +1,6 @@
 #include "Membrane.hpp"
 
-arma::mat Membrane::ddx(arma::mat H)
+arma::mat Membrane::ddx(arma::mat H) const
 {
     arma::mat DDX = arma::kron(arma::eye(ny, ny), D1);
     for (size_t j = 0, k = 0; j < ny; j++)
@@ -9,7 +9,7 @@ arma::mat Membrane::ddx(arma::mat H)
     return DDX;
 }
 
-arma::mat Membrane::ddy(arma::mat H)
+arma::mat Membrane::ddy(arma::mat H) const
 {
     arma::mat DDY = arma::kron(D2, arma::eye(nx, nx));
     for (size_t j = 0, k = 0; j < ny; j++)
@@ -18,7 +18,7 @@ arma::mat Membrane::ddy(arma::mat H)
     return DDY;
 }
 
-arma::mat Membrane::d2dx2(arma::mat H)
+arma::mat Membrane::d2dx2(arma::mat H) const
 {
     arma::mat D2DX2 = arma::kron(arma::eye(ny, ny), D11);
     for (size_t j = 0, k = 0; j < ny; j++)
@@ -27,7 +27,7 @@ arma::mat Membrane::d2dx2(arma::mat H)
     return D2DX2;
 }
 
-arma::mat Membrane::d2dy2(arma::mat H)
+arma::mat Membrane::d2dy2(arma::mat H) const
 {
     arma::mat D2DY2 = arma::kron(D22, arma::eye(nx, nx));
     for (size_t j = 0, k = 0; j < ny; j++)
@@ -36,7 +36,7 @@ arma::mat Membrane::d2dy2(arma::mat H)
     return D2DY2;
 }
 
-arma::mat Membrane::d2dxdy(arma::mat H)
+arma::mat Membrane::d2dxdy(arma::mat H) const
 {
     arma::mat D2DXDY = arma::kron(D2, D1);
     for (size_t j = 0, k = 0; j < ny; j++)

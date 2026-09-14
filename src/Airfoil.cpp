@@ -37,7 +37,7 @@ void Airfoil::nonlinear()
  * 
  * @param filename File the data is written to.
  */
-void Airfoil::output(std::string filename)
+void Airfoil::output(std::string filename) const
 {
     std::ofstream file(filename);
     for (size_t i = 0; i < nx; i++)

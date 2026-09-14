@@ -28,7 +28,7 @@ void Membrane::poissonsRatio(const double _nu)
     D = Et/(1 - nu*nu);
 }
 
-void Membrane::checkMesh()
+void Membrane::checkMesh() const
 {
     std::println("Checking for negative volumes...");
     bool negativeVolumes = false;
@@ -98,7 +98,7 @@ void Membrane::inPlaneKartesian(const arma::mat nxx, const arma::mat nxy, const 
  * @param f Matrix containing the function values to be integrated.
  * @return double 
  */
-double Membrane::integrate(arma::mat f)
+double Membrane::integrate(arma::mat f) const
 {
     f.row(0).zeros();
     f.col(0).zeros();
@@ -129,12 +129,12 @@ double Membrane::integrate(const Field field)
  * 
  * @return double 
  */
-double Membrane::elasticPotential()
+double Membrane::elasticPotential() const
 {
     return integrate(gamma_11%n11 + 2*gamma_12%n12 + gamma_22%n22)/2;
 }
 
-std::pair<arma::mat, arma::mat> Membrane::kartesianDisplacements()
+std::pair<arma::mat, arma::mat> Membrane::kartesianDisplacements() const
 {
     arma::mat det = J(0, 0)%J(1, 1) - J(0, 1)%J(1, 0);
 
@@ -144,7 +144,7 @@ std::pair<arma::mat, arma::mat> Membrane::kartesianDisplacements()
     return std::make_pair(vx, vy);
 }
 
-void Membrane::principalStresses(const std::string &fileSx, const std::string &fileS1)
+void Membrane::principalStresses(const std::string &fileSx, const std::string &fileS1) const
 {
     arma::mat sigma_x = pow(J(0, 0), 2)%n11 +                   2*J(0, 0)%J(0, 1)%n12 + pow(J(0, 1), 2)%n22;
     arma::mat tau_xy  = J(0, 0)%J(1, 0)%n11 + (J(0, 0)%J(1, 1) + J(0, 1)%J(1, 0))%n12 + J(0, 1)%J(1, 1)%n22;
@@ -165,7 +165,7 @@ void Membrane::principalStresses(const std::string &fileSx, const std::string &f
     file_p.close();
 }
 
-void Membrane::principalStrains(const std::string &fileV, const std::string &fileEx, const std::string &fileE1)
+void Membrane::principalStrains(const std::string &fileV, const std::string &fileEx, const std::string &fileE1) const
 {
     arma::mat det2 = pow(J(0, 0)%J(1, 1) - J(0, 1)%J(1, 0), 2);
 

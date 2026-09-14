@@ -43,31 +43,31 @@ namespace Lagrange
         CurveInterpolant(Point p1, Point p2, size_t n) : x((p2.X()-p1.X())*(Chebyshev::gaussLobatto(n)+1)/2 + p1.X()),
                                                          y((p2.Y()-p1.Y())*(Chebyshev::gaussLobatto(n)+1)/2 + p1.Y()), nodes(Chebyshev::gaussLobatto(n)) {};
         CurveInterpolant(Point p1, Point p2, Point pm, double r, size_t n) : CurveInterpolant(arc(p1, p2, pm, r, n)) {};
-        std::pair<arma::vec, arma::vec> evaluate()
+        std::pair<arma::vec, arma::vec> evaluate() const
         {
             return {interpolation(nodes, nodes, x, w), interpolation(nodes, nodes, y, w)};
         }
-        template <class S> std::pair<S, S> evaluate(const S s)
+        template <class S> std::pair<S, S> evaluate(const S s) const
         {
             return {interpolation(s, nodes, x, w), interpolation(s, nodes, y, w)};
         }
-        std::pair<arma::vec, arma::vec> derivative()
+        std::pair<arma::vec, arma::vec> derivative() const
         {
             return {interpolantDerivative(nodes, nodes, x, w), interpolantDerivative(nodes, nodes, y, w)};
         }
-        template <class S> std::pair<S, S> derivative(const S s)
+        template <class S> std::pair<S, S> derivative(const S s) const
         {
             return {interpolantDerivative(s, nodes, x, w), interpolantDerivative(s, nodes, y, w)};
         }
-        double arclengthAt(const double s, const arma::vec X)
+        double arclengthAt(const double s, const arma::vec X) const
         {
             return interpolation(s, nodes, X, w);
         }
-        double operator()(const size_t i)
+        double operator()(const size_t i) const
         {
             return nodes(i);
         }
-        arma::vec getNodes()
+        arma::vec getNodes() const
         {
             return nodes;
         }

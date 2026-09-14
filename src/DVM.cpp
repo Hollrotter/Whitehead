@@ -94,7 +94,7 @@ void DVM::dvmNonlinear()
  * 
  * @param filename File the data is written to.
  */
-void DVM::output(std::string filename)
+void DVM::output(std::string filename) const
 {
     std::ofstream file(filename);
     for (size_t i = 0; i < nx; i++)
