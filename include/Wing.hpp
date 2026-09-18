@@ -1,4 +1,8 @@
 #pragma once
+#include "ChebyshevT.hpp"
+#include "ChebyshevU.hpp"
+#include "JacobiAlpha.hpp"
+#include "JacobiBeta.hpp"
 #include "TensorField.hpp"
 #include "Metric.hpp"
 #include "Wake.hpp"
@@ -15,6 +19,8 @@ class Wing
     TensorField mu{nx, ny}; // Doublet distribution
     arma::vec x1   = Chebyshev::gaussLobatto(nx);
     arma::vec x2   = Chebyshev::gaussLobatto(ny);
+    std::unique_ptr<BasisFunction> phi1;
+    std::unique_ptr<BasisFunction> phi2;
     arma::vec xi_1 = Chebyshev::gauss(nx); // Collocation points 1-coordinates
     arma::vec xi_2 = Chebyshev::gauss(ny); // Collocation points 2-coordinates
     arma::mat  T1 = Chebyshev::Polynomial(xi_1);

@@ -8,6 +8,8 @@ void Aerodynamics::linear()
     for (size_t sD = 0; sD < wings.size(); sD++)
     {
         wings[sD]->analysis = Analysis::linear;
+        wings[sD]->phi1.reset(new ChebyshevT(wings[sD]->nx));
+        wings[sD]->phi2.reset(new ChebyshevT(wings[sD]->ny));
         for (size_t tD = 0; tD < wings.size(); tD++)
             if (sD != tD)
             {
@@ -37,18 +39,18 @@ void Aerodynamics::linear()
                             {
                                 arma::vec::fixed<2> r = {x_gl(ii, jj) - xC(i, j), y_gl(ii, jj) - yC(i, j)};
                                 double r3 = pow(norm(r), 3);
-                                double t2   = 1; // First Chebyshev Polynomial (j)
-                                double t2p1 = x2_gl(jj); // Second Chebyshev Polynomial (j+1 -> jp1)
+                                double t2   = wings[sD]->phi2->constant(); // First Chebyshev Polynomial (j)
+                                double t2p1 = wings[sD]->phi2->linear(x2_gl(jj)); // Second Chebyshev Polynomial (j+1 -> jp1)
 
-                                double dt2   = 0;
-                                double dt2p1 = 1;
+                                double dt2   = wings[sD]->phi2->constantDerivative();
+                                double dt2p1 = wings[sD]->phi2->linearDerivative();
                                 for (size_t q = 0; q < wings[sD]->ny; q++) // Loop over Chebyshev Polynomial 2-direction of source
                                 {
-                                    double t1   = 1; // First Chebyshev Polynomial (i)
-                                    double t1p1 = x1_gl(ii); // Second Chebyshev Polynomial (i+1 -> ip1)
+                                    double t1   = wings[sD]->phi1->constant(); // First Chebyshev Polynomial (i)
+                                    double t1p1 = wings[sD]->phi1->linear(x1_gl(ii)); // Second Chebyshev Polynomial (i+1 -> ip1)
 
-                                    double dt1   = 0;
-                                    double dt1p1 = 1;
+                                    double dt1   = wings[sD]->phi1->constantDerivative();
+                                    double dt1p1 = wings[sD]->phi1->linearDerivative();
                                     for (size_t p = 0; p < wings[sD]->nx; p++) // Loop over Chebyshev Polynomial 1-direction of source
                                     {
                                         double dmudx1 = dt1 *  t2;
@@ -57,16 +59,16 @@ void Aerodynamics::linear()
                                             *(r(0)*(dy_gldx2(ii, jj)*dmudx1 - dy_gldx1(ii, jj)*dmudx2)
                                             - r(1)*(dx_gldx2(ii, jj)*dmudx1 - dx_gldx1(ii, jj)*dmudx2));
                                         std::swap(t1, t1p1); // Swap order so the oldes Chebyshev Polynomial will be overwritten
-                                        t1p1 = boost::math::chebyshev_next(x1_gl(ii), t1, t1p1); // Calculate next Chebyshev Polynomial
+                                        wings[sD]->phi1->next(p, x1_gl(ii), t1, t1p1);
 
                                         std::swap(dt1, dt1p1);
-                                        dt1p1 = (p == 0) ? 4*x1_gl(ii) : (p+2)*(2*t1 + dt1p1/p);
+                                        wings[sD]->phi1->nextDerivative(p, x1_gl(ii), t1, dt1, dt1p1);
                                     }
                                     std::swap(t2, t2p1); // Swap order so the oldest Chebyshev Polynomial will be overwritten
-                                    t2p1 = boost::math::chebyshev_next(x2_gl(jj), t2, t2p1); // Calculate next Chebyshev Polynomial
+                                    wings[sD]->phi2->next(q, x2_gl(jj), t2, t2p1);
 
                                     std::swap(dt2, dt2p1);
-                                    dt2p1 = (q == 0) ? 4*x2_gl(jj) : (q+2)*(2*t2 + dt2p1/q);
+                                    wings[sD]->phi2->nextDerivative(q, x2_gl(jj), t2, dt2, dt2p1);
                                 }
                             }
                     }
@@ -95,15 +97,19 @@ void Aerodynamics::linear()
                                 arma::vec xw = T1_gauss * wings[sD]->x.col(0);
                                 arma::vec yw = T1_gauss * wings[sD]->y.col(0);
                                 for (size_t ii = 0; ii < wings[sD]->nx; ii++)
+                                {
+                                    double t1    = wings[sD]->phi1->constant();
+                                    double t1p1  = wings[sD]->phi1->linear(x1_gl_w(ii));
+                                    double dt1   = wings[sD]->phi1->constantDerivative();
+                                    double dt1p1 = wings[sD]->phi1->linearDerivative();
                                     for (size_t p = 0; p < wings[sD]->nx; p++)
                                     {
-                                        double dt1 = boost::math::chebyshev_t_prime(p, x1_gl_w(ii));
                                         for (size_t jj = 0; jj < wings[sD]->ny; jj++)
                                         {
                                             double xW = xw(ii) + (1 - x2_gl_w(jj))/(1 + x2_gl_w(jj))/2;
                                             for (size_t q = 0; q < wings[sD]->ny; q++)
                                             {
-                                                double t2 = pow(-1, q);
+                                                double t2 = wings[sD]->phi2->left(q);
                                                 for (size_t j = 1; j < wings[tD]->ny-1; j++)
                                                     for (size_t i = 1; i < wings[tD]->nx-1; i++)
                                                     {
@@ -114,70 +120,104 @@ void Aerodynamics::linear()
                                                     }
                                             }
                                         }
+                                        std::swap(t1, t1p1);
+                                        wings[sD]->phi1->next(p, x1_gl_w(ii), t1, t1p1);
+
+                                        std::swap(dt1, dt1p1);
+                                        wings[sD]->phi1->nextDerivative(p, x1_gl_w(ii), t1, dt1, dt1p1);
                                     }
+                                }
                             }
                             else if (c == 1) // East
                             {
                                 arma::vec xw = T2_gauss * wings[sD]->x.row(wings[sD]->nx-1).t();
                                 arma::vec yw = T2_gauss * wings[sD]->y.row(wings[sD]->nx-1).t();
                                 for (size_t jj = 0; jj < wings[sD]->ny; jj++)
+                                {
+                                    double t2    = wings[sD]->phi2->constant();
+                                    double t2p1  = wings[sD]->phi2->linear(x2_gl_w(jj));
+                                    double dt2   = wings[sD]->phi2->constantDerivative();
+                                    double dt2p1 = wings[sD]->phi2->linearDerivative();
                                     for (size_t q = 0; q < wings[sD]->ny; q++)
                                     {
-                                        double dt2 = boost::math::chebyshev_t_prime(q, x2_gl_w(jj));
                                         for (size_t ii = 0; ii < wings[sD]->nx; ii++)
                                         {
                                             double xW = xw(jj) + (1 + x1_gl_w(ii))/(1 - x1_gl_w(ii))/2;
-                                            for (size_t j = 1; j < wings[tD]->ny-1; j++)
-                                                for (size_t i = 1; i < wings[tD]->nx-1; i++)
-                                                {
-                                                    size_t k = i + j*wings[tD]->nx;
-                                                    arma::vec::fixed<2> r = {xW - xC(i, j), yw(jj) - yC(i, j)};
-                                                    double r3 = pow(norm(r), 3);
-                                                    double I = gl_x_w[ii].weight*gl_y_w[jj].weight*dt2*r(1)/pow(1 - x1_gl_w(ii), 2)/r3;
-                                                    for (size_t p = 0; p < wings[sD]->nx; p++)
-                                                        bw(tD, sD)(k, p+q*wings[sD]->nx) -= I;
-                                                }
+                                            for (size_t p = 0; p < wings[sD]->nx; p++)
+                                            {
+                                                double t1 = wings[sD]->phi1->right(p);
+                                                for (size_t j = 1; j < wings[tD]->ny-1; j++)
+                                                    for (size_t i = 1; i < wings[tD]->nx-1; i++)
+                                                    {
+                                                        size_t k = i + j*wings[tD]->nx;
+                                                        arma::vec::fixed<2> r = {xW - xC(i, j), yw(jj) - yC(i, j)};
+                                                        double r3 = pow(norm(r), 3);
+                                                        bw(tD, sD)(k, p+q*wings[sD]->nx) -= gl_x_w[ii].weight*gl_y_w[jj].weight*t1*dt2*r(1)/pow(1 - x1_gl_w(ii), 2)/r3;
+                                                    }
+                                            }
                                         }
+                                        std::swap(t2, t2p1);
+                                        wings[sD]->phi2->next(q, x2_gl_w(jj), t2, t2p1);
+
+                                        std::swap(dt2, dt2p1);
+                                        wings[sD]->phi2->nextDerivative(q, x2_gl_w(jj), t2, dt2, dt2p1);
                                     }
+                                }
                             }
                             else if (c == 2) // North
                             {
                                 arma::vec xw = T1_gauss * wings[sD]->x.col(wings[sD]->ny-1);
                                 arma::vec yw = T1_gauss * wings[sD]->y.col(wings[sD]->ny-1);
                                 for (size_t ii = 0; ii < wings[sD]->nx; ii++)
+                                {
+                                    double t1    = wings[sD]->phi1->constant();
+                                    double t1p1  = wings[sD]->phi1->linear(x1_gl_w(ii));
+                                    double dt1   = wings[sD]->phi1->constantDerivative();
+                                    double dt1p1 = wings[sD]->phi1->linearDerivative();
                                     for (size_t p = 0; p < wings[sD]->nx; p++)
                                     {
-                                        double dt1 = boost::math::chebyshev_t_prime(p, x1_gl_w(ii));
                                         for (size_t jj = 0; jj < wings[sD]->ny; jj++)
                                         {
                                             double xW = xw(ii) + (1 + x2_gl_w(jj))/(1 - x2_gl_w(jj))/2;
-                                            for (size_t j = 1; j < wings[tD]->ny-1; j++)
-                                                for (size_t i = 1; i < wings[tD]->nx-1; i++)
-                                                {
-                                                    size_t k = i + j*wings[tD]->nx;
-                                                    arma::vec::fixed<2> r = {xW - xC(i, j), yw(ii) - yC(i, j)};
-                                                    double r3 = pow(norm(r), 3);
-                                                    double I =-gl_x_w[ii].weight*gl_y_w[jj].weight*dt1*r(1)/pow(1 - x2_gl_w(jj), 2)/r3;
-                                                    for (size_t q = 0; q < wings[sD]->ny; q++)
-                                                        bw(tD, sD)(k, p+q*wings[sD]->nx) -= I;
-                                                }
+                                            for (size_t q = 0; q < wings[sD]->ny; q++)
+                                            {
+                                                double t2 = wings[sD]->phi2->right(q);
+                                                for (size_t j = 1; j < wings[tD]->ny-1; j++)
+                                                    for (size_t i = 1; i < wings[tD]->nx-1; i++)
+                                                    {
+                                                        size_t k = i + j*wings[tD]->nx;
+                                                        arma::vec::fixed<2> r = {xW - xC(i, j), yw(ii) - yC(i, j)};
+                                                        double r3 = pow(norm(r), 3);
+                                                        bw(tD, sD)(k, p+q*wings[sD]->nx) += gl_x_w[ii].weight*gl_y_w[jj].weight*dt1*t2*r(1)/pow(1 - x2_gl_w(jj), 2)/r3;
+                                                    }
+                                            }
                                         }
+                                        std::swap(t1, t1p1);
+                                        wings[sD]->phi1->next(p, x1_gl_w(ii), t1, t1p1);
+
+                                        std::swap(dt1, dt1p1);
+                                        wings[sD]->phi1->nextDerivative(p, x1_gl_w(ii), t1, dt1, dt1p1);
                                     }
+                                }
                             }
                             else // West
                             {
                                 arma::vec xw = T2_gauss * wings[sD]->x.row(0).t();
                                 arma::vec yw = T2_gauss * wings[sD]->y.row(0).t();
                                 for (size_t jj = 0; jj < wings[sD]->ny; jj++)
+                                {
+                                    double t2    = wings[sD]->phi2->constant();
+                                    double t2p1  = wings[sD]->phi2->linear(x2_gl_w(jj));
+                                    double dt2   = wings[sD]->phi2->constantDerivative();
+                                    double dt2p1 = wings[sD]->phi2->linearDerivative();
                                     for (size_t q = 0; q < wings[sD]->ny; q++)
                                     {
-                                        double dt2 = boost::math::chebyshev_t_prime(q, x2_gl_w(jj));
                                         for (size_t ii = 0; ii < wings[sD]->nx; ii++)
                                         {
                                             double xW = xw(jj) + (1 - x1_gl_w(ii))/(1 + x1_gl_w(ii))/2;
                                             for (size_t p = 0; p < wings[sD]->nx; p++)
                                             {
-                                                double t1 = pow(-1, p);
+                                                double t1 = wings[sD]->phi1->left(p);
                                                 for (size_t j = 1; j < wings[tD]->ny-1; j++)
                                                     for (size_t i = 1; i < wings[tD]->nx-1; i++)
                                                     {
@@ -188,7 +228,13 @@ void Aerodynamics::linear()
                                                     }
                                             }
                                         }
+                                        std::swap(t2, t2p1);
+                                        wings[sD]->phi2->next(q, x2_gl_w(jj), t2, t2p1);
+
+                                        std::swap(dt2, dt2p1);
+                                        wings[sD]->phi2->nextDerivative(q, x2_gl_w(jj), t2, dt2, dt2p1);
                                     }
+                                }
                             }
                         }
                 }
@@ -227,18 +273,18 @@ void Aerodynamics::linear()
                                 {
                                     arma::vec::fixed<2> r = {x_gl(ii, jj) - xC(i, j), y_gl(ii, jj) - yC(i, j)};
                                     double r3 = pow(norm(r), 3);
-                                    double t2   = 1; // First Chebyshev Polynomial (j)
-                                    double t2p1 = x2_gl(jj); // Second Chebyshev Polynomial (j+1 -> jp1)
+                                    double t2   = wings[sD]->phi2->constant(); // First Chebyshev Polynomial (j)
+                                    double t2p1 = wings[sD]->phi2->linear(x2_gl(jj)); // Second Chebyshev Polynomial (j+1 -> jp1)
 
-                                    double dt2   = 0;
-                                    double dt2p1 = 1;
+                                    double dt2   = wings[sD]->phi2->constantDerivative();
+                                    double dt2p1 = wings[sD]->phi2->linearDerivative();
                                     for (size_t q = 0; q < wings[sD]->ny; q++) // Loop over Chebyshev Polynomial 2-direction of source
                                     {
-                                        double t1   = 1; // First Chebyshev Polynomial (i)
-                                        double t1p1 = x1_gl(ii); // Second Chebyshev Polynomial (i+1 -> ip1)
+                                        double t1   = wings[sD]->phi1->constant(); // First Chebyshev Polynomial (i)
+                                        double t1p1 = wings[sD]->phi1->linear(x1_gl(ii)); // Second Chebyshev Polynomial (i+1 -> ip1)
 
-                                        double dt1   = 0;
-                                        double dt1p1 = 1;
+                                        double dt1   = wings[sD]->phi1->constantDerivative();
+                                        double dt1p1 = wings[sD]->phi1->linearDerivative();
                                         for (size_t p = 0; p < wings[sD]->nx; p++) // Loop over Chebyshev Polynomial 1-direction of source
                                         {
                                             double dmudx1 = dt1 *  t2;
@@ -247,16 +293,16 @@ void Aerodynamics::linear()
                                                 *(r(0)*(dy_gldx2(ii, jj)*dmudx1 - dy_gldx1(ii, jj)*dmudx2)
                                                 - r(1)*(dx_gldx2(ii, jj)*dmudx1 - dx_gldx1(ii, jj)*dmudx2));
                                             std::swap(t1, t1p1); // Swap order so the oldes Chebyshev Polynomial will be overwritten
-                                            t1p1 = boost::math::chebyshev_next(x1_gl(ii), t1, t1p1); // Calculate next Chebyshev Polynomial
+                                            wings[sD]->phi1->next(p, x1_gl(ii), t1, t1p1);
 
                                             std::swap(dt1, dt1p1);
-                                            dt1p1 = (p == 0) ? 4*x1_gl(ii) : (p+2)*(2*t1 + dt1p1/p);
+                                            wings[sD]->phi1->nextDerivative(p, x1_gl(ii), t1, dt1, dt1p1);
                                         }
                                         std::swap(t2, t2p1); // Swap order so the oldest Chebyshev Polynomial will be overwritten
-                                        t2p1 = boost::math::chebyshev_next(x2_gl(jj), t2, t2p1); // Calculate next Chebyshev Polynomial
+                                        wings[sD]->phi2->next(q, x2_gl(jj), t2, t2p1);
 
                                         std::swap(dt2, dt2p1);
-                                        dt2p1 = (q == 0) ? 4*x2_gl(jj) : (q+2)*(2*t2 + dt2p1/q);
+                                        wings[sD]->phi2->nextDerivative(q, x2_gl(jj), t2, dt2, dt2p1);
                                     }
                                 }
                         }
@@ -285,15 +331,19 @@ void Aerodynamics::linear()
                                     arma::vec xw = T1_gauss * wings[sD]->x.col(0);
                                     arma::vec yw =-T1_gauss * wings[sD]->y.col(0);
                                     for (size_t ii = 0; ii < wings[sD]->nx; ii++)
+                                    {
+                                        double t1    = wings[sD]->phi1->constant();
+                                        double t1p1  = wings[sD]->phi1->linear(x1_gl_w(ii));
+                                        double dt1   = wings[sD]->phi1->constantDerivative();
+                                        double dt1p1 = wings[sD]->phi1->linearDerivative();
                                         for (size_t p = 0; p < wings[sD]->nx; p++)
                                         {
-                                            double dt1 = boost::math::chebyshev_t_prime(p, x1_gl_w(ii));
                                             for (size_t jj = 0; jj < wings[sD]->ny; jj++)
                                             {
                                                 double xW = xw(ii) + (1 - x2_gl_w(jj))/(1 + x2_gl_w(jj))/2;
                                                 for (size_t q = 0; q < wings[sD]->ny; q++)
                                                 {
-                                                    double t2 = pow(-1, q);
+                                                    double t2 = wings[sD]->phi2->left(q);
                                                     for (size_t j = 1; j < wings[tD]->ny-1; j++)
                                                         for (size_t i = 1; i < wings[tD]->nx-1; i++)
                                                         {
@@ -304,70 +354,104 @@ void Aerodynamics::linear()
                                                         }
                                                 }
                                             }
+                                            std::swap(t1, t1p1);
+                                            wings[sD]->phi1->next(p, x1_gl_w(ii), t1, t1p1);
+
+                                            std::swap(dt1, dt1p1);
+                                            wings[sD]->phi1->nextDerivative(p, x1_gl_w(ii), t1, dt1, dt1p1);
                                         }
+                                    }
                                 }
                                 else if (c == 1) // East
                                 {
                                     arma::vec xw = T2_gauss * wings[sD]->x.row(wings[sD]->nx-1).t();
                                     arma::vec yw =-T2_gauss * wings[sD]->y.row(wings[sD]->nx-1).t();
                                     for (size_t jj = 0; jj < wings[sD]->ny; jj++)
+                                    {
+                                        double t2    = wings[sD]->phi2->constant();
+                                        double t2p1  = wings[sD]->phi2->linear(x2_gl_w(jj));
+                                        double dt2   = wings[sD]->phi2->constantDerivative();
+                                        double dt2p1 = wings[sD]->phi2->linearDerivative();
                                         for (size_t q = 0; q < wings[sD]->ny; q++)
                                         {
-                                            double dt2 = boost::math::chebyshev_t_prime(q, x2_gl_w(jj));
                                             for (size_t ii = 0; ii < wings[sD]->nx; ii++)
                                             {
                                                 double xW = xw(jj) + (1 + x1_gl_w(ii))/(1 - x1_gl_w(ii))/2;
-                                                for (size_t j = 1; j < wings[tD]->ny-1; j++)
-                                                    for (size_t i = 1; i < wings[tD]->nx-1; i++)
-                                                    {
-                                                        size_t k = i + j*wings[tD]->nx;
-                                                        arma::vec::fixed<2> r = {xW - xC(i, j), yw(jj) - yC(i, j)};
-                                                        double r3 = pow(norm(r), 3);
-                                                        double I = gl_x_w[ii].weight*gl_y_w[jj].weight*dt2*r(1)/pow(1 - x1_gl_w(ii), 2)/r3;
-                                                        for (size_t p = 0; p < wings[sD]->nx; p++)
-                                                            bw(tD, sD)(k, p+q*wings[sD]->nx) += I;
-                                                    }
+                                                for (size_t p = 0; p < wings[sD]->nx; p++)
+                                                {
+                                                    double t1 = wings[sD]->phi1->right(p);
+                                                    for (size_t j = 1; j < wings[tD]->ny-1; j++)
+                                                        for (size_t i = 1; i < wings[tD]->nx-1; i++)
+                                                        {
+                                                            size_t k = i + j*wings[tD]->nx;
+                                                            arma::vec::fixed<2> r = {xW - xC(i, j), yw(jj) - yC(i, j)};
+                                                            double r3 = pow(norm(r), 3);
+                                                            bw(tD, sD)(k, p+q*wings[sD]->nx) += gl_x_w[ii].weight*gl_y_w[jj].weight*t1*dt2*r(1)/pow(1 - x1_gl_w(ii), 2)/r3;
+                                                        }
+                                                }
                                             }
+                                            std::swap(t2, t2p1);
+                                            wings[sD]->phi2->next(q, x2_gl_w(jj), t2, t2p1);
+
+                                            std::swap(dt2, dt2p1);
+                                            wings[sD]->phi2->nextDerivative(q, x2_gl_w(jj), t2, dt2, dt2p1);
                                         }
+                                    }
                                 }
                                 else if (c == 2) // North
                                 {
                                     arma::vec xw = T1_gauss * wings[sD]->x.col(wings[sD]->ny-1);
                                     arma::vec yw =-T1_gauss * wings[sD]->y.col(wings[sD]->ny-1);
                                     for (size_t ii = 0; ii < wings[sD]->nx; ii++)
+                                    {
+                                        double t1    = wings[sD]->phi1->constant();
+                                        double t1p1  = wings[sD]->phi1->linear(x1_gl_w(ii));
+                                        double dt1   = wings[sD]->phi1->constantDerivative();
+                                        double dt1p1 = wings[sD]->phi1->linearDerivative();
                                         for (size_t p = 0; p < wings[sD]->nx; p++)
                                         {
-                                            double dt1 = boost::math::chebyshev_t_prime(p, x1_gl_w(ii));
                                             for (size_t jj = 0; jj < wings[sD]->ny; jj++)
                                             {
                                                 double xW = xw(ii) + (1 + x2_gl_w(jj))/(1 - x2_gl_w(jj))/2;
-                                                for (size_t j = 1; j < wings[tD]->ny-1; j++)
-                                                    for (size_t i = 1; i < wings[tD]->nx-1; i++)
-                                                    {
-                                                        size_t k = i + j*wings[tD]->nx;
-                                                        arma::vec::fixed<2> r = {xW - xC(i, j), yw(ii) - yC(i, j)};
-                                                        double r3 = pow(norm(r), 3);
-                                                        double I =-gl_x_w[ii].weight*gl_y_w[jj].weight*dt1*r(1)/pow(1 - x2_gl_w(jj), 2)/r3;
-                                                        for (size_t q = 0; q < wings[sD]->ny; q++)
-                                                            bw(tD, sD)(k, p+q*wings[sD]->nx) += I;
-                                                    }
+                                                for (size_t q = 0; q < wings[sD]->ny; q++)
+                                                {
+                                                    double t2 = wings[sD]->phi2->right(q);
+                                                    for (size_t j = 1; j < wings[tD]->ny-1; j++)
+                                                        for (size_t i = 1; i < wings[tD]->nx-1; i++)
+                                                        {
+                                                            size_t k = i + j*wings[tD]->nx;
+                                                            arma::vec::fixed<2> r = {xW - xC(i, j), yw(ii) - yC(i, j)};
+                                                            double r3 = pow(norm(r), 3);
+                                                            bw(tD, sD)(k, p+q*wings[sD]->nx) -= gl_x_w[ii].weight*gl_y_w[jj].weight*dt1*t2*r(1)/pow(1 - x2_gl_w(jj), 2)/r3;
+                                                        }
+                                                }
                                             }
+                                            std::swap(t1, t1p1);
+                                            wings[sD]->phi1->next(p, x1_gl_w(ii), t1, t1p1);
+
+                                            std::swap(dt1, dt1p1);
+                                            wings[sD]->phi1->nextDerivative(p, x1_gl_w(ii), t1, dt1, dt1p1);
                                         }
+                                    }
                                 }
                                 else // West
                                 {
-                                arma::vec xw = T2_gauss * wings[sD]->x.row(0).t();
-                                arma::vec yw =-T2_gauss * wings[sD]->y.row(0).t();
+                                    arma::vec xw = T2_gauss * wings[sD]->x.row(0).t();
+                                    arma::vec yw =-T2_gauss * wings[sD]->y.row(0).t();
                                     for (size_t jj = 0; jj < wings[sD]->ny; jj++)
+                                    {
+                                        double t2    = wings[sD]->phi2->constant();
+                                        double t2p1  = wings[sD]->phi2->linear(x2_gl_w(jj));
+                                        double dt2   = wings[sD]->phi2->constantDerivative();
+                                        double dt2p1 = wings[sD]->phi2->linearDerivative();
                                         for (size_t q = 0; q < wings[sD]->ny; q++)
                                         {
-                                            double dt2 = boost::math::chebyshev_t_prime(q, x2_gl_w(jj));
                                             for (size_t ii = 0; ii < wings[sD]->nx; ii++)
                                             {
                                                 double xW = xw(jj) + (1 - x1_gl_w(ii))/(1 + x1_gl_w(ii))/2;
                                                 for (size_t p = 0; p < wings[sD]->nx; p++)
                                                 {
-                                                    double t1 = pow(-1, p);
+                                                    double t1 = wings[sD]->phi1->left(p);
                                                     for (size_t j = 1; j < wings[tD]->ny-1; j++)
                                                         for (size_t i = 1; i < wings[tD]->nx-1; i++)
                                                         {
@@ -378,7 +462,13 @@ void Aerodynamics::linear()
                                                         }
                                                 }
                                             }
+                                            std::swap(t2, t2p1);
+                                            wings[sD]->phi2->next(q, x2_gl_w(jj), t2, t2p1);
+
+                                            std::swap(dt2, dt2p1);
+                                            wings[sD]->phi2->nextDerivative(q, x2_gl_w(jj), t2, dt2, dt2p1);
                                         }
+                                    }
                                 }
                             }
                 }
