@@ -111,47 +111,70 @@ void Wing::muBoundarySouth(const size_t i)
     switch (mu.southBC)
     {
         case BC::Dirichlet:
+        {
+            double w1 = phi1->weightFunction(xi_1(i));
+            double w2 = phi2->weightFunction(-1);
             for (size_t q = 0; q < ny; q++)
             {
-                double t2 = pow(-1, q);
+                double t2 = phi2->left(q);
                 for (size_t p = 0; p < nx; p++)
-                    A(i, p+q*nx) = T1(i, p) * t2;
+                    A(i, p+q*nx) = w1*T1(i, p) * w2*t2;
             }
             b(i) = mu.south(i);
             break;
+        }
         case BC::Neumann:
+        {
+            double  w1 = phi1->weightFunction(xi_1(i));
+            double dw1 = phi1->weightFunctionDerivative(xi_1(i));
+            double  w2 = phi2->weightFunction(-1);
+            double dw2 = phi2->weightFunctionDerivative(-1);
             for (size_t q = 0; q < ny; q++)
             {
-                double  t2 = pow(-1, q);
-                double dt2 = pow(-1, q+1)*pow(q, 2);
+                double  t2 = phi2->left(q);
+                double dt2 = phi2->leftDerivative(q);
                 for (size_t p = 0; p < nx; p++)
-                    A(i, p+q*nx) = h_2s1_south(i)*dT1(i, p)*t2 + h_2s2_south(i)*T1(i, p)*dt2;
+                    A(i, p+q*nx) = h_2s1_south(i)*(w1*dT1(i, p) + dw1*T1(i, p))*w2*t2
+                                 + h_2s2_south(i)*w1*T1(i, p)*(w2*dt2 + dw2*t2);
             }
             b(i) = mu.south(i);
             break;
+        }
         case BC::Robin:
+        {
+            double  w1 = phi1->weightFunction(xi_1(i));
+            double dw1 = phi1->weightFunctionDerivative(xi_1(i));
+            double  w2 = phi2->weightFunction(-1);
+            double dw2 = phi2->weightFunctionDerivative(-1);
             for (size_t q = 0; q < ny; q++)
             {
-                double  t2 = pow(-1, q);
-                double dt2 = pow(-1, q+1)*pow(q, 2);
+                double  t2 = phi2->left(q);
+                double dt2 = phi2->leftDerivative(q);
                 for (size_t p = 0; p < nx; p++)
-                    A(i, p+q*nx) = mu.r1South*T1(i, p) * t2
-                                 + mu.r2South*(h_2s1_south(i)*dT1(i, p)*t2 + h_2s2_south(i)*T1(i, p)*dt2);
+                    A(i, p+q*nx) = mu.r1South*w1*T1(i, p) * w2*t2
+                                 + mu.r2South*(h_2s1_south(i)*(w1*dT1(i, p) + dw1*T1(i, p))*w2*t2
+                                             + h_2s2_south(i)*w1*T1(i, p)*(w2*dt2 + dw2*t2));
             }
             b(i) = mu.south(i);
             break;
+        }
         case BC::Kutta:
         {
+            double  w1 = phi1->weightFunction(xi_1(i));
+            double dw1 = phi1->weightFunctionDerivative(xi_1(i));
+            double  w2 = phi2->weightFunction(-1);
+            double dw2 = phi2->weightFunctionDerivative(-1);
             auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(xi_1(i), -1, chi);
             double detJ = dxdx1*dydx2 - dxdx2*dydx1;
             double J11_inv = dydx2/detJ;
             double J21_inv =-dydx1/detJ;
             for (size_t q = 0; q < ny; q++)
             {
-                double  t2 = pow(-1, q);
-                double dt2 = pow(-1, q+1)*pow(q, 2);
+                double  t2 = phi2->left(q);
+                double dt2 = phi2->leftDerivative(q);
                 for (size_t p = 0; p < nx; p++)
-                    A(i, p+q*nx) = J11_inv*dT1(i, p)*t2 + J21_inv*T1(i, p)*dt2;
+                    A(i, p+q*nx) = J11_inv*(w1*dT1(i, p) + dw1*T1(i, p))*w2*t2
+                                 + J21_inv*w1*T1(i, p)*(w2*dt2 + dw2*t2);
             }
             b(i) = mu.south(i);
             break;
@@ -167,40 +190,70 @@ void Wing::muBoundaryNorth(const size_t i)
     switch (mu.northBC)
     {
         case BC::Dirichlet:
+        {
+            double w1 = phi1->weightFunction(xi_1(i));
+            double w2 = phi2->weightFunction(1);
             for (size_t q = 0; q < ny; q++)
+            {
+                double t2 = phi2->right(q);
                 for (size_t p = 0; p < nx; p++) 
-                    A(k, p+q*nx) = T1(i, p);
+                    A(k, p+q*nx) = w1*T1(i, p) * w2*t2;
+            }
             b(k) = mu.north(i);
             break;
+        }
         case BC::Neumann:
+        {
+            double  w1 = phi1->weightFunction(xi_1(i));
+            double dw1 = phi1->weightFunctionDerivative(xi_1(i));
+            double  w2 = phi2->weightFunction(1);
+            double dw2 = phi2->weightFunctionDerivative(1);
             for (size_t q = 0; q < ny; q++)
             {
-                double dt2 = pow(q, 2);
+                double  t2 = phi2->right(q);
+                double dt2 = phi2->rightDerivative(q);
                 for (size_t p = 0; p < nx; p++)
-                    A(k, p+q*nx) = h_2s1_north(i)*dT1(i, p) + h_2s2_north(i)*T1(i, p)*dt2;
+                    A(k, p+q*nx) = h_2s1_north(i)*(w1*dT1(i, p) + dw1*T1(i, p))*w2*t2
+                                 + h_2s2_north(i)*w1*T1(i, p)*(w2*dt2 + dw2*t2);
             }
             b(k) = mu.north(i);
             break;
+        }
         case BC::Robin:
+        {
+            double  w1 = phi1->weightFunction(xi_1(i));
+            double dw1 = phi1->weightFunctionDerivative(xi_1(i));
+            double  w2 = phi2->weightFunction(1);
+            double dw2 = phi2->weightFunctionDerivative(1);
             for (size_t q = 0; q < ny; q++)
             {
-                double dt2 = pow(q, 2);
+                double  t2 = phi2->right(q);
+                double dt2 = phi2->rightDerivative(q);
                 for (size_t p = 0; p < nx; p++)
-                    A(k, p+q*nx) = mu.r1North*T1(i, p) + mu.r2North*(h_2s1_north(i)*dT1(i, p) + h_2s2_north(i)*T1(i, p)*dt2);
+                    A(k, p+q*nx) = mu.r1North*w1*T1(i, p) * w2*t2
+                                 + mu.r2North*(h_2s1_north(i)*(w1*dT1(i, p) + dw1*T1(i, p))*w2*t2
+                                             + h_2s2_north(i)*w1*T1(i, p)*(w2*dt2 + dw2*t2));
             }
             b(k) = mu.north(i);
             break;
+        }
         case BC::Kutta:
         {
+            double  w1 = phi1->weightFunction(xi_1(i));
+            double dw1 = phi1->weightFunctionDerivative(xi_1(i));
+            double  w2 = phi2->weightFunction(1);
+            double dw2 = phi2->weightFunctionDerivative(1);
             auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(xi_1(i), 1, chi);
             double detJ = dxdx1*dydx2 - dxdx2*dydx1;
             double J11_inv = dydx2/detJ;
             double J21_inv =-dydx1/detJ;
             for (size_t q = 0; q < ny; q++)
             {
-                double dt2 = pow(q, 2);
+                double  t2 = phi2->right(q);
+                double dt2 = phi2->rightDerivative(q);
                 for (size_t p = 0; p < nx; p++)
-                    A(k, p+q*nx) = J11_inv*dT1(i, p) + J21_inv*T1(i, p)*dt2;
+                    A(k, p+q*nx) = J11_inv*(w1*dT1(i, p) + dw1*T1(i, p))*w2*t2
+                                 + J21_inv*w1*T1(i, p)*(w2*dt2 + dw2*t2);
             }
             b(k) = mu.north(i);
             break;
@@ -216,47 +269,70 @@ void Wing::muBoundaryWest(const size_t j)
     switch (mu.westBC)
     {
         case BC::Dirichlet:
+        {
+            double w1 = phi1->weightFunction(-1);
+            double w2 = phi2->weightFunction(xi_2(j));
             for (size_t p = 0; p < nx; p++)
             {
-                double t1 = pow(-1, p);
+                double t1 = phi1->left(p);
                 for (size_t q = 0; q < ny; q++)
-                    A(k, p+q*nx) = t1 * T2(j, q);
+                    A(k, p+q*nx) = w1*t1 * w2*T2(j, q);
             }
             b(k) = mu.west(j);
             break;
+        }
         case BC::Neumann:
+        {
+            double  w1 = phi1->weightFunction(-1);
+            double dw1 = phi1->weightFunctionDerivative(-1);
+            double  w2 = phi2->weightFunction(xi_2(j));
+            double dw2 = phi2->weightFunctionDerivative(xi_2(j));
             for (size_t p = 0; p < nx; p++)
             {
-                double  t1 = pow(-1, p);
-                double dt1 = pow(-1, p+1)*pow(p, 2);
+                double  t1 = phi1->left(p);
+                double dt1 = phi1->leftDerivative(p);
                 for (size_t q = 0; q < ny; q++)
-                    A(k, p+q*nx) = h_1s1_west(j)*dt1*T2(j, q) + h_1s2_west(j)*t1*dT2(j, q);
+                    A(k, p+q*nx) = h_1s1_west(j)*(w1*dt1 + dw1*t1)*w2*T2(j, q)
+                                 + h_1s2_west(j)*w1*t1*(w2*dT2(j, q) + dw2*T2(j, q));
             }
             b(k) = mu.west(j);
             break;
+        }
         case BC::Robin:
+        {
+            double  w1 = phi1->weightFunction(-1);
+            double dw1 = phi1->weightFunctionDerivative(-1);
+            double  w2 = phi2->weightFunction(xi_2(j));
+            double dw2 = phi2->weightFunctionDerivative(xi_2(j));
             for (size_t p = 0; p < nx; p++)
             {
-                double  t2 = pow(-1, p);
-                double dt2 = pow(-1, p+1)*pow(p, 2);
+                double  t1 = phi1->left(p);
+                double dt1 = phi1->leftDerivative(p);
                 for (size_t q = 0; q < ny; q++)
-                    A(k, p+q*nx) = mu.r1West*pow(-1, p) * T2(j, q)
-                                 + mu.r2West*(h_1s1_west(j)*dt2*T2(j, q) + h_1s2_west(j)*t2*dT2(j, q));
+                    A(k, p+q*nx) = mu.r1West*w1*t1 * w2*T2(j, q)
+                                 + mu.r2West*(h_1s1_west(j)*(w1*dt1 + dw1*t1)*w2*T2(j, q)
+                                            + h_1s2_west(j)*w1*t1*(w2*dT2(j, q) + dw2*T2(j, q)));
             }
             b(k) = mu.west(j);
             break;
+        }
         case BC::Kutta:
         {
+            double  w1 = phi1->weightFunction(-1);
+            double dw1 = phi1->weightFunctionDerivative(-1);
+            double  w2 = phi2->weightFunction(xi_2(j));
+            double dw2 = phi2->weightFunctionDerivative(xi_2(j));
             auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(-1, xi_2(j), chi);
             double detJ = dxdx1*dydx2 - dxdx2*dydx1;
             double J11_inv = dydx2/detJ;
             double J21_inv =-dydx1/detJ;
             for (size_t p = 0; p < nx; p++)
             {
-                double  t1 = pow(-1, p);
-                double dt1 = pow(-1, p+1)*pow(p, 2);
+                double  t1 = phi1->left(p);
+                double dt1 = phi1->leftDerivative(p);
                 for (size_t q = 0; q < ny; q++)
-                    A(k, p+q*nx) = J11_inv*dt1*T2(j, q) + J21_inv*t1*dT2(j, q);
+                    A(k, p+q*nx) = J11_inv*(w1*dt1 + dw1*t1)*w2*T2(j, q)
+                                 + J21_inv*w1*t1*(w2*dT2(j, q) + dw2*T2(j, q));
             }
             b(k) = mu.west(j);
             break;
@@ -271,41 +347,71 @@ void Wing::muBoundaryEast(const size_t j)
     size_t k = nx-1+j*nx;
     switch (mu.eastBC)
     {
-        case BC::Dirichlet:   
-            for (size_t q = 0; q < ny; q++)
-                for (size_t p = 0; p < nx; p++)
-                    A(k, p+q*nx) = T2(j, q);
+        case BC::Dirichlet:
+        {
+            double w1 = phi1->weightFunction(1);
+            double w2 = phi2->weightFunction(xi_2(j));
+            for (size_t p = 0; p < nx; p++)
+            {
+                double t1 = phi1->right(p);
+                for (size_t q = 0; q < ny; q++)
+                    A(k, p+q*nx) = w1*t1 * w2*T2(j, q);
+            }
             b(k) = mu.east(j);
             break;
+        }
         case BC::Neumann:
+        {
+            double  w1 = phi1->weightFunction(1);
+            double dw1 = phi1->weightFunctionDerivative(1);
+            double  w2 = phi2->weightFunction(xi_2(j));
+            double dw2 = phi2->weightFunctionDerivative(xi_2(j));
             for (size_t p = 0; p < nx; p++)
             {
-                double dt1 = pow(p, 2);
+                double  t1 = phi1->right(p);
+                double dt1 = phi1->rightDerivative(p);
                 for (size_t q = 0; q < ny; q++)
-                    A(k, p+q*nx) = h_1s1_east(j)*dt1*T2(j, q) + h_1s2_east(j)*dT2(j, q);
+                    A(k, p+q*nx) = h_1s1_east(j)*(w1*dt1 + dw1*t1)*w2*T2(j, q)
+                                 + h_1s2_east(j)*w1*t1*(w2*dT2(j, q) + dw2*T2(j, q));
             }
             b(k) = mu.east(j);
             break;
+        }
         case BC::Robin:
+        {
+            double  w1 = phi1->weightFunction(1);
+            double dw1 = phi1->weightFunctionDerivative(1);
+            double  w2 = phi2->weightFunction(xi_2(j));
+            double dw2 = phi2->weightFunctionDerivative(xi_2(j));
             for (size_t p = 0; p < nx; p++)
             {
-                double dt1 = pow(p, 2);
+                double  t1 = phi1->right(p);
+                double dt1 = phi1->rightDerivative(p);
                 for (size_t q = 0; q < ny; q++)
-                    A(k, p+q*nx) = mu.r1East*T2(j, q) + mu.r2East*(h_1s1_east(j)*dt1*T2(j, q) + h_1s2_east(j)*dT2(j, q));
+                    A(k, p+q*nx) = mu.r1East*w1*t1 * w2*T2(j, q)
+                                 + mu.r2East*(h_1s1_east(j)*(w1*dt1 + dw1*t1)*w2*T2(j, q)
+                                            + h_1s2_east(j)*w1*t1*(w2*dT2(j, q) + dw2*T2(j, q)));
             }
             b(k) = mu.east(j);
             break;
+        }
         case BC::Kutta:
         {
+            double  w1 = phi1->weightFunction(1);
+            double dw1 = phi1->weightFunctionDerivative(1);
+            double  w2 = phi2->weightFunction(xi_2(j));
+            double dw2 = phi2->weightFunctionDerivative(xi_2(j));
             auto [dxdx1, dxdx2, dydx1, dydx2] = Lagrange::TransfiniteQuadMetrics(1, xi_2(j), chi);
             double detJ = dxdx1*dydx2 - dxdx2*dydx1;
             double J11_inv = dydx2/detJ;
             double J21_inv =-dydx1/detJ;
             for (size_t p = 0; p < nx; p++)
             {
-                double dt1 = pow(p, 2);
+                double  t1 = phi1->right(p);
+                double dt1 = phi1->rightDerivative(p);
                 for (size_t q = 0; q < ny; q++)
-                    A(k, p+q*nx) = J11_inv*dt1*T2(j, q) + J21_inv*dT2(j, q);
+                    A(k, p+q*nx) = J11_inv*(w1*dt1 + dw1*t1)*T2(j, q)
+                                 + J21_inv*t1*(w2*dT2(j, q) + dw2*T2(j, q));
             }
             b(k) = mu.east(j);
             break;

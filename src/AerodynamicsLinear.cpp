@@ -30,48 +30,60 @@ void Aerodynamics::linear()
                 arma::mat xC = wings[tD]->xC;
                 arma::mat yC = wings[tD]->yC;
                 bw(tD, sD).zeros(wings[tD]->nxy, wings[sD]->nxy);
-                for (size_t j = 1; j < wings[tD]->ny-1; j++) // Loop over Collocation Points in 2-direction of target
-                    for (size_t i = 1; i < wings[tD]->nx-1; i++) // Loop over Collocation Points in 1-direction of target
+                for (size_t jj = 0; jj < wings[sD]->ny; jj++) // Loop over Legendre nodes 2-direction of source
+                {
+                    double  w2 = wings[sD]->phi2->weightFunction(x2_gl(jj));
+                    double dw2 = wings[sD]->phi2->weightFunctionDerivative(x2_gl(jj));
+                    for (size_t ii = 0; ii < wings[sD]->nx; ii++) // Loop over Legendre nodes 1-direction of source
                     {
-                        size_t k = i+j*wings[tD]->nx;
-                        for (size_t jj = 0; jj < wings[sD]->ny; jj++) // Loop over Legendre nodes 2-direction of source
-                            for (size_t ii = 0; ii < wings[sD]->nx; ii++) // Loop over Legendre nodes 1-direction of source
+                        double  w1 = wings[sD]->phi1->weightFunction(x1_gl(ii));
+                        double dw1 = wings[sD]->phi1->weightFunctionDerivative(x1_gl(ii));
+
+                        double t2   = wings[sD]->phi2->constant(); // First Chebyshev Polynomial (j)
+                        double t2p1 = wings[sD]->phi2->linear(x2_gl(jj)); // Second Chebyshev Polynomial (j+1 -> jp1)
+
+                        double dt2   = wings[sD]->phi2->constantDerivative();
+                        double dt2p1 = wings[sD]->phi2->linearDerivative();
+                        for (size_t q = 0; q < wings[sD]->ny; q++) // Loop over Chebyshev Polynomial 2-direction of source
+                        {
+                            double  psi2 = w2*t2;
+                            double dpsi2 = w2*dt2 + dw2*t2;
+
+                            double t1   = wings[sD]->phi1->constant(); // First Chebyshev Polynomial (i)
+                            double t1p1 = wings[sD]->phi1->linear(x1_gl(ii)); // Second Chebyshev Polynomial (i+1 -> ip1)
+
+                            double dt1   = wings[sD]->phi1->constantDerivative();
+                            double dt1p1 = wings[sD]->phi1->linearDerivative();
+                            for (size_t p = 0; p < wings[sD]->nx; p++) // Loop over Chebyshev Polynomial 1-direction of source
                             {
-                                arma::vec::fixed<2> r = {x_gl(ii, jj) - xC(i, j), y_gl(ii, jj) - yC(i, j)};
-                                double r3 = pow(norm(r), 3);
-                                double t2   = wings[sD]->phi2->constant(); // First Chebyshev Polynomial (j)
-                                double t2p1 = wings[sD]->phi2->linear(x2_gl(jj)); // Second Chebyshev Polynomial (j+1 -> jp1)
-
-                                double dt2   = wings[sD]->phi2->constantDerivative();
-                                double dt2p1 = wings[sD]->phi2->linearDerivative();
-                                for (size_t q = 0; q < wings[sD]->ny; q++) // Loop over Chebyshev Polynomial 2-direction of source
-                                {
-                                    double t1   = wings[sD]->phi1->constant(); // First Chebyshev Polynomial (i)
-                                    double t1p1 = wings[sD]->phi1->linear(x1_gl(ii)); // Second Chebyshev Polynomial (i+1 -> ip1)
-
-                                    double dt1   = wings[sD]->phi1->constantDerivative();
-                                    double dt1p1 = wings[sD]->phi1->linearDerivative();
-                                    for (size_t p = 0; p < wings[sD]->nx; p++) // Loop over Chebyshev Polynomial 1-direction of source
+                                double  psi1 = w1*t1;
+                                double dpsi1 = w1*dt1 + dw1*t1;
+                                double dmudx1 = dpsi1 *  psi2;
+                                double dmudx2 =  psi1 * dpsi2;
+                                for (size_t j = 1; j < wings[tD]->ny-1; j++) // Loop over Collocation Points in 2-direction of target
+                                    for (size_t i = 1; i < wings[tD]->nx-1; i++) // Loop over Collocation Points in 1-direction of target
                                     {
-                                        double dmudx1 = dt1 *  t2;
-                                        double dmudx2 =  t1 * dt2;
+                                        size_t k = i+j*wings[tD]->nx;
+                                        arma::vec::fixed<2> r = {x_gl(ii, jj) - xC(i, j), y_gl(ii, jj) - yC(i, j)};
+                                        double r3 = pow(norm(r), 3);
                                         bw(tD, sD)(k, p+q*wings[sD]->nx) -= gl_x[ii].weight * gl_y[jj].weight / r3
                                             *(r(0)*(dy_gldx2(ii, jj)*dmudx1 - dy_gldx1(ii, jj)*dmudx2)
                                             - r(1)*(dx_gldx2(ii, jj)*dmudx1 - dx_gldx1(ii, jj)*dmudx2));
-                                        std::swap(t1, t1p1); // Swap order so the oldes Chebyshev Polynomial will be overwritten
-                                        wings[sD]->phi1->next(p, x1_gl(ii), t1, t1p1);
-
-                                        std::swap(dt1, dt1p1);
-                                        wings[sD]->phi1->nextDerivative(p, x1_gl(ii), t1, dt1, dt1p1);
                                     }
-                                    std::swap(t2, t2p1); // Swap order so the oldest Chebyshev Polynomial will be overwritten
-                                    wings[sD]->phi2->next(q, x2_gl(jj), t2, t2p1);
+                                std::swap(t1, t1p1); // Swap order so the oldes Chebyshev Polynomial will be overwritten
+                                wings[sD]->phi1->next(p, x1_gl(ii), t1, t1p1);
 
-                                    std::swap(dt2, dt2p1);
-                                    wings[sD]->phi2->nextDerivative(q, x2_gl(jj), t2, dt2, dt2p1);
-                                }
+                                std::swap(dt1, dt1p1);
+                                wings[sD]->phi1->nextDerivative(p, x1_gl(ii), t1, dt1, dt1p1);
                             }
+                            std::swap(t2, t2p1); // Swap order so the oldest Chebyshev Polynomial will be overwritten
+                            wings[sD]->phi2->next(q, x2_gl(jj), t2, t2p1);
+
+                            std::swap(dt2, dt2p1);
+                            wings[sD]->phi2->nextDerivative(q, x2_gl(jj), t2, dt2, dt2p1);
+                        }
                     }
+                }
                 for (const Wake* w:wings[sD]->wakes)
                     for (size_t c = 0; c < 4; c++)
                         if (wings[sD]->chi[c] == w->chi)
@@ -98,25 +110,30 @@ void Aerodynamics::linear()
                                 arma::vec yw = T1_gauss * wings[sD]->y.col(0);
                                 for (size_t ii = 0; ii < wings[sD]->nx; ii++)
                                 {
+                                    double  w1 = wings[sD]->phi1->weightFunction(x1_gl_w(ii));
+                                    double dw1 = wings[sD]->phi1->weightFunctionDerivative(x1_gl_w(ii));
                                     double t1    = wings[sD]->phi1->constant();
                                     double t1p1  = wings[sD]->phi1->linear(x1_gl_w(ii));
                                     double dt1   = wings[sD]->phi1->constantDerivative();
                                     double dt1p1 = wings[sD]->phi1->linearDerivative();
                                     for (size_t p = 0; p < wings[sD]->nx; p++)
                                     {
+                                        double dpsi1 = w1*dt1 + dw1*t1;
                                         for (size_t jj = 0; jj < wings[sD]->ny; jj++)
                                         {
+                                            double w2 = wings[sD]->phi2->weightFunction(-1);
                                             double xW = xw(ii) + (1 - x2_gl_w(jj))/(1 + x2_gl_w(jj))/2;
                                             for (size_t q = 0; q < wings[sD]->ny; q++)
                                             {
                                                 double t2 = wings[sD]->phi2->left(q);
+                                                double psi2 = w2*t2;
                                                 for (size_t j = 1; j < wings[tD]->ny-1; j++)
                                                     for (size_t i = 1; i < wings[tD]->nx-1; i++)
                                                     {
                                                         size_t k = i + j*wings[tD]->nx;
                                                         arma::vec::fixed<2> r = {xW - xC(i, j), yw(ii) - yC(i, j)};
                                                         double r3 = pow(norm(r), 3);
-                                                        bw(tD, sD)(k, p+q*wings[sD]->nx) -= gl_x_w[ii].weight*gl_y_w[jj].weight*dt1*t2*r(1)/pow(1 + x2_gl_w(jj), 2)/r3; 
+                                                        bw(tD, sD)(k, p+q*wings[sD]->nx) -= gl_x_w[ii].weight*gl_y_w[jj].weight*dpsi1*psi2*r(1)/pow(1 + x2_gl_w(jj), 2)/r3; 
                                                     }
                                             }
                                         }
@@ -134,25 +151,30 @@ void Aerodynamics::linear()
                                 arma::vec yw = T2_gauss * wings[sD]->y.row(wings[sD]->nx-1).t();
                                 for (size_t jj = 0; jj < wings[sD]->ny; jj++)
                                 {
+                                    double  w2 = wings[sD]->phi2->weightFunction(x2_gl_w(jj));
+                                    double dw2 = wings[sD]->phi2->weightFunctionDerivative(x2_gl_w(jj));
                                     double t2    = wings[sD]->phi2->constant();
                                     double t2p1  = wings[sD]->phi2->linear(x2_gl_w(jj));
                                     double dt2   = wings[sD]->phi2->constantDerivative();
                                     double dt2p1 = wings[sD]->phi2->linearDerivative();
                                     for (size_t q = 0; q < wings[sD]->ny; q++)
                                     {
+                                        double dpsi2 = w2*dt2 + dw2*t2;
                                         for (size_t ii = 0; ii < wings[sD]->nx; ii++)
                                         {
+                                            double w1 = wings[sD]->phi1->weightFunction(1);
                                             double xW = xw(jj) + (1 + x1_gl_w(ii))/(1 - x1_gl_w(ii))/2;
                                             for (size_t p = 0; p < wings[sD]->nx; p++)
                                             {
                                                 double t1 = wings[sD]->phi1->right(p);
+                                                double psi1 = w1*t1;
                                                 for (size_t j = 1; j < wings[tD]->ny-1; j++)
                                                     for (size_t i = 1; i < wings[tD]->nx-1; i++)
                                                     {
                                                         size_t k = i + j*wings[tD]->nx;
                                                         arma::vec::fixed<2> r = {xW - xC(i, j), yw(jj) - yC(i, j)};
                                                         double r3 = pow(norm(r), 3);
-                                                        bw(tD, sD)(k, p+q*wings[sD]->nx) -= gl_x_w[ii].weight*gl_y_w[jj].weight*t1*dt2*r(1)/pow(1 - x1_gl_w(ii), 2)/r3;
+                                                        bw(tD, sD)(k, p+q*wings[sD]->nx) -= gl_x_w[ii].weight*gl_y_w[jj].weight*psi1*dpsi2*r(1)/pow(1 - x1_gl_w(ii), 2)/r3;
                                                     }
                                             }
                                         }
@@ -170,25 +192,30 @@ void Aerodynamics::linear()
                                 arma::vec yw = T1_gauss * wings[sD]->y.col(wings[sD]->ny-1);
                                 for (size_t ii = 0; ii < wings[sD]->nx; ii++)
                                 {
+                                    double  w1 = wings[sD]->phi1->weightFunction(x1_gl_w(ii));
+                                    double dw1 = wings[sD]->phi1->weightFunctionDerivative(x1_gl_w(ii));
                                     double t1    = wings[sD]->phi1->constant();
                                     double t1p1  = wings[sD]->phi1->linear(x1_gl_w(ii));
                                     double dt1   = wings[sD]->phi1->constantDerivative();
                                     double dt1p1 = wings[sD]->phi1->linearDerivative();
                                     for (size_t p = 0; p < wings[sD]->nx; p++)
                                     {
+                                        double dpsi1 = w1*dt1 + dw1*t1;
                                         for (size_t jj = 0; jj < wings[sD]->ny; jj++)
                                         {
+                                            double w2 = wings[sD]->phi2->weightFunction(1);
                                             double xW = xw(ii) + (1 + x2_gl_w(jj))/(1 - x2_gl_w(jj))/2;
                                             for (size_t q = 0; q < wings[sD]->ny; q++)
                                             {
                                                 double t2 = wings[sD]->phi2->right(q);
+                                                double psi2 = w2*t2;
                                                 for (size_t j = 1; j < wings[tD]->ny-1; j++)
                                                     for (size_t i = 1; i < wings[tD]->nx-1; i++)
                                                     {
                                                         size_t k = i + j*wings[tD]->nx;
                                                         arma::vec::fixed<2> r = {xW - xC(i, j), yw(ii) - yC(i, j)};
                                                         double r3 = pow(norm(r), 3);
-                                                        bw(tD, sD)(k, p+q*wings[sD]->nx) += gl_x_w[ii].weight*gl_y_w[jj].weight*dt1*t2*r(1)/pow(1 - x2_gl_w(jj), 2)/r3;
+                                                        bw(tD, sD)(k, p+q*wings[sD]->nx) += gl_x_w[ii].weight*gl_y_w[jj].weight*dpsi1*psi2*r(1)/pow(1 - x2_gl_w(jj), 2)/r3;
                                                     }
                                             }
                                         }
@@ -206,25 +233,30 @@ void Aerodynamics::linear()
                                 arma::vec yw = T2_gauss * wings[sD]->y.row(0).t();
                                 for (size_t jj = 0; jj < wings[sD]->ny; jj++)
                                 {
+                                    double  w2 = wings[sD]->phi2->weightFunction(x2_gl_w(jj));
+                                    double dw2 = wings[sD]->phi2->weightFunctionDerivative(x2_gl_w(jj));
                                     double t2    = wings[sD]->phi2->constant();
                                     double t2p1  = wings[sD]->phi2->linear(x2_gl_w(jj));
                                     double dt2   = wings[sD]->phi2->constantDerivative();
                                     double dt2p1 = wings[sD]->phi2->linearDerivative();
                                     for (size_t q = 0; q < wings[sD]->ny; q++)
                                     {
+                                        double dpsi2 = w2*dt2 + dw2*t2;
                                         for (size_t ii = 0; ii < wings[sD]->nx; ii++)
                                         {
+                                            double w1 = wings[sD]->phi1->weightFunction(-1);
                                             double xW = xw(jj) + (1 - x1_gl_w(ii))/(1 + x1_gl_w(ii))/2;
                                             for (size_t p = 0; p < wings[sD]->nx; p++)
                                             {
                                                 double t1 = wings[sD]->phi1->left(p);
+                                                double psi1 = w1*t1;
                                                 for (size_t j = 1; j < wings[tD]->ny-1; j++)
                                                     for (size_t i = 1; i < wings[tD]->nx-1; i++)
                                                     {
                                                         size_t k = i + j*wings[tD]->nx;
                                                         arma::vec::fixed<2> r = {xW - xC(i, j), yw(jj) - yC(i, j)};
                                                         double r3 = pow(norm(r), 3);
-                                                        bw(tD, sD)(k, p+q*wings[sD]->nx) += gl_x_w[ii].weight*gl_y_w[jj].weight*t1*dt2*r(1)/pow(1 + x1_gl_w(ii), 2)/r3;
+                                                        bw(tD, sD)(k, p+q*wings[sD]->nx) += gl_x_w[ii].weight*gl_y_w[jj].weight*psi1*dpsi2*r(1)/pow(1 + x1_gl_w(ii), 2)/r3;
                                                     }
                                             }
                                         }
@@ -264,48 +296,61 @@ void Aerodynamics::linear()
                     dy_gldx2 =-dy_gldx2;
                     arma::mat xC = wings[tD]->xC;
                     arma::mat yC = wings[tD]->yC;
-                    for (size_t j = 1; j < wings[tD]->ny-1; j++) // Loop over Collocation Points in 2-direction of target
-                        for (size_t i = 1; i < wings[tD]->nx-1; i++) // Loop over Collocation Points in 1-direction of target
+
+                    for (size_t jj = 0; jj < wings[sD]->ny; jj++) // Loop over Legendre nodes 2-direction of source
+                    {
+                        double  w2 = wings[sD]->phi2->weightFunction(x2_gl(jj));
+                        double dw2 = wings[sD]->phi2->weightFunctionDerivative(x2_gl(jj));
+                        for (size_t ii = 0; ii < wings[sD]->nx; ii++) // Loop over Legendre nodes 1-direction of source
                         {
-                            size_t k = i+j*wings[tD]->nx;
-                            for (size_t jj = 0; jj < wings[sD]->ny; jj++) // Loop over Legendre nodes 2-direction of source
-                                for (size_t ii = 0; ii < wings[sD]->nx; ii++) // Loop over Legendre nodes 1-direction of source
+                            double  w1 = wings[sD]->phi1->weightFunction(x2_gl(jj));
+                            double dw1 = wings[sD]->phi1->weightFunctionDerivative(x2_gl(jj));
+
+                            double t2   = wings[sD]->phi2->constant(); // First Chebyshev Polynomial (j)
+                            double t2p1 = wings[sD]->phi2->linear(x2_gl(jj)); // Second Chebyshev Polynomial (j+1 -> jp1)
+
+                            double dt2   = wings[sD]->phi2->constantDerivative();
+                            double dt2p1 = wings[sD]->phi2->linearDerivative();
+                            for (size_t q = 0; q < wings[sD]->ny; q++) // Loop over Chebyshev Polynomial 2-direction of source
+                            {
+                                double  psi2 = w2*t2;
+                                double dpsi2 = w2*dt2 + dw2*t2;
+
+                                double t1   = wings[sD]->phi1->constant(); // First Chebyshev Polynomial (i)
+                                double t1p1 = wings[sD]->phi1->linear(x1_gl(ii)); // Second Chebyshev Polynomial (i+1 -> ip1)
+
+                                double dt1   = wings[sD]->phi1->constantDerivative();
+                                double dt1p1 = wings[sD]->phi1->linearDerivative();
+                                for (size_t p = 0; p < wings[sD]->nx; p++) // Loop over Chebyshev Polynomial 1-direction of source
                                 {
-                                    arma::vec::fixed<2> r = {x_gl(ii, jj) - xC(i, j), y_gl(ii, jj) - yC(i, j)};
-                                    double r3 = pow(norm(r), 3);
-                                    double t2   = wings[sD]->phi2->constant(); // First Chebyshev Polynomial (j)
-                                    double t2p1 = wings[sD]->phi2->linear(x2_gl(jj)); // Second Chebyshev Polynomial (j+1 -> jp1)
-
-                                    double dt2   = wings[sD]->phi2->constantDerivative();
-                                    double dt2p1 = wings[sD]->phi2->linearDerivative();
-                                    for (size_t q = 0; q < wings[sD]->ny; q++) // Loop over Chebyshev Polynomial 2-direction of source
-                                    {
-                                        double t1   = wings[sD]->phi1->constant(); // First Chebyshev Polynomial (i)
-                                        double t1p1 = wings[sD]->phi1->linear(x1_gl(ii)); // Second Chebyshev Polynomial (i+1 -> ip1)
-
-                                        double dt1   = wings[sD]->phi1->constantDerivative();
-                                        double dt1p1 = wings[sD]->phi1->linearDerivative();
-                                        for (size_t p = 0; p < wings[sD]->nx; p++) // Loop over Chebyshev Polynomial 1-direction of source
+                                    double  psi1 = w1*t1;
+                                    double dpsi1 = w1*dt1 + dw1*t1;
+                                    double dmudx1 = dpsi1 *  psi2;
+                                    double dmudx2 =  psi1 * dpsi2;
+                                    for (size_t j = 1; j < wings[tD]->ny-1; j++) // Loop over Collocation Points in 2-direction of target
+                                        for (size_t i = 1; i < wings[tD]->nx-1; i++) // Loop over Collocation Points in 1-direction of target
                                         {
-                                            double dmudx1 = dt1 *  t2;
-                                            double dmudx2 =  t1 * dt2;
+                                            size_t k = i+j*wings[tD]->nx;
+                                            arma::vec::fixed<2> r = {x_gl(ii, jj) - xC(i, j), y_gl(ii, jj) - yC(i, j)};
+                                            double r3 = pow(norm(r), 3);
                                             bw(tD, sD)(k, p+q*wings[sD]->nx) += gl_x[ii].weight * gl_y[jj].weight / r3
                                                 *(r(0)*(dy_gldx2(ii, jj)*dmudx1 - dy_gldx1(ii, jj)*dmudx2)
                                                 - r(1)*(dx_gldx2(ii, jj)*dmudx1 - dx_gldx1(ii, jj)*dmudx2));
-                                            std::swap(t1, t1p1); // Swap order so the oldes Chebyshev Polynomial will be overwritten
-                                            wings[sD]->phi1->next(p, x1_gl(ii), t1, t1p1);
-
-                                            std::swap(dt1, dt1p1);
-                                            wings[sD]->phi1->nextDerivative(p, x1_gl(ii), t1, dt1, dt1p1);
                                         }
-                                        std::swap(t2, t2p1); // Swap order so the oldest Chebyshev Polynomial will be overwritten
-                                        wings[sD]->phi2->next(q, x2_gl(jj), t2, t2p1);
+                                    std::swap(t1, t1p1); // Swap order so the oldes Chebyshev Polynomial will be overwritten
+                                    wings[sD]->phi1->next(p, x1_gl(ii), t1, t1p1);
 
-                                        std::swap(dt2, dt2p1);
-                                        wings[sD]->phi2->nextDerivative(q, x2_gl(jj), t2, dt2, dt2p1);
-                                    }
+                                    std::swap(dt1, dt1p1);
+                                    wings[sD]->phi1->nextDerivative(p, x1_gl(ii), t1, dt1, dt1p1);
                                 }
+                                std::swap(t2, t2p1); // Swap order so the oldest Chebyshev Polynomial will be overwritten
+                                wings[sD]->phi2->next(q, x2_gl(jj), t2, t2p1);
+
+                                std::swap(dt2, dt2p1);
+                                wings[sD]->phi2->nextDerivative(q, x2_gl(jj), t2, dt2, dt2p1);
+                            }
                         }
+                    }
                     for (const Wake* w:wings[sD]->wakes)
                         for (size_t c = 0; c < 4; c++)
                             if (wings[sD]->chi[c] == w->chi)
@@ -332,25 +377,30 @@ void Aerodynamics::linear()
                                     arma::vec yw =-T1_gauss * wings[sD]->y.col(0);
                                     for (size_t ii = 0; ii < wings[sD]->nx; ii++)
                                     {
+                                        double  w1 = wings[sD]->phi1->weightFunction(x1_gl_w(ii));
+                                        double dw1 = wings[sD]->phi1->weightFunctionDerivative(x1_gl_w(ii));
                                         double t1    = wings[sD]->phi1->constant();
                                         double t1p1  = wings[sD]->phi1->linear(x1_gl_w(ii));
                                         double dt1   = wings[sD]->phi1->constantDerivative();
                                         double dt1p1 = wings[sD]->phi1->linearDerivative();
                                         for (size_t p = 0; p < wings[sD]->nx; p++)
                                         {
+                                            double dpsi1 = w1*dt1 + dw1*t1;
                                             for (size_t jj = 0; jj < wings[sD]->ny; jj++)
                                             {
+                                                double w2 = wings[sD]->phi2->weightFunction(-1);
                                                 double xW = xw(ii) + (1 - x2_gl_w(jj))/(1 + x2_gl_w(jj))/2;
                                                 for (size_t q = 0; q < wings[sD]->ny; q++)
                                                 {
                                                     double t2 = wings[sD]->phi2->left(q);
+                                                    double psi2 = w2*t2;
                                                     for (size_t j = 1; j < wings[tD]->ny-1; j++)
                                                         for (size_t i = 1; i < wings[tD]->nx-1; i++)
                                                         {
                                                             size_t k = i + j*wings[tD]->nx;
                                                             arma::vec::fixed<2> r = {xW - xC(i, j), yw(ii) - yC(i, j)};
                                                             double r3 = pow(norm(r), 3);
-                                                            bw(tD, sD)(k, p+q*wings[sD]->nx) += gl_x_w[ii].weight*gl_y_w[jj].weight*dt1*t2*r(1)/pow(1 + x2_gl_w(jj), 2)/r3; 
+                                                            bw(tD, sD)(k, p+q*wings[sD]->nx) += gl_x_w[ii].weight*gl_y_w[jj].weight*dpsi1*psi2*r(1)/pow(1 + x2_gl_w(jj), 2)/r3; 
                                                         }
                                                 }
                                             }
@@ -368,25 +418,30 @@ void Aerodynamics::linear()
                                     arma::vec yw =-T2_gauss * wings[sD]->y.row(wings[sD]->nx-1).t();
                                     for (size_t jj = 0; jj < wings[sD]->ny; jj++)
                                     {
+                                        double  w2 = wings[sD]->phi2->weightFunction(x2_gl_w(jj));
+                                        double dw2 = wings[sD]->phi2->weightFunctionDerivative(x2_gl_w(jj));
                                         double t2    = wings[sD]->phi2->constant();
                                         double t2p1  = wings[sD]->phi2->linear(x2_gl_w(jj));
                                         double dt2   = wings[sD]->phi2->constantDerivative();
                                         double dt2p1 = wings[sD]->phi2->linearDerivative();
                                         for (size_t q = 0; q < wings[sD]->ny; q++)
                                         {
+                                            double dpsi2 = w2*dt2 + dw2*t2;
                                             for (size_t ii = 0; ii < wings[sD]->nx; ii++)
                                             {
+                                                double w1 = wings[sD]->phi1->weightFunction(1);
                                                 double xW = xw(jj) + (1 + x1_gl_w(ii))/(1 - x1_gl_w(ii))/2;
                                                 for (size_t p = 0; p < wings[sD]->nx; p++)
                                                 {
                                                     double t1 = wings[sD]->phi1->right(p);
+                                                    double psi1 = w1*t1;
                                                     for (size_t j = 1; j < wings[tD]->ny-1; j++)
                                                         for (size_t i = 1; i < wings[tD]->nx-1; i++)
                                                         {
                                                             size_t k = i + j*wings[tD]->nx;
                                                             arma::vec::fixed<2> r = {xW - xC(i, j), yw(jj) - yC(i, j)};
                                                             double r3 = pow(norm(r), 3);
-                                                            bw(tD, sD)(k, p+q*wings[sD]->nx) += gl_x_w[ii].weight*gl_y_w[jj].weight*t1*dt2*r(1)/pow(1 - x1_gl_w(ii), 2)/r3;
+                                                            bw(tD, sD)(k, p+q*wings[sD]->nx) += gl_x_w[ii].weight*gl_y_w[jj].weight*psi1*dpsi2*r(1)/pow(1 - x1_gl_w(ii), 2)/r3;
                                                         }
                                                 }
                                             }
@@ -404,25 +459,30 @@ void Aerodynamics::linear()
                                     arma::vec yw =-T1_gauss * wings[sD]->y.col(wings[sD]->ny-1);
                                     for (size_t ii = 0; ii < wings[sD]->nx; ii++)
                                     {
+                                        double  w1 = wings[sD]->phi1->weightFunction(x1_gl_w(ii));
+                                        double dw1 = wings[sD]->phi1->weightFunctionDerivative(x1_gl_w(ii));
                                         double t1    = wings[sD]->phi1->constant();
                                         double t1p1  = wings[sD]->phi1->linear(x1_gl_w(ii));
                                         double dt1   = wings[sD]->phi1->constantDerivative();
                                         double dt1p1 = wings[sD]->phi1->linearDerivative();
                                         for (size_t p = 0; p < wings[sD]->nx; p++)
                                         {
+                                            double dpsi1 = w1*dt1 + dw1*t1;
                                             for (size_t jj = 0; jj < wings[sD]->ny; jj++)
                                             {
+                                                double w2 = wings[sD]->phi2->weightFunction(1);
                                                 double xW = xw(ii) + (1 + x2_gl_w(jj))/(1 - x2_gl_w(jj))/2;
                                                 for (size_t q = 0; q < wings[sD]->ny; q++)
                                                 {
                                                     double t2 = wings[sD]->phi2->right(q);
+                                                    double psi2 = w2*t2;
                                                     for (size_t j = 1; j < wings[tD]->ny-1; j++)
                                                         for (size_t i = 1; i < wings[tD]->nx-1; i++)
                                                         {
                                                             size_t k = i + j*wings[tD]->nx;
                                                             arma::vec::fixed<2> r = {xW - xC(i, j), yw(ii) - yC(i, j)};
                                                             double r3 = pow(norm(r), 3);
-                                                            bw(tD, sD)(k, p+q*wings[sD]->nx) -= gl_x_w[ii].weight*gl_y_w[jj].weight*dt1*t2*r(1)/pow(1 - x2_gl_w(jj), 2)/r3;
+                                                            bw(tD, sD)(k, p+q*wings[sD]->nx) -= gl_x_w[ii].weight*gl_y_w[jj].weight*dpsi1*psi2*r(1)/pow(1 - x2_gl_w(jj), 2)/r3;
                                                         }
                                                 }
                                             }
@@ -440,25 +500,30 @@ void Aerodynamics::linear()
                                     arma::vec yw =-T2_gauss * wings[sD]->y.row(0).t();
                                     for (size_t jj = 0; jj < wings[sD]->ny; jj++)
                                     {
+                                        double  w2 = wings[sD]->phi2->weightFunction(x2_gl_w(jj));
+                                        double dw2 = wings[sD]->phi2->weightFunctionDerivative(x2_gl_w(jj));
                                         double t2    = wings[sD]->phi2->constant();
                                         double t2p1  = wings[sD]->phi2->linear(x2_gl_w(jj));
                                         double dt2   = wings[sD]->phi2->constantDerivative();
                                         double dt2p1 = wings[sD]->phi2->linearDerivative();
                                         for (size_t q = 0; q < wings[sD]->ny; q++)
                                         {
+                                            double dpsi2 = w2*dt2 + dw2*t2;
                                             for (size_t ii = 0; ii < wings[sD]->nx; ii++)
                                             {
+                                                double w1 = wings[sD]->phi1->weightFunction(-1);
                                                 double xW = xw(jj) + (1 - x1_gl_w(ii))/(1 + x1_gl_w(ii))/2;
                                                 for (size_t p = 0; p < wings[sD]->nx; p++)
                                                 {
                                                     double t1 = wings[sD]->phi1->left(p);
+                                                    double psi1 = w1*t1;
                                                     for (size_t j = 1; j < wings[tD]->ny-1; j++)
                                                         for (size_t i = 1; i < wings[tD]->nx-1; i++)
                                                         {
                                                             size_t k = i + j*wings[tD]->nx;
                                                             arma::vec::fixed<2> r = {xW - xC(i, j), yw(jj) - yC(i, j)};
                                                             double r3 = pow(norm(r), 3);
-                                                            bw(tD, sD)(k, p+q*wings[sD]->nx) -= gl_x_w[ii].weight*gl_y_w[jj].weight*t1*dt2*r(1)/pow(1 + x1_gl_w(ii), 2)/r3;
+                                                            bw(tD, sD)(k, p+q*wings[sD]->nx) -= gl_x_w[ii].weight*gl_y_w[jj].weight*psi1*dpsi2*r(1)/pow(1 + x1_gl_w(ii), 2)/r3;
                                                         }
                                                 }
                                             }

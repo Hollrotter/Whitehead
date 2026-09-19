@@ -9,47 +9,47 @@ public:
     {
         xi = Chebyshev::gauss(n);
     }
-    virtual inline constexpr double constant() override
+    virtual inline constexpr double constant() const override
     {
         return 1;
     }
-    virtual inline double linear(double x) override
+    virtual inline double linear(double x) const override
     {
         return x;
     }
-    virtual inline constexpr double constantDerivative() override
+    virtual inline constexpr double constantDerivative() const override
     {
         return 0;
     }
-    virtual inline constexpr double linearDerivative() override
+    virtual inline constexpr double linearDerivative() const override
     {
         return 1;
     }
-    virtual inline void next(size_t k, double x, double &T, double &Tp1) override
+    virtual inline void next(size_t k, double x, double &T, double &Tp1) const override
     {
         Tp1 = boost::math::chebyshev_next(x, T, Tp1);
     }
-    virtual inline void nextDerivative(size_t k, double x, double &T, double &_, double &dTp1) override
+    virtual inline void nextDerivative(size_t k, double x, double &T, double &_, double &dTp1) const override
     {
         dTp1 = (k == 0) ? 4*x : (k+2)*(2*T + dTp1/k);
     }
-    virtual inline double left(size_t k) override
+    virtual inline double left(size_t k) const override
     {
         return k%2==0 ? 1 : -1;
     }
-    virtual inline double right(size_t _) override
+    virtual inline double right(size_t _) const override
     {
         return 1;
     }
-    virtual inline double leftDerivative(size_t k) override
+    virtual inline double leftDerivative(size_t k) const override
     {
         return k%2==0 ? -1.*k*k : k*k;
     }
-    virtual inline double rightDerivative(size_t k) override
+    virtual inline double rightDerivative(size_t k) const override
     {
         return k*k;
     }
-    virtual std::pair<arma::vec, arma::vec> powerSeries(size_t k, double x, arma::umat &bi) override
+    virtual std::pair<arma::vec, arma::vec> powerSeries(size_t k, double x, arma::umat &bi) const override
     {
         arma::vec c(k/2+1, arma::fill::none), f(k+1, arma::fill::zeros), df(k, arma::fill::zeros);
         for (size_t s = 0; s <= k/2; s++)
@@ -72,6 +72,20 @@ public:
                 df += (k-2*s)*c(s) * F;
             }
         return std::make_pair(f, df);
+    }
+    virtual std::pair<arma::vec, arma::vec> powerSeriesWeight(size_t _, size_t k, arma::umat &bi, arma::mat &bi_05) const override
+    {
+        arma::vec c(k+1, arma::fill::zeros), d(k+1, arma::fill::zeros);
+        c(0) = 1;
+        return std::make_pair(c, d);
+    }
+    virtual inline double weightFunction(double _) const override
+    {
+        return 1;
+    }
+    virtual inline double weightFunctionDerivative(double _) const override
+    {
+        return 0;
     }
     friend class Wing;
 };

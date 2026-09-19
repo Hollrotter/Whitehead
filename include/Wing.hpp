@@ -14,6 +14,8 @@ class Wing
     arma::mat y; // y-coordinates of nodes
     size_t nx = x.n_rows; // Number of nodes in x-Direction
     size_t ny = y.n_cols; // Number of nodes in y-Direction
+    size_t mx = 5;
+    size_t my = 5;
     arma::mat z = arma::zeros(nx, ny); // z-coordinates of nodes
     size_t nxy = nx*ny; // Product of nx and ny
     TensorField mu{nx, ny}; // Doublet distribution

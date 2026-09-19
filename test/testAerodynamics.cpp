@@ -1,4 +1,5 @@
 #include "Aerodynamics.hpp"
+#include <inplace_vector>
 
 int main()
 {
@@ -6,8 +7,8 @@ int main()
     {
         case 0: // Rectangle (divided at y=0)
         {
-            size_t nx = 25;
-            size_t ny = 20;
+            size_t nx = 15;
+            size_t ny = 10;
 
             double AR = 5;
             double l = 2;
@@ -189,8 +190,7 @@ int main()
             std::array<std::array<Point, ny+1>, nx+1> points;
             std::array<std::array<Lagrange::CurveInterpolant, ny+1>, nx> chiH;
             std::array<std::array<Lagrange::CurveInterpolant, ny>, nx+1> chiV;
-            std::vector<Wing> wings;
-            wings.reserve(nx*ny);
+            std::inplace_vector<Wing, nx*ny> wings;
 
             for (size_t j = 0; j < ny; j++)
                 for (size_t i = 0; i < nx; i++)
@@ -208,8 +208,7 @@ int main()
                     chiH[i][j+1] = Lagrange::CurveInterpolant(points[i][j+1], points[i+1][j+1], n1);
                     chiV[i][j]   = Lagrange::CurveInterpolant(points[i][j],   points[i][j+1],   n2);
                     chiV[i+1][j] = Lagrange::CurveInterpolant(points[i+1][j], points[i+1][j+1], n2);
-                    Wing w({&chiH[i][j], &chiV[i+1][j], &chiH[i][j+1], &chiV[i][j]});
-                    wings.emplace_back(w);
+                    wings.push_back(Wing({&chiH[i][j], &chiV[i+1][j], &chiH[i][j+1], &chiV[i][j]}));
                 }
 
             std::vector<Wing*> wings_ptr;
