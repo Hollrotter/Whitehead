@@ -5,10 +5,11 @@ class BasisFunction
 {
 protected:
     size_t n;
+    size_t m;
     arma::vec xi;
 public:
     BasisFunction() = default;
-    BasisFunction(size_t _n) : n(_n) {};
+    BasisFunction(size_t _n, size_t _m) : n(_n), m(_m) {};
     virtual inline constexpr double constant() const = 0;
     virtual inline double linear(double) const = 0;
     virtual inline constexpr double constantDerivative() const = 0;
@@ -23,4 +24,5 @@ public:
     virtual std::pair<arma::vec, arma::vec> powerSeriesWeight(size_t, size_t, arma::umat&, arma::mat&) const = 0;
     virtual inline double weightFunction(double) const = 0;
     virtual inline double weightFunctionDerivative(double) const = 0;
+    friend class Wing;
 };

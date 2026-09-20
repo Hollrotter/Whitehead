@@ -4,7 +4,7 @@
 class JacobiBeta : public BasisFunction
 {
 public:
-    JacobiBeta(size_t _n) : BasisFunction{_n} {};
+    JacobiBeta(size_t _n, size_t _m) : BasisFunction{_n, _m} {};
     virtual inline constexpr double constant() const override
     {
         return 1;

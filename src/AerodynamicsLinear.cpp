@@ -8,8 +8,8 @@ void Aerodynamics::linear()
     for (size_t sD = 0; sD < wings.size(); sD++)
     {
         wings[sD]->analysis = Analysis::linear;
-        wings[sD]->phi1.reset(new ChebyshevT(wings[sD]->nx));
-        wings[sD]->phi2.reset(new ChebyshevT(wings[sD]->ny));
+        wings[sD]->phi1.reset(new ChebyshevT(wings[sD]->nx, wings[sD]->mx));
+        wings[sD]->phi2.reset(new ChebyshevT(wings[sD]->ny, wings[sD]->my));
         for (size_t tD = 0; tD < wings.size(); tD++)
             if (sD != tD)
             {

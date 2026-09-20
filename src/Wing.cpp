@@ -38,8 +38,8 @@ void Wing::checkMesh() const
 void Wing::linear()
 {
     analysis = Analysis::linear;
-    phi1.reset(new ChebyshevT(nx));
-    phi2.reset(new ChebyshevT(ny));
+    phi1.reset(new ChebyshevT(nx, mx));
+    phi2.reset(new ChebyshevT(ny, my));
     linearSolve();
     linearEval();
     postprocessing();
@@ -48,8 +48,8 @@ void Wing::linear()
 void Wing::nonlinear()
 {
     analysis = Analysis::nonlinear;
-    phi1.reset(new ChebyshevT(nx));
-    phi2.reset(new ChebyshevT(ny));
+    phi1.reset(new ChebyshevT(nx, mx));
+    phi2.reset(new ChebyshevT(ny, my));
     nonlinearSolve();
     nonlinearEval();
     postprocessing();

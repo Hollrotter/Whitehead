@@ -197,7 +197,7 @@ void Wing::aerodynamicMatrix()
             bi(i, j) = bi(i-1, j-1) + bi(i-1, j);
     }
 
-    arma::mat bi_05(2, std::max(mx, my)+1, arma::fill::ones);
+    arma::mat bi_05(2, std::max(phi1->m, phi2->m)+1, arma::fill::ones);
     for (size_t ii = 0; ii < bi_05.n_cols; ii++)
         for (size_t j = 1; j <= ii; j++)
         {
@@ -221,7 +221,7 @@ void Wing::aerodynamicMatrix()
             #pragma omp parallel for
             for (size_t j = 1; j < ny-1; j++) // Loop over Collocation Points in 2-direction
             {
-                auto [c2, d2] = phi2->powerSeriesWeight(j, my, bi, bi_05);
+                auto [c2, d2] = phi2->powerSeriesWeight(j, phi2->m, bi, bi_05);
 
                 double y_lower = std::max(-1., xi_2(j)-delta/2);
                 double y_upper = std::min(xi_2(j)+delta/2,  1.);
@@ -232,7 +232,7 @@ void Wing::aerodynamicMatrix()
                     y_upper = 1;
                 for (size_t i = 1; i < nx-1; i++) // Loop over Collocation Points in 1-direction
                 {
-                    auto [c1, d1] = phi1->powerSeriesWeight(i, mx, bi, bi_05);
+                    auto [c1, d1] = phi1->powerSeriesWeight(i, phi1->m, bi, bi_05);
 
                     double x_left  = std::max(-1., xi_1(i)-delta/2);
                     double x_right = std::min(xi_1(i)+delta/2,  1.);
@@ -257,54 +257,82 @@ void Wing::aerodynamicMatrix()
                         for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                         {
                             auto [f1, df1] = phi1->powerSeries(p, xi_1(i), bi);
-                            if (p > 0 || q > 0)
+
+                            arma::mat dmudxi_1(n_theta, p+q+phi1->m+phi2->m+1), dmudxi_2(n_theta, p+q+phi1->m+phi2->m+1);
+                            for (size_t s = 0; s <= p; s++)
                             {
-                                arma::mat dmudxi_1(n_theta, p+q+1), dmudxi_2(n_theta, p+q+1);
-                                if (p > 0)
-                                    for (size_t s = 0; s < p; s++)
-                                    {
-                                        arma::vec F3 = df1(s) * cT.col(s);
-                                        for (size_t t = 0; t <= q; t++)
-                                            dmudxi_1.col(s+t) += f2(t) * F3 % sT.col(t);
-                                    }
-                                if (q > 0)
-                                    for (size_t s = 0; s <= p; s++)
-                                    {
-                                        arma::vec F1 = f1(s) * cT.col(s);
-                                        for (size_t t = 0; t < q; t++)
-                                            dmudxi_2.col(s+t) += df2(t) * F1 % sT.col(t);
-                                    }
-                                arma::mat gammax = J11(i, j)*dmudxi_2 - J12(i, j)*dmudxi_1;
-                                arma::mat gammay = J21(i, j)*dmudxi_2 - J22(i, j)*dmudxi_1;
-                                for (size_t n = 0; n < n_theta-1; n++)
+                                arma::vec F1 = f1(s) * cT.col(s);
+                                for (size_t t = 0; t <= q; t++)
                                 {
-                                    arma::vec::fixed<2> A_t = dXdxi_1*cT(n, 1) + dXdxi_2*sT(n, 1);
-                                    arma::vec::fixed<2> B_t = d2Xdxi_12*cT(n, 2)/2 + d2Xdxi_1dxi_2*cT(n, 1)*sT(n, 1) + d2Xdxi_22*sT(n, 2)/2;
-                                    double C_t = dot(A_t, B_t);
-                                    double A_abs = norm(A_t);
-                                    double A3 = pow(A_abs, 3);
-                                    double A5 = pow(A_abs, 5);
-                                    arma::vec::fixed<2> C1 = A_t/A3;
-                                    arma::vec::fixed<2> C2 = B_t/A3 - 3*A_t*C_t/A5;
-                                    arma::vec::fixed<2> C3 =-3*B_t*C_t/A5;
-                                    double F_1 = gammax(n, 0)*C1(1) - gammay(n, 0)*C1(0);
-                                    double F_2 = gammax(n, 0)*C2(1) - gammay(n, 0)*C2(0);
-                                    double F_3 = gammax(n, 0)*C3(1) - gammay(n, 0)*C3(0);
-                                    A(k, p+q*nx) += F_1*log(rho_tilde(n)*A_abs);
-                                    A(k, p+q*nx) += F_2*rho_tilde(n);
-                                    A(k, p+q*nx) += F_3*pow(rho_tilde(n), 2)/2;
-                                    for (size_t ii = 1; ii < dmudxi_1.n_cols; ii++)
+                                    arma::vec f = f2(t) * F1 % sT.col(t);
+                                    for (size_t k2 = 0; k2 <= phi2->m; k2++)
                                     {
-                                        F_1 = gammax(n, ii)*C1(1) - gammay(n, ii)*C1(0);
-                                        F_2 = gammax(n, ii)*C2(1) - gammay(n, ii)*C2(0);
-                                        F_3 = gammax(n, ii)*C3(1) - gammay(n, ii)*C3(0);
-                                        A(k, p+q*nx) += F_1*pow(rho_tilde(n), ii)/ii;
-                                        A(k, p+q*nx) += F_2*pow(rho_tilde(n), ii+1)/(ii+1);
-                                        A(k, p+q*nx) += F_3*pow(rho_tilde(n), ii+2)/(ii+2);
+                                        arma::vec Fc2 = c2(k2) * sT.col(k2);
+                                        arma::vec Fd2 = d2(k2) * sT.col(k2);
+                                        for (size_t k1 = 0; k1 <= phi1->m; k1++)
+                                        {
+                                            dmudxi_1.col(s+t+k1+k2) += d1(k1)*(cT.col(k1) % Fc2 % f);
+                                            dmudxi_2.col(s+t+k1+k2) += c1(k1)*(cT.col(k1) % Fd2 % f);
+                                        }
                                     }
                                 }
-                                A(k, p+q*nx) *= dtheta;
                             }
+
+                            if (p > 0 || q > 0)
+                            {
+                                for (size_t k2 = 0; k2 <= phi2->m; k2++)
+                                {
+                                    arma::vec F2 = c2(k2) * sT.col(k2);
+                                    for (size_t k1 = 0; k1 <= phi1->m; k1++)
+                                    {
+                                        arma::vec F12 = c1(k1)*cT.col(k1) % F2;
+                                        if (p > 0)
+                                            for (size_t s = 0; s < p; s++)
+                                            {
+                                                arma::vec F3 = df1(s) * cT.col(s);
+                                                for (size_t t = 0; t <= q; t++)
+                                                    dmudxi_1.col(s+t+k1+k2) += f2(t) * F3 % F12 % sT.col(t);
+                                            }
+                                        if (q > 0)
+                                            for (size_t s = 0; s <= p; s++)
+                                            {
+                                                arma::vec F1 = f1(s) * cT.col(s);
+                                                for (size_t t = 0; t < q; t++)
+                                                    dmudxi_2.col(s+t+k1+k2) += df2(t) * F1 % F12 % sT.col(t);
+                                            }
+                                    }
+                                }
+                            }
+                            arma::mat gammax = J11(i, j)*dmudxi_2 - J12(i, j)*dmudxi_1;
+                            arma::mat gammay = J21(i, j)*dmudxi_2 - J22(i, j)*dmudxi_1;
+                            for (size_t n = 0; n < n_theta-1; n++)
+                            {
+                                arma::vec::fixed<2> A_t = dXdxi_1*cT(n, 1) + dXdxi_2*sT(n, 1);
+                                arma::vec::fixed<2> B_t = d2Xdxi_12*cT(n, 2)/2 + d2Xdxi_1dxi_2*cT(n, 1)*sT(n, 1) + d2Xdxi_22*sT(n, 2)/2;
+                                double C_t = dot(A_t, B_t);
+                                double A_abs = norm(A_t);
+                                double A3 = pow(A_abs, 3);
+                                double A5 = pow(A_abs, 5);
+                                arma::vec::fixed<2> C1 = A_t/A3;
+                                arma::vec::fixed<2> C2 = B_t/A3 - 3*A_t*C_t/A5;
+                                arma::vec::fixed<2> C3 =-3*B_t*C_t/A5;
+                                double F_1 = gammax(n, 0)*C1(1) - gammay(n, 0)*C1(0);
+                                double F_2 = gammax(n, 0)*C2(1) - gammay(n, 0)*C2(0);
+                                double F_3 = gammax(n, 0)*C3(1) - gammay(n, 0)*C3(0);
+                                A(k, p+q*nx) += F_1*log(rho_tilde(n)*A_abs);
+                                A(k, p+q*nx) += F_2*rho_tilde(n);
+                                A(k, p+q*nx) += F_3*pow(rho_tilde(n), 2)/2;
+                                for (size_t ii = 1; ii < dmudxi_1.n_cols; ii++)
+                                {
+                                    F_1 = gammax(n, ii)*C1(1) - gammay(n, ii)*C1(0);
+                                    F_2 = gammax(n, ii)*C2(1) - gammay(n, ii)*C2(0);
+                                    F_3 = gammax(n, ii)*C3(1) - gammay(n, ii)*C3(0);
+                                    A(k, p+q*nx) += F_1*pow(rho_tilde(n), ii)/ii;
+                                    A(k, p+q*nx) += F_2*pow(rho_tilde(n), ii+1)/(ii+1);
+                                    A(k, p+q*nx) += F_3*pow(rho_tilde(n), ii+2)/(ii+2);
+                                }
+                            }
+                            A(k, p+q*nx) *= dtheta;
                         }
                     }
                     if (y_lower > -1)
@@ -774,6 +802,8 @@ void Wing::aerodynamicMatrix()
             // #pragma omp parallel // This one does not work properly for some reason!
             for (size_t j = 1; j < ny-1; j++) // Loop over Collocation Points in 2-direction
             {
+                auto [c2, d2] = phi2->powerSeriesWeight(j, phi2->m, bi, bi_05);
+
                 double y_lower = std::max(-1., xi_2(j)-delta/2);
                 double y_upper = std::min(xi_2(j)+delta/2,  1.);
 
@@ -783,6 +813,8 @@ void Wing::aerodynamicMatrix()
                     y_upper = 1;
                 for (size_t i = 1; i < nx-1; i++) // Loop over Collocation Points in 1-direction
                 {
+                    auto [c1, d1] = phi1->powerSeriesWeight(i, phi1->m, bi, bi_05);
+
                     double x_left  = std::max(-1., xi_1(i)-delta/2);
                     double x_right = std::min(xi_1(i)+delta/2,  1.);
 
@@ -806,66 +838,94 @@ void Wing::aerodynamicMatrix()
                         for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                         {
                             auto [f1, df1] = phi1->powerSeries(p, xi_1(i), bi);
-                            if (p > 0 || q > 0)
+
+                            arma::mat dmudxi_1(n_theta, p+q+phi1->m+phi2->m+1), dmudxi_2(n_theta, p+q+phi1->m+phi2->m+1);
+                            for (size_t s = 0; s <= q; s++)
                             {
-                                arma::mat dmudxi_1(n_theta, p+q+1), dmudxi_2(n_theta, p+q+1);
-                                if (p > 0)
-                                    for (size_t s = 0; s < p; s++)
-                                    {
-                                        arma::vec F3 = df1(s) * cT.col(s);
-                                        for (size_t t = 0; t <= q; t++)
-                                            dmudxi_1.col(s+t) += f2(t) * F3 % sT.col(t);
-                                    }
-                                if (q > 0)
-                                    for (size_t s = 0; s <= p; s++)
-                                    {
-                                        arma::vec F1 = f1(s) * cT.col(s);
-                                        for (size_t t = 0; t < q; t++)
-                                            dmudxi_2.col(s+t) += df2(t) * F1 % sT.col(t);
-                                    }
-                                arma::mat dmudx = (J22(i, j)*nC(k, 2) - nC(k, 1)*dzdxi_2(i, j))*dmudxi_1
-                                                - (J21(i, j)*nC(k, 2) - nC(k, 1)*dzdxi_1(i, j))*dmudxi_2;
-                                arma::mat dmudy = (J11(i, j)*nC(k, 2) - nC(k, 0)*dzdxi_1(i, j))*dmudxi_2
-                                                - (J12(i, j)*nC(k, 2) - nC(k, 0)*dzdxi_2(i, j))*dmudxi_1;
-                                arma::mat dmudz = (J12(i, j)*nC(k, 1) - nC(k, 0)*J22(i, j))*dmudxi_1
-                                                - (J11(i, j)*nC(k, 1) - nC(k, 0)*J21(i, j))*dmudxi_2;
-                                arma::vec::fixed<3> F;
-                                for (size_t n = 0; n < n_theta-1; n++)
+                                arma::vec F1 = f1(s) * cT.col(s);
+                                for (size_t t = 0; t <= q; t++)
                                 {
-                                    arma::vec::fixed<3> A_t = dXdxi_1*cT(n, 1) + dXdxi_2*sT(n, 1);
-                                    arma::vec::fixed<3> B_t = d2Xdxi_12*cT(n, 2)/2 + d2Xdxi_1dxi_2*cT(n, 1)*sT(n, 1) + d2Xdxi_22*sT(n, 2)/2;
-                                    double C_t  = dot(A_t, B_t);
-                                    double A_abs = norm(A_t);
-                                    double A3 = pow(A_abs, 3);
-                                    double A5 = pow(A_abs, 5);
-                                    arma::vec::fixed<3> C1 = A_t/A3;
-                                    arma::vec::fixed<3> C2 = B_t/A3 - 3*A_t*C_t/A5;
-                                    arma::vec::fixed<3> C3 =-3*B_t*C_t/A5;
-                                    arma::vec::fixed<3> gamma_0 = {dmudy(n, 0)*nC(k, 2) - dmudz(n, 0)*nC(k, 1),
-                                                                   dmudz(n, 0)*nC(k, 0) - dmudx(n, 0)*nC(k, 2),
-                                                                   dmudx(n, 0)*nC(k, 1) - dmudy(n, 0)*nC(k, 0)};
-                                    arma::vec::fixed<3> F_1 = cross(gamma_0, C1);
-                                    arma::vec::fixed<3> F_2 = cross(gamma_0, C2);
-                                    arma::vec::fixed<3> F_3 = cross(gamma_0, C3);
-                                    F += F_1*log(rho_tilde(n)*A_abs);
-                                    F += F_2*rho_tilde(n);
-                                    F += F_3*pow(rho_tilde(n), 2)/2;
-                                    for (size_t ii = 1; ii < dmudxi_1.n_cols; ii++)
+                                    arma::vec f = f2(t) * F1 % sT.col(t);
+                                    for (size_t k2 = 0; k2 <= phi2->m; k2++)
                                     {
-                                        gamma_0 = {dmudy(n, ii)*nC(k, 2) - dmudz(n, ii)*nC(k, 1),
-                                                   dmudz(n, ii)*nC(k, 0) - dmudx(n, ii)*nC(k, 2),
-                                                   dmudx(n, ii)*nC(k, 1) - dmudy(n, ii)*nC(k, 0)};
-                                        F_1 = cross(gamma_0, C1);
-                                        F_2 = cross(gamma_0, C2);
-                                        F_3 = cross(gamma_0, C3);
-                                        F += F_1*pow(rho_tilde(n), ii)/ii;
-                                        F += F_2*pow(rho_tilde(n), ii+1)/(ii+1);
-                                        F += F_3*pow(rho_tilde(n), ii+2)/(ii+2);
+                                        arma::vec Fc2 = c2(k2) * sT.col(k2);
+                                        arma::vec Fd2 = d2(k2) * sT.col(k2);
+                                        for (size_t k1 = 0; k1 <= phi1->m; k1++)
+                                        {
+                                            dmudxi_1.col(s+t+k1+k2) += d1(k1)*(cT.col(k1) % Fc2 % f);
+                                            dmudxi_2.col(s+t+k1+k2) += c1(k1)*(cT.col(k1) % Fd2 % f);
+                                        }
                                     }
                                 }
-                                arma::vec::fixed<3> q_mu = dtheta*F;
-                                A(k, p+q*nx) = dot(q_mu, nC.row(k));
                             }
+
+                            if (p > 0 || q > 0)
+                            {
+                                for (size_t k2 = 0; k2 <= phi2->m; k2++)
+                                {
+                                    arma::vec F2 = c2(k2) * sT.col(k2);
+                                    for (size_t k1 = 0; k1 <= phi1->m; k1++)
+                                    {
+                                        arma::vec F12 = c1(k1)*cT.col(k1) % F2;
+                                        if (p > 0)
+                                            for (size_t s = 0; s < p; s++)
+                                            {
+                                                arma::vec F3 = df1(s) * cT.col(s);
+                                                for (size_t t = 0; t <= q; t++)
+                                                    dmudxi_1.col(s+t+k1+k2) += f2(t) * F3 % F12 % sT.col(t);
+                                            }
+                                        if (q > 0)
+                                            for (size_t s = 0; s <= p; s++)
+                                            {
+                                                arma::vec F1 = f1(s) * cT.col(s);
+                                                for (size_t t = 0; t < q; t++)
+                                                    dmudxi_2.col(s+t+k1+k2) += df2(t) * F1 % F12 % sT.col(t);
+                                            }
+                                    }
+                                }
+                            }
+                            arma::mat dmudx = (J22(i, j)*nC(k, 2) - nC(k, 1)*dzdxi_2(i, j))*dmudxi_1
+                                            - (J21(i, j)*nC(k, 2) - nC(k, 1)*dzdxi_1(i, j))*dmudxi_2;
+                            arma::mat dmudy = (J11(i, j)*nC(k, 2) - nC(k, 0)*dzdxi_1(i, j))*dmudxi_2
+                                            - (J12(i, j)*nC(k, 2) - nC(k, 0)*dzdxi_2(i, j))*dmudxi_1;
+                            arma::mat dmudz = (J12(i, j)*nC(k, 1) - nC(k, 0)*J22(i, j))*dmudxi_1
+                                            - (J11(i, j)*nC(k, 1) - nC(k, 0)*J21(i, j))*dmudxi_2;
+                            arma::vec::fixed<3> F;
+                            for (size_t n = 0; n < n_theta-1; n++)
+                            {
+                                arma::vec::fixed<3> A_t = dXdxi_1*cT(n, 1) + dXdxi_2*sT(n, 1);
+                                arma::vec::fixed<3> B_t = d2Xdxi_12*cT(n, 2)/2 + d2Xdxi_1dxi_2*cT(n, 1)*sT(n, 1) + d2Xdxi_22*sT(n, 2)/2;
+                                double C_t  = dot(A_t, B_t);
+                                double A_abs = norm(A_t);
+                                double A3 = pow(A_abs, 3);
+                                double A5 = pow(A_abs, 5);
+                                arma::vec::fixed<3> C1 = A_t/A3;
+                                arma::vec::fixed<3> C2 = B_t/A3 - 3*A_t*C_t/A5;
+                                arma::vec::fixed<3> C3 =-3*B_t*C_t/A5;
+                                arma::vec::fixed<3> gamma_0 = {dmudy(n, 0)*nC(k, 2) - dmudz(n, 0)*nC(k, 1),
+                                                               dmudz(n, 0)*nC(k, 0) - dmudx(n, 0)*nC(k, 2),
+                                                               dmudx(n, 0)*nC(k, 1) - dmudy(n, 0)*nC(k, 0)};
+                                arma::vec::fixed<3> F_1 = cross(gamma_0, C1);
+                                arma::vec::fixed<3> F_2 = cross(gamma_0, C2);
+                                arma::vec::fixed<3> F_3 = cross(gamma_0, C3);
+                                F += F_1*log(rho_tilde(n)*A_abs);
+                                F += F_2*rho_tilde(n);
+                                F += F_3*pow(rho_tilde(n), 2)/2;
+                                for (size_t ii = 1; ii < dmudxi_1.n_cols; ii++)
+                                {
+                                    gamma_0 = {dmudy(n, ii)*nC(k, 2) - dmudz(n, ii)*nC(k, 1),
+                                                dmudz(n, ii)*nC(k, 0) - dmudx(n, ii)*nC(k, 2),
+                                                dmudx(n, ii)*nC(k, 1) - dmudy(n, ii)*nC(k, 0)};
+                                    F_1 = cross(gamma_0, C1);
+                                    F_2 = cross(gamma_0, C2);
+                                    F_3 = cross(gamma_0, C3);
+                                    F += F_1*pow(rho_tilde(n), ii)/ii;
+                                    F += F_2*pow(rho_tilde(n), ii+1)/(ii+1);
+                                    F += F_3*pow(rho_tilde(n), ii+2)/(ii+2);
+                                }
+                            }
+                            arma::vec::fixed<3> q_mu = dtheta*F;
+                            A(k, p+q*nx) = dot(q_mu, nC.row(k));
                         }
                     }
                     if (y_lower > -1)

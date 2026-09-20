@@ -5,7 +5,7 @@
 class ChebyshevU : public BasisFunction
 {
 public:
-    ChebyshevU(size_t _n) : BasisFunction{_n}
+    ChebyshevU(size_t _n, size_t _m) : BasisFunction{_n, _m}
     {
         xi =-cos(arma::datum::pi*(arma::regspace(0, n-1)+1)/(n+1));
     }

@@ -5,7 +5,7 @@
 class ChebyshevT : public BasisFunction
 {
 public:
-    ChebyshevT(size_t _n) : BasisFunction{_n}
+    ChebyshevT(size_t _n, size_t _) : BasisFunction{_n, 0}
     {
         xi = Chebyshev::gauss(n);
     }
