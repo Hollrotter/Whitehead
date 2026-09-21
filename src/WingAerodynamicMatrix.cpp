@@ -840,7 +840,7 @@ void Wing::aerodynamicMatrix()
                             auto [f1, df1] = phi1->powerSeries(p, xi_1(i), bi);
 
                             arma::mat dmudxi_1(n_theta, p+q+phi1->m+phi2->m+1), dmudxi_2(n_theta, p+q+phi1->m+phi2->m+1);
-                            for (size_t s = 0; s <= q; s++)
+                            for (size_t s = 0; s <= p; s++)
                             {
                                 arma::vec F1 = f1(s) * cT.col(s);
                                 for (size_t t = 0; t <= q; t++)

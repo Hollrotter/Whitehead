@@ -1,5 +1,5 @@
 #pragma once
-#include "misc.hpp"
+#include "gaujac.hpp"
 
 class BasisFunction
 {
@@ -7,6 +7,8 @@ protected:
     size_t n;
     size_t m;
     arma::vec xi;
+    arma::vec xg;
+    arma::vec wg;
 public:
     BasisFunction() = default;
     BasisFunction(size_t _n, size_t _m) : n(_n), m(_m) {};
