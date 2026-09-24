@@ -300,7 +300,7 @@ void Aerodynamics::solve()
     do
     {
         std::cout << "Iteration " << count << '/' << iterations << std::endl;
-        for (Interface& interface:interfaces)
+        for (const Interface& interface:interfaces)
         {
             size_t interSource = interface.sourceDomain;
             size_t interTarget = interface.targetDomain;

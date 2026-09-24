@@ -6,23 +6,20 @@
 class ChebyshevT : public BasisFunction
 {
 public:
-    ChebyshevT(size_t _n, size_t _) : BasisFunction{_n, 0}
-    {
-        xi = Chebyshev::gauss(n);
-        xg.zeros(n);
-        wg.zeros(n);
-        for (size_t i = 0; i < n; i++)
-        {
-            fastgl::QuadPair gl = fastgl::GLPair(n, i+1);
-            xg(i) =-gl.x();
-            wg(i) = gl.weight;
-        }
-    }
+    ChebyshevT(size_t _n, size_t _);
     virtual inline constexpr double constant() const override
     {
         return 1;
     }
+    virtual inline arma::vec constant(size_t k) const override
+    {
+        return arma::ones(k);
+    }
     virtual inline double linear(double x) const override
+    {
+        return x;
+    }
+    virtual inline arma::vec linear(arma::vec x) const override
     {
         return x;
     }
@@ -30,17 +27,33 @@ public:
     {
         return 0;
     }
+    virtual inline arma::vec constantDerivative(size_t k) const override
+    {
+        return arma::zeros(k);
+    }
     virtual inline constexpr double linearDerivative() const override
     {
         return 1;
     }
-    virtual inline void next(size_t k, double x, double &T, double &Tp1) const override
+    virtual inline arma::vec linearDerivative(size_t k) const override
+    {
+        return arma::ones(k);
+    }
+    virtual inline void next(size_t _, double x, double &T, double &Tp1) const override
     {
         Tp1 = boost::math::chebyshev_next(x, T, Tp1);
+    }
+    virtual inline void next(size_t _, arma::vec x, arma::vec &T, arma::vec &Tp1) const override
+    {
+        Tp1 = 2*x%T - Tp1;
     }
     virtual inline void nextDerivative(size_t k, double x, double &T, double &_, double &dTp1) const override
     {
         dTp1 = (k == 0) ? 4*x : (k+2)*(2*T + dTp1/k);
+    }
+    virtual inline void nextDerivative(size_t k, arma::vec x, arma::vec &T, arma::vec &_, arma::vec &dTp1) const override
+    {
+        dTp1 = (k == 0) ? arma::vec(4*x) : arma::vec((k+2)*(2*T + dTp1/k));
     }
     virtual inline double left(size_t k) const override
     {

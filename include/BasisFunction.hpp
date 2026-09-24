@@ -13,11 +13,17 @@ public:
     BasisFunction() = default;
     BasisFunction(size_t _n, size_t _m) : n(_n), m(_m) {};
     virtual inline constexpr double constant() const = 0;
+    virtual inline arma::vec constant(size_t) const = 0;
     virtual inline double linear(double) const = 0;
+    virtual inline arma::vec linear(arma::vec) const = 0;
     virtual inline constexpr double constantDerivative() const = 0;
+    virtual inline arma::vec constantDerivative(size_t) const = 0;
     virtual inline constexpr double linearDerivative() const = 0;
+    virtual inline arma::vec linearDerivative(size_t) const = 0;
     virtual inline void next(size_t, double, double&, double&) const = 0;
+    virtual inline void next(size_t, arma::vec, arma::vec&, arma::vec&) const = 0;
     virtual inline void nextDerivative(size_t, double, double&, double&, double&) const = 0;
+    virtual inline void nextDerivative(size_t, arma::vec, arma::vec&, arma::vec&, arma::vec&) const = 0;
     virtual inline double left(size_t) const = 0;
     virtual inline double right(size_t) const = 0;
     virtual inline double leftDerivative(size_t) const = 0;

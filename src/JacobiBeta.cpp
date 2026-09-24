@@ -1,5 +1,11 @@
 #include "JacobiBeta.hpp"
 
+JacobiBeta::JacobiBeta(size_t _n, size_t _m) : BasisFunction{_n, _m}
+{
+    std::tie(xg, wg) = gaujac(n, 0.0, 0.5);
+    xi = xg;
+};
+
 std::pair<arma::vec, arma::vec> JacobiBeta::powerSeries(size_t k, double x, arma::umat &bi) const
 {
     arma::vec c(k+1), f(k+1), df(k);

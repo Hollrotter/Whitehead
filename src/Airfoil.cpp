@@ -7,11 +7,6 @@ Airfoil Airfoil::fromLagrangeCurveInterpolant(Lagrange::CurveInterpolant* _chi)
     return {_x, _z, _chi};
 }
 
-void Airfoil::pitch(double _alpha)
-{
-    alpha = arma::datum::pi/180*_alpha;
-}
-
 void Airfoil::linear()
 {
     analysis = Analysis::linear;

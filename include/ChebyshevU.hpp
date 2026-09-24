@@ -5,17 +5,20 @@
 class ChebyshevU : public BasisFunction
 {
 public:
-    ChebyshevU(size_t _n, size_t _m) : BasisFunction{_n, _m}
-    {
-        xi =-cos(arma::datum::pi*(arma::regspace(0, n-1)+1)/(n+1));
-        xg = xi;
-        wg = arma::datum::pi/(n+1)*(1-xi%xi);
-    }
+    ChebyshevU(size_t _n, size_t _m);
     virtual inline constexpr double constant() const override
     {
         return 1;
     }
+    virtual inline arma::vec constant(size_t k) const override
+    {
+        return arma::ones(k);
+    }
     virtual inline double linear(double x) const override
+    {
+        return 2*x;
+    }
+    virtual inline arma::vec linear(arma::vec x) const override
     {
         return 2*x;
     }
@@ -23,17 +26,33 @@ public:
     {
         return 0;
     }
+    virtual inline arma::vec constantDerivative(size_t k) const override
+    {
+        return arma::zeros(k);
+    }
     virtual inline constexpr double linearDerivative() const override
     {
         return 2;
     }
-    virtual inline void next(size_t k, double x, double &U, double &Up1) const override
+    virtual inline arma::vec linearDerivative(size_t k) const override
+    {
+        return 2*arma::ones(k);
+    }
+    virtual inline void next(size_t _, double x, double &U, double &Up1) const override
     {
         Up1 = boost::math::chebyshev_next(x, U, Up1);
     }
-    virtual inline void nextDerivative(size_t k, double x, double &U, double &, double &dUp1) const override
+    virtual inline void next(size_t _, arma::vec x, arma::vec &U, arma::vec &Up1) const override
+    {
+        Up1 = 2*x%U - Up1;
+    }
+    virtual inline void nextDerivative(size_t k, double x, double &U, double &_, double &dUp1) const override
     {
         dUp1 = (k == 0) ? 8*x : 2*(k+2)*U + dUp1;
+    }
+    virtual inline void nextDerivative(size_t k, arma::vec x, arma::vec &U, arma::vec &_, arma::vec &dUp1) const override
+    {
+        dUp1 = (k == 0) ? arma::vec(8*x) : arma::vec(2*(k+2)*U + dUp1);
     }
     virtual inline double left(size_t k) const override
     {

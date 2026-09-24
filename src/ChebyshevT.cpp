@@ -1,5 +1,18 @@
 #include "ChebyshevT.hpp"
 
+ChebyshevT::ChebyshevT(size_t _n, size_t _) : BasisFunction{_n, 0}
+{
+    xi = Chebyshev::gauss(n);
+    xg.zeros(n);
+    wg.zeros(n);
+    for (size_t i = 0; i < n; i++)
+    {
+        fastgl::QuadPair gl = fastgl::GLPair(n, i+1);
+        xg(i) =-gl.x();
+        wg(i) = gl.weight;
+    }
+}
+
 std::pair<arma::vec, arma::vec> ChebyshevT::powerSeries(size_t k, double x, arma::umat &bi) const
 {
     arma::vec c(k/2+1, arma::fill::none), f(k+1, arma::fill::zeros), df(k, arma::fill::zeros);

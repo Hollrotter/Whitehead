@@ -4,16 +4,20 @@
 class JacobiBeta : public BasisFunction
 {
 public:
-    JacobiBeta(size_t _n, size_t _m) : BasisFunction{_n, _m}
-    {
-        std::tie(xg, wg) = gaujac(n, 0.0, 0.5);
-        xi = xg;
-    };
+    JacobiBeta(size_t _n, size_t _m);
     virtual inline constexpr double constant() const override
     {
         return 1;
     }
+    virtual inline arma::vec constant(size_t k) const override
+    {
+        return arma::ones(k);
+    }
     virtual inline double linear(double x) const override
+    {
+        return (5*x - 1)/4;
+    }
+    virtual inline arma::vec linear(arma::vec x) const override
     {
         return (5*x - 1)/4;
     }
@@ -21,9 +25,17 @@ public:
     {
         return 0;
     }
+    virtual inline arma::vec constantDerivative(size_t k) const override
+    {
+        return arma::zeros(k);
+    }
     virtual inline constexpr double linearDerivative() const override
     {
         return 1.25;
+    }
+    virtual inline arma::vec linearDerivative(size_t k) const override
+    {
+        return 1.25*arma::ones(k);
     }
     virtual inline void next(size_t k, double x, double &P, double &Pp1) const override
     {
@@ -31,10 +43,22 @@ public:
         Pp1 = (gamma*((pow(gamma, 2) - 1)*x - 0.25)*P - 2*(k+1)*(k + 1.5)*(gamma + 1)*Pp1)
             / (2*(k+2)*(gamma-k-1)*(gamma-1));
     }
+    virtual inline void next(size_t k, arma::vec x, arma::vec &P, arma::vec &Pp1) const override
+    {
+        double gamma = 2*k + 3.5;
+        Pp1 = (gamma*((pow(gamma, 2) - 1)*x - 0.25)%P - 2*(k+1)*(k + 1.5)*(gamma + 1)*Pp1)
+            / (2*(k+2)*(gamma-k-1)*(gamma-1));
+    }
     virtual inline void nextDerivative(size_t k, double x, double &P, double &dP, double &dPp1) const override
     {
         double gamma = 2*k + 3.5;
         dPp1 = (gamma*(pow(gamma, 2) - 1)*P + gamma*((pow(gamma, 2)-1)*x - 0.25)*dP - 2*(k+1)*(k + 1.5)*(gamma+1)*dPp1)
+             / (2*(k+2)*(gamma-k-1)*(gamma-1));
+    }
+    virtual inline void nextDerivative(size_t k, arma::vec x, arma::vec &P, arma::vec &dP, arma::vec &dPp1) const override
+    {
+        double gamma = 2*k + 3.5;
+        dPp1 = (gamma*(pow(gamma, 2) - 1)*P + gamma*((pow(gamma, 2)-1)*x - 0.25)%dP - 2*(k+1)*(k + 1.5)*(gamma+1)*dPp1)
              / (2*(k+2)*(gamma-k-1)*(gamma-1));
     }
     virtual inline double left(size_t k) const override

@@ -71,3 +71,6 @@ cleanAerodynamics:
 
 cleanMisc:
 	-rm $(MISC)
+
+cleanBasis:
+	-rm $(BASIS)

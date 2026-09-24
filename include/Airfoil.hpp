@@ -37,7 +37,10 @@ public:
         qdyn = _qdyn;
     }
     // Set pitch in degree
-    void pitch(double);
+    void pitch(double _alpha)
+    {
+        alpha = arma::datum::pi/180*_alpha;
+    }
     void linear();
     void nonlinear();
     double get_lift() const

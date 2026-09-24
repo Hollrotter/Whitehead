@@ -1,5 +1,12 @@
 #include "ChebyshevU.hpp"
 
+ChebyshevU::ChebyshevU(size_t _n, size_t _m) : BasisFunction{_n, _m}
+{
+    xi =-cos(arma::datum::pi*(arma::regspace(0, n-1)+1)/(n+1));
+    xg = xi;
+    wg = arma::datum::pi/(n+1)*(1-xi%xi);
+}
+
 std::pair<arma::vec, arma::vec> ChebyshevU::powerSeries(size_t k, double x, arma::umat &bi) const
 {
     arma::vec c(k/2+1, arma::fill::none), f(k+1, arma::fill::zeros), df(k, arma::fill::zeros);
