@@ -28,9 +28,11 @@ public:
     virtual inline double right(size_t) const = 0;
     virtual inline double leftDerivative(size_t) const = 0;
     virtual inline double rightDerivative(size_t) const = 0;
-    virtual std::pair<arma::vec, arma::vec> powerSeries(size_t, double, arma::umat&) const = 0;
-    virtual std::pair<arma::vec, arma::vec> powerSeriesWeight(size_t, size_t, arma::umat&, arma::mat&) const = 0;
+    virtual std::pair<arma::vec, arma::vec> powerSeries(size_t, double) const = 0;
+    virtual std::pair<arma::vec, arma::vec> powerSeriesWeight(size_t, arma::mat&) const = 0;
     virtual inline double weightFunction(double) const = 0;
+    virtual inline arma::vec weightFunction(arma::vec) const = 0;
     virtual inline double weightFunctionDerivative(double) const = 0;
+    virtual inline arma::vec weightFunctionDerivative(arma::vec) const = 0;
     friend class Wing;
 };

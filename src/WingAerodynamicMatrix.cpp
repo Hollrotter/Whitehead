@@ -188,15 +188,6 @@ void Wing::aerodynamicMatrix()
         sT.col(i) = sT.col(i-1)%sT.col(1);
     }
 
-    arma::umat bi(std::max(nx, ny), std::max(nx, ny), arma::fill::zeros);
-    for (size_t i = 0; i < bi.n_rows; i++)
-    {
-        bi(i, 0) = 1;
-        bi(i, i) = 1;
-        for (size_t j = 1; j < i+1; j++)
-            bi(i, j) = bi(i-1, j-1) + bi(i-1, j);
-    }
-
     arma::mat bi_05(2, std::max(phi1->m, phi2->m)+1, arma::fill::ones);
     for (size_t ii = 0; ii < bi_05.n_cols; ii++)
         for (size_t j = 1; j <= ii; j++)
@@ -221,7 +212,7 @@ void Wing::aerodynamicMatrix()
             #pragma omp parallel for
             for (size_t j = 1; j < ny-1; j++) // Loop over Collocation Points in 2-direction
             {
-                auto [c2, d2] = phi2->powerSeriesWeight(j, phi2->m, bi, bi_05);
+                auto [c2, d2] = phi2->powerSeriesWeight(j, bi_05);
 
                 double y_lower = std::max(-1., xi_2(j)-delta/2);
                 double y_upper = std::min(xi_2(j)+delta/2,  1.);
@@ -232,7 +223,7 @@ void Wing::aerodynamicMatrix()
                     y_upper = 1;
                 for (size_t i = 1; i < nx-1; i++) // Loop over Collocation Points in 1-direction
                 {
-                    auto [c1, d1] = phi1->powerSeriesWeight(i, phi1->m, bi, bi_05);
+                    auto [c1, d1] = phi1->powerSeriesWeight(i, bi_05);
 
                     double x_left  = std::max(-1., xi_1(i)-delta/2);
                     double x_right = std::min(xi_1(i)+delta/2,  1.);
@@ -253,10 +244,10 @@ void Wing::aerodynamicMatrix()
                     size_t k = i+j*nx;
                     for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                     {
-                        auto [f2, df2] = phi2->powerSeries(q, xi_2(j), bi);
+                        auto [f2, df2] = phi2->powerSeries(q, xi_2(j));
                         for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                         {
-                            auto [f1, df1] = phi1->powerSeries(p, xi_1(i), bi);
+                            auto [f1, df1] = phi1->powerSeries(p, xi_1(i));
 
                             arma::mat dmudxi_1(n_theta, p+q+phi1->m+phi2->m+1), dmudxi_2(n_theta, p+q+phi1->m+phi2->m+1);
                             for (size_t s = 0; s <= p; s++)
@@ -802,7 +793,7 @@ void Wing::aerodynamicMatrix()
             // #pragma omp parallel // This one does not work properly for some reason!
             for (size_t j = 1; j < ny-1; j++) // Loop over Collocation Points in 2-direction
             {
-                auto [c2, d2] = phi2->powerSeriesWeight(j, phi2->m, bi, bi_05);
+                auto [c2, d2] = phi2->powerSeriesWeight(j, bi_05);
 
                 double y_lower = std::max(-1., xi_2(j)-delta/2);
                 double y_upper = std::min(xi_2(j)+delta/2,  1.);
@@ -813,7 +804,7 @@ void Wing::aerodynamicMatrix()
                     y_upper = 1;
                 for (size_t i = 1; i < nx-1; i++) // Loop over Collocation Points in 1-direction
                 {
-                    auto [c1, d1] = phi1->powerSeriesWeight(i, phi1->m, bi, bi_05);
+                    auto [c1, d1] = phi1->powerSeriesWeight(i, bi_05);
 
                     double x_left  = std::max(-1., xi_1(i)-delta/2);
                     double x_right = std::min(xi_1(i)+delta/2,  1.);
@@ -834,10 +825,10 @@ void Wing::aerodynamicMatrix()
                     size_t k = i+j*nx;
                     for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                     {
-                        auto [f2, df2] = phi2->powerSeries(q, xi_2(j), bi);
+                        auto [f2, df2] = phi2->powerSeries(q, xi_2(j));
                         for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                         {
-                            auto [f1, df1] = phi1->powerSeries(p, xi_1(i), bi);
+                            auto [f1, df1] = phi1->powerSeries(p, xi_1(i));
 
                             arma::mat dmudxi_1(n_theta, p+q+phi1->m+phi2->m+1), dmudxi_2(n_theta, p+q+phi1->m+phi2->m+1);
                             for (size_t s = 0; s <= p; s++)

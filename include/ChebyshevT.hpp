@@ -71,15 +71,23 @@ public:
     {
         return k*k;
     }
-    virtual std::pair<arma::vec, arma::vec> powerSeries(size_t k, double x, arma::umat &bi) const override;
-    virtual std::pair<arma::vec, arma::vec> powerSeriesWeight(size_t _, size_t k, arma::umat &bi, arma::mat &bi_05) const override;
+    virtual std::pair<arma::vec, arma::vec> powerSeries(size_t k, double x) const override;
+    virtual std::pair<arma::vec, arma::vec> powerSeriesWeight(size_t _, arma::mat &bi_05) const override;
     virtual inline double weightFunction(double _) const override
     {
         return 1;
     }
+    virtual inline arma::vec weightFunction(arma::vec x) const override
+    {
+        return arma::ones(x.size());
+    }
     virtual inline double weightFunctionDerivative(double _) const override
     {
         return 0;
+    }
+    virtual inline arma::vec weightFunctionDerivative(arma::vec x) const override
+    {
+        return arma::zeros(x.size());
     }
     friend class Wing;
 };

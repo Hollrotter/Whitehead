@@ -11,6 +11,21 @@
 #pragma omp declare reduction(+ : arma::mat : omp_out += omp_in) \
     initializer(omp_priv = omp_orig)
 
+constexpr size_t NMAX = 100;
+
+constexpr std::array<std::array<size_t, NMAX>, NMAX> bi = []() -> std::array<std::array<size_t, NMAX>, NMAX>
+{
+    std::array<std::array<size_t, NMAX>, NMAX> b = {};
+    for (size_t i = 0; i < NMAX; i++)
+    {
+        b[i][0] = 1;
+        b[i][i] = 1;
+        for (size_t j = 1; j < i+1; j++)
+            b[i][j] = b[i-1][j-1] + b[i-1][j];
+    }
+    return b;
+}();
+
 // Comparing two floating point numbers for (almost) equality.
 bool almostEqual(double a, double b);
 inline bool almostEqual(std::pair<double, double> a, std::pair<double, double> b)
