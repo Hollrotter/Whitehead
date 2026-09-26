@@ -703,15 +703,16 @@ std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::ve
 }
 
 std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::vec, arma::rowvec, arma::rowvec>
-    Lagrange::covariantScaleFactors(const std::array<CurveInterpolant*, 4> chi, const arma::mat &z)
+    Lagrange::covariantScaleFactors(const std::array<CurveInterpolant*, 4> chi, const arma::mat &z, const arma::mat &D1, const arma::mat &D2)
 {
     arma::vec x1 = Chebyshev::gaussLobatto(chi[0]->getNodes().size());
     arma::vec x2 = Chebyshev::gaussLobatto(chi[1]->getNodes().size());
-    return covariantScaleFactors(x1, x2, chi, z);
+    return covariantScaleFactors(x1, x2, chi, z, D1, D2);
 }
 
 std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::vec, arma::rowvec, arma::rowvec>
-    Lagrange::covariantScaleFactors(const arma::vec &x1, const arma::vec &x2, const std::array<CurveInterpolant*, 4> chi, const arma::mat &z)
+    Lagrange::covariantScaleFactors(const arma::vec &x1, const arma::vec &x2, const std::array<CurveInterpolant*, 4> chi,
+        const arma::mat &z, const arma::mat &D1, const arma::mat &D2)
 {
     if (chi[0]->getNodes().size() != chi[2]->getNodes().size() || chi[1]->getNodes().size() != chi[3]->getNodes().size())
     {
@@ -864,8 +865,6 @@ std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::ve
         dydx2_north(i) = ((1 - x1i)*Ys_4 + (1 + x1i)*Ys_2 + Y_3 - Y_1)/2 - ((1 - x1i)*(y_4 - y_1) + (1 + x1i)*(y_3 - y_2))/4;
     }
 
-    arma::mat D1 = Lagrange::derivativeMatrix(x1);
-    arma::mat D2 = Lagrange::derivativeMatrix(x2);
     arma::mat dzdx1 = D1 * z;
     arma::mat dzdx2 = z * D2.t();
 

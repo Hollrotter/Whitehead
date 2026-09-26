@@ -3,13 +3,16 @@
 void Aerodynamics::nonlinear()
 {
     analysis = Analysis::nonlinear;
+    for (auto &wing:wings)
+    {
+        wing->analysis = Analysis::nonlinear;
+        wing->phi1.reset(new ChebyshevT(wing->nx, wing->mx));
+        wing->phi2.reset(new ChebyshevT(wing->ny, wing->my));
+        wing->init();
+    }
     // Influence of the wing surfaces on each other
     bw.set_size(wings.size(), wings.size());
     for (size_t sD = 0; sD < wings.size(); sD++)
-    {
-        wings[sD]->analysis = Analysis::nonlinear;
-        wings[sD]->phi1.reset(new ChebyshevT(wings[sD]->nx, wings[sD]->mx));
-        wings[sD]->phi2.reset(new ChebyshevT(wings[sD]->ny, wings[sD]->my));
         for (size_t tD = 0; tD < wings.size(); tD++)
             if (sD != tD)
             {
@@ -411,7 +414,6 @@ void Aerodynamics::nonlinear()
                             }
                         }
             }
-    }
     if (sym == Symmetry::y)
     {
         for (size_t sD = 0; sD < wings.size(); sD++)

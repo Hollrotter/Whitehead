@@ -18,7 +18,10 @@ public:
     Aerodynamics() = default;
     Aerodynamics(const std::vector<Wing*> &_w, const std::vector<Interface> &_i) : wings(_w), interfaces(_i) {};
     explicit Aerodynamics(const std::vector<Wing*> &_w) : Aerodynamics(fromWings(_w)) {};
-    void setlambda(double l) pre(l > 0 && "lambda must be postiive!");
+    void setlambda(double l) pre(l > 0 && "lambda must be postiive!")
+    {
+        lambda0 = l;
+    }
     // Sets the dynamic pressure
     void dynamicPressure(double _qdyn)
     {

@@ -21,9 +21,9 @@ public:
     virtual inline constexpr double linearDerivative() const = 0;
     virtual inline arma::vec linearDerivative(size_t) const = 0;
     virtual inline void next(size_t, double, double&, double&) const = 0;
-    virtual inline void next(size_t, arma::vec, arma::vec&, arma::vec&) const = 0;
+    virtual inline void next(size_t, arma::vec, arma::mat&) const = 0;
     virtual inline void nextDerivative(size_t, double, double&, double&, double&) const = 0;
-    virtual inline void nextDerivative(size_t, arma::vec, arma::vec&, arma::vec&, arma::vec&) const = 0;
+    virtual inline void nextDerivative(size_t, arma::vec, arma::mat&, arma::mat&) const = 0;
     virtual inline double left(size_t) const = 0;
     virtual inline double right(size_t) const = 0;
     virtual inline double leftDerivative(size_t) const = 0;

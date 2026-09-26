@@ -42,17 +42,17 @@ public:
     {
         Up1 = boost::math::chebyshev_next(x, U, Up1);
     }
-    virtual inline void next(size_t _, arma::vec x, arma::vec &U, arma::vec &Up1) const override
+    virtual inline void next(size_t k, arma::vec x, arma::mat &U) const override
     {
-        Up1 = 2*x%U - Up1;
+        U.col(k+1) = 2*x%U.col(k) - U.col(k-1);
     }
     virtual inline void nextDerivative(size_t k, double x, double &U, double &_, double &dUp1) const override
     {
         dUp1 = (k == 0) ? 8*x : 2*(k+2)*U + dUp1;
     }
-    virtual inline void nextDerivative(size_t k, arma::vec x, arma::vec &U, arma::vec &_, arma::vec &dUp1) const override
+    virtual inline void nextDerivative(size_t k, arma::vec x, arma::mat &U, arma::mat &dU) const override
     {
-        dUp1 = (k == 0) ? arma::vec(8*x) : arma::vec(2*(k+2)*U + dUp1);
+        dU.col(k+1) = arma::vec(2*(k+2)*U.col(k) + dU.col(k-1));
     }
     virtual inline double left(size_t k) const override
     {

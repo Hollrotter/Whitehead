@@ -5,9 +5,7 @@ Wing Wing::fromTransfiniteQuadMap(std::array<Lagrange::CurveInterpolant*, 4> _ch
     auto [_x, _y] = Lagrange::TransfiniteQuadMap(_chi);
     arma::vec _x1 = Chebyshev::gauss(_chi[0]->getNodes().size());
     arma::vec _x2 = Chebyshev::gauss(_chi[1]->getNodes().size());
-    std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::vec, arma::rowvec, arma::rowvec>
-        _h = Lagrange::covariantScaleFactors(_x1, _x2, _chi);
-    return {_chi, _x, _y, _h};
+    return {_chi, _x, _y};
 }
 
 Wing Wing::fromTransfiniteQuadMap(arma::mat _z, std::array<Lagrange::CurveInterpolant*, 4> _chi)
@@ -15,9 +13,7 @@ Wing Wing::fromTransfiniteQuadMap(arma::mat _z, std::array<Lagrange::CurveInterp
     auto [_x, _y] = Lagrange::TransfiniteQuadMap(_chi);
     arma::vec _x1 = Chebyshev::gauss(_chi[0]->getNodes().size());
     arma::vec _x2 = Chebyshev::gauss(_chi[1]->getNodes().size());
-    std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::vec, arma::rowvec, arma::rowvec>
-        _h = Lagrange::covariantScaleFactors(_x1, _x2, _chi, _z);
-    return {_chi, _x, _y, _z, _h};
+    return {_chi, _x, _y, _z};
 }
 
 void Wing::checkMesh() const
@@ -40,6 +36,7 @@ void Wing::linear()
     analysis = Analysis::linear;
     phi1.reset(new ChebyshevT(nx, mx));
     phi2.reset(new ChebyshevT(ny, my));
+    init();
     linearSolve();
     linearEval();
     postprocessing();
@@ -50,6 +47,7 @@ void Wing::nonlinear()
     analysis = Analysis::nonlinear;
     phi1.reset(new ChebyshevT(nx, mx));
     phi2.reset(new ChebyshevT(ny, my));
+    init();
     nonlinearSolve();
     nonlinearEval();
     postprocessing();
@@ -62,6 +60,45 @@ void Wing::output(std::string filename) const
         for (size_t j = 0; j < ny; j++, file << '\n')
             file << x(i, j) << ' ' << y(i, j) << ' ' << z(i, j) << ' ' << mu(i, j) << ' ' << dcp(i, j);
     file.close();
+}
+
+void Wing::init()
+{
+    xi_1 = phi1->xi;
+    xi_2 = phi2->xi;
+    PHI1.col(0)  = phi1->constant(nx);
+    PHI2.col(0)  = phi2->constant(ny);
+    dPHI1.col(0) = phi1->constantDerivative(nx);
+    dPHI2.col(0) = phi2->constantDerivative(ny);
+    PHI1.col(1)  = phi1->linear(xi_1);
+    PHI2.col(1)  = phi2->linear(xi_2);
+    dPHI1.col(1) = phi1->linearDerivative(nx);
+    dPHI2.col(1) = phi2->linearDerivative(ny);
+    for (size_t p = 1; p < nx-1; p++)
+    {
+        phi1->next(p, xi_1, PHI1);
+        phi1->nextDerivative(p, xi_1, PHI1, dPHI1);
+    }
+    for (size_t q = 1; q < ny-1; q++)
+    {
+        phi2->next(q, xi_2, PHI2);
+        phi2->nextDerivative(q, xi_2, PHI2, dPHI2);
+    }
+    D1 = Lagrange::derivativeMatrix(xi_1);
+    D2 = Lagrange::derivativeMatrix(xi_2);
+    std::tie(xC, yC) = Lagrange::TransfiniteQuadMap(xi_1, xi_2, chi);
+    Tx = Lagrange::interpolationMatrix(x1, xi_1);
+    Ty = Lagrange::interpolationMatrix(x2, xi_2);
+    if (analysis == Analysis::linear)
+        std::tie(h_2s2_south, h_2s1_south, h_1s1_east, h_1s2_east, h_2s2_north, h_2s1_north, h_1s1_west, h_1s2_west)
+            = Lagrange::covariantScaleFactors(xi_1, xi_2, chi);
+    else
+    {
+        zC = Lagrange::interpolation2D(Tx, Ty, z, xi_1, xi_2);
+        std::tie(h_2s2_south, h_2s1_south, h_1s1_east, h_1s2_east, h_2s2_north, h_2s1_north, h_1s1_west, h_1s2_west)
+            = Lagrange::covariantScaleFactors(xi_1, xi_2, chi, z, D1, D2);
+        nC = calculateNormal();
+    }
 }
 
 arma::mat Wing::calculateNormal()

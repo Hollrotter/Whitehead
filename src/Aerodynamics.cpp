@@ -12,79 +12,7 @@ Aerodynamics Aerodynamics::fromWings(std::vector<Wing*> _wings)
                         _interfaces.push_back(Interface(sD, tD, sC, tC));
                         _wings[sD]->chi[sC]->curveType = CurveType::Interface;
                     }
-    const double l0 = 2;
-    for (Interface& interface:_interfaces)
-    {
-        switch (interface.sourceCurve)
-        {
-            case 0: // South
-                interface.lambdaSource = l0*mean(_wings[interface.sourceDomain]->h_2s2_south);
-                break;
-            case 1: // East
-                interface.lambdaSource = l0*mean(_wings[interface.sourceDomain]->h_1s1_east);
-                break;
-            case 2: // North
-                interface.lambdaSource = l0*mean(_wings[interface.sourceDomain]->h_2s2_north);
-                break;
-            case 3: // West
-                interface.lambdaSource = l0*mean(_wings[interface.sourceDomain]->h_1s1_west);
-                break;
-        }
-        switch (interface.targetCurve)
-        {
-            case 0: // South
-                interface.lambdaTarget = l0*mean(_wings[interface.targetDomain]->h_2s2_south);
-                break;
-            case 1: // East
-                interface.lambdaTarget = l0*mean(_wings[interface.targetDomain]->h_1s1_east);
-                break;
-            case 2: // North
-                interface.lambdaTarget = l0*mean(_wings[interface.targetDomain]->h_2s2_north);
-                break;
-            case 3: // West
-                interface.lambdaTarget = l0*mean(_wings[interface.targetDomain]->h_1s1_west);
-                break;
-        }
-    }
     return {_wings, _interfaces};
-}
-
-void Aerodynamics::setlambda(double l)
-{
-    lambda0 = l;
-    for (Interface& interface:interfaces)
-    {
-        switch (interface.sourceCurve)
-        {
-            case 0: // South
-                interface.lambdaSource = lambda0*mean(wings[interface.sourceDomain]->h_2s2_south);
-                break;
-            case 1: // East
-                interface.lambdaSource = lambda0*mean(wings[interface.sourceDomain]->h_1s1_east);
-                break;
-            case 2: // North
-                interface.lambdaSource = lambda0*mean(wings[interface.sourceDomain]->h_2s2_north);
-                break;
-            case 3: // West
-                interface.lambdaSource = lambda0*mean(wings[interface.sourceDomain]->h_1s1_west);
-                break;
-        }
-        switch (interface.targetCurve)
-        {
-            case 0: // South
-                interface.lambdaTarget = lambda0*mean(wings[interface.targetDomain]->h_2s2_south);
-                break;
-            case 1: // East
-                interface.lambdaTarget = lambda0*mean(wings[interface.targetDomain]->h_1s1_east);
-                break;
-            case 2: // North
-                interface.lambdaTarget = lambda0*mean(wings[interface.targetDomain]->h_2s2_north);
-                break;
-            case 3: // West
-                interface.lambdaTarget = lambda0*mean(wings[interface.targetDomain]->h_1s1_west);
-                break;
-        }
-    }
 }
 
 void Aerodynamics::checkMesh() const
@@ -112,7 +40,7 @@ void Aerodynamics::solve()
     bool converged = false;
     size_t count = 1;
     arma::field<arma::vec> muTarget(interfaces.size()), muSource(interfaces.size());
-    for (const auto& interface:interfaces)
+    for (Interface& interface:interfaces)
     {
         Direction targetDirection = static_cast<Direction>(interface.targetCurve);
         Wing *wingTarget = wings[interface.targetDomain];
@@ -120,6 +48,7 @@ void Aerodynamics::solve()
         {
             case 0: // South
             {
+                interface.lambdaSource = lambda0*mean(wings[interface.sourceDomain]->h_2s2_south);
                 switch (interface.targetCurve)
                 {
                     case 0: // South
@@ -139,6 +68,7 @@ void Aerodynamics::solve()
             }
             case 1: // East
             {
+                interface.lambdaSource = lambda0*mean(wings[interface.sourceDomain]->h_1s1_east);
                 switch (interface.targetCurve)
                 {
                     case 0: // South
@@ -158,6 +88,7 @@ void Aerodynamics::solve()
             }
             case 2: // North
             {
+                interface.lambdaSource = lambda0*mean(wings[interface.sourceDomain]->h_2s2_north);
                 switch (interface.targetCurve)
                 {
                     case 0: // South
@@ -177,6 +108,7 @@ void Aerodynamics::solve()
             }
             case 3: // West
             {
+                interface.lambdaSource = lambda0*mean(wings[interface.sourceDomain]->h_1s1_west);
                 switch (interface.targetCurve)
                 {
                     case 0: // South
@@ -201,6 +133,7 @@ void Aerodynamics::solve()
         {
             case 0: // South
             {
+                interface.lambdaTarget = lambda0*mean(wings[interface.targetDomain]->h_2s2_south);
                 switch (interface.sourceCurve)
                 {
                     case 0: // South
@@ -220,6 +153,7 @@ void Aerodynamics::solve()
             }
             case 1: // East
             {
+                interface.lambdaTarget = lambda0*mean(wings[interface.targetDomain]->h_1s1_east);
                 switch (interface.sourceCurve)
                 {
                     case 0: // South
@@ -239,6 +173,7 @@ void Aerodynamics::solve()
             }
             case 2: // North
             {
+                interface.lambdaTarget = lambda0*mean(wings[interface.targetDomain]->h_2s2_north);
                 switch (interface.sourceCurve)
                 {
                     case 0: // South
@@ -258,6 +193,7 @@ void Aerodynamics::solve()
             }
             case 3: // West
             {
+                interface.lambdaTarget = lambda0*mean(wings[interface.targetDomain]->h_1s1_west);
                 switch (interface.sourceCurve)
                 {
                     case 0: // South
@@ -311,10 +247,10 @@ void Aerodynamics::solve()
             size_t nxT = wingTarget->nx;
             size_t nyT = wingTarget->ny;
             arma::vec mu_hat = wingSource->mu_hat;
-            arma::mat  T1 = wingSource->T1;
-            arma::mat  T2 = wingSource->T2;
-            arma::mat dT1 = wingSource->dT1;
-            arma::mat dT2 = wingSource->dT2;
+            arma::mat  PHI1 = wingSource->PHI1;
+            arma::mat  PHI2 = wingSource->PHI2;
+            arma::mat dPHI1 = wingSource->dPHI1;
+            arma::mat dPHI2 = wingSource->dPHI2;
             switch (interface.sourceCurve)
             {
                 case 0: // South
@@ -335,10 +271,10 @@ void Aerodynamics::solve()
                             double dpsi2 = w2*dt2 + dw2*t2;
                             for (size_t p = 0; p < nxS; p++) // Loop over Chebyshev Polynomial 1-direction
                             {
-                                double dpsi1 = w1*dT1(i, p) + dw1*T1(i, p);
-                                MU(i)    += mu_hat(p+q*nxS) * T1(i, p) * t2;
-                                dMUd1(i) += mu_hat(p+q*nxS) *    dpsi1 * t2;
-                                dMUd2(i) += mu_hat(p+q*nxS) * T1(i, p) * dpsi2;
+                                double dpsi1 = w1*dPHI1(i, p) + dw1*PHI1(i, p);
+                                MU(i)    += mu_hat(p+q*nxS) * PHI1(i, p) * t2;
+                                dMUd1(i) += mu_hat(p+q*nxS) *      dpsi1 * t2;
+                                dMUd2(i) += mu_hat(p+q*nxS) * PHI1(i, p) * dpsi2;
                             }
                         }
                         MU(i)    *= w1;
@@ -406,9 +342,9 @@ void Aerodynamics::solve()
                             double dpsi1 = w1*dt1 + dw1*t1;
                             for (size_t q = 0; q < nyS; q++) // Loop over Chebyshev Polynomial 2-direction
                             {
-                                double dpsi2 = w2*dT2(j, q) + dw2*T2(j, q);
-                                MU(j)    += mu_hat(p+q*nxS) *    t1 * T2(j, q);
-                                dMUd1(j) += mu_hat(p+q*nxS) * dpsi1 * T2(j, q);
+                                double dpsi2 = w2*dPHI2(j, q) + dw2*PHI2(j, q);
+                                MU(j)    += mu_hat(p+q*nxS) *    t1 * PHI2(j, q);
+                                dMUd1(j) += mu_hat(p+q*nxS) * dpsi1 * PHI2(j, q);
                                 dMUd2(j) += mu_hat(p+q*nxS) *    t1 * dpsi2;
                             }
                         }
@@ -477,10 +413,10 @@ void Aerodynamics::solve()
                             double dpsi2 = w2*dt2 + dw2*t2;
                             for (size_t p = 0; p < nxS; p++) // Loop over Chebyshev Polynomial 1-direction
                             {
-                                double dpsi1 = w1*dT1(i, p) + dw1*T1(i, p);
-                                MU(i)    += mu_hat(p+q*nxS) * T1(i, p) * t2;
-                                dMUd1(i) += mu_hat(p+q*nxS) *    dpsi1 * t2;
-                                dMUd2(i) += mu_hat(p+q*nxS) * T1(i, p) * dpsi2;
+                                double dpsi1 = w1*dPHI1(i, p) + dw1*PHI1(i, p);
+                                MU(i)    += mu_hat(p+q*nxS) * PHI1(i, p) * t2;
+                                dMUd1(i) += mu_hat(p+q*nxS) *      dpsi1 * t2;
+                                dMUd2(i) += mu_hat(p+q*nxS) * PHI1(i, p) * dpsi2;
                             }
                         }
                         MU(i)    *= w1;
@@ -548,9 +484,9 @@ void Aerodynamics::solve()
                             double dpsi1 = w1*dt1 + dw1*t1;
                             for (size_t q = 0; q < nyS; q++) // Loop over Chebyshev Polynomial 2-direction
                             {
-                                double dpsi2 = w2*dT2(j, q) + dw2*T2(j, q);
-                                MU(j)    += mu_hat(p+q*nxS) *    t1 * T2(j, q);
-                                dMUd1(j) += mu_hat(p+q*nxS) * dpsi1 * T2(j, q);
+                                double dpsi2 = w2*dPHI2(j, q) + dw2*PHI2(j, q);
+                                MU(j)    += mu_hat(p+q*nxS) *    t1 * PHI2(j, q);
+                                dMUd1(j) += mu_hat(p+q*nxS) * dpsi1 * PHI2(j, q);
                                 dMUd2(j) += mu_hat(p+q*nxS) *    t1 * dpsi2;
                             }
                         }
@@ -603,10 +539,10 @@ void Aerodynamics::solve()
                 }
             }
             mu_hat = wingTarget->mu_hat;
-            T1     = wingTarget->T1;
-            T2     = wingTarget->T2;
-            dT1    = wingTarget->dT1;
-            dT2    = wingTarget->dT2;
+            PHI1   = wingTarget->PHI1;
+            PHI2   = wingTarget->PHI2;
+            dPHI1  = wingTarget->dPHI1;
+            dPHI2  = wingTarget->dPHI2;
             switch (interface.targetCurve)
             {
                 case 0: // South
@@ -627,10 +563,10 @@ void Aerodynamics::solve()
                             double dpsi2 = w2*dt2 + dw2*t2;
                             for (size_t p = 0; p < nxT; p++) // Loop over Chebyshev Polynomial 1-direction
                             {
-                                double dpsi1 = w1*dT1(i, p) + dw1*T1(i, p);
-                                MU(i)    += mu_hat(p+q*nxT) * T1(i, p) * t2;
-                                dMUd1(i) += mu_hat(p+q*nxT) *    dpsi1 * t2;
-                                dMUd2(i) += mu_hat(p+q*nxT) * T1(i, p) * dpsi2;
+                                double dpsi1 = w1*dPHI1(i, p) + dw1*PHI1(i, p);
+                                MU(i)    += mu_hat(p+q*nxT) * PHI1(i, p) * t2;
+                                dMUd1(i) += mu_hat(p+q*nxT) *      dpsi1 * t2;
+                                dMUd2(i) += mu_hat(p+q*nxT) * PHI1(i, p) * dpsi2;
                             }
                         }
                         MU(i)    *= w1;
@@ -698,9 +634,9 @@ void Aerodynamics::solve()
                             double dpsi1 = w1*dt1 + dw1*t1;
                             for (size_t q = 0; q < nyT; q++) // Loop over Chebyshev Polynomial 2-direction
                             {
-                                double dpsi2 = w2*dT2(j, q) + dw2*T2(j, q);
-                                MU(j)    += mu_hat(p+q*nxT) *    t1 * T2(j, q);
-                                dMUd1(j) += mu_hat(p+q*nxT) * dpsi1 * T2(j, q);
+                                double dpsi2 = w2*dPHI2(j, q) + dw2*PHI2(j, q);
+                                MU(j)    += mu_hat(p+q*nxT) *    t1 * PHI2(j, q);
+                                dMUd1(j) += mu_hat(p+q*nxT) * dpsi1 * PHI2(j, q);
                                 dMUd2(j) += mu_hat(p+q*nxT) *    t1 * dpsi2;
                             }  
                         }
@@ -769,10 +705,10 @@ void Aerodynamics::solve()
                             double dpsi2 = w2*dt2 + dw2*t2;
                             for (size_t p = 0; p < nxT; p++) // Loop over Chebyshev Polynomial 1-direction
                             {
-                                double dpsi1 = w1*dT1(i, p) + dw1*T1(i, p);
-                                MU(i)    += mu_hat(p+q*nxT) * T1(i, p) * t2;
-                                dMUd1(i) += mu_hat(p+q*nxT) *    dpsi1 * t2;
-                                dMUd2(i) += mu_hat(p+q*nxT) * T1(i, p) * dpsi2;
+                                double dpsi1 = w1*dPHI1(i, p) + dw1*PHI1(i, p);
+                                MU(i)    += mu_hat(p+q*nxT) * PHI1(i, p) * t2;
+                                dMUd1(i) += mu_hat(p+q*nxT) *      dpsi1 * t2;
+                                dMUd2(i) += mu_hat(p+q*nxT) * PHI1(i, p) * dpsi2;
                             }
                         }
                         MU(i)    *= w1;
@@ -840,9 +776,9 @@ void Aerodynamics::solve()
                             double dpsi1 = w1*dt1 + dw1*t1;
                             for (size_t q = 0; q < nyT; q++) // Loop over Chebyshev Polynomial 2-direction
                             {
-                                double dpsi2 = w2*dT2(j, q) + dw2*T2(j, q);
-                                MU(j)    += mu_hat(p+q*nxT) *    t1 * T2(j, q);
-                                dMUd1(j) += mu_hat(p+q*nxT) * dpsi1 * T2(j, q);
+                                double dpsi2 = w2*dPHI2(j, q) + dw2*PHI2(j, q);
+                                MU(j)    += mu_hat(p+q*nxT) *    t1 * PHI2(j, q);
+                                dMUd1(j) += mu_hat(p+q*nxT) * dpsi1 * PHI2(j, q);
                                 dMUd2(j) += mu_hat(p+q*nxT) *    t1 * dpsi2;
                             }
                         }
@@ -928,10 +864,10 @@ void Aerodynamics::solve()
             size_t nx = wingSource->nx;
             size_t ny = wingSource->ny;
             arma::vec mu_hat = wingSource->mu_hat;
-            arma::mat  T1 = wingSource->T1;
-            arma::mat  T2 = wingSource->T2;
-            arma::mat dT1 = wingSource->dT1;
-            arma::mat dT2 = wingSource->dT2;
+            arma::mat  PHI1  = wingSource->PHI1;
+            arma::mat  PHI2  = wingSource->PHI2;
+            arma::mat dPHI1  = wingSource->dPHI1;
+            arma::mat dPHI2  = wingSource->dPHI2;
             switch (interface.sourceCurve)
             {
                 case 0: // South
@@ -952,10 +888,10 @@ void Aerodynamics::solve()
                             double dpsi2 = w2*dt2 + dw2*t2;
                             for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                             {
-                                double dpsi1 = w1*dT1(i, p) + dw1*T1(i, p);
-                                MU(i)    += mu_hat(p+q*nx) * T1(i, p) * t2;
-                                dMUd1(i) += mu_hat(p+q*nx) *    dpsi1 * t2;
-                                dMUd2(i) += mu_hat(p+q*nx) * T1(i, p) * dpsi2;
+                                double dpsi1 = w1*dPHI1(i, p) + dw1*PHI1(i, p);
+                                MU(i)    += mu_hat(p+q*nx) * PHI1(i, p) * t2;
+                                dMUd1(i) += mu_hat(p+q*nx) *      dpsi1 * t2;
+                                dMUd2(i) += mu_hat(p+q*nx) * PHI1(i, p) * dpsi2;
                             }
                         }
                         MU(i)    *= w1;
@@ -986,9 +922,9 @@ void Aerodynamics::solve()
                             double dpsi1 = w1*dt1 + dw1*t1;
                             for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                             {
-                                double dpsi2 = w2*dT2(j, q) + dw2*T2(j, q);
-                                MU(j)    += mu_hat(p+q*nx) *    t1 * T2(j, q);
-                                dMUd1(j) += mu_hat(p+q*nx) * dpsi1 * T2(j, q);
+                                double dpsi2 = w2*dPHI2(j, q) + dw2*PHI2(j, q);
+                                MU(j)    += mu_hat(p+q*nx) *    t1 * PHI2(j, q);
+                                dMUd1(j) += mu_hat(p+q*nx) * dpsi1 * PHI2(j, q);
                                 dMUd2(j) += mu_hat(p+q*nx) *    t1 * dpsi2;
                             }
                         }
@@ -1020,10 +956,10 @@ void Aerodynamics::solve()
                             double dpsi2 = w2*dt2 + dw2*t2;
                             for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                             {
-                                double dpsi1 = w1*dT1(i, p) + dw1*T1(i, p);
-                                MU(i)    += mu_hat(p+q*nx) * T1(i, p) * t2;
-                                dMUd1(i) += mu_hat(p+q*nx) *    dpsi1 * t2;
-                                dMUd2(i) += mu_hat(p+q*nx) * T1(i, p) * dpsi2;
+                                double dpsi1 = w1*dPHI1(i, p) + dw1*PHI1(i, p);
+                                MU(i)    += mu_hat(p+q*nx) * PHI1(i, p) * t2;
+                                dMUd1(i) += mu_hat(p+q*nx) *      dpsi1 * t2;
+                                dMUd2(i) += mu_hat(p+q*nx) * PHI1(i, p) * dpsi2;
                             }
                         }
                         MU(i)    *= w1;
@@ -1054,9 +990,9 @@ void Aerodynamics::solve()
                             double dpsi1 = w1*dt1 + dw1*t1;
                             for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                             {
-                                double dpsi2 = w2*dT2(j, q) + dw2*T2(j, q);
-                                MU(j)    += mu_hat(p+q*nx) *    t1 * T2(j, q);
-                                dMUd1(j) += mu_hat(p+q*nx) * dpsi1 * T2(j, q);
+                                double dpsi2 = w2*dPHI2(j, q) + dw2*PHI2(j, q);
+                                MU(j)    += mu_hat(p+q*nx) *    t1 * PHI2(j, q);
+                                dMUd1(j) += mu_hat(p+q*nx) * dpsi1 * PHI2(j, q);
                                 dMUd2(j) += mu_hat(p+q*nx) *    t1 * dpsi2;
                             }    
                         }
@@ -1075,10 +1011,10 @@ void Aerodynamics::solve()
             nx = wingTarget->nx;
             ny = wingTarget->ny;
             mu_hat = wingTarget->mu_hat;
-            T1  = wingTarget->T1;
-            T2  = wingTarget->T2;
-            dT1 = wingTarget->dT1;
-            dT2 = wingTarget->dT2;
+            PHI1  = wingTarget->PHI1;
+            PHI2  = wingTarget->PHI2;
+            dPHI1 = wingTarget->dPHI1;
+            dPHI2 = wingTarget->dPHI2;
             switch (interface.targetCurve)
             {
                 case 0: // South
@@ -1099,10 +1035,10 @@ void Aerodynamics::solve()
                             double dpsi2 = w2*dt2 + dw2*t2;
                             for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                             {
-                                double dpsi1 = w1*dT1(i, p) + dw1*T1(i, p);
-                                MU(i)    += mu_hat(p+q*nx) * T1(i, p) * t2;
-                                dMUd1(i) += mu_hat(p+q*nx) *    dpsi1 * t2;
-                                dMUd2(i) += mu_hat(p+q*nx) * T1(i, p) * dpsi2;
+                                double dpsi1 = w1*dPHI1(i, p) + dw1*PHI1(i, p);
+                                MU(i)    += mu_hat(p+q*nx) * PHI1(i, p) * t2;
+                                dMUd1(i) += mu_hat(p+q*nx) *      dpsi1 * t2;
+                                dMUd2(i) += mu_hat(p+q*nx) * PHI1(i, p) * dpsi2;
                             }
                         }
                         MU(i)    *= w1;
@@ -1135,9 +1071,9 @@ void Aerodynamics::solve()
                             double dpsi1 = w1*dt1 + dw1*t1;
                             for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                             {
-                                double dpsi2 = w2*dT2(j, q) + dw2*T2(j, q);
-                                MU(j)    += mu_hat(p+q*nx) *    t1 * T2(j, q);
-                                dMUd1(j) += mu_hat(p+q*nx) * dpsi1 * T2(j, q);
+                                double dpsi2 = w2*dPHI2(j, q) + dw2*PHI2(j, q);
+                                MU(j)    += mu_hat(p+q*nx) *    t1 * PHI2(j, q);
+                                dMUd1(j) += mu_hat(p+q*nx) * dpsi1 * PHI2(j, q);
                                 dMUd2(j) += mu_hat(p+q*nx) *    t1 * dpsi2;
                             }
                         }
@@ -1171,10 +1107,10 @@ void Aerodynamics::solve()
                             double dpsi2 = w2*dt2 + dw2*t2;
                             for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                             {
-                                double dpsi1 = w1*dT1(i, p) + dw1*T1(i, p);
-                                MU(i)    += mu_hat(p+q*nx) * T1(i, p) * t2;
-                                dMUd1(i) += mu_hat(p+q*nx) *    dpsi1 * t2;
-                                dMUd2(i) += mu_hat(p+q*nx) * T1(i, p) * dpsi2;
+                                double dpsi1 = w1*dPHI1(i, p) + dw1*PHI1(i, p);
+                                MU(i)    += mu_hat(p+q*nx) * PHI1(i, p) * t2;
+                                dMUd1(i) += mu_hat(p+q*nx) *      dpsi1 * t2;
+                                dMUd2(i) += mu_hat(p+q*nx) * PHI1(i, p) * dpsi2;
                             }
                         }
                         MU(i)    *= w1;
@@ -1207,9 +1143,9 @@ void Aerodynamics::solve()
                             double dpsi1 = w1*dt1 + dw1*t1;
                             for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                             {
-                                double dpsi2 = w2*dT2(j, q) + dw2*T2(j, q);
-                                MU(j)    += mu_hat(p+q*nx) *    t1 * T2(j, q);
-                                dMUd1(j) += mu_hat(p+q*nx) * dpsi1 * T2(j, q);
+                                double dpsi2 = w2*dPHI2(j, q) + dw2*PHI2(j, q);
+                                MU(j)    += mu_hat(p+q*nx) *    t1 * PHI2(j, q);
+                                dMUd1(j) += mu_hat(p+q*nx) * dpsi1 * PHI2(j, q);
                                 dMUd2(j) += mu_hat(p+q*nx) *    t1 * dpsi2;
                             }
                         }

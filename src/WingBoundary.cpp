@@ -118,7 +118,7 @@ void Wing::muBoundarySouth(const size_t i)
             {
                 double t2 = phi2->left(q);
                 for (size_t p = 0; p < nx; p++)
-                    A(i, p+q*nx) = w1*T1(i, p) * w2*t2;
+                    A(i, p+q*nx) = w1*PHI1(i, p) * w2*t2;
             }
             b(i) = mu.south(i);
             break;
@@ -134,8 +134,8 @@ void Wing::muBoundarySouth(const size_t i)
                 double  t2 = phi2->left(q);
                 double dt2 = phi2->leftDerivative(q);
                 for (size_t p = 0; p < nx; p++)
-                    A(i, p+q*nx) = h_2s1_south(i)*(w1*dT1(i, p) + dw1*T1(i, p))*w2*t2
-                                 + h_2s2_south(i)*w1*T1(i, p)*(w2*dt2 + dw2*t2);
+                    A(i, p+q*nx) = h_2s1_south(i)*(w1*dPHI1(i, p) + dw1*PHI1(i, p))*w2*t2
+                                 + h_2s2_south(i)*w1*PHI1(i, p)*(w2*dt2 + dw2*t2);
             }
             b(i) = mu.south(i);
             break;
@@ -151,9 +151,9 @@ void Wing::muBoundarySouth(const size_t i)
                 double  t2 = phi2->left(q);
                 double dt2 = phi2->leftDerivative(q);
                 for (size_t p = 0; p < nx; p++)
-                    A(i, p+q*nx) = mu.r1South*w1*T1(i, p) * w2*t2
-                                 + mu.r2South*(h_2s1_south(i)*(w1*dT1(i, p) + dw1*T1(i, p))*w2*t2
-                                             + h_2s2_south(i)*w1*T1(i, p)*(w2*dt2 + dw2*t2));
+                    A(i, p+q*nx) = mu.r1South*w1*PHI1(i, p) * w2*t2
+                                 + mu.r2South*(h_2s1_south(i)*(w1*dPHI1(i, p) + dw1*PHI1(i, p))*w2*t2
+                                             + h_2s2_south(i)*w1*PHI1(i, p)*(w2*dt2 + dw2*t2));
             }
             b(i) = mu.south(i);
             break;
@@ -173,8 +173,8 @@ void Wing::muBoundarySouth(const size_t i)
                 double  t2 = phi2->left(q);
                 double dt2 = phi2->leftDerivative(q);
                 for (size_t p = 0; p < nx; p++)
-                    A(i, p+q*nx) = J11_inv*(w1*dT1(i, p) + dw1*T1(i, p))*w2*t2
-                                 + J21_inv*w1*T1(i, p)*(w2*dt2 + dw2*t2);
+                    A(i, p+q*nx) = J11_inv*(w1*dPHI1(i, p) + dw1*PHI1(i, p))*w2*t2
+                                 + J21_inv*w1*PHI1(i, p)*(w2*dt2 + dw2*t2);
             }
             b(i) = mu.south(i);
             break;
@@ -197,7 +197,7 @@ void Wing::muBoundaryNorth(const size_t i)
             {
                 double t2 = phi2->right(q);
                 for (size_t p = 0; p < nx; p++) 
-                    A(k, p+q*nx) = w1*T1(i, p) * w2*t2;
+                    A(k, p+q*nx) = w1*PHI1(i, p) * w2*t2;
             }
             b(k) = mu.north(i);
             break;
@@ -213,8 +213,8 @@ void Wing::muBoundaryNorth(const size_t i)
                 double  t2 = phi2->right(q);
                 double dt2 = phi2->rightDerivative(q);
                 for (size_t p = 0; p < nx; p++)
-                    A(k, p+q*nx) = h_2s1_north(i)*(w1*dT1(i, p) + dw1*T1(i, p))*w2*t2
-                                 + h_2s2_north(i)*w1*T1(i, p)*(w2*dt2 + dw2*t2);
+                    A(k, p+q*nx) = h_2s1_north(i)*(w1*dPHI1(i, p) + dw1*PHI1(i, p))*w2*t2
+                                 + h_2s2_north(i)*w1*PHI1(i, p)*(w2*dt2 + dw2*t2);
             }
             b(k) = mu.north(i);
             break;
@@ -230,9 +230,9 @@ void Wing::muBoundaryNorth(const size_t i)
                 double  t2 = phi2->right(q);
                 double dt2 = phi2->rightDerivative(q);
                 for (size_t p = 0; p < nx; p++)
-                    A(k, p+q*nx) = mu.r1North*w1*T1(i, p) * w2*t2
-                                 + mu.r2North*(h_2s1_north(i)*(w1*dT1(i, p) + dw1*T1(i, p))*w2*t2
-                                             + h_2s2_north(i)*w1*T1(i, p)*(w2*dt2 + dw2*t2));
+                    A(k, p+q*nx) = mu.r1North*w1*PHI1(i, p) * w2*t2
+                                 + mu.r2North*(h_2s1_north(i)*(w1*dPHI1(i, p) + dw1*PHI1(i, p))*w2*t2
+                                             + h_2s2_north(i)*w1*PHI1(i, p)*(w2*dt2 + dw2*t2));
             }
             b(k) = mu.north(i);
             break;
@@ -252,8 +252,8 @@ void Wing::muBoundaryNorth(const size_t i)
                 double  t2 = phi2->right(q);
                 double dt2 = phi2->rightDerivative(q);
                 for (size_t p = 0; p < nx; p++)
-                    A(k, p+q*nx) = J11_inv*(w1*dT1(i, p) + dw1*T1(i, p))*w2*t2
-                                 + J21_inv*w1*T1(i, p)*(w2*dt2 + dw2*t2);
+                    A(k, p+q*nx) = J11_inv*(w1*dPHI1(i, p) + dw1*PHI1(i, p))*w2*t2
+                                 + J21_inv*w1*PHI1(i, p)*(w2*dt2 + dw2*t2);
             }
             b(k) = mu.north(i);
             break;
@@ -276,7 +276,7 @@ void Wing::muBoundaryWest(const size_t j)
             {
                 double t1 = phi1->left(p);
                 for (size_t q = 0; q < ny; q++)
-                    A(k, p+q*nx) = w1*t1 * w2*T2(j, q);
+                    A(k, p+q*nx) = w1*t1 * w2*PHI2(j, q);
             }
             b(k) = mu.west(j);
             break;
@@ -292,8 +292,8 @@ void Wing::muBoundaryWest(const size_t j)
                 double  t1 = phi1->left(p);
                 double dt1 = phi1->leftDerivative(p);
                 for (size_t q = 0; q < ny; q++)
-                    A(k, p+q*nx) = h_1s1_west(j)*(w1*dt1 + dw1*t1)*w2*T2(j, q)
-                                 + h_1s2_west(j)*w1*t1*(w2*dT2(j, q) + dw2*T2(j, q));
+                    A(k, p+q*nx) = h_1s1_west(j)*(w1*dt1 + dw1*t1)*w2*PHI2(j, q)
+                                 + h_1s2_west(j)*w1*t1*(w2*dPHI2(j, q) + dw2*PHI2(j, q));
             }
             b(k) = mu.west(j);
             break;
@@ -309,9 +309,9 @@ void Wing::muBoundaryWest(const size_t j)
                 double  t1 = phi1->left(p);
                 double dt1 = phi1->leftDerivative(p);
                 for (size_t q = 0; q < ny; q++)
-                    A(k, p+q*nx) = mu.r1West*w1*t1 * w2*T2(j, q)
-                                 + mu.r2West*(h_1s1_west(j)*(w1*dt1 + dw1*t1)*w2*T2(j, q)
-                                            + h_1s2_west(j)*w1*t1*(w2*dT2(j, q) + dw2*T2(j, q)));
+                    A(k, p+q*nx) = mu.r1West*w1*t1 * w2*PHI2(j, q)
+                                 + mu.r2West*(h_1s1_west(j)*(w1*dt1 + dw1*t1)*w2*PHI2(j, q)
+                                            + h_1s2_west(j)*w1*t1*(w2*dPHI2(j, q) + dw2*PHI2(j, q)));
             }
             b(k) = mu.west(j);
             break;
@@ -331,8 +331,8 @@ void Wing::muBoundaryWest(const size_t j)
                 double  t1 = phi1->left(p);
                 double dt1 = phi1->leftDerivative(p);
                 for (size_t q = 0; q < ny; q++)
-                    A(k, p+q*nx) = J11_inv*(w1*dt1 + dw1*t1)*w2*T2(j, q)
-                                 + J21_inv*w1*t1*(w2*dT2(j, q) + dw2*T2(j, q));
+                    A(k, p+q*nx) = J11_inv*(w1*dt1 + dw1*t1)*w2*PHI2(j, q)
+                                 + J21_inv*w1*t1*(w2*dPHI2(j, q) + dw2*PHI2(j, q));
             }
             b(k) = mu.west(j);
             break;
@@ -355,7 +355,7 @@ void Wing::muBoundaryEast(const size_t j)
             {
                 double t1 = phi1->right(p);
                 for (size_t q = 0; q < ny; q++)
-                    A(k, p+q*nx) = w1*t1 * w2*T2(j, q);
+                    A(k, p+q*nx) = w1*t1 * w2*PHI2(j, q);
             }
             b(k) = mu.east(j);
             break;
@@ -371,8 +371,8 @@ void Wing::muBoundaryEast(const size_t j)
                 double  t1 = phi1->right(p);
                 double dt1 = phi1->rightDerivative(p);
                 for (size_t q = 0; q < ny; q++)
-                    A(k, p+q*nx) = h_1s1_east(j)*(w1*dt1 + dw1*t1)*w2*T2(j, q)
-                                 + h_1s2_east(j)*w1*t1*(w2*dT2(j, q) + dw2*T2(j, q));
+                    A(k, p+q*nx) = h_1s1_east(j)*(w1*dt1 + dw1*t1)*w2*PHI2(j, q)
+                                 + h_1s2_east(j)*w1*t1*(w2*dPHI2(j, q) + dw2*PHI2(j, q));
             }
             b(k) = mu.east(j);
             break;
@@ -388,9 +388,9 @@ void Wing::muBoundaryEast(const size_t j)
                 double  t1 = phi1->right(p);
                 double dt1 = phi1->rightDerivative(p);
                 for (size_t q = 0; q < ny; q++)
-                    A(k, p+q*nx) = mu.r1East*w1*t1 * w2*T2(j, q)
-                                 + mu.r2East*(h_1s1_east(j)*(w1*dt1 + dw1*t1)*w2*T2(j, q)
-                                            + h_1s2_east(j)*w1*t1*(w2*dT2(j, q) + dw2*T2(j, q)));
+                    A(k, p+q*nx) = mu.r1East*w1*t1 * w2*PHI2(j, q)
+                                 + mu.r2East*(h_1s1_east(j)*(w1*dt1 + dw1*t1)*w2*PHI2(j, q)
+                                            + h_1s2_east(j)*w1*t1*(w2*dPHI2(j, q) + dw2*PHI2(j, q)));
             }
             b(k) = mu.east(j);
             break;
@@ -410,8 +410,8 @@ void Wing::muBoundaryEast(const size_t j)
                 double  t1 = phi1->right(p);
                 double dt1 = phi1->rightDerivative(p);
                 for (size_t q = 0; q < ny; q++)
-                    A(k, p+q*nx) = J11_inv*(w1*dt1 + dw1*t1)*T2(j, q)
-                                 + J21_inv*t1*(w2*dT2(j, q) + dw2*T2(j, q));
+                    A(k, p+q*nx) = J11_inv*(w1*dt1 + dw1*t1)*PHI2(j, q)
+                                 + J21_inv*t1*(w2*dPHI2(j, q) + dw2*PHI2(j, q));
             }
             b(k) = mu.east(j);
             break;
