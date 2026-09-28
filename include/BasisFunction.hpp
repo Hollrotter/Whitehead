@@ -1,5 +1,6 @@
 #pragma once
 #include "gaujac.hpp"
+#include "enums.hpp"
 
 class BasisFunction
 {
@@ -9,6 +10,9 @@ protected:
     arma::vec xi;
     arma::vec xg;
     arma::vec wg;
+    arma::vec dxg;
+    arma::vec dwg;
+    Basis basis;
 public:
     BasisFunction() = default;
     BasisFunction(size_t _n, size_t _m) : n(_n), m(_m) {};
@@ -34,5 +38,8 @@ public:
     virtual inline arma::vec weightFunction(arma::vec) const = 0;
     virtual inline double weightFunctionDerivative(double) const = 0;
     virtual inline arma::vec weightFunctionDerivative(arma::vec) const = 0;
+    virtual inline double weightFunctionDerivativeFactor(double) const = 0;
+    virtual inline arma::vec weightFunctionDerivativeFactor(arma::vec) const = 0;
     friend class Wing;
+    friend class Aerodynamics;
 };

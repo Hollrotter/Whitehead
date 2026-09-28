@@ -19,7 +19,7 @@ std::pair<arma::vec, arma::vec> gaujac(size_t n, double alpha, double beta)
         else if (i == 1) // Initial guess for the second largest root.
         {
             double r1 = (4.1+alpha)/((1+alpha)*(1+0.156*alpha));
-            double r2 = 1+0.06*(n-8)*(1+0.12*alpha)/n;
+            double r2 = 1+0.06*(n-8.)*(1+0.12*alpha)/n;
             double r3 = 1+0.012*beta*(1+0.25*fabs(alpha))/n;
             z -= (1-z)*r1*r2*r3;
         }
@@ -33,16 +33,16 @@ std::pair<arma::vec, arma::vec> gaujac(size_t n, double alpha, double beta)
         else if (i == n-2) // Initial guess for the second smallest root.
         {
             double r1 = (1+0.235*beta)/(0.766+0.119*beta);
-            double r2 = 1/(1+0.639*(n-4)/(1+0.71*(n-4)));
+            double r2 = 1/(1+0.639*(n-4.)/(1+0.71*(n-4.)));
             double r3 = 1/(1+20*alpha/((7.5+alpha)*n*n));
-            z += (z-x(n-4))*r1*r2*r3;
+            z += (z-x(n-4.))*r1*r2*r3;
         }
         else if (i == n-1) // Initial guess for the smallest root.
         {
             double r1 = (1+0.37*beta)/(1.67+0.28*beta);
-            double r2 = 1/(1+0.22*(n-8)/n);
+            double r2 = 1/(1+0.22*(n-8.)/n);
             double r3 = 1/(1+8*alpha/((6.28+alpha)*n*n));
-            z += (z-x(n-3))*r1*r2*r3;
+            z += (z-x(n-3.))*r1*r2*r3;
         }
         else // Initial guess for the other roots.
             z = 3*x(i-1)-3*x(i-2)+x(i-3);
@@ -73,7 +73,10 @@ std::pair<arma::vec, arma::vec> gaujac(size_t n, double alpha, double beta)
             if (fabs(z-z1) <= EPS)
                 break;
             if (its == MAXIT)
-                throw("Too many iterations in gaujac!");
+            {
+                std::println("Too many iterations in gaujac!");
+                exit(EXIT_FAILURE);
+            }
         }
         x(i) = z;
         w(i) = exp(lgamma(alpha+n) + lgamma(beta+n) - lgamma(n+1) - lgamma(n+alphabeta+1))

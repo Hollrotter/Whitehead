@@ -177,7 +177,7 @@ void Wing::aerodynamicMatrix()
 {
     arma::vec theta = arma::linspace(0, arma::datum::tau, n_theta);
     double dtheta = theta(1) - theta(0);
-    arma::mat cT(n_theta, std::max(nx, ny)+1), sT(n_theta, std::max(nx, ny)+1);
+    arma::mat cT(n_theta, std::max(nx, ny)+1, arma::fill::none), sT(n_theta, std::max(nx, ny)+1, arma::fill::none);
     cT.col(0).fill(1);
     sT.col(0).fill(1);
     cT.col(1) = cos(theta);
@@ -205,34 +205,58 @@ void Wing::aerodynamicMatrix()
     arma::mat dJ22dxi_1 = D1*J22;
     arma::mat dJ22dxi_2 = J22*D2.t();
     arma::mat dJ21dxi_2 = dJ22dxi_1;
+    size_t i_min = 0, i_max = nx, j_min = 0, j_max = ny;
+    if (phi1->basis == Basis::T || phi1->basis == Basis::PA)
+        i_min = 1;
+    if (phi1->basis == Basis::T || phi1->basis == Basis::PB)
+        i_max = nx-1;
+    if (phi2->basis == Basis::T || phi2->basis == Basis::PA)
+        j_min = 1;
+    if (phi2->basis == Basis::T || phi2->basis == Basis::PB)
+        j_max = ny-1;
     switch (analysis)
     {
         case Analysis::linear:
         {
             #pragma omp parallel for
-            for (size_t j = 1; j < ny-1; j++) // Loop over Collocation Points in 2-direction
+            for (size_t j = j_min; j < j_max; j++) // Loop over Collocation Points in 2-direction
             {
                 auto [c2, d2] = phi2->powerSeriesWeight(j, bi_05);
 
                 double y_lower = std::max(-1., xi_2(j)-delta/2);
                 double y_upper = std::min(xi_2(j)+delta/2,  1.);
 
-                if (j == 1)
+                if (j == j_min)
                     y_lower =-1;
-                if (j == ny-2)
+                if (j == j_max-1)
                     y_upper = 1;
-                for (size_t i = 1; i < nx-1; i++) // Loop over Collocation Points in 1-direction
+
+                if (phi2->basis != Basis::T)
+                {
+                    if (y_lower == -1.)
+                        y_upper = std::min(2*xi_2(j)+1, 1.);
+                    else if (y_upper == 1.)
+                        y_lower = std::max(-1., 2*xi_2(j)-1);
+                }
+                for (size_t i = i_min; i < i_max; i++) // Loop over Collocation Points in 1-direction
                 {
                     auto [c1, d1] = phi1->powerSeriesWeight(i, bi_05);
 
                     double x_left  = std::max(-1., xi_1(i)-delta/2);
                     double x_right = std::min(xi_1(i)+delta/2,  1.);
 
-                    if (i == 1)
+                    if (i == i_min)
                         x_left  =-1;
-                    if (i == nx-2)
+                    if (i == i_max-1)
                         x_right = 1;
 
+                    if (phi1->basis != Basis::T)
+                    {
+                        if (x_left == -1.)
+                            x_right = std::min(2*xi_1(i)+1, 1.);
+                        else if (x_right == 1.)
+                            x_left  = std::max(-1., 2*xi_1(i)-1);
+                    }
                     arma::vec::fixed<2> dXdxi_1       = {J11(i, j), J21(i, j)};
                     arma::vec::fixed<2> dXdxi_2       = {J12(i, j), J22(i, j)};
                     arma::vec::fixed<2> d2Xdxi_12     = {dJ11dxi_1(i, j), dJ21dxi_1(i, j)};
@@ -379,8 +403,8 @@ void Wing::aerodynamicMatrix()
                                         {
                                             double t2 = phi2->left(q);
                                             double psi2 = w2*t2;
-                                            for (size_t j = 1; j < ny-1; j++)
-                                                for (size_t i = 1; i < nx-1; i++)
+                                            for (size_t j = j_min; j < j_max; j++)
+                                                for (size_t i = i_min; i < i_max; i++)
                                                 {
                                                     size_t k = i + j*nx;
                                                     arma::vec::fixed<2> r = {xW - xC(i, j), yw(ii) - yC(i, j)};
@@ -420,8 +444,8 @@ void Wing::aerodynamicMatrix()
                                         {
                                             double t1 = phi1->right(p);
                                             double psi1 = w1*t1;
-                                            for (size_t j = 1; j < ny-1; j++)
-                                                for (size_t i = 1; i < nx-1; i++)
+                                            for (size_t j = j_min; j < j_max; j++)
+                                                for (size_t i = i_min; i < i_max; i++)
                                                 {
                                                     size_t k = i + j*nx;
                                                     arma::vec::fixed<2> r = {xW - xC(i, j), yw(jj) - yC(i, j)};
@@ -461,8 +485,8 @@ void Wing::aerodynamicMatrix()
                                         {
                                             double t2 = phi2->right(q);
                                             double psi2 = w2*t2;
-                                            for (size_t j = 1; j < ny-1; j++)
-                                                for (size_t i = 1; i < nx-1; i++)
+                                            for (size_t j = j_min; j < j_max; j++)
+                                                for (size_t i = i_min; i < i_max; i++)
                                                 {
                                                     size_t k = i + j*nx;
                                                     arma::vec::fixed<2> r = {xW - xC(i, j), yw(ii) - yC(i, j)};
@@ -502,8 +526,8 @@ void Wing::aerodynamicMatrix()
                                         {
                                             double t1 = phi1->left(p);
                                             double psi1 = w1*t1;
-                                            for (size_t j = 1; j < ny-1; j++)
-                                                for (size_t i = 1; i < nx-1; i++)
+                                            for (size_t j = j_min; j < j_max; j++)
+                                                for (size_t i = i_min; i < i_max; i++)
                                                 {
                                                     size_t k = i + j*nx;
                                                     arma::vec::fixed<2> r = {xW - xC(i, j), yw(jj) - yC(i, j)};
@@ -571,8 +595,8 @@ void Wing::aerodynamicMatrix()
                                 double dmudx1 = dpsi1 *  psi2;
                                 double dmudx2 =  psi1 * dpsi2;
                                 #pragma omp parallel for default(shared)
-                                for (size_t j = 1; j < ny-1; j++) // Loop over Collocation Points in 2-direction
-                                    for (size_t i = 1; i < nx-1; i++) // Loop over Collocation Points in 1-direction
+                                for (size_t j = j_min; j < j_max; j++) // Loop over Collocation Points in 2-direction
+                                    for (size_t i = i_min; i < i_max; i++) // Loop over Collocation Points in 1-direction
                                     {
                                         arma::vec::fixed<2> r = {x_gl(ii, jj) - xC(i, j), y_gl(ii, jj) - yC(i, j)};
                                         double r3 = pow(norm(r), 3);
@@ -637,8 +661,8 @@ void Wing::aerodynamicMatrix()
                                             {
                                                 double t2 = phi2->left(q);
                                                 double psi2 = w2*t2;
-                                                for (size_t j = 1; j < ny-1; j++)
-                                                    for (size_t i = 1; i < nx-1; i++)
+                                                for (size_t j = j_min; j < j_max; j++)
+                                                    for (size_t i = i_min; i < i_max; i++)
                                                     {
                                                         size_t k = i + j*nx;
                                                         arma::vec::fixed<2> r = {xW - xC(i, j), yw(ii) - yC(i, j)};
@@ -678,8 +702,8 @@ void Wing::aerodynamicMatrix()
                                             {
                                                 double t1 = phi1->right(p);
                                                 double psi1 = w1*t1;
-                                                for (size_t j = 1; j < ny-1; j++)
-                                                    for (size_t i = 1; i < nx-1; i++)
+                                                for (size_t j = j_min; j < j_max; j++)
+                                                    for (size_t i = i_min; i < i_max; i++)
                                                     {
                                                         size_t k = i + j*nx;
                                                         arma::vec::fixed<2> r = {xW - xC(i, j), yw(jj) - yC(i, j)};
@@ -719,8 +743,8 @@ void Wing::aerodynamicMatrix()
                                             {
                                                 double t2 = phi2->right(q);
                                                 double psi2 = w2*t2;
-                                                for (size_t j = 1; j < ny-1; j++)
-                                                    for (size_t i = 1; i < nx-1; i++)
+                                                for (size_t j = j_min; j < j_max; j++)
+                                                    for (size_t i = i_min; i < i_max; i++)
                                                     {
                                                         size_t k = i + j*nx;
                                                         arma::vec::fixed<2> r = {xW - xC(i, j), yw(ii) - yC(i, j)};
@@ -760,8 +784,8 @@ void Wing::aerodynamicMatrix()
                                             {
                                                 double t1 = phi1->left(p);
                                                 double psi1 = w1*t1;
-                                                for (size_t j = 1; j < ny-1; j++)
-                                                    for (size_t i = 1; i < nx-1; i++)
+                                                for (size_t j = j_min; j < j_max; j++)
+                                                    for (size_t i = i_min; i < i_max; i++)
                                                     {
                                                         size_t k = i + j*nx;
                                                         arma::vec::fixed<2> r = {xW - xC(i, j), yw(jj) - yC(i, j)};
@@ -791,29 +815,44 @@ void Wing::aerodynamicMatrix()
             arma::mat d2zdxi_22 = dzdxi_2*D2.t();
 
             // #pragma omp parallel // This one does not work properly for some reason!
-            for (size_t j = 1; j < ny-1; j++) // Loop over Collocation Points in 2-direction
+            for (size_t j = j_min; j < j_max; j++) // Loop over Collocation Points in 2-direction
             {
                 auto [c2, d2] = phi2->powerSeriesWeight(j, bi_05);
 
                 double y_lower = std::max(-1., xi_2(j)-delta/2);
                 double y_upper = std::min(xi_2(j)+delta/2,  1.);
 
-                if (j == 1)
+                if (j == j_min)
                     y_lower =-1;
-                if (j == ny-2)
+                if (j == j_max-1)
                     y_upper = 1;
-                for (size_t i = 1; i < nx-1; i++) // Loop over Collocation Points in 1-direction
+
+                if (phi2->basis != Basis::T)
+                {
+                    if (y_lower == -1.)
+                        y_upper = std::min(2*xi_2(j)+1, 1.);
+                    else if (y_upper == 1.)
+                        y_lower = std::max(-1., 2*xi_2(j)-1);
+                }
+                for (size_t i = i_min; i < i_max; i++) // Loop over Collocation Points in 1-direction
                 {
                     auto [c1, d1] = phi1->powerSeriesWeight(i, bi_05);
 
                     double x_left  = std::max(-1., xi_1(i)-delta/2);
                     double x_right = std::min(xi_1(i)+delta/2,  1.);
 
-                    if (i == 1)
+                    if (i == i_min)
                         x_left  =-1;
-                    if (i == nx-2)
+                    if (i == i_max)
                         x_right = 1;
-
+                    
+                    if (phi1->basis != Basis::T)
+                    {
+                        if (x_left == -1.)
+                            x_right = std::min(2*xi_1(i)+1, 1.);
+                        else if (x_right == 1.)
+                            x_left  = std::max(-1., 2*xi_1(i)-1);
+                    }
                     arma::vec::fixed<3> dXdxi_1       = {J11(i, j), J21(i, j), dzdxi_1(i, j)};
                     arma::vec::fixed<3> dXdxi_2       = {J12(i, j), J22(i, j), dzdxi_2(i, j)};
                     arma::vec::fixed<3> d2Xdxi_12     = {dJ11dxi_1(i, j), dJ21dxi_1(i, j), d2zdxi_12(i, j)};
@@ -905,8 +944,8 @@ void Wing::aerodynamicMatrix()
                                 for (size_t ii = 1; ii < dmudxi_1.n_cols; ii++)
                                 {
                                     gamma_0 = {dmudy(n, ii)*nC(k, 2) - dmudz(n, ii)*nC(k, 1),
-                                                dmudz(n, ii)*nC(k, 0) - dmudx(n, ii)*nC(k, 2),
-                                                dmudx(n, ii)*nC(k, 1) - dmudy(n, ii)*nC(k, 0)};
+                                               dmudz(n, ii)*nC(k, 0) - dmudx(n, ii)*nC(k, 2),
+                                               dmudx(n, ii)*nC(k, 1) - dmudy(n, ii)*nC(k, 0)};
                                     F_1 = cross(gamma_0, C1);
                                     F_2 = cross(gamma_0, C2);
                                     F_3 = cross(gamma_0, C3);
@@ -994,8 +1033,8 @@ void Wing::aerodynamicMatrix()
                                         {
                                             double t2 = phi2->left(q);
                                             double psi2 = w2*t2;
-                                            for (size_t j = 1; j < ny-1; j++)
-                                                for (size_t i = 1; i < nx-1; i++)
+                                            for (size_t j = j_min; j < j_max; j++)
+                                                for (size_t i = i_min; i < i_max; i++)
                                                 {
                                                     size_t k = i + j*nx;
                                                     arma::vec::fixed<3> r = {xW - xC(i, j), yw(ii) - yC(i, j), zW - zC(i, j)};
@@ -1060,8 +1099,8 @@ void Wing::aerodynamicMatrix()
                                         {
                                             double t1 = phi1->right(p);
                                             double psi1 = w1*t1;
-                                            for (size_t j = 1; j < ny-1; j++)
-                                                for (size_t i = 1; i < nx-1; i++)
+                                            for (size_t j = j_min; j < j_max; j++)
+                                                for (size_t i = i_min; i < i_max; i++)
                                                 {
                                                     size_t k = i + j*nx;
                                                     arma::vec::fixed<3> r = {xW - xC(i, j), yw(jj) - yC(i, j), zW - zC(i, j)};
@@ -1126,8 +1165,8 @@ void Wing::aerodynamicMatrix()
                                         {
                                             double t2 = phi2->right(q);
                                             double psi2 = w2*t2;
-                                            for (size_t j = 1; j < ny-1; j++)
-                                                for (size_t i = 1; i < nx-1; i++)
+                                            for (size_t j = j_min; j < j_max; j++)
+                                                for (size_t i = i_min; i < i_max; i++)
                                                 {
                                                     size_t k = i + j*nx;
                                                     arma::vec::fixed<3> r = {xW - xC(i, j), yw(ii) - yC(i, j), zW - zC(i, j)};
@@ -1192,8 +1231,8 @@ void Wing::aerodynamicMatrix()
                                         {
                                             double t1 = phi1->left(p);
                                             double psi1 = w1*t1;
-                                            for (size_t j = 1; j < ny-1; j++)
-                                                for (size_t i = 1; i < nx-1; i++)
+                                            for (size_t j = j_min; j < j_max; j++)
+                                                for (size_t i = i_min; i < i_max; i++)
                                                 {
                                                     size_t k = i + j*nx;
                                                     arma::vec::fixed<3> r = {xW - xC(i, j), yw(jj) - yC(i, j), zW - zC(i, j)};
@@ -1254,8 +1293,8 @@ void Wing::aerodynamicMatrix()
                 arma::mat e_gl = e_c_gl.slice(0)%e_c_gl.slice(2) - pow(e_c_gl.slice(1), 2);
                 arma::mat sqrt_a = sqrt(e_gl%(1 + ec_gl.slice(0)%pow(dz_gldx1, 2) + 2*ec_gl.slice(1)%dz_gldx1%dz_gldx2 + ec_gl.slice(2)%pow(dz_gldx2, 2)));
                 #pragma omp parallel for default(shared)
-                for (size_t j = 1; j < ny-1; j++) // Loop over Collocation Points in 2-direction
-                    for (size_t i = 1; i < nx-1; i++) // Loop over Collocation Points in 1-direction
+                for (size_t j = j_min; j < j_max; j++) // Loop over Collocation Points in 2-direction
+                    for (size_t i = i_min; i < i_max; i++) // Loop over Collocation Points in 1-direction
                         for (size_t ii = 0; ii < nx; ii++)
                         {
                             double  w1 = phi1->weightFunction(x1_gl(ii));
@@ -1376,8 +1415,8 @@ void Wing::aerodynamicMatrix()
                                             {
                                                 double t2 = phi2->left(q);
                                                 double psi2 = w2*t2;
-                                                for (size_t j = 1; j < ny-1; j++)
-                                                    for (size_t i = 1; i < nx-1; i++)
+                                                for (size_t j = j_min; j < j_max; j++)
+                                                    for (size_t i = i_min; i < i_max; i++)
                                                     {
                                                         size_t k = i + j*nx;
                                                         arma::vec::fixed<3> r = {xW - xC(i, j), yw(ii) - yC(i, j), zW - zC(i, j)};
@@ -1442,8 +1481,8 @@ void Wing::aerodynamicMatrix()
                                             {
                                                 double t1 = phi1->right(p);
                                                 double psi1 = w1*t1;
-                                                for (size_t j = 1; j < ny-1; j++)
-                                                    for (size_t i = 1; i < nx-1; i++)
+                                                for (size_t j = j_min; j < j_max; j++)
+                                                    for (size_t i = i_min; i < i_max; i++)
                                                     {
                                                         size_t k = i + j*nx;
                                                         arma::vec::fixed<3> r = {xW - xC(i, j), yw(jj) - yC(i, j), zW - zC(i, j)};
@@ -1508,8 +1547,8 @@ void Wing::aerodynamicMatrix()
                                             {
                                                 double t2 = phi2->right(q);
                                                 double psi2 = w2*t2;
-                                                for (size_t j = 1; j < ny-1; j++)
-                                                    for (size_t i = 1; i < nx-1; i++)
+                                                for (size_t j = j_min; j < j_max; j++)
+                                                    for (size_t i = i_min; i < i_max; i++)
                                                     {
                                                         size_t k = i + j*nx;
                                                         arma::vec::fixed<3> r = {xW - xC(i, j), yw(ii) - yC(i, j), zW - zC(i, j)};
@@ -1574,8 +1613,8 @@ void Wing::aerodynamicMatrix()
                                             {
                                                 double t1 = phi1->left(p);
                                                 double psi1 = w1*t1;
-                                                for (size_t j = 1; j < ny-1; j++)
-                                                    for (size_t i = 1; i < nx-1; i++)
+                                                for (size_t j = j_min; j < j_max; j++)
+                                                    for (size_t i = i_min; i < i_max; i++)
                                                     {
                                                         size_t k = i + j*nx;
                                                         arma::vec::fixed<3> r = {xW - xC(i, j), yw(jj) - yC(i, j), zW - zC(i, j)};

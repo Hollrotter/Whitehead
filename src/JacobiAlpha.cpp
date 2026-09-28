@@ -2,8 +2,10 @@
 
 JacobiAlpha::JacobiAlpha(size_t _n, size_t _m) : BasisFunction{_n, _m}
 {
+    basis = Basis::PA;
     std::tie(xg, wg) = gaujac(n, 0.5, 0.0);
     xi = xg;
+    std::tie(dxg, dwg) = gaujac(n, -0.5, 0.0);
 };
 
 std::pair<arma::vec, arma::vec> JacobiAlpha::powerSeries(size_t k, double x) const
@@ -15,7 +17,7 @@ std::pair<arma::vec, arma::vec> JacobiAlpha::powerSeries(size_t k, double x) con
         for (size_t kk = 0; kk <= pp; kk++)
             c(kk) += g * bi[pp][kk]*pow(-1, kk);
     }
-    c *= tgamma(1.5+k)/factorial(k)/tgamma(1.5+k);
+    c /= factorial(k);
     for (size_t s = 0; s <= k; s++)
     {
         arma::vec F(k+1);
@@ -37,10 +39,10 @@ std::pair<arma::vec, arma::vec> JacobiAlpha::powerSeries(size_t k, double x) con
 std::pair<arma::vec, arma::vec> JacobiAlpha::powerSeriesWeight(size_t i, arma::mat &bi_05) const
 {
     arma::vec c(m+1), d(m+1);
-    for (size_t ii = 0; ii <= m; ii++)
+    for (size_t k = 0; k <= m; k++)
     {
-        c(ii) = bi_05(1, ii) * pow(-1, m) / pow(1-xi(i), ii-0.5);
-        d(ii) = bi_05(0, ii) * pow(-1, m) / pow(1-xi(i), ii+0.5)/2;
+        c(k) = bi_05(1, k) * pow(-1, k) / pow(1-xi(i), k-0.5);
+        d(k) =-bi_05(0, k) * pow(-1, k) / pow(1-xi(i), k+0.5)/2;
     }
     return std::make_pair(c, d);
 }

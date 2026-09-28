@@ -88,5 +88,13 @@ public:
     {
         return -x/sqrt(1 - x%x);
     }
+    virtual inline double weightFunctionDerivativeFactor(double x) const override
+    {
+        return -x;
+    }
+    virtual inline arma::vec weightFunctionDerivativeFactor(arma::vec x) const override
+    {
+        return -x;
+    }
     friend class Wing;
 };

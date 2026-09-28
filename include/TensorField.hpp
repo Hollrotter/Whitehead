@@ -4,7 +4,7 @@
 
 class TensorField : public arma::mat
 {
-    BC  westBC = BC::None; // Boundary type of wester boundary
+    BC  westBC = BC::None; // Boundary type of western boundary
     BC  eastBC = BC::None; // Boundary type of eastern boundary
     BC northBC = BC::None; // Boundary type of northern boundary
     BC southBC = BC::None; // Boundary type of southern boundary
@@ -63,6 +63,7 @@ public:
     }
     friend class Membrane;
     friend class Wing;
+    friend class Aerodynamics;
 };
 
 inline arma::mat  operator+(TensorField A, const TensorField &B)

@@ -95,6 +95,14 @@ public:
     {
         return -0.5/sqrt(1 - x);
     }
+    virtual inline double weightFunctionDerivativeFactor(double _) const override
+    {
+        return -0.5;
+    }
+    virtual inline arma::vec weightFunctionDerivativeFactor(arma::vec x) const override
+    {
+        return -0.5*arma::ones(x.size());
+    }
     friend class Wing;
 private:
     size_t factorial(size_t k) const

@@ -106,10 +106,7 @@ public:
         return moment;
     }
     // Gets the area
-    double get_area() const
-    {
-        return area;
-    }
+    double get_area();
     // Gets the difference of nondimensional pressure
     arma::mat get_dcp() const
     {

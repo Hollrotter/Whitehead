@@ -2,9 +2,11 @@
 
 ChebyshevU::ChebyshevU(size_t _n, size_t _m) : BasisFunction{_n, _m}
 {
+    basis = Basis::U;
     xi =-cos(arma::datum::pi*(arma::regspace(0, n-1)+1)/(n+1));
     xg = xi;
     wg = arma::datum::pi/(n+1)*(1-xi%xi);
+    std::tie(dxg, dwg) = gaujac(n, -0.5, -0.5);
 }
 
 std::pair<arma::vec, arma::vec> ChebyshevU::powerSeries(size_t k, double x) const

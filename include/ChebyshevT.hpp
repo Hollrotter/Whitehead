@@ -89,5 +89,13 @@ public:
     {
         return arma::zeros(x.size());
     }
+    virtual inline double weightFunctionDerivativeFactor(double _) const override
+    {
+        return 0;
+    }
+    virtual inline arma::vec weightFunctionDerivativeFactor(arma::vec x) const override
+    {
+        return arma::zeros(x.size());
+    }
     friend class Wing;
 };

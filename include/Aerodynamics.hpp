@@ -65,7 +65,7 @@ public:
     }
     double get_area()
     {
-        return std::accumulate(wings.begin(), wings.end(), 0.0, [](double a, Wing* w){return a + w->area;});
+        return std::accumulate(wings.begin(), wings.end(), 0.0, [](double a, Wing* w){return a + w->get_area();});
     }
     void output(const std::string&);
     void operator()(Symmetry _sym)

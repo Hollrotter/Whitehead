@@ -8,6 +8,14 @@ enum class Analysis
     nonlinear // Nonlinear analysis
 };
 
+enum class Basis
+{
+    T, // Chebyshev Polynomial of the first kind
+    U, // Chebyshev Polynomial of the second kind
+    PA, // Jacobi Polynomial with alpha = 0,5 and beta = 0
+    PB  // Jacobi Polynomial with alpha = 0 and beta = 0,5
+};
+
 // Boundary type
 enum class BC
 {

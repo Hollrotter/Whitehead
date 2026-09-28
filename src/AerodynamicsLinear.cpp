@@ -6,8 +6,24 @@ void Aerodynamics::linear()
     for (auto &wing:wings)
     {
         wing->analysis = Analysis::linear;
-        wing->phi1.reset(new ChebyshevT(wing->nx, wing->mx));
-        wing->phi2.reset(new ChebyshevT(wing->ny, wing->my));
+        if (wing->mu.westBC == BC::None && wing->mu.eastBC == BC::None
+            && wing->chi[3]->curveType == CurveType::Boundary && wing->chi[1]->curveType == CurveType::Boundary)
+            wing->phi1.reset(new ChebyshevU(wing->nx, wing->mx));
+        else if (wing->mu.westBC == BC::None && wing->chi[3]->curveType == CurveType::Boundary)
+            wing->phi1.reset(new JacobiBeta(wing->nx, wing->mx));
+        else if (wing->mu.eastBC == BC::None && wing->chi[1]->curveType == CurveType::Boundary)
+            wing->phi1.reset(new JacobiAlpha(wing->nx, wing->mx));
+        else
+            wing->phi1.reset(new ChebyshevT(wing->nx, wing->mx));
+        if (wing->mu.southBC == BC::None && wing->mu.northBC == BC::None
+            && wing->chi[0]->curveType == CurveType::Boundary && wing->chi[2]->curveType == CurveType::Boundary)
+            wing->phi2.reset(new ChebyshevU(wing->ny, wing->my));
+        else if (wing->mu.southBC == BC::None && wing->chi[0]->curveType == CurveType::Boundary)
+            wing->phi2.reset(new JacobiBeta(wing->ny, wing->my));
+        else if (wing->mu.northBC == BC::None && wing->chi[2]->curveType == CurveType::Boundary)
+            wing->phi2.reset(new JacobiAlpha(wing->ny, wing->my));
+        else
+            wing->phi2.reset(new ChebyshevT(wing->ny, wing->my));
         wing->init();
     }
     // Influence of the wing surfaces on each other
@@ -33,6 +49,15 @@ void Aerodynamics::linear()
                 arma::mat xC = wings[tD]->xC;
                 arma::mat yC = wings[tD]->yC;
                 bw(tD, sD).zeros(wings[tD]->nxy, wings[sD]->nxy);
+                size_t i_min = 0, i_max = wings[tD]->nx, j_min = 0, j_max = wings[tD]->ny;
+                if (wings[tD]->phi1->basis == Basis::T || wings[tD]->phi1->basis == Basis::PA)
+                    i_min = 1;
+                if (wings[tD]->phi1->basis == Basis::T || wings[tD]->phi1->basis == Basis::PB)
+                    i_max = wings[tD]->nx-1;
+                if (wings[tD]->phi2->basis == Basis::T || wings[tD]->phi2->basis == Basis::PA)
+                    j_min = 1;
+                if (wings[tD]->phi2->basis == Basis::T || wings[tD]->phi2->basis == Basis::PB)
+                    j_max = wings[tD]->ny-1;
                 for (size_t jj = 0; jj < wings[sD]->ny; jj++) // Loop over Legendre nodes 2-direction of source
                 {
                     double  w2 = wings[sD]->phi2->weightFunction(x2_gl(jj));
@@ -63,8 +88,8 @@ void Aerodynamics::linear()
                                 double dpsi1 = w1*dt1 + dw1*t1;
                                 double dmudx1 = dpsi1 *  psi2;
                                 double dmudx2 =  psi1 * dpsi2;
-                                for (size_t j = 1; j < wings[tD]->ny-1; j++) // Loop over Collocation Points in 2-direction of target
-                                    for (size_t i = 1; i < wings[tD]->nx-1; i++) // Loop over Collocation Points in 1-direction of target
+                                for (size_t j = j_min; j < j_max; j++) // Loop over Collocation Points in 2-direction of target
+                                    for (size_t i = i_min; i < i_max; i++) // Loop over Collocation Points in 1-direction of target
                                     {
                                         size_t k = i+j*wings[tD]->nx;
                                         arma::vec::fixed<2> r = {x_gl(ii, jj) - xC(i, j), y_gl(ii, jj) - yC(i, j)};
@@ -130,8 +155,8 @@ void Aerodynamics::linear()
                                             {
                                                 double t2 = wings[sD]->phi2->left(q);
                                                 double psi2 = w2*t2;
-                                                for (size_t j = 1; j < wings[tD]->ny-1; j++)
-                                                    for (size_t i = 1; i < wings[tD]->nx-1; i++)
+                                                for (size_t j = j_min; j < j_max; j++)
+                                                    for (size_t i = i_min; i < i_max; i++)
                                                     {
                                                         size_t k = i + j*wings[tD]->nx;
                                                         arma::vec::fixed<2> r = {xW - xC(i, j), yw(ii) - yC(i, j)};
@@ -171,8 +196,8 @@ void Aerodynamics::linear()
                                             {
                                                 double t1 = wings[sD]->phi1->right(p);
                                                 double psi1 = w1*t1;
-                                                for (size_t j = 1; j < wings[tD]->ny-1; j++)
-                                                    for (size_t i = 1; i < wings[tD]->nx-1; i++)
+                                                for (size_t j = j_min; j < j_max; j++)
+                                                    for (size_t i = i_min; i < i_max; i++)
                                                     {
                                                         size_t k = i + j*wings[tD]->nx;
                                                         arma::vec::fixed<2> r = {xW - xC(i, j), yw(jj) - yC(i, j)};
@@ -212,8 +237,8 @@ void Aerodynamics::linear()
                                             {
                                                 double t2 = wings[sD]->phi2->right(q);
                                                 double psi2 = w2*t2;
-                                                for (size_t j = 1; j < wings[tD]->ny-1; j++)
-                                                    for (size_t i = 1; i < wings[tD]->nx-1; i++)
+                                                for (size_t j = j_min; j < j_max; j++)
+                                                    for (size_t i = i_min; i < i_max; i++)
                                                     {
                                                         size_t k = i + j*wings[tD]->nx;
                                                         arma::vec::fixed<2> r = {xW - xC(i, j), yw(ii) - yC(i, j)};
@@ -253,8 +278,8 @@ void Aerodynamics::linear()
                                             {
                                                 double t1 = wings[sD]->phi1->left(p);
                                                 double psi1 = w1*t1;
-                                                for (size_t j = 1; j < wings[tD]->ny-1; j++)
-                                                    for (size_t i = 1; i < wings[tD]->nx-1; i++)
+                                                for (size_t j = j_min; j < j_max; j++)
+                                                    for (size_t i = i_min; i < i_max; i++)
                                                     {
                                                         size_t k = i + j*wings[tD]->nx;
                                                         arma::vec::fixed<2> r = {xW - xC(i, j), yw(jj) - yC(i, j)};
@@ -298,7 +323,15 @@ void Aerodynamics::linear()
                     dy_gldx2 =-dy_gldx2;
                     arma::mat xC = wings[tD]->xC;
                     arma::mat yC = wings[tD]->yC;
-
+                    size_t i_min = 0, i_max = wings[tD]->nx, j_min = 0, j_max = wings[tD]->ny;
+                    if (wings[tD]->phi1->basis == Basis::T || wings[tD]->phi1->basis == Basis::PA)
+                        i_min = 1;
+                    if (wings[tD]->phi1->basis == Basis::T || wings[tD]->phi1->basis == Basis::PB)
+                        i_max = wings[tD]->nx-1;
+                    if (wings[tD]->phi2->basis == Basis::T || wings[tD]->phi2->basis == Basis::PA)
+                        j_min = 1;
+                    if (wings[tD]->phi2->basis == Basis::T || wings[tD]->phi2->basis == Basis::PB)
+                        j_max = wings[tD]->ny-1;
                     for (size_t jj = 0; jj < wings[sD]->ny; jj++) // Loop over Legendre nodes 2-direction of source
                     {
                         double  w2 = wings[sD]->phi2->weightFunction(x2_gl(jj));
@@ -329,8 +362,8 @@ void Aerodynamics::linear()
                                     double dpsi1 = w1*dt1 + dw1*t1;
                                     double dmudx1 = dpsi1 *  psi2;
                                     double dmudx2 =  psi1 * dpsi2;
-                                    for (size_t j = 1; j < wings[tD]->ny-1; j++) // Loop over Collocation Points in 2-direction of target
-                                        for (size_t i = 1; i < wings[tD]->nx-1; i++) // Loop over Collocation Points in 1-direction of target
+                                    for (size_t j = j_min; j < j_max; j++) // Loop over Collocation Points in 2-direction of target
+                                        for (size_t i = i_min; i < i_max; i++) // Loop over Collocation Points in 1-direction of target
                                         {
                                             size_t k = i+j*wings[tD]->nx;
                                             arma::vec::fixed<2> r = {x_gl(ii, jj) - xC(i, j), y_gl(ii, jj) - yC(i, j)};
@@ -396,8 +429,8 @@ void Aerodynamics::linear()
                                                 {
                                                     double t2 = wings[sD]->phi2->left(q);
                                                     double psi2 = w2*t2;
-                                                    for (size_t j = 1; j < wings[tD]->ny-1; j++)
-                                                        for (size_t i = 1; i < wings[tD]->nx-1; i++)
+                                                    for (size_t j = j_min; j < j_max; j++)
+                                                        for (size_t i = i_min; i < i_max; i++)
                                                         {
                                                             size_t k = i + j*wings[tD]->nx;
                                                             arma::vec::fixed<2> r = {xW - xC(i, j), yw(ii) - yC(i, j)};
@@ -437,8 +470,8 @@ void Aerodynamics::linear()
                                                 {
                                                     double t1 = wings[sD]->phi1->right(p);
                                                     double psi1 = w1*t1;
-                                                    for (size_t j = 1; j < wings[tD]->ny-1; j++)
-                                                        for (size_t i = 1; i < wings[tD]->nx-1; i++)
+                                                    for (size_t j = j_min; j < j_max; j++)
+                                                        for (size_t i = i_min; i < i_max; i++)
                                                         {
                                                             size_t k = i + j*wings[tD]->nx;
                                                             arma::vec::fixed<2> r = {xW - xC(i, j), yw(jj) - yC(i, j)};
@@ -478,8 +511,8 @@ void Aerodynamics::linear()
                                                 {
                                                     double t2 = wings[sD]->phi2->right(q);
                                                     double psi2 = w2*t2;
-                                                    for (size_t j = 1; j < wings[tD]->ny-1; j++)
-                                                        for (size_t i = 1; i < wings[tD]->nx-1; i++)
+                                                    for (size_t j = j_min; j < j_max; j++)
+                                                        for (size_t i = i_min; i < i_max; i++)
                                                         {
                                                             size_t k = i + j*wings[tD]->nx;
                                                             arma::vec::fixed<2> r = {xW - xC(i, j), yw(ii) - yC(i, j)};
@@ -519,8 +552,8 @@ void Aerodynamics::linear()
                                                 {
                                                     double t1 = wings[sD]->phi1->left(p);
                                                     double psi1 = w1*t1;
-                                                    for (size_t j = 1; j < wings[tD]->ny-1; j++)
-                                                        for (size_t i = 1; i < wings[tD]->nx-1; i++)
+                                                    for (size_t j = j_min; j < j_max; j++)
+                                                        for (size_t i = i_min; i < i_max; i++)
                                                         {
                                                             size_t k = i + j*wings[tD]->nx;
                                                             arma::vec::fixed<2> r = {xW - xC(i, j), yw(jj) - yC(i, j)};

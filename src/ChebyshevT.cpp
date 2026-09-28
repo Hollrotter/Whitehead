@@ -2,9 +2,12 @@
 
 ChebyshevT::ChebyshevT(size_t _n, size_t _) : BasisFunction{_n, 0}
 {
+    basis = Basis::T;
     xi = Chebyshev::gauss(n);
     xg.zeros(n);
     wg.zeros(n);
+    dxg.zeros(n);
+    dwg.zeros(n);
     for (size_t i = 0; i < n; i++)
     {
         fastgl::QuadPair gl = fastgl::GLPair(n, i+1);
