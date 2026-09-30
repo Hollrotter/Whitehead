@@ -2,7 +2,7 @@
 
 int main()
 {
-    switch (1)
+    switch (2)
     {
         case 0: // Rectangle
         {
@@ -173,7 +173,9 @@ int main()
                 w[i].wake(&wk);
                 w[i](Symmetry::y);
                 w[i].nonlinear();
-                std::cout << w[i].get_lift() << ' ' << w[i].get_moment() << std::endl;
+                printf("%13.10f ",  w[i].get_area());
+                printf("%13.10f ",  w[i].get_lift());
+                printf("%13.10f\n", w[i].get_moment());
                 w[i].output("plot/Data/Wing/square"+std::to_string(i));
             }
 

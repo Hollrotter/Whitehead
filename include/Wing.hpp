@@ -62,6 +62,7 @@ class Wing
     double area   = 0; // Wing area
     double lift   = 0; // Lift in N
     double moment = 0; // Moment in Nm
+    bool areaComputed = false;
     Symmetry sym = Symmetry::none; // Symmetry (no symmetry or symmetry in the y-direction)
     Analysis analysis = Analysis::linear; // Analysis type (linear or nonlinear)
     std::vector<Wake*> wakes;
