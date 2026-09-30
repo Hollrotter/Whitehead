@@ -382,7 +382,7 @@ void Wing::postprocessing()
                     {
                         mu(i, j)  = MU_0_y(0)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_0_y.memptr(), ny, x2(j));
                         dcp(i, j) = 2*(J11_inv(i, j)*(MU_1_y(0)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_1_y.memptr(), ny, x2(j)))
-                                    + J21_inv(i, j)*(MU_2_y(0)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_2_y.memptr(), ny, x2(j))));
+                                     + J21_inv(i, j)*(MU_2_y(0)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_2_y.memptr(), ny, x2(j))));
                     }
                 }
                 break;
@@ -411,13 +411,13 @@ void Wing::postprocessing()
                         arma::vec::fixed<3> n = arma::vec::fixed<3>({J21(i, j)*dzdx2(i, j)-dzdx1(i, j)*J22(i, j),
                                                                     dzdx1(i, j)*J12(i, j)-J11(i, j)*dzdx2(i, j),
                                                                     J11(i, j)*J22(i, j)-J21(i, j)*J12(i, j)})/sqrt_a(i, j);
-                        arma::mat::fixed<3, 2> J_red = {{J22(i, j)*n(2) - n(1)*dzdx2(i, j), n(1)*dzdx1(i, j) - J21(i, j)*n(2)},
-                                                        {n(0)*dzdx2(i, j) - J12(i, j)*n(2), J11(i, j)*n(2) - n(0)*dzdx1(i, j)},
-                                                        {J12(i, j)*n(1) - n(0)*J22(i, j), n(0)*J21(i, j) - J11(i, j)*n(1)}};
+                        arma::mat::fixed<3, 2> J_red = {{n(2)*J22(i, j)   - n(1)*dzdx2(i, j), n(1)*dzdx1(i, j) - n(2)*J21(i, j)},
+                                                        {n(0)*dzdx2(i, j) - n(2)*J12(i, j),   n(2)*J11(i, j)   - n(0)*dzdx1(i, j)},
+                                                        {n(1)*J12(i, j)   - n(0)*J22(i, j),   n(0)*J21(i, j)   - n(1)*J11(i, j)}};
                         J_red/=sqrt_a(i, j);
                         mu(i, j) = MU_0_y(0)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_0_y.memptr(), ny, x2(j));
                         arma::vec::fixed<2> dmudxi = {MU_1_y(0)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_1_y.memptr(), ny, x2(j)),
-                                                    MU_2_y(0)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_2_y.memptr(), ny, x2(j))};
+                                                      MU_2_y(0)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_2_y.memptr(), ny, x2(j))};
                         arma::vec::fixed<3> q_mu = J_red*dmudxi;
                         dcp(i, j) = 2*dot(Q, q_mu);
                     }
@@ -458,7 +458,7 @@ void Wing::postprocessing()
                         double J11_inv = dydx2_gl(i, j)/detJ;
                         double J21_inv =-dydx1_gl(i, j)/detJ;
                         double DCP = 2*(J11_inv*(MU_1_y(0)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_1_y.memptr(), ny, x2_gl(j)))
-                                    + J21_inv*(MU_2_y(0)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_2_y.memptr(), ny, x2_gl(j))));
+                                      + J21_inv*(MU_2_y(0)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_2_y.memptr(), ny, x2_gl(j))));
                         double dA = w1_gl(i) * w2_gl(j) * detJ;
                         area   += dA;
                         lift   += dA * DCP;
@@ -503,7 +503,7 @@ void Wing::postprocessing()
                                                         {dxdx2_gl(i, j)*n_gl(1)-n_gl(0)*dydx2_gl(i, j), n_gl(0)*dydx1_gl(i, j)-dxdx1_gl(i, j)*n_gl(1)}};
 
                         arma::vec::fixed<2> dmudxi = {MU_1_y(0)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_1_y.memptr(), ny, x2_gl(j)),
-                                                    MU_2_y(0)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_2_y.memptr(), ny, x2_gl(j))};
+                                                      MU_2_y(0)/2 + boost::math::chebyshev_clenshaw_recurrence(MU_2_y.memptr(), ny, x2_gl(j))};
                         arma::vec::fixed<3> q_mu = J_red*dmudxi;
                         double DCP = 2*dot(Q, q_mu);
                         arma::vec r = {x_gl(i, j), y_gl(i, j), z_gl(i, j)};
@@ -581,12 +581,12 @@ void Wing::postprocessing()
                 for (size_t i = 0; i < nx; i++) // Loop over nodes in 1-direction
                     for (size_t j = 0; j < ny; j++) // Loop over nodes in 2-direction
                     {
-                        arma::vec::fixed<3> n = arma::vec::fixed<3>({J21(i, j)*dzdx2(i, j)-dzdx1(i, j)*J22(i, j),
-                                                                    dzdx1(i, j)*J12(i, j)-J11(i, j)*dzdx2(i, j),
-                                                                    J11(i, j)*J22(i, j)-J21(i, j)*J12(i, j)})/sqrt_a(i, j);
-                        arma::mat::fixed<3, 2> J_red = {{J22(i, j)*n(2) - n(1)*dzdx2(i, j), n(1)*dzdx1(i, j) - J21(i, j)*n(2)},
-                                                        {n(0)*dzdx2(i, j) - J12(i, j)*n(2), J11(i, j)*n(2) - n(0)*dzdx1(i, j)},
-                                                        {J12(i, j)*n(1) - n(0)*J22(i, j), n(0)*J21(i, j) - J11(i, j)*n(1)}};
+                        arma::vec::fixed<3> n = arma::vec::fixed<3>({J21(i, j)*dzdx2(i, j)-J22(i, j)*dzdx1(i, j),
+                                                                     J12(i, j)*dzdx1(i, j)-J11(i, j)*dzdx2(i, j),
+                                                                     J11(i, j)*J22(i, j)  -J21(i, j)*J12(i, j)})/sqrt_a(i, j);
+                        arma::mat::fixed<3, 2> J_red = {{n(2)*J22(i, j)   - n(1)*dzdx2(i, j), n(1)*dzdx1(i, j) - n(2)*J21(i, j)},
+                                                        {n(0)*dzdx2(i, j) - n(2)*J12(i, j),   n(2)*J11(i, j)   - n(0)*dzdx1(i, j)},
+                                                        {n(1)*J12(i, j)   - n(0)*J22(i, j),   n(0)*J21(i, j)   - n(1)*J11(i, j)}};
                         J_red/=sqrt_a(i, j);
                         double t1    = phi1->constant();
                         double t1p1  = phi1->linear(x1(i));
@@ -723,17 +723,17 @@ void Wing::postprocessing()
                     for (size_t j = 0; j < ny; j++)
                     {
                         arma::vec::fixed<3> n_gl  = arma::vec::fixed<3>({dydx1_gl(i, j)*dzdx2_gl(i, j)-dzdx1_gl(i, j)*dydx2_gl(i, j),
-                                                                        dzdx1_gl(i, j)*dxdx2_gl(i, j)-dxdx1_gl(i, j)*dzdx2_gl(i, j),
-                                                                        dxdx1_gl(i, j)*dydx2_gl(i, j)-dydx1_gl(i, j)*dxdx2_gl(i, j)})/sqrt_a(i, j);
+                                                                         dzdx1_gl(i, j)*dxdx2_gl(i, j)-dxdx1_gl(i, j)*dzdx2_gl(i, j),
+                                                                         dxdx1_gl(i, j)*dydx2_gl(i, j)-dydx1_gl(i, j)*dxdx2_gl(i, j)})/sqrt_a(i, j);
                         arma::vec::fixed<3> n2_gl = arma::vec::fixed<3>({d2ydx1_gl(i, j)*d2zdx2_gl(i, j)-d2zdx1_gl(i, j)*d2ydx2_gl(i, j),
-                                                                        d2zdx1_gl(i, j)*d2xdx2_gl(i, j)-d2xdx1_gl(i, j)*d2zdx2_gl(i, j),
-                                                                        d2xdx1_gl(i, j)*d2ydx2_gl(i, j)-d2ydx1_gl(i, j)*d2xdx2_gl(i, j)})/sqrt_a2(i, j);
+                                                                         d2zdx1_gl(i, j)*d2xdx2_gl(i, j)-d2xdx1_gl(i, j)*d2zdx2_gl(i, j),
+                                                                         d2xdx1_gl(i, j)*d2ydx2_gl(i, j)-d2ydx1_gl(i, j)*d2xdx2_gl(i, j)})/sqrt_a2(i, j);
                         arma::mat::fixed<3, 2> J_red  = {{dydx2_gl(i, j)*n_gl(2)-n_gl(1)*dzdx2_gl(i, j), n_gl(1)*dzdx1_gl(i, j)-dydx1_gl(i, j)*n_gl(2)},
-                                                        {dzdx2_gl(i, j)*n_gl(0)-n_gl(2)*dxdx2_gl(i, j), n_gl(2)*dxdx1_gl(i, j)-dzdx1_gl(i, j)*n_gl(0)},
-                                                        {dxdx2_gl(i, j)*n_gl(1)-n_gl(0)*dydx2_gl(i, j), n_gl(0)*dydx1_gl(i, j)-dxdx1_gl(i, j)*n_gl(1)}};
+                                                         {dzdx2_gl(i, j)*n_gl(0)-n_gl(2)*dxdx2_gl(i, j), n_gl(2)*dxdx1_gl(i, j)-dzdx1_gl(i, j)*n_gl(0)},
+                                                         {dxdx2_gl(i, j)*n_gl(1)-n_gl(0)*dydx2_gl(i, j), n_gl(0)*dydx1_gl(i, j)-dxdx1_gl(i, j)*n_gl(1)}};
                         arma::mat::fixed<3, 2> J2_red = {{d2ydx2_gl(i, j)*n2_gl(2)-n2_gl(1)*d2zdx2_gl(i, j), n2_gl(1)*d2zdx1_gl(i, j)-d2ydx1_gl(i, j)*n2_gl(2)},
-                                                        {d2zdx2_gl(i, j)*n2_gl(0)-n2_gl(2)*d2xdx2_gl(i, j), n2_gl(2)*d2xdx1_gl(i, j)-d2zdx1_gl(i, j)*n2_gl(0)},
-                                                        {d2xdx2_gl(i, j)*n2_gl(1)-n2_gl(0)*d2ydx2_gl(i, j), n2_gl(0)*d2ydx1_gl(i, j)-d2xdx1_gl(i, j)*n2_gl(1)}};
+                                                         {d2zdx2_gl(i, j)*n2_gl(0)-n2_gl(2)*d2xdx2_gl(i, j), n2_gl(2)*d2xdx1_gl(i, j)-d2zdx1_gl(i, j)*n2_gl(0)},
+                                                         {d2xdx2_gl(i, j)*n2_gl(1)-n2_gl(0)*d2ydx2_gl(i, j), n2_gl(0)*d2ydx1_gl(i, j)-d2xdx1_gl(i, j)*n2_gl(1)}};
 
                         arma::vec::fixed<2> dmudxi(arma::fill::zeros), dmu1dxi(arma::fill::zeros), dmu2dxi(arma::fill::zeros);
                         double t1_1    = phi1->constant();
@@ -848,11 +848,11 @@ void Wing::postprocessing()
                     for (size_t j = 0; j < ny; j++) // Loop over nodes in 2-direction
                     {
                         arma::vec::fixed<3> n = arma::vec::fixed<3>({J21(i, j)*dzdx2(i, j)-dzdx1(i, j)*J22(i, j),
-                                                                    dzdx1(i, j)*J12(i, j)-J11(i, j)*dzdx2(i, j),
-                                                                    J11(i, j)*J22(i, j)-J21(i, j)*J12(i, j)})/sqrt_a(i, j);
-                        arma::mat::fixed<3, 2> J_red = {{J22(i, j)*n(2) - n(1)*dzdx2(i, j), n(1)*dzdx1(i, j) - J21(i, j)*n(2)},
-                                                        {n(0)*dzdx2(i, j) - J12(i, j)*n(2), J11(i, j)*n(2) - n(0)*dzdx1(i, j)},
-                                                        {J12(i, j)*n(1) - n(0)*J22(i, j), n(0)*J21(i, j) - J11(i, j)*n(1)}};
+                                                                     dzdx1(i, j)*J12(i, j)-J11(i, j)*dzdx2(i, j),
+                                                                     J11(i, j)*J22(i, j)-J21(i, j)*J12(i, j)})/sqrt_a(i, j);
+                        arma::mat::fixed<3, 2> J_red = {{n(2)*J22(i, j)   - n(1)*dzdx2(i, j), n(1)*dzdx1(i, j) - n(2)*J21(i, j)},
+                                                        {n(0)*dzdx2(i, j) - n(2)*J12(i, j),   n(2)*J11(i, j)   - n(0)*dzdx1(i, j)},
+                                                        {n(1)*J12(i, j)   - n(0)*J22(i, j),   n(0)*J21(i, j)   - n(1)*J11(i, j)}};
                         J_red/=sqrt_a(i, j);
                         double t1    = phi1->constant();
                         double t1p1  = phi1->linear(x1(i));
@@ -989,17 +989,17 @@ void Wing::postprocessing()
                     for (size_t j = 0; j < ny; j++)
                     {
                         arma::vec::fixed<3> n_gl  = arma::vec::fixed<3>({dydx1_gl(i, j)*dzdx2_gl(i, j)-dzdx1_gl(i, j)*dydx2_gl(i, j),
-                                                                        dzdx1_gl(i, j)*dxdx2_gl(i, j)-dxdx1_gl(i, j)*dzdx2_gl(i, j),
-                                                                        dxdx1_gl(i, j)*dydx2_gl(i, j)-dydx1_gl(i, j)*dxdx2_gl(i, j)})/sqrt_a(i, j);
+                                                                         dzdx1_gl(i, j)*dxdx2_gl(i, j)-dxdx1_gl(i, j)*dzdx2_gl(i, j),
+                                                                         dxdx1_gl(i, j)*dydx2_gl(i, j)-dydx1_gl(i, j)*dxdx2_gl(i, j)})/sqrt_a(i, j);
                         arma::vec::fixed<3> n1_gl = arma::vec::fixed<3>({d1ydx1_gl(i, j)*d1zdx2_gl(i, j)-d1zdx1_gl(i, j)*d1ydx2_gl(i, j),
-                                                                        d1zdx1_gl(i, j)*d1xdx2_gl(i, j)-d1xdx1_gl(i, j)*d1zdx2_gl(i, j),
-                                                                        d1xdx1_gl(i, j)*d1ydx2_gl(i, j)-d1ydx1_gl(i, j)*d1xdx2_gl(i, j)})/sqrt_a1(i, j);
+                                                                         d1zdx1_gl(i, j)*d1xdx2_gl(i, j)-d1xdx1_gl(i, j)*d1zdx2_gl(i, j),
+                                                                         d1xdx1_gl(i, j)*d1ydx2_gl(i, j)-d1ydx1_gl(i, j)*d1xdx2_gl(i, j)})/sqrt_a1(i, j);
                         arma::mat::fixed<3, 2> J_red  = {{dydx2_gl(i, j)*n_gl(2)-n_gl(1)*dzdx2_gl(i, j), n_gl(1)*dzdx1_gl(i, j)-dydx1_gl(i, j)*n_gl(2)},
-                                                        {dzdx2_gl(i, j)*n_gl(0)-n_gl(2)*dxdx2_gl(i, j), n_gl(2)*dxdx1_gl(i, j)-dzdx1_gl(i, j)*n_gl(0)},
-                                                        {dxdx2_gl(i, j)*n_gl(1)-n_gl(0)*dydx2_gl(i, j), n_gl(0)*dydx1_gl(i, j)-dxdx1_gl(i, j)*n_gl(1)}};
+                                                         {dzdx2_gl(i, j)*n_gl(0)-n_gl(2)*dxdx2_gl(i, j), n_gl(2)*dxdx1_gl(i, j)-dzdx1_gl(i, j)*n_gl(0)},
+                                                         {dxdx2_gl(i, j)*n_gl(1)-n_gl(0)*dydx2_gl(i, j), n_gl(0)*dydx1_gl(i, j)-dxdx1_gl(i, j)*n_gl(1)}};
                         arma::mat::fixed<3, 2> J1_red = {{d1ydx2_gl(i, j)*n1_gl(2)-n1_gl(1)*d1zdx2_gl(i, j), n1_gl(1)*d1zdx1_gl(i, j)-d1ydx1_gl(i, j)*n1_gl(2)},
-                                                        {d1zdx2_gl(i, j)*n1_gl(0)-n1_gl(2)*d1xdx2_gl(i, j), n1_gl(2)*d1xdx1_gl(i, j)-d1zdx1_gl(i, j)*n1_gl(0)},
-                                                        {d1xdx2_gl(i, j)*n1_gl(1)-n1_gl(0)*d1ydx2_gl(i, j), n1_gl(0)*d1ydx1_gl(i, j)-d1xdx1_gl(i, j)*n1_gl(1)}};
+                                                         {d1zdx2_gl(i, j)*n1_gl(0)-n1_gl(2)*d1xdx2_gl(i, j), n1_gl(2)*d1xdx1_gl(i, j)-d1zdx1_gl(i, j)*n1_gl(0)},
+                                                         {d1xdx2_gl(i, j)*n1_gl(1)-n1_gl(0)*d1ydx2_gl(i, j), n1_gl(0)*d1ydx1_gl(i, j)-d1xdx1_gl(i, j)*n1_gl(1)}};
 
                         arma::vec::fixed<2> dmudxi(arma::fill::zeros), dmu1dxi(arma::fill::zeros), dmu2dxi(arma::fill::zeros);
                         double t1_1    = phi1->constant();
@@ -1040,10 +1040,10 @@ void Wing::postprocessing()
                         double DCP1 = 2*dot(Q, q1_mu);
                         arma::vec r  = {  x_gl(i, j),   y_gl(i, j),   z_gl(i, j)};
                         arma::vec r1 = {d1x_gl(i, j), d1y_gl(i, j), d1z_gl(i, j)};
-                        F +=  w1_gl(i) *  w2_gl(j) * DCP  *  n_gl
-                        + dw1_gl(i) *  w2_gl(j) * DCP1 * n1_gl;
+                        F +=  w1_gl(i) * w2_gl(j) * DCP  *  n_gl
+                           + dw1_gl(i) * w2_gl(j) * DCP1 * n1_gl;
                         M -=  w1_gl(i) * w2_gl(j) * cross( n_gl * DCP,  r)
-                        + dw1_gl(i) * w2_gl(j) * cross(n1_gl * DCP1, r1);
+                           + dw1_gl(i) * w2_gl(j) * cross(n1_gl * DCP1, r1);
                     }
                 lift   = F(2)*cos(alpha) - F(0)*sin(alpha);
                 moment = M(1);
@@ -1119,12 +1119,12 @@ void Wing::postprocessing()
                 for (size_t i = 0; i < nx; i++) // Loop over nodes in 1-direction
                     for (size_t j = 0; j < ny; j++) // Loop over nodes in 2-direction
                     {
-                        arma::vec::fixed<3> n = arma::vec::fixed<3>({J21(i, j)*dzdx2(i, j)-dzdx1(i, j)*J22(i, j),
-                                                                    dzdx1(i, j)*J12(i, j)-J11(i, j)*dzdx2(i, j),
-                                                                    J11(i, j)*J22(i, j)-J21(i, j)*J12(i, j)})/sqrt_a(i, j);
-                        arma::mat::fixed<3, 2> J_red = {{J22(i, j)*n(2) - n(1)*dzdx2(i, j), n(1)*dzdx1(i, j) - J21(i, j)*n(2)},
-                                                        {n(0)*dzdx2(i, j) - J12(i, j)*n(2), J11(i, j)*n(2) - n(0)*dzdx1(i, j)},
-                                                        {J12(i, j)*n(1) - n(0)*J22(i, j), n(0)*J21(i, j) - J11(i, j)*n(1)}};
+                        arma::vec::fixed<3> n = arma::vec::fixed<3>({J21(i, j)*dzdx2(i, j) - J22(i, j)*dzdx1(i, j),
+                                                                     J12(i, j)*dzdx1(i, j) - J11(i, j)*dzdx2(i, j),
+                                                                     J11(i, j)*J22(i, j)   - J21(i, j)*J12(i, j)})/sqrt_a(i, j);
+                        arma::mat::fixed<3, 2> J_red = {{n(2)*J22(i, j)   - n(1)*dzdx2(i, j), n(1)*dzdx1(i, j) - n(2)*J21(i, j)},
+                                                        {n(0)*dzdx2(i, j) - n(2)*J12(i, j),   n(2)*J11(i, j)   - n(0)*dzdx1(i, j)},
+                                                        {n(1)*J12(i, j)   - n(0)*J22(i, j),   n(0)*J21(i, j)   - n(1)*J11(i, j)}};
                         J_red/=sqrt_a(i, j);
                         double t1    = phi1->constant();
                         double t1p1  = phi1->linear(x1(i));
@@ -1290,23 +1290,23 @@ void Wing::postprocessing()
                     for (size_t j = 0; j < ny; j++)
                     {
                         arma::vec::fixed<3> n_gl  = arma::vec::fixed<3>({dydx1_gl(i, j)*dzdx2_gl(i, j)-dzdx1_gl(i, j)*dydx2_gl(i, j),
-                                                                        dzdx1_gl(i, j)*dxdx2_gl(i, j)-dxdx1_gl(i, j)*dzdx2_gl(i, j),
-                                                                        dxdx1_gl(i, j)*dydx2_gl(i, j)-dydx1_gl(i, j)*dxdx2_gl(i, j)})/sqrt_a(i, j);
+                                                                         dzdx1_gl(i, j)*dxdx2_gl(i, j)-dxdx1_gl(i, j)*dzdx2_gl(i, j),
+                                                                         dxdx1_gl(i, j)*dydx2_gl(i, j)-dydx1_gl(i, j)*dxdx2_gl(i, j)})/sqrt_a(i, j);
                         arma::vec::fixed<3> n1_gl = arma::vec::fixed<3>({d1ydx1_gl(i, j)*d1zdx2_gl(i, j)-d1zdx1_gl(i, j)*d1ydx2_gl(i, j),
-                                                                        d1zdx1_gl(i, j)*d1xdx2_gl(i, j)-d1xdx1_gl(i, j)*d1zdx2_gl(i, j),
-                                                                        d1xdx1_gl(i, j)*d1ydx2_gl(i, j)-d1ydx1_gl(i, j)*d1xdx2_gl(i, j)})/sqrt_a1(i, j);
+                                                                         d1zdx1_gl(i, j)*d1xdx2_gl(i, j)-d1xdx1_gl(i, j)*d1zdx2_gl(i, j),
+                                                                         d1xdx1_gl(i, j)*d1ydx2_gl(i, j)-d1ydx1_gl(i, j)*d1xdx2_gl(i, j)})/sqrt_a1(i, j);
                         arma::vec::fixed<3> n2_gl = arma::vec::fixed<3>({d2ydx1_gl(i, j)*d2zdx2_gl(i, j)-d2zdx1_gl(i, j)*d2ydx2_gl(i, j),
-                                                                        d2zdx1_gl(i, j)*d2xdx2_gl(i, j)-d2xdx1_gl(i, j)*d2zdx2_gl(i, j),
-                                                                        d2xdx1_gl(i, j)*d2ydx2_gl(i, j)-d2ydx1_gl(i, j)*d2xdx2_gl(i, j)})/sqrt_a2(i, j);
+                                                                         d2zdx1_gl(i, j)*d2xdx2_gl(i, j)-d2xdx1_gl(i, j)*d2zdx2_gl(i, j),
+                                                                         d2xdx1_gl(i, j)*d2ydx2_gl(i, j)-d2ydx1_gl(i, j)*d2xdx2_gl(i, j)})/sqrt_a2(i, j);
                         arma::mat::fixed<3, 2> J_red  = {{dydx2_gl(i, j)*n_gl(2)-n_gl(1)*dzdx2_gl(i, j), n_gl(1)*dzdx1_gl(i, j)-dydx1_gl(i, j)*n_gl(2)},
-                                                        {dzdx2_gl(i, j)*n_gl(0)-n_gl(2)*dxdx2_gl(i, j), n_gl(2)*dxdx1_gl(i, j)-dzdx1_gl(i, j)*n_gl(0)},
-                                                        {dxdx2_gl(i, j)*n_gl(1)-n_gl(0)*dydx2_gl(i, j), n_gl(0)*dydx1_gl(i, j)-dxdx1_gl(i, j)*n_gl(1)}};
+                                                         {dzdx2_gl(i, j)*n_gl(0)-n_gl(2)*dxdx2_gl(i, j), n_gl(2)*dxdx1_gl(i, j)-dzdx1_gl(i, j)*n_gl(0)},
+                                                         {dxdx2_gl(i, j)*n_gl(1)-n_gl(0)*dydx2_gl(i, j), n_gl(0)*dydx1_gl(i, j)-dxdx1_gl(i, j)*n_gl(1)}};
                         arma::mat::fixed<3, 2> J1_red = {{d1ydx2_gl(i, j)*n1_gl(2)-n1_gl(1)*d1zdx2_gl(i, j), n1_gl(1)*d1zdx1_gl(i, j)-d1ydx1_gl(i, j)*n1_gl(2)},
-                                                        {d1zdx2_gl(i, j)*n1_gl(0)-n1_gl(2)*d1xdx2_gl(i, j), n1_gl(2)*d1xdx1_gl(i, j)-d1zdx1_gl(i, j)*n1_gl(0)},
-                                                        {d1xdx2_gl(i, j)*n1_gl(1)-n1_gl(0)*d1ydx2_gl(i, j), n1_gl(0)*d1ydx1_gl(i, j)-d1xdx1_gl(i, j)*n1_gl(1)}};
+                                                         {d1zdx2_gl(i, j)*n1_gl(0)-n1_gl(2)*d1xdx2_gl(i, j), n1_gl(2)*d1xdx1_gl(i, j)-d1zdx1_gl(i, j)*n1_gl(0)},
+                                                         {d1xdx2_gl(i, j)*n1_gl(1)-n1_gl(0)*d1ydx2_gl(i, j), n1_gl(0)*d1ydx1_gl(i, j)-d1xdx1_gl(i, j)*n1_gl(1)}};
                         arma::mat::fixed<3, 2> J2_red = {{d2ydx2_gl(i, j)*n2_gl(2)-n2_gl(1)*d2zdx2_gl(i, j), n2_gl(1)*d2zdx1_gl(i, j)-d2ydx1_gl(i, j)*n2_gl(2)},
-                                                        {d2zdx2_gl(i, j)*n2_gl(0)-n2_gl(2)*d2xdx2_gl(i, j), n2_gl(2)*d2xdx1_gl(i, j)-d2zdx1_gl(i, j)*n2_gl(0)},
-                                                        {d2xdx2_gl(i, j)*n2_gl(1)-n2_gl(0)*d2ydx2_gl(i, j), n2_gl(0)*d2ydx1_gl(i, j)-d2xdx1_gl(i, j)*n2_gl(1)}};
+                                                         {d2zdx2_gl(i, j)*n2_gl(0)-n2_gl(2)*d2xdx2_gl(i, j), n2_gl(2)*d2xdx1_gl(i, j)-d2zdx1_gl(i, j)*n2_gl(0)},
+                                                         {d2xdx2_gl(i, j)*n2_gl(1)-n2_gl(0)*d2ydx2_gl(i, j), n2_gl(0)*d2ydx1_gl(i, j)-d2xdx1_gl(i, j)*n2_gl(1)}};
 
                         arma::vec::fixed<2> dmudxi(arma::fill::zeros), dmu1dxi(arma::fill::zeros), dmu2dxi(arma::fill::zeros);
                         double t1_1    = phi1->constant();
@@ -1360,11 +1360,11 @@ void Wing::postprocessing()
                         arma::vec r1 = {d1x_gl(i, j), d1y_gl(i, j), d1z_gl(i, j)};
                         arma::vec r2 = {d2x_gl(i, j), d2y_gl(i, j), d2z_gl(i, j)};
                         F +=  w1_gl(i) *  w2_gl(j) * DCP  *  n_gl
-                        + dw1_gl(i) *  w2_gl(j) * DCP1 * n1_gl
-                        +  w1_gl(i) * dw2_gl(j) * DCP2 * n2_gl;
-                        M -=  w1_gl(i) * w2_gl(j) * cross( n_gl * DCP,  r)
-                        + dw1_gl(i) * w2_gl(j) * cross(n1_gl * DCP1, r1)
-                        + w1_gl(i) * dw2_gl(j) * cross(n2_gl * DCP2, r2);
+                           + dw1_gl(i) *  w2_gl(j) * DCP1 * n1_gl
+                           +  w1_gl(i) * dw2_gl(j) * DCP2 * n2_gl;
+                        M -=  w1_gl(i) *  w2_gl(j) * cross( n_gl * DCP,  r)
+                           + dw1_gl(i) *  w2_gl(j) * cross(n1_gl * DCP1, r1)
+                           +  w1_gl(i) * dw2_gl(j) * cross(n2_gl * DCP2, r2);
                     }
                 lift   = F(2)*cos(alpha) - F(0)*sin(alpha);
                 moment = M(1);

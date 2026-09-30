@@ -21,6 +21,7 @@ set key tc rgb 'gray'
 set border lc rgb 'gray'
 
 set view map
+# set pm3d depthorder base
 set pm3d interpolate 10,10 corners2color mean
 
 splot '../../Data/Aerodynamics/v_0' u 2:1:5 notitle with pm3d,\
