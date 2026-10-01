@@ -3,7 +3,7 @@
 
 int main()
 {
-    switch (3)
+    switch (1)
     {
         case 0: // Rectangle (divided at y=0)
         {
@@ -75,7 +75,61 @@ int main()
             a.output("plot/Data/Aerodynamics/flat");
             break;
         }
-        case 1: // More complex shape
+        case 1: // Rotated square
+        {
+            /**
+             * Similar to the test case of the wing class.
+             */
+            size_t n1 = 10;
+            size_t n2 = 10;
+            size_t n3 = 10;
+
+            double a = 2;
+            double b = 2;
+            double c = 2;
+
+            Point p1(-a, 0);
+            Point p2( 0, 0);
+            Point p3( 0, c);
+            Point p4(-a, c);
+            Point p5( b, 0);
+            Point p6( b, c);
+
+            Lagrange::CurveInterpolant chi1(p1, p2, n1);
+            Lagrange::CurveInterpolant chi2(p2, p3, n2);
+            Lagrange::CurveInterpolant chi3(p3, p4, n1);
+            Lagrange::CurveInterpolant chi4(p1, p4, n2);
+            Lagrange::CurveInterpolant chi5(p2, p5, n3);
+            Lagrange::CurveInterpolant chi6(p5, p6, n2);
+            Lagrange::CurveInterpolant chi7(p6, p3, n3);
+
+            std::array<Wing, 4> w1({Wing({&chi1, &chi2, &chi3, &chi4}),
+                                    Wing({&chi2, &chi3, &chi4, &chi1}),
+                                    Wing({&chi3, &chi4, &chi1, &chi2}),
+                                    Wing({&chi4, &chi1, &chi2, &chi3})});
+            
+            std::array<Wing, 4> w2({Wing({&chi5, &chi6, &chi7, &chi2}),
+                                    Wing({&chi6, &chi7, &chi2, &chi5}),
+                                    Wing({&chi7, &chi2, &chi5, &chi6}),
+                                    Wing({&chi2, &chi5, &chi6, &chi7})});
+            arma::vec cL(16);
+            arma::vec cM(16);
+            for (size_t i = 0; i < 4; i++)
+                for (size_t j = 0; j < 4; j++)
+                {
+                    Aerodynamics aero({&w1[i], &w2[j]});
+                    aero.pitch(5);
+                    aero.setIterations(1000);
+                    aero.linear();
+                    aero.output("plot/Data/Aerodynamics/square"+std::to_string(j+4*i));
+                    cL(j+4*i) = aero.get_lift();
+                    cM(j+4*i) = aero.get_moment();
+                }
+            cL.print();
+            cM.print();
+            break;
+        }
+        case 2: // More complex shape
         {
             Point p1(-1, 0);
             Point p2( 1, 0);
@@ -121,7 +175,7 @@ int main()
             a.output("plot/Data/Aerodynamics/v");
             break;
         }
-        case 2: // Nonsmooth Surface
+        case 3: // Nonsmooth Surface
         {
             size_t nx = 10;
             size_t ny = 15;
@@ -166,7 +220,7 @@ int main()
             a.output("plot/Data/Aerodynamics/nonsmooth");
             break;
         }
-        case 3: // Panel
+        case 4: // Panel
         {
             /**
              * Rectangular Wing split up into an arbitrary number of Panels.
