@@ -170,13 +170,13 @@ void Aerodynamics::nonlinear()
                                 arma::vec dzdx1 = T1_gauss *  dzdx1_gauss.col(0);
                                 for (size_t ii = 0; ii < wings[sD]->nx; ii++)
                                 {
-                                    double  w1 = wings[sD]->phi1->weightFunction(x1_gl_w(ii));
-                                    double dw1 = wings[sD]->phi1->weightFunctionDerivative(x1_gl_w(ii));
-                                    arma::vec::fixed<3> e_1 = {dxdx1(ii), dydx1(ii), dzdx1(ii)};
-                                    double t1    = wings[sD]->phi1->constant();
-                                    double t1p1  = wings[sD]->phi1->linear(x1_gl_w(ii));
+                                    double  w1   = wings[sD]->phi1->weightFunction(x1_gl_w(ii));
+                                    double dw1   = wings[sD]->phi1->weightFunctionDerivative(x1_gl_w(ii));
+                                    double  t1   = wings[sD]->phi1->constant();
+                                    double  t1p1 = wings[sD]->phi1->linear(x1_gl_w(ii));
                                     double dt1   = wings[sD]->phi1->constantDerivative();
                                     double dt1p1 = wings[sD]->phi1->linearDerivative();
+                                    arma::vec::fixed<3> e_1 = {dxdx1(ii), dydx1(ii), dzdx1(ii)};
                                     for (size_t p = 0; p < wings[sD]->nx; p++)
                                     {
                                         double dpsi1 = w1*dt1 + dw1*t1;
@@ -239,13 +239,13 @@ void Aerodynamics::nonlinear()
                                 arma::vec dzdx2 = T2_gauss *  dzdx2_gauss.row(wings[sD]->nx-1).t();
                                 for (size_t jj = 0; jj < wings[sD]->ny; jj++)
                                 {
-                                    double  w2 = wings[sD]->phi2->weightFunction(x2_gl_w(jj));
-                                    double dw2 = wings[sD]->phi2->weightFunctionDerivative(x2_gl_w(jj));
-                                    arma::vec::fixed<3> e_2 = {dxdx2(jj), dydx2(jj), dzdx2(jj)};
-                                    double t2    = wings[sD]->phi2->constant();
-                                    double t2p1  = wings[sD]->phi2->linear(x2_gl_w(jj));
+                                    double  w2   = wings[sD]->phi2->weightFunction(x2_gl_w(jj));
+                                    double dw2   = wings[sD]->phi2->weightFunctionDerivative(x2_gl_w(jj));
+                                    double  t2   = wings[sD]->phi2->constant();
+                                    double  t2p1 = wings[sD]->phi2->linear(x2_gl_w(jj));
                                     double dt2   = wings[sD]->phi2->constantDerivative();
                                     double dt2p1 = wings[sD]->phi2->linearDerivative();
+                                    arma::vec::fixed<3> e_2 = {dxdx2(jj), dydx2(jj), dzdx2(jj)};
                                     for (size_t q = 0; q < wings[sD]->ny; q++)
                                     {
                                         double dpsi2 = w2*dt2 + dw2*t2;
@@ -308,13 +308,13 @@ void Aerodynamics::nonlinear()
                                 arma::vec dzdx1 = T1_gauss *  dzdx1_gauss.col(wings[sD]->ny-1);
                                 for (size_t ii = 0; ii < wings[sD]->nx; ii++)
                                 {
-                                    double  w1 = wings[sD]->phi1->weightFunction(x1_gl_w(ii));
-                                    double dw1 = wings[sD]->phi1->weightFunctionDerivative(x1_gl_w(ii));
-                                    arma::vec::fixed<3> e_1 = {dxdx1(ii), dydx1(ii), dzdx1(ii)};
-                                    double t1    = wings[sD]->phi1->constant();
-                                    double t1p1  = wings[sD]->phi1->linear(x1_gl_w(ii));
+                                    double  w1   = wings[sD]->phi1->weightFunction(x1_gl_w(ii));
+                                    double dw1   = wings[sD]->phi1->weightFunctionDerivative(x1_gl_w(ii));
+                                    double  t1   = wings[sD]->phi1->constant();
+                                    double  t1p1 = wings[sD]->phi1->linear(x1_gl_w(ii));
                                     double dt1   = wings[sD]->phi1->constantDerivative();
                                     double dt1p1 = wings[sD]->phi1->linearDerivative();
+                                    arma::vec::fixed<3> e_1 = {dxdx1(ii), dydx1(ii), dzdx1(ii)};
                                     for (size_t p = 0; p < wings[sD]->nx; p++)
                                     {
                                         double dpsi1 = w1*dt1 + dw1*t1;
@@ -377,13 +377,13 @@ void Aerodynamics::nonlinear()
                                 arma::vec dzdx2 = T2_gauss *  dzdx2_gauss.row(0).t();
                                 for (size_t jj = 0; jj < wings[sD]->ny; jj++)
                                 {
-                                    double  w2 = wings[sD]->phi2->weightFunction(x2_gl_w(jj));
-                                    double dw2 = wings[sD]->phi2->weightFunctionDerivative(x2_gl_w(jj));
-                                    arma::vec::fixed<3> e_2 = {dxdx2(jj), dydx2(jj), dzdx2(jj)};
-                                    double t2    = wings[sD]->phi2->constant();
-                                    double t2p1  = wings[sD]->phi2->linear(x2_gl_w(jj));
+                                    double  w2   = wings[sD]->phi2->weightFunction(x2_gl_w(jj));
+                                    double dw2   = wings[sD]->phi2->weightFunctionDerivative(x2_gl_w(jj));
+                                    double  t2   = wings[sD]->phi2->constant();
+                                    double  t2p1 = wings[sD]->phi2->linear(x2_gl_w(jj));
                                     double dt2   = wings[sD]->phi2->constantDerivative();
                                     double dt2p1 = wings[sD]->phi2->linearDerivative();
+                                    arma::vec::fixed<3> e_2 = {dxdx2(jj), dydx2(jj), dzdx2(jj)};
                                     for (size_t q = 0; q < wings[sD]->ny; q++)
                                     {
                                         double dpsi2 = w2*dt2 + dw2*t2;
@@ -584,13 +584,13 @@ void Aerodynamics::nonlinear()
                                     arma::vec dzdx1 = T1_gauss *  dzdx1_gauss.col(0);
                                     for (size_t ii = 0; ii < wings[sD]->nx; ii++)
                                     {
-                                        double  w1 = wings[sD]->phi1->weightFunction(x1_gl_w(ii));
-                                        double dw1 = wings[sD]->phi1->weightFunctionDerivative(x1_gl_w(ii));
-                                        arma::vec::fixed<3> e_1 = {dxdx1(ii), dydx1(ii), dzdx1(ii)};
-                                        double t1    = wings[sD]->phi1->constant();
-                                        double t1p1  = wings[sD]->phi1->linear(x1_gl_w(ii));
+                                        double  w1   = wings[sD]->phi1->weightFunction(x1_gl_w(ii));
+                                        double dw1   = wings[sD]->phi1->weightFunctionDerivative(x1_gl_w(ii));
+                                        double  t1   = wings[sD]->phi1->constant();
+                                        double  t1p1 = wings[sD]->phi1->linear(x1_gl_w(ii));
                                         double dt1   = wings[sD]->phi1->constantDerivative();
                                         double dt1p1 = wings[sD]->phi1->linearDerivative();
+                                        arma::vec::fixed<3> e_1 = {dxdx1(ii), dydx1(ii), dzdx1(ii)};
                                         for (size_t p = 0; p < wings[sD]->nx; p++)
                                         {
                                             double dpsi1 = w1*dt1 + dw1*t1;
@@ -653,13 +653,13 @@ void Aerodynamics::nonlinear()
                                     arma::vec dzdx2 = T2_gauss *  dzdx2_gauss.row(wings[sD]->nx-1).t();
                                     for (size_t jj = 0; jj < wings[sD]->ny; jj++)
                                     {
-                                        double  w2 = wings[sD]->phi2->weightFunction(x2_gl_w(jj));
-                                        double dw2 = wings[sD]->phi2->weightFunctionDerivative(x2_gl_w(jj));
-                                        arma::vec::fixed<3> e_2 = {dxdx2(jj), dydx2(jj), dzdx2(jj)};
-                                        double t2    = wings[sD]->phi2->constant();
-                                        double t2p1  = wings[sD]->phi2->linear(x2_gl_w(jj));
+                                        double  w2   = wings[sD]->phi2->weightFunction(x2_gl_w(jj));
+                                        double dw2   = wings[sD]->phi2->weightFunctionDerivative(x2_gl_w(jj));
+                                        double  t2   = wings[sD]->phi2->constant();
+                                        double  t2p1 = wings[sD]->phi2->linear(x2_gl_w(jj));
                                         double dt2   = wings[sD]->phi2->constantDerivative();
                                         double dt2p1 = wings[sD]->phi2->linearDerivative();
+                                        arma::vec::fixed<3> e_2 = {dxdx2(jj), dydx2(jj), dzdx2(jj)};
                                         for (size_t q = 0; q < wings[sD]->ny; q++)
                                         {
                                             double dpsi2 = w2*dt2 + dw2*t2;
@@ -722,13 +722,13 @@ void Aerodynamics::nonlinear()
                                     arma::vec dzdx1 = T1_gauss *  dzdx1_gauss.col(wings[sD]->ny-1);
                                     for (size_t ii = 0; ii < wings[sD]->nx; ii++)
                                     {
-                                        double  w1 = wings[sD]->phi1->weightFunction(x1_gl_w(ii));
-                                        double dw1 = wings[sD]->phi1->weightFunctionDerivative(x1_gl_w(ii));
-                                        arma::vec::fixed<3> e_1 = {dxdx1(ii), dydx1(ii), dzdx1(ii)};
-                                        double t1    = wings[sD]->phi1->constant();
-                                        double t1p1  = wings[sD]->phi1->linear(x1_gl_w(ii));
+                                        double  w1   = wings[sD]->phi1->weightFunction(x1_gl_w(ii));
+                                        double dw1   = wings[sD]->phi1->weightFunctionDerivative(x1_gl_w(ii));
+                                        double  t1   = wings[sD]->phi1->constant();
+                                        double  t1p1 = wings[sD]->phi1->linear(x1_gl_w(ii));
                                         double dt1   = wings[sD]->phi1->constantDerivative();
                                         double dt1p1 = wings[sD]->phi1->linearDerivative();
+                                        arma::vec::fixed<3> e_1 = {dxdx1(ii), dydx1(ii), dzdx1(ii)};
                                         for (size_t p = 0; p < wings[sD]->nx; p++)
                                         {
                                             double dpsi1 = w1*dt1 + dw1*t1;
@@ -791,13 +791,13 @@ void Aerodynamics::nonlinear()
                                     arma::vec dzdx2 = T2_gauss *  dzdx2_gauss.row(0).t();
                                     for (size_t jj = 0; jj < wings[sD]->ny; jj++)
                                     {
-                                        double  w2 = wings[sD]->phi2->weightFunction(x2_gl_w(jj));
-                                        double dw2 = wings[sD]->phi2->weightFunctionDerivative(x2_gl_w(jj));
-                                        arma::vec::fixed<3> e_2 = {dxdx2(jj), dydx2(jj), dzdx2(jj)};
-                                        double t2    = wings[sD]->phi2->constant();
-                                        double t2p1  = wings[sD]->phi2->linear(x2_gl_w(jj));
+                                        double  w2   = wings[sD]->phi2->weightFunction(x2_gl_w(jj));
+                                        double dw2   = wings[sD]->phi2->weightFunctionDerivative(x2_gl_w(jj));
+                                        double  t2   = wings[sD]->phi2->constant();
+                                        double  t2p1 = wings[sD]->phi2->linear(x2_gl_w(jj));
                                         double dt2   = wings[sD]->phi2->constantDerivative();
                                         double dt2p1 = wings[sD]->phi2->linearDerivative();
+                                        arma::vec::fixed<3> e_2 = {dxdx2(jj), dydx2(jj), dzdx2(jj)};
                                         for (size_t q = 0; q < wings[sD]->ny; q++)
                                         {
                                             double dpsi2 = w2*dt2 + dw2*t2;

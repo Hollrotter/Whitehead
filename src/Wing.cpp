@@ -431,10 +431,10 @@ void Wing::postprocessing()
         area   = 0;
         lift   = 0;
         moment = 0;
-        arma::vec  x1_gl = phi1->xg;
-        arma::vec  x2_gl = phi2->xg;
-        arma::vec  w1_gl = phi1->wg;
-        arma::vec  w2_gl = phi2->wg;
+        arma::vec x1_gl = phi1->xg;
+        arma::vec x2_gl = phi2->xg;
+        arma::vec w1_gl = phi1->wg;
+        arma::vec w2_gl = phi2->wg;
         auto [x_gl, y_gl] = Lagrange::TransfiniteQuadMap(x1_gl, x2_gl, chi);
         auto [dxdx1_gl, dxdx2_gl, dydx1_gl, dydx2_gl] = Lagrange::TransfiniteQuadMetrics(x1_gl, x2_gl, chi);
 
@@ -537,19 +537,19 @@ void Wing::postprocessing()
                 for (size_t i = 0; i < nx; i++) // Loop over nodes in 1-direction
                     for (size_t j = 0; j < ny; j++) // Loop over nodes in 2-direction
                     {
-                        double t1    = phi1->constant();
-                        double t1p1  = phi1->linear(x1(i));
+                        double  t1   = phi1->constant();
+                        double  t1p1 = phi1->linear(x1(i));
                         double dt1   = phi1->constantDerivative();
                         double dt1p1 = phi1->linearDerivative();
                         for (size_t p = 0; p < nx; p++)
                         {
-                            double t2    = phi2->constant();
-                            double t2p1  = phi2->linear(x2(j));
+                            double  t2   = phi2->constant();
+                            double  t2p1 = phi2->linear(x2(j));
                             double dt2   = phi2->constantDerivative();
                             double dt2p1 = phi2->linearDerivative();
                             for (size_t q = 0; q < ny; q++)
                             {
-                                double psi2  = w2(j)*t2;
+                                double  psi2 = w2(j)*t2;
                                 double dpsi2 = w2(j)*dt2 + dw2(j)*t2;
                                 mu(i, j)  +=   mu_hat(p+q*nx) * t1*psi2;
                                 dcp(i, j) += 2*mu_hat(p+q*nx) * (J11_inv(i, j)*dt1*psi2 + J21_inv(i, j)*t1*dpsi2);
@@ -588,20 +588,20 @@ void Wing::postprocessing()
                                                         {n(0)*dzdx2(i, j) - n(2)*J12(i, j),   n(2)*J11(i, j)   - n(0)*dzdx1(i, j)},
                                                         {n(1)*J12(i, j)   - n(0)*J22(i, j),   n(0)*J21(i, j)   - n(1)*J11(i, j)}};
                         J_red/=sqrt_a(i, j);
-                        double t1    = phi1->constant();
-                        double t1p1  = phi1->linear(x1(i));
+                        double  t1   = phi1->constant();
+                        double  t1p1 = phi1->linear(x1(i));
                         double dt1   = phi1->constantDerivative();
                         double dt1p1 = phi1->linearDerivative();
                         arma::vec::fixed<2> dmudxi;
                         for (size_t p = 0; p < nx; p++)
                         {
-                            double t2    = phi2->constant();
-                            double t2p1  = phi2->linear(x2(j));
+                            double  t2   = phi2->constant();
+                            double  t2p1 = phi2->linear(x2(j));
                             double dt2   = phi2->constantDerivative();
                             double dt2p1 = phi2->linearDerivative();
                             for (size_t q = 0; q < ny; q++)
                             {
-                                double psi2  = w2(j)*t2;
+                                double  psi2 = w2(j)*t2;
                                 double dpsi2 = w2(j)*dt2 + dw2(j)*t2;
                                 mu(i, j) += mu_hat(p+q*nx)*t1*psi2;
                                 dmudxi += arma::vec::fixed<2>({mu_hat(p+q*nx)*dt1*psi2, mu_hat(p+q*nx)*t1*dpsi2});
@@ -653,18 +653,18 @@ void Wing::postprocessing()
                         double J21_inv  = -dydx1_gl(i, j)/detJ;
                         double J21_inv2 =-d2ydx1_gl(i, j)/detJ2;
                         double DCP = 0, DCP2 = 0;
-                        double t1_1    = phi1->constant();
-                        double t1_1p1  = phi1->linear(x1_gl(i));
+                        double  t1_1   = phi1->constant();
+                        double  t1_1p1 = phi1->linear(x1_gl(i));
                         double dt1_1   = phi1->constantDerivative();
                         double dt1_1p1 = phi1->linearDerivative();
                         for (size_t p = 0; p < nx; p++)
                         {
-                            double t2_1    = phi2->constant();
-                            double t2_1p1  = phi2->linear(x2_gl(j));
+                            double  t2_1   = phi2->constant();
+                            double  t2_1p1 = phi2->linear(x2_gl(j));
                             double dt2_1   = phi2->constantDerivative();
                             double dt2_1p1 = phi2->linearDerivative();
-                            double t2_2    = phi2->constant();
-                            double t2_2p1  = phi2->linear(dx2_gl(j));
+                            double  t2_2   = phi2->constant();
+                            double  t2_2p1 = phi2->linear(dx2_gl(j));
                             double dt2_2   = phi2->constantDerivative();
                             double dt2_2p1 = phi2->linearDerivative();
                             for (size_t q = 0; q < ny; q++)
@@ -736,18 +736,18 @@ void Wing::postprocessing()
                                                          {d2xdx2_gl(i, j)*n2_gl(1)-n2_gl(0)*d2ydx2_gl(i, j), n2_gl(0)*d2ydx1_gl(i, j)-d2xdx1_gl(i, j)*n2_gl(1)}};
 
                         arma::vec::fixed<2> dmudxi(arma::fill::zeros), dmu1dxi(arma::fill::zeros), dmu2dxi(arma::fill::zeros);
-                        double t1_1    = phi1->constant();
-                        double t1_1p1  = phi1->linear(x1_gl(i));
+                        double  t1_1   = phi1->constant();
+                        double  t1_1p1 = phi1->linear(x1_gl(i));
                         double dt1_1   = phi1->constantDerivative();
                         double dt1_1p1 = phi1->linearDerivative();
                         for (size_t p = 0; p < nx; p++)
                         {
-                            double t2_1    = phi2->constant();
-                            double t2_1p1  = phi2->linear(x2_gl(j));
+                            double  t2_1   = phi2->constant();
+                            double  t2_1p1 = phi2->linear(x2_gl(j));
                             double dt2_1   = phi2->constantDerivative();
                             double dt2_1p1 = phi2->linearDerivative();
-                            double t2_2    = phi2->constant();
-                            double t2_2p1  = phi2->linear(dx2_gl(j));
+                            double  t2_2   = phi2->constant();
+                            double  t2_2p1 = phi2->linear(dx2_gl(j));
                             double dt2_2   = phi2->constantDerivative();
                             double dt2_2p1 = phi2->linearDerivative();
                             for (size_t q = 0; q < ny; q++)
@@ -803,16 +803,16 @@ void Wing::postprocessing()
                 for (size_t i = 0; i < nx; i++) // Loop over nodes in 1-direction
                     for (size_t j = 0; j < ny; j++) // Loop over nodes in 2-direction
                     {
-                        double t1    = phi1->constant();
-                        double t1p1  = phi1->linear(x1(i));
+                        double  t1   = phi1->constant();
+                        double  t1p1 = phi1->linear(x1(i));
                         double dt1   = phi1->constantDerivative();
                         double dt1p1 = phi1->linearDerivative();
                         for (size_t p = 0; p < nx; p++)
                         {
-                            double psi1  = w1(i)*t1;
+                            double  psi1 = w1(i)*t1;
                             double dpsi1 = w1(i)*dt1 + dw1(i)*t1;
-                            double t2    = phi2->constant();
-                            double t2p1  = phi2->linear(x2(j));
+                            double  t2   = phi2->constant();
+                            double  t2p1 = phi2->linear(x2(j));
                             double dt2   = phi2->constantDerivative();
                             double dt2p1 = phi2->linearDerivative();
                             for (size_t q = 0; q < ny; q++)
@@ -854,17 +854,17 @@ void Wing::postprocessing()
                                                         {n(0)*dzdx2(i, j) - n(2)*J12(i, j),   n(2)*J11(i, j)   - n(0)*dzdx1(i, j)},
                                                         {n(1)*J12(i, j)   - n(0)*J22(i, j),   n(0)*J21(i, j)   - n(1)*J11(i, j)}};
                         J_red/=sqrt_a(i, j);
-                        double t1    = phi1->constant();
-                        double t1p1  = phi1->linear(x1(i));
+                        double  t1   = phi1->constant();
+                        double  t1p1 = phi1->linear(x1(i));
                         double dt1   = phi1->constantDerivative();
                         double dt1p1 = phi1->linearDerivative();
                         arma::vec::fixed<2> dmudxi;
                         for (size_t p = 0; p < nx; p++)
                         {
-                            double psi1  = w1(i)*t1;
+                            double  psi1 = w1(i)*t1;
                             double dpsi1 = w1(i)*dt1 + dw1(i)*t1;
-                            double t2    = phi2->constant();
-                            double t2p1  = phi2->linear(x2(j));
+                            double  t2   = phi2->constant();
+                            double  t2p1 = phi2->linear(x2(j));
                             double dt2   = phi2->constantDerivative();
                             double dt2p1 = phi2->linearDerivative();
                             for (size_t q = 0; q < ny; q++)
@@ -919,18 +919,18 @@ void Wing::postprocessing()
                         double J21_inv  = -dydx1_gl(i, j)/detJ;
                         double J11_inv1 = d1ydx2_gl(i, j)/detJ1;
                         double DCP = 0, DCP1 = 0;
-                        double t1_1    = phi1->constant();
-                        double t1_1p1  = phi1->linear(x1_gl(i));
+                        double  t1_1   = phi1->constant();
+                        double  t1_1p1 = phi1->linear(x1_gl(i));
                         double dt1_1   = phi1->constantDerivative();
                         double dt1_1p1 = phi1->linearDerivative();
-                        double t1_2    = phi1->constant();
-                        double t1_2p1  = phi1->linear(dx1_gl(i));
+                        double  t1_2   = phi1->constant();
+                        double  t1_2p1 = phi1->linear(dx1_gl(i));
                         double dt1_2   = phi1->constantDerivative();
                         double dt1_2p1 = phi1->linearDerivative();
                         for (size_t p = 0; p < nx; p++)
                         {
-                            double t2_1    = phi2->constant();
-                            double t2_1p1  = phi2->linear(x2_gl(j));
+                            double  t2_1   = phi2->constant();
+                            double  t2_1p1 = phi2->linear(x2_gl(j));
                             double dt2_1   = phi2->constantDerivative();
                             double dt2_1p1 = phi2->linearDerivative();
                             for (size_t q = 0; q < ny; q++)
@@ -1002,18 +1002,18 @@ void Wing::postprocessing()
                                                          {d1xdx2_gl(i, j)*n1_gl(1)-n1_gl(0)*d1ydx2_gl(i, j), n1_gl(0)*d1ydx1_gl(i, j)-d1xdx1_gl(i, j)*n1_gl(1)}};
 
                         arma::vec::fixed<2> dmudxi(arma::fill::zeros), dmu1dxi(arma::fill::zeros), dmu2dxi(arma::fill::zeros);
-                        double t1_1    = phi1->constant();
-                        double t1_1p1  = phi1->linear(x1_gl(i));
+                        double  t1_1   = phi1->constant();
+                        double  t1_1p1 = phi1->linear(x1_gl(i));
                         double dt1_1   = phi1->constantDerivative();
                         double dt1_1p1 = phi1->linearDerivative();
-                        double t1_2    = phi1->constant();
-                        double t1_2p1  = phi1->linear(dx1_gl(i));
+                        double  t1_2   = phi1->constant();
+                        double  t1_2p1 = phi1->linear(dx1_gl(i));
                         double dt1_2   = phi1->constantDerivative();
                         double dt1_2p1 = phi1->linearDerivative();
                         for (size_t p = 0; p < nx; p++)
                         {
-                            double t2_1    = phi2->constant();
-                            double t2_1p1  = phi2->linear(x2_gl(j));
+                            double  t2_1   = phi2->constant();
+                            double  t2_1p1 = phi2->linear(x2_gl(j));
                             double dt2_1   = phi2->constantDerivative();
                             double dt2_1p1 = phi2->linearDerivative();
                             for (size_t q = 0; q < ny; q++)
@@ -1071,21 +1071,21 @@ void Wing::postprocessing()
                 for (size_t i = 0; i < nx; i++) // Loop over nodes in 1-direction
                     for (size_t j = 0; j < ny; j++) // Loop over nodes in 2-direction
                     {
-                        double t1    = phi1->constant();
-                        double t1p1  = phi1->linear(x1(i));
+                        double  t1   = phi1->constant();
+                        double  t1p1 = phi1->linear(x1(i));
                         double dt1   = phi1->constantDerivative();
                         double dt1p1 = phi1->linearDerivative();
                         for (size_t p = 0; p < nx; p++)
                         {
-                            double psi1  = w1(i)*t1;
+                            double  psi1 = w1(i)*t1;
                             double dpsi1 = w1(i)*dt1 + dw1(i)*t1;
-                            double t2    = phi2->constant();
-                            double t2p1  = phi2->linear(x2(j));
+                            double  t2   = phi2->constant();
+                            double  t2p1 = phi2->linear(x2(j));
                             double dt2   = phi2->constantDerivative();
                             double dt2p1 = phi2->linearDerivative();
                             for (size_t q = 0; q < ny; q++)
                             {
-                                double psi2  = w2(j)*t2;
+                                double  psi2 = w2(j)*t2;
                                 double dpsi2 = w2(j)*dt2 + dw2(j)*t2;
                                 mu(i, j)  +=   mu_hat(p+q*nx) * psi1*psi2;
                                 dcp(i, j) += 2*mu_hat(p+q*nx) * (J11_inv(i, j)*dpsi1*psi2 + J21_inv(i, j)*psi1*dpsi2);
@@ -1126,22 +1126,22 @@ void Wing::postprocessing()
                                                         {n(0)*dzdx2(i, j) - n(2)*J12(i, j),   n(2)*J11(i, j)   - n(0)*dzdx1(i, j)},
                                                         {n(1)*J12(i, j)   - n(0)*J22(i, j),   n(0)*J21(i, j)   - n(1)*J11(i, j)}};
                         J_red/=sqrt_a(i, j);
-                        double t1    = phi1->constant();
-                        double t1p1  = phi1->linear(x1(i));
+                        double  t1   = phi1->constant();
+                        double  t1p1 = phi1->linear(x1(i));
                         double dt1   = phi1->constantDerivative();
                         double dt1p1 = phi1->linearDerivative();
                         arma::vec::fixed<2> dmudxi;
                         for (size_t p = 0; p < nx; p++)
                         {
-                            double psi1  = w1(i)*t1;
+                            double  psi1 = w1(i)*t1;
                             double dpsi1 = w1(i)*dt1 + dw1(i)*t1;
-                            double t2    = phi2->constant();
-                            double t2p1  = phi2->linear(x2(j));
+                            double  t2   = phi2->constant();
+                            double  t2p1 = phi2->linear(x2(j));
                             double dt2   = phi2->constantDerivative();
                             double dt2p1 = phi2->linearDerivative();
                             for (size_t q = 0; q < ny; q++)
                             {
-                                double psi2  = w2(j)*t2;
+                                double  psi2 = w2(j)*t2;
                                 double dpsi2 = w2(j)*dt2 + dw2(j)*t2;
                                 mu(i, j) += mu_hat(p+q*nx)*psi1*psi2;
                                 dmudxi += arma::vec::fixed<2>({mu_hat(p+q*nx)*dpsi1*psi2, mu_hat(p+q*nx)*psi1*dpsi2});
@@ -1200,22 +1200,22 @@ void Wing::postprocessing()
                         double J11_inv1 = d1ydx2_gl(i, j)/detJ1;
                         double J21_inv2 =-d2ydx1_gl(i, j)/detJ2;
                         double DCP = 0, DCP1 = 0, DCP2 = 0;
-                        double t1_1    = phi1->constant();
-                        double t1_1p1  = phi1->linear(x1_gl(i));
+                        double  t1_1   = phi1->constant();
+                        double  t1_1p1 = phi1->linear(x1_gl(i));
                         double dt1_1   = phi1->constantDerivative();
                         double dt1_1p1 = phi1->linearDerivative();
-                        double t1_2    = phi1->constant();
-                        double t1_2p1  = phi1->linear(dx1_gl(i));
+                        double  t1_2   = phi1->constant();
+                        double  t1_2p1 = phi1->linear(dx1_gl(i));
                         double dt1_2   = phi1->constantDerivative();
                         double dt1_2p1 = phi1->linearDerivative();
                         for (size_t p = 0; p < nx; p++)
                         {
-                            double t2_1    = phi2->constant();
-                            double t2_1p1  = phi2->linear(x2_gl(j));
+                            double  t2_1   = phi2->constant();
+                            double  t2_1p1 = phi2->linear(x2_gl(j));
                             double dt2_1   = phi2->constantDerivative();
                             double dt2_1p1 = phi2->linearDerivative();
-                            double t2_2    = phi2->constant();
-                            double t2_2p1  = phi2->linear(dx2_gl(j));
+                            double  t2_2   = phi2->constant();
+                            double  t2_2p1 = phi2->linear(dx2_gl(j));
                             double dt2_2   = phi2->constantDerivative();
                             double dt2_2p1 = phi2->linearDerivative();
                             for (size_t q = 0; q < ny; q++)
@@ -1309,22 +1309,22 @@ void Wing::postprocessing()
                                                          {d2xdx2_gl(i, j)*n2_gl(1)-n2_gl(0)*d2ydx2_gl(i, j), n2_gl(0)*d2ydx1_gl(i, j)-d2xdx1_gl(i, j)*n2_gl(1)}};
 
                         arma::vec::fixed<2> dmudxi(arma::fill::zeros), dmu1dxi(arma::fill::zeros), dmu2dxi(arma::fill::zeros);
-                        double t1_1    = phi1->constant();
-                        double t1_1p1  = phi1->linear(x1_gl(i));
+                        double  t1_1   = phi1->constant();
+                        double  t1_1p1 = phi1->linear(x1_gl(i));
                         double dt1_1   = phi1->constantDerivative();
                         double dt1_1p1 = phi1->linearDerivative();
-                        double t1_2    = phi1->constant();
-                        double t1_2p1  = phi1->linear(dx1_gl(i));
+                        double  t1_2   = phi1->constant();
+                        double  t1_2p1 = phi1->linear(dx1_gl(i));
                         double dt1_2   = phi1->constantDerivative();
                         double dt1_2p1 = phi1->linearDerivative();
                         for (size_t p = 0; p < nx; p++)
                         {
-                            double t2_1    = phi2->constant();
-                            double t2_1p1  = phi2->linear(x2_gl(j));
+                            double  t2_1   = phi2->constant();
+                            double  t2_1p1 = phi2->linear(x2_gl(j));
                             double dt2_1   = phi2->constantDerivative();
                             double dt2_1p1 = phi2->linearDerivative();
-                            double t2_2    = phi2->constant();
-                            double t2_2p1  = phi2->linear(dx2_gl(j));
+                            double  t2_2   = phi2->constant();
+                            double  t2_2p1 = phi2->linear(dx2_gl(j));
                             double dt2_2   = phi2->constantDerivative();
                             double dt2_2p1 = phi2->linearDerivative();
                             for (size_t q = 0; q < ny; q++)

@@ -112,8 +112,8 @@ int main()
                                     Wing({&chi6, &chi7, &chi2, &chi5}),
                                     Wing({&chi7, &chi2, &chi5, &chi6}),
                                     Wing({&chi2, &chi5, &chi6, &chi7})});
-            arma::vec cL(16);
-            arma::vec cM(16);
+            arma::mat cL(4, 4);
+            arma::mat cM(4, 4);
             for (size_t i = 0; i < 4; i++)
                 for (size_t j = 0; j < 4; j++)
                 {
@@ -122,8 +122,8 @@ int main()
                     aero.setIterations(1000);
                     aero.linear();
                     aero.output("plot/Data/Aerodynamics/square"+std::to_string(j+4*i));
-                    cL(j+4*i) = aero.get_lift();
-                    cM(j+4*i) = aero.get_moment();
+                    cL(i, j) = aero.get_lift();
+                    cM(i, j) = aero.get_moment();
                 }
             cL.print();
             cM.print();
