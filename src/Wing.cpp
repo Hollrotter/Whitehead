@@ -524,6 +524,8 @@ void Wing::postprocessing()
     }
     else if (phi1->basis == Basis::T)
     {
+        mu.zeros();
+        dcp.zeros();
         switch (analysis)
         {
             case Analysis::linear:
@@ -790,6 +792,8 @@ void Wing::postprocessing()
     }
     else if (phi2->basis == Basis::T)
     {
+        mu.zeros();
+        dcp.zeros();
         switch (analysis)
         {
             case Analysis::linear:
@@ -1056,6 +1060,8 @@ void Wing::postprocessing()
     }
     else
     {
+        mu.zeros();
+        dcp.zeros();
         switch (analysis)
         {
             case Analysis::linear:

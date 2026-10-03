@@ -297,7 +297,7 @@ void Aerodynamics::linear()
                                 }
                             }
                         }
-                }
+            }
     if (sym == Symmetry::y)
     {
         for (size_t sD = 0; sD < wings.size(); sD++)

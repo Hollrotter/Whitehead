@@ -255,9 +255,7 @@ void Aerodynamics::solve()
             {
                 case 0: // South
                 {
-                    arma::vec    MU(nxS, arma::fill::zeros);
-                    arma::vec dMUd1(nxS, arma::fill::zeros);
-                    arma::vec dMUd2(nxS, arma::fill::zeros);
+                    arma::vec MU(nxS), dMUd1(nxS), dMUd2(nxS);
                     double  w2 = wingSource->phi2->weightFunction(-1);
                     double dw2 = wingSource->phi2->weightFunctionDerivative(-1);
                     for (size_t i = 0; i < nxS; i++) // Loop over Collocation Points in 1-direction
@@ -329,9 +327,7 @@ void Aerodynamics::solve()
                 }
                 case 1: // East
                 {
-                    arma::rowvec    MU(nyS, arma::fill::zeros);
-                    arma::rowvec dMUd1(nyS, arma::fill::zeros);
-                    arma::rowvec dMUd2(nyS, arma::fill::zeros);
+                    arma::rowvec MU(nyS), dMUd1(nyS), dMUd2(nyS);
                     double  w1 = wingSource->phi1->weightFunction(1);
                     double dw1 = wingSource->phi1->weightFunctionDerivative(1);
                     for (size_t j = 0; j < nyS; j++) // Loop over Collocation Points in 2-direction
@@ -403,9 +399,7 @@ void Aerodynamics::solve()
                 }
                 case 2: // North
                 {
-                    arma::vec    MU(nxS, arma::fill::zeros);
-                    arma::vec dMUd1(nxS, arma::fill::zeros);
-                    arma::vec dMUd2(nxS, arma::fill::zeros);
+                    arma::vec MU(nxS), dMUd1(nxS), dMUd2(nxS);
                     double  w2 = wingSource->phi2->weightFunction(1);
                     double dw2 = wingSource->phi2->weightFunctionDerivative(1);
                     for (size_t i = 0; i < nxS; i++) // Loop over Collocation Points in 1-direction
@@ -477,9 +471,7 @@ void Aerodynamics::solve()
                 }
                 case 3: // West
                 {
-                    arma::rowvec    MU(nyS, arma::fill::zeros);
-                    arma::rowvec dMUd1(nyS, arma::fill::zeros);
-                    arma::rowvec dMUd2(nyS, arma::fill::zeros);
+                    arma::rowvec MU(nyS), dMUd1(nyS), dMUd2(nyS);
                     double  w1 = wingSource->phi1->weightFunction(-1);
                     double dw1 = wingSource->phi1->weightFunctionDerivative(-1);
                     for (size_t j = 0; j < nyS; j++) // Loop over Collocation Points in 2-direction
@@ -559,9 +551,7 @@ void Aerodynamics::solve()
             {
                 case 0: // South
                 {
-                    arma::vec    MU(nxT, arma::fill::zeros);
-                    arma::vec dMUd1(nxT, arma::fill::zeros);
-                    arma::vec dMUd2(nxT, arma::fill::zeros);
+                    arma::vec MU(nxT), dMUd1(nxT), dMUd2(nxT);
                     double  w2 = wingTarget->phi2->weightFunction(-1);
                     double dw2 = wingTarget->phi2->weightFunctionDerivative(-1);
                     for (size_t i = 0; i < nxT; i++) // Loop over Collocation Points in 1-direction
@@ -633,9 +623,7 @@ void Aerodynamics::solve()
                 }
                 case 1: // East
                 {
-                    arma::rowvec    MU(nyT, arma::fill::zeros);
-                    arma::rowvec dMUd1(nyT, arma::fill::zeros);
-                    arma::rowvec dMUd2(nyT, arma::fill::zeros);
+                    arma::rowvec MU(nyT), dMUd1(nyT), dMUd2(nyT);
                     double  w1 = wingTarget->phi1->weightFunction(1);
                     double dw1 = wingTarget->phi1->weightFunctionDerivative(1);
                     for (size_t j = 0; j < nyT; j++) // Loop over Collocation Points in 2-direction
@@ -707,9 +695,7 @@ void Aerodynamics::solve()
                 }
                 case 2: // North
                 {
-                    arma::vec    MU(nxT, arma::fill::zeros);
-                    arma::vec dMUd1(nxT, arma::fill::zeros);
-                    arma::vec dMUd2(nxT, arma::fill::zeros);
+                    arma::vec MU(nxT), dMUd1(nxT), dMUd2(nxT);
                     double  w2 = wingTarget->phi2->weightFunction(1);
                     double dw2 = wingTarget->phi2->weightFunctionDerivative(1);
                     for (size_t i = 0; i < nxT; i++) // Loop over Collocation Points in 1-direction
@@ -781,9 +767,7 @@ void Aerodynamics::solve()
                 }
                 case 3: // West
                 {
-                    arma::rowvec    MU(nyT, arma::fill::zeros);
-                    arma::rowvec dMUd1(nyT, arma::fill::zeros);
-                    arma::rowvec dMUd2(nyT, arma::fill::zeros);
+                    arma::rowvec MU(nyT), dMUd1(nyT), dMUd2(nyT);
                     double  w1 = wingTarget->phi1->weightFunction(-1);
                     double dw1 = wingTarget->phi1->weightFunctionDerivative(-1);
                     for (size_t j = 0; j < nyT; j++) // Loop over Collocation Points in 2-direction

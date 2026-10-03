@@ -114,14 +114,13 @@ int main()
                                     Wing({&chi2, &chi5, &chi6, &chi7})});
             arma::mat cL(4, 4);
             arma::mat cM(4, 4);
-            for (size_t i = 0; i < 4; i++)
-                for (size_t j = 0; j < 4; j++)
+            for (size_t j = 0; j < 4; j++)
+                for (size_t i = 0; i < 4; i++)
                 {
                     Aerodynamics aero({&w1[i], &w2[j]});
                     aero.pitch(5);
-                    aero.setIterations(1000);
                     aero.linear();
-                    aero.output("plot/Data/Aerodynamics/square"+std::to_string(j+4*i));
+                    aero.output("plot/Data/Aerodynamics/square"+std::to_string(i)+std::to_string(j));
                     cL(i, j) = aero.get_lift();
                     cM(i, j) = aero.get_moment();
                 }
