@@ -247,10 +247,57 @@ void Aerodynamics::solve()
             size_t nxT = wingTarget->nx;
             size_t nyT = wingTarget->ny;
             arma::vec mu_hat = wingSource->mu_hat;
-            arma::mat  PHI1  = wingSource->PHI1;
-            arma::mat  PHI2  = wingSource->PHI2;
-            arma::mat dPHI1  = wingSource->dPHI1;
-            arma::mat dPHI2  = wingSource->dPHI2;
+            arma::vec xiS, xiT;
+            if (interface.sourceCurve == 0)
+            {
+                xiS = wingSource->xi_1;
+                if (interface.targetCurve == 0 || interface.targetCurve == 1)
+                    xiS =-reverse(xiS);
+            }
+            else if (interface.sourceCurve == 2)
+            {
+                xiS = wingSource->xi_1;
+                if (interface.targetCurve == 2 || interface.targetCurve == 3)
+                    xiS =-reverse(xiS);
+            }
+            else if (interface.sourceCurve == 1)
+            {
+                xiS = wingSource->xi_2;
+                if (interface.targetCurve == 0 || interface.targetCurve == 1)
+                    xiS =-reverse(xiS);
+            }
+            else
+            {
+                xiS = wingSource->xi_2;
+                if (interface.targetCurve == 2 || interface.targetCurve == 3)
+                    xiS =-reverse(xiS);
+            }
+
+            if (interface.targetCurve == 0)
+            {
+                xiT = wingTarget->xi_1;
+                if (interface.sourceCurve == 0 || interface.sourceCurve == 1)
+                    xiT =-reverse(xiT);
+            }
+            else if (interface.targetCurve == 2)
+            {
+                xiT = wingTarget->xi_1;
+                if (interface.sourceCurve == 2 || interface.sourceCurve == 3)
+                    xiT =-reverse(xiT);
+            }
+            else if (interface.targetCurve == 1)
+            {
+                xiT = wingTarget->xi_2;
+                if (interface.sourceCurve == 0 || interface.sourceCurve == 1)
+                    xiT =-reverse(xiT);
+            }
+            else
+            {
+                xiT = wingTarget->xi_2;
+                if (interface.sourceCurve == 2 || interface.sourceCurve == 3)
+                    xiT =-reverse(xiT);
+            }
+
             switch (interface.sourceCurve)
             {
                 case 0: // South
@@ -260,16 +307,24 @@ void Aerodynamics::solve()
                     double dw2 = wingSource->phi2->weightFunctionDerivative(-1);
                     for (size_t i = 0; i < nxS; i++) // Loop over Collocation Points in 1-direction
                     {
-                        double  w1 = wingSource->phi1->weightFunction(wingSource->xi_1(i));
-                        double dw1 = wingSource->phi1->weightFunctionDerivative(wingSource->xi_1(i));
+                        double  w1 = wingSource->phi1->weightFunction(xiT(i));
+                        double dw1 = wingSource->phi1->weightFunctionDerivative(xiT(i));
                         for (size_t q = 0; q < nyS; q++) // Loop over Chebyshev Polynomial 2-direction
                         {
                             double m0 = 0, m1 = 0;
+                            double  t1   = wingSource->phi1->constant();
+                            double  t1p1 = wingSource->phi1->linear(xiT(i));
+                            double dt1   = wingSource->phi1->constantDerivative();
+                            double dt1p1 = wingSource->phi1->linearDerivative();
                             for (size_t p = 0; p < nxS; p++) // Loop over Chebyshev Polynomial 1-direction
                             {
-                                double dpsi1 = w1*dPHI1(i, p) + dw1*PHI1(i, p);
-                                m0 += mu_hat(p+q*nxS) * PHI1(i, p);
+                                double dpsi1 = w1*dt1 + dw1*t1;
+                                m0 += mu_hat(p+q*nxS) *    t1;
                                 m1 += mu_hat(p+q*nxS) * dpsi1;
+                                std::swap(t1, t1p1);
+                                wingSource->phi1->next(p, xiT(i), t1, t1p1);
+                                std::swap(dt1, dt1p1);
+                                wingSource->phi1->nextDerivative(p, xiT(i), t1, dt1, dt1p1);
                             }
                             double  t2 = wingSource->phi2->left(q);
                             double dt2 = wingSource->phi2->leftDerivative(q);
@@ -332,16 +387,24 @@ void Aerodynamics::solve()
                     double dw1 = wingSource->phi1->weightFunctionDerivative(1);
                     for (size_t j = 0; j < nyS; j++) // Loop over Collocation Points in 2-direction
                     {
-                        double  w2 = wingSource->phi2->weightFunction(wingSource->xi_2(j));
-                        double dw2 = wingSource->phi2->weightFunctionDerivative(wingSource->xi_2(j));
+                        double  w2 = wingSource->phi2->weightFunction(xiT(j));
+                        double dw2 = wingSource->phi2->weightFunctionDerivative(xiT(j));
                         for (size_t p = 0; p < nxS; p++) // Loop over Chebyshev Polynomial 1-direction
                         {
                             double m0 = 0, m2 = 0;
+                            double  t2   = wingSource->phi2->constant();
+                            double  t2p1 = wingSource->phi2->linear(xiT(j));
+                            double dt2   = wingSource->phi2->constantDerivative();
+                            double dt2p1 = wingSource->phi2->linearDerivative();
                             for (size_t q = 0; q < nyS; q++) // Loop over Chebyshev Polynomial 2-direction
                             {
-                                double dpsi2 = w2*dPHI2(j, q) + dw2*PHI2(j, q);
-                                m0 += mu_hat(p+q*nxS) * PHI2(j, q);
+                                double dpsi2 = w2*dt2 + dw2*t2;
+                                m0 += mu_hat(p+q*nxS) *    t2;
                                 m2 += mu_hat(p+q*nxS) * dpsi2;
+                                std::swap(t2, t2p1);
+                                wingSource->phi2->next(q, xiT(j), t2, t2p1);
+                                std::swap(dt2, dt2p1);
+                                wingSource->phi2->nextDerivative(q, xiT(j), t2, dt2, dt2p1);
                             }
                             double  t1 = wingSource->phi1->right(p);
                             double dt1 = wingSource->phi1->rightDerivative(p);
@@ -404,16 +467,24 @@ void Aerodynamics::solve()
                     double dw2 = wingSource->phi2->weightFunctionDerivative(1);
                     for (size_t i = 0; i < nxS; i++) // Loop over Collocation Points in 1-direction
                     {
-                        double  w1 = wingSource->phi1->weightFunction(wingSource->xi_1(i));
-                        double dw1 = wingSource->phi1->weightFunctionDerivative(wingSource->xi_1(i));
+                        double  w1 = wingSource->phi1->weightFunction(xiT(i));
+                        double dw1 = wingSource->phi1->weightFunctionDerivative(xiT(i));
                         for (size_t q = 0; q < nyS; q++) // Loop over Chebyshev Polynomial 2-direction
                         {
                             double m0 = 0, m1 = 0;
+                            double  t1   = wingSource->phi1->constant();
+                            double  t1p1 = wingSource->phi1->linear(xiT(i));
+                            double dt1   = wingSource->phi1->constantDerivative();
+                            double dt1p1 = wingSource->phi1->linearDerivative();
                             for (size_t p = 0; p < nxS; p++) // Loop over Chebyshev Polynomial 1-direction
                             {
-                                double dpsi1 = w1*dPHI1(i, p) + dw1*PHI1(i, p);
-                                m0 += mu_hat(p+q*nxS) * PHI1(i, p);
+                                double dpsi1 = w1*dt1 + dw1*t1;
+                                m0 += mu_hat(p+q*nxS) *    t1;
                                 m1 += mu_hat(p+q*nxS) * dpsi1;
+                                std::swap(t1, t1p1);
+                                wingSource->phi1->next(p, xiT(i), t1, t1p1);
+                                std::swap(dt1, dt1p1);
+                                wingSource->phi1->nextDerivative(p, xiT(i), t1, dt1, dt1p1);
                             }
                             double  t2 = wingSource->phi2->right(q);
                             double dt2 = wingSource->phi2->rightDerivative(q);
@@ -476,16 +547,24 @@ void Aerodynamics::solve()
                     double dw1 = wingSource->phi1->weightFunctionDerivative(-1);
                     for (size_t j = 0; j < nyS; j++) // Loop over Collocation Points in 2-direction
                     {
-                        double  w2 = wingSource->phi2->weightFunction(wingSource->xi_2(j));
-                        double dw2 = wingSource->phi2->weightFunctionDerivative(wingSource->xi_2(j));
+                        double  w2 = wingSource->phi2->weightFunction(xiT(j));
+                        double dw2 = wingSource->phi2->weightFunctionDerivative(xiT(j));
                         for (size_t p = 0; p < nxS; p++) // Loop over Chebyshev Polynomial 1-direction
                         {
                             double m0 = 0, m2 = 0;
+                            double  t2   = wingSource->phi2->constant();
+                            double  t2p1 = wingSource->phi2->linear(xiT(j));
+                            double dt2   = wingSource->phi2->constantDerivative();
+                            double dt2p1 = wingSource->phi2->linearDerivative();
                             for (size_t q = 0; q < nyS; q++) // Loop over Chebyshev Polynomial 2-direction
                             {
-                                double dpsi2 = w2*dPHI2(j, q) + dw2*PHI2(j, q);
-                                m0 += mu_hat(p+q*nxS) * PHI2(j, q);
+                                double dpsi2 = w2*dt2 + dw2*t2;
+                                m0 += mu_hat(p+q*nxS) *    t2;
                                 m2 += mu_hat(p+q*nxS) * dpsi2;
+                                std::swap(t2, t2p1);
+                                wingSource->phi2->next(q, xiT(j), t2, t2p1);
+                                std::swap(dt2, dt2p1);
+                                wingSource->phi2->nextDerivative(q, xiT(j), t2, dt2, dt2p1);
                             }
                             double  t1 = wingSource->phi1->left(p);
                             double dt1 = wingSource->phi1->leftDerivative(p);
@@ -543,10 +622,6 @@ void Aerodynamics::solve()
                 }
             }
             mu_hat = wingTarget->mu_hat;
-            PHI1   = wingTarget->PHI1;
-            PHI2   = wingTarget->PHI2;
-            dPHI1  = wingTarget->dPHI1;
-            dPHI2  = wingTarget->dPHI2;
             switch (interface.targetCurve)
             {
                 case 0: // South
@@ -556,16 +631,24 @@ void Aerodynamics::solve()
                     double dw2 = wingTarget->phi2->weightFunctionDerivative(-1);
                     for (size_t i = 0; i < nxT; i++) // Loop over Collocation Points in 1-direction
                     {
-                        double  w1 = wingTarget->phi1->weightFunction(wingTarget->xi_1(i));
-                        double dw1 = wingTarget->phi1->weightFunctionDerivative(wingTarget->xi_1(i));
+                        double  w1 = wingTarget->phi1->weightFunction(xiS(i));
+                        double dw1 = wingTarget->phi1->weightFunctionDerivative(xiS(i));
                         for (size_t q = 0; q < nyT; q++) // Loop over Chebyshev Polynomial 2-direction
                         {
                             double m0 = 0, m1 = 0;
+                            double  t1   = wingTarget->phi1->constant();
+                            double  t1p1 = wingTarget->phi1->linear(xiS(i));
+                            double dt1   = wingTarget->phi1->constantDerivative();
+                            double dt1p1 = wingTarget->phi1->linearDerivative();
                             for (size_t p = 0; p < nxT; p++) // Loop over Chebyshev Polynomial 1-direction
                             {
-                                double dpsi1 = w1*dPHI1(i, p) + dw1*PHI1(i, p);
-                                m0 += mu_hat(p+q*nxT) * PHI1(i, p);
+                                double dpsi1 = w1*dt1 + dw1*t1;
+                                m0 += mu_hat(p+q*nxT) *    t1;
                                 m1 += mu_hat(p+q*nxT) * dpsi1;
+                                std::swap(t1, t1p1);
+                                wingTarget->phi1->next(p, xiS(i), t1, t1p1);
+                                std::swap(dt1, dt1p1);
+                                wingTarget->phi1->nextDerivative(p, xiS(i), t1, dt1, dt1p1);
                             }
                             double  t2 = wingTarget->phi2->left(q);
                             double dt2 = wingTarget->phi2->leftDerivative(q);
@@ -628,16 +711,24 @@ void Aerodynamics::solve()
                     double dw1 = wingTarget->phi1->weightFunctionDerivative(1);
                     for (size_t j = 0; j < nyT; j++) // Loop over Collocation Points in 2-direction
                     {
-                        double  w2 = wingTarget->phi2->weightFunction(wingTarget->xi_2(j));
-                        double dw2 = wingTarget->phi2->weightFunctionDerivative(wingTarget->xi_2(j));
+                        double  w2 = wingTarget->phi2->weightFunction(xiS(j));
+                        double dw2 = wingTarget->phi2->weightFunctionDerivative(xiS(j));
                         for (size_t p = 0; p < nxT; p++) // Loop over Chebyshev Polynomial 1-direction
                         {
                             double m0 = 0, m2 = 0;
+                            double  t2   = wingTarget->phi2->constant();
+                            double  t2p1 = wingTarget->phi2->linear(xiS(j));
+                            double dt2   = wingTarget->phi2->constantDerivative();
+                            double dt2p1 = wingTarget->phi2->linearDerivative();
                             for (size_t q = 0; q < nyT; q++) // Loop over Chebyshev Polynomial 2-direction
                             {
-                                double dpsi2 = w2*dPHI2(j, q) + dw2*PHI2(j, q);
-                                m0 += mu_hat(p+q*nxT) * PHI2(j, q);
+                                double dpsi2 = w2*dt2 + dw2*t2;
+                                m0 += mu_hat(p+q*nxT) *    t2;
                                 m2 += mu_hat(p+q*nxT) * dpsi2;
+                                std::swap(t2, t2p1);
+                                wingTarget->phi2->next(q, xiS(j), t2, t2p1);
+                                std::swap(dt2, dt2p1);
+                                wingTarget->phi2->nextDerivative(q, xiS(j), t2, dt2, dt2p1);
                             }
                             double  t1 = wingTarget->phi1->right(p);
                             double dt1 = wingTarget->phi1->rightDerivative(p);
@@ -700,16 +791,24 @@ void Aerodynamics::solve()
                     double dw2 = wingTarget->phi2->weightFunctionDerivative(1);
                     for (size_t i = 0; i < nxT; i++) // Loop over Collocation Points in 1-direction
                     {
-                        double  w1 = wingTarget->phi1->weightFunction(wingTarget->xi_1(i));
-                        double dw1 = wingTarget->phi1->weightFunctionDerivative(wingTarget->xi_1(i));
+                        double  w1 = wingTarget->phi1->weightFunction(xiS(i));
+                        double dw1 = wingTarget->phi1->weightFunctionDerivative(xiS(i));
                         for (size_t q = 0; q < nyT; q++) // Loop over Chebyshev Polynomial 2-direction
                         {
                             double m0 = 0, m1 = 0;
+                            double  t1   = wingTarget->phi1->constant();
+                            double  t1p1 = wingTarget->phi1->linear(xiS(i));
+                            double dt1   = wingTarget->phi1->constantDerivative();
+                            double dt1p1 = wingTarget->phi1->linearDerivative();
                             for (size_t p = 0; p < nxT; p++) // Loop over Chebyshev Polynomial 1-direction
                             {
-                                double dpsi1 = w1*dPHI1(i, p) + dw1*PHI1(i, p);
-                                m0 += mu_hat(p+q*nxT) * PHI1(i, p);
+                                double dpsi1 = w1*dt1 + dw1*t1;
+                                m0 += mu_hat(p+q*nxT) *    t1;
                                 m1 += mu_hat(p+q*nxT) * dpsi1;
+                                std::swap(t1, t1p1);
+                                wingTarget->phi1->next(p, xiS(i), t1, t1p1);
+                                std::swap(dt1, dt1p1);
+                                wingTarget->phi1->nextDerivative(p, xiS(i), t1, dt1, dt1p1);
                             }
                             double  t2 = wingTarget->phi2->right(q);
                             double dt2 = wingTarget->phi2->rightDerivative(q);
@@ -772,16 +871,24 @@ void Aerodynamics::solve()
                     double dw1 = wingTarget->phi1->weightFunctionDerivative(-1);
                     for (size_t j = 0; j < nyT; j++) // Loop over Collocation Points in 2-direction
                     {
-                        double  w2 = wingTarget->phi2->weightFunction(wingTarget->xi_2(j));
-                        double dw2 = wingTarget->phi2->weightFunctionDerivative(wingTarget->xi_2(j));
+                        double  w2 = wingTarget->phi2->weightFunction(xiS(j));
+                        double dw2 = wingTarget->phi2->weightFunctionDerivative(xiS(j));
                         for (size_t p = 0; p < nxT; p++) // Loop over Chebyshev Polynomial 1-direction
                         {
                             double m0 = 0, m2 = 0;
+                            double  t2   = wingTarget->phi2->constant();
+                            double  t2p1 = wingTarget->phi2->linear(xiS(j));
+                            double dt2   = wingTarget->phi2->constantDerivative();
+                            double dt2p1 = wingTarget->phi2->linearDerivative();
                             for (size_t q = 0; q < nyT; q++) // Loop over Chebyshev Polynomial 2-direction
                             {
-                                double dpsi2 = w2*dPHI2(j, q) + dw2*PHI2(j, q);
-                                m0 += mu_hat(p+q*nxT) * PHI2(j, q);
+                                double dpsi2 = w2*dt2 + dw2*t2;
+                                m0 += mu_hat(p+q*nxT) *    t2;
                                 m2 += mu_hat(p+q*nxT) * dpsi2;
+                                std::swap(t2, t2p1);
+                                wingTarget->phi2->next(q, xiS(j), t2, t2p1);
+                                std::swap(dt2, dt2p1);
+                                wingTarget->phi2->nextDerivative(q, xiS(j), t2, dt2, dt2p1);
                             }
                             double  t1 = wingTarget->phi1->left(p);
                             double dt1 = wingTarget->phi1->leftDerivative(p);
@@ -880,15 +987,13 @@ void Aerodynamics::solve()
             {
                 case 0: // South
                 {
-                    arma::vec    MU(nx, arma::fill::zeros);
-                    arma::vec dMUd1(nx, arma::fill::zeros);
-                    arma::vec dMUd2(nx, arma::fill::zeros);
+                    arma::vec MU(nx), dMUd1(nx), dMUd2(nx);
                     double  w2 = wingSource->phi2->weightFunction(-1);
                     double dw2 = wingSource->phi2->weightFunctionDerivative(-1);
                     for (size_t i = 0; i < nx; i++) // Loop over Collocation Points in 1-direction
                     {
-                        double  w1 = wingSource->phi1->weightFunction(wingSource->xi_1(i));
-                        double dw1 = wingSource->phi1->weightFunctionDerivative(wingSource->xi_1(i));
+                        double  w1 = wingSource->phi1->weightFunction(wingSource->x1(i));
+                        double dw1 = wingSource->phi1->weightFunctionDerivative(wingSource->x1(i));
                         for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                         {
                             double m0 = 0, m1 = 0;
@@ -917,15 +1022,13 @@ void Aerodynamics::solve()
                 }
                 case 1: // East
                 {
-                    arma::rowvec    MU(ny, arma::fill::zeros);
-                    arma::rowvec dMUd1(ny, arma::fill::zeros);
-                    arma::rowvec dMUd2(ny, arma::fill::zeros);
+                    arma::rowvec MU(ny), dMUd1(ny), dMUd2(ny);
                     double  w1 = wingSource->phi1->weightFunction(1);
                     double dw1 = wingSource->phi1->weightFunctionDerivative(1);
                     for (size_t j = 0; j < ny; j++) // Loop over Collocation Points in 2-direction
                     {
-                        double  w2 = wingSource->phi2->weightFunction(wingSource->xi_2(j));
-                        double dw2 = wingSource->phi2->weightFunctionDerivative(wingSource->xi_2(j));
+                        double  w2 = wingSource->phi2->weightFunction(wingSource->x2(j));
+                        double dw2 = wingSource->phi2->weightFunctionDerivative(wingSource->x2(j));
                         for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                         {
                             double m0 = 0, m2 = 0;
@@ -954,15 +1057,13 @@ void Aerodynamics::solve()
                 }
                 case 2: // North
                 {
-                    arma::vec    MU(nx, arma::fill::zeros);
-                    arma::vec dMUd1(nx, arma::fill::zeros);
-                    arma::vec dMUd2(nx, arma::fill::zeros);
+                    arma::vec MU(nx), dMUd1(nx), dMUd2(nx);
                     double  w2 = wingSource->phi2->weightFunction(1);
                     double dw2 = wingSource->phi2->weightFunctionDerivative(1);
                     for (size_t i = 0; i < nx; i++) // Loop over Collocation Points in 1-direction
                     {
-                        double  w1 = wingSource->phi1->weightFunction(wingSource->xi_1(i));
-                        double dw1 = wingSource->phi1->weightFunctionDerivative(wingSource->xi_1(i));
+                        double  w1 = wingSource->phi1->weightFunction(wingSource->x1(i));
+                        double dw1 = wingSource->phi1->weightFunctionDerivative(wingSource->x1(i));
                         for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                         {
                             double m0 = 0, m1 = 0;
@@ -991,15 +1092,13 @@ void Aerodynamics::solve()
                 }
                 case 3: // West
                 {
-                    arma::rowvec    MU(ny, arma::fill::zeros);
-                    arma::rowvec dMUd1(ny, arma::fill::zeros);
-                    arma::rowvec dMUd2(ny, arma::fill::zeros);
+                    arma::rowvec MU(ny), dMUd1(ny), dMUd2(ny);
                     double  w1 = wingSource->phi1->weightFunction(-1);
                     double dw1 = wingSource->phi1->weightFunctionDerivative(-1);
                     for (size_t j = 0; j < ny; j++) // Loop over Collocation Points in 2-direction
                     {
-                        double  w2 = wingSource->phi2->weightFunction(wingSource->xi_2(j));
-                        double dw2 = wingSource->phi2->weightFunctionDerivative(wingSource->xi_2(j));
+                        double  w2 = wingSource->phi2->weightFunction(wingSource->x2(j));
+                        double dw2 = wingSource->phi2->weightFunctionDerivative(wingSource->x2(j));
                         for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction   
                         {
                             double m0 = 0, m2 = 0;
@@ -1039,15 +1138,13 @@ void Aerodynamics::solve()
             {
                 case 0: // South
                 {
-                    arma::vec    MU(nx, arma::fill::zeros);
-                    arma::vec dMUd1(nx, arma::fill::zeros);
-                    arma::vec dMUd2(nx, arma::fill::zeros);
+                    arma::vec MU(nx), dMUd1(nx), dMUd2(nx);
                     double  w2 = wingTarget->phi2->weightFunction(-1);
                     double dw2 = wingTarget->phi2->weightFunctionDerivative(-1);
                     for (size_t i = 0; i < nx; i++) // Loop over Collocation Points in 1-direction
                     {
-                        double  w1 = wingTarget->phi1->weightFunction(wingTarget->xi_1(i));
-                        double dw1 = wingTarget->phi1->weightFunctionDerivative(wingTarget->xi_1(i));
+                        double  w1 = wingTarget->phi1->weightFunction(wingTarget->x1(i));
+                        double dw1 = wingTarget->phi1->weightFunctionDerivative(wingTarget->x1(i));
                         for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                         {
                             double m0 = 0, m1 = 0;
@@ -1078,15 +1175,13 @@ void Aerodynamics::solve()
                 }
                 case 1: // East
                 {
-                    arma::rowvec    MU(ny, arma::fill::zeros);
-                    arma::rowvec dMUd1(ny, arma::fill::zeros);
-                    arma::rowvec dMUd2(ny, arma::fill::zeros);
+                    arma::rowvec MU(ny), dMUd1(ny), dMUd2(ny);
                     double  w1 = wingTarget->phi1->weightFunction(1);
                     double dw1 = wingTarget->phi1->weightFunctionDerivative(1);
                     for (size_t j = 0; j < ny; j++) // Loop over Collocation Points in 2-direction
                     {
-                        double  w2 = wingTarget->phi2->weightFunction(wingTarget->xi_2(j));
-                        double dw2 = wingTarget->phi2->weightFunctionDerivative(wingTarget->xi_2(j));
+                        double  w2 = wingTarget->phi2->weightFunction(wingTarget->x2(j));
+                        double dw2 = wingTarget->phi2->weightFunctionDerivative(wingTarget->x2(j));
                         for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                         {
                             double m0 = 0, m2 = 0;
@@ -1117,15 +1212,13 @@ void Aerodynamics::solve()
                 }
                 case 2: // North
                 {
-                    arma::vec    MU(nx, arma::fill::zeros);
-                    arma::vec dMUd1(nx, arma::fill::zeros);
-                    arma::vec dMUd2(nx, arma::fill::zeros);
+                    arma::vec MU(nx),dMUd1(nx), dMUd2(nx);
                     double  w2 = wingTarget->phi2->weightFunction(1);
                     double dw2 = wingTarget->phi2->weightFunctionDerivative(1);
                     for (size_t i = 0; i < nx; i++) // Loop over Collocation Points in 1-direction
                     {
-                        double  w1 = wingTarget->phi1->weightFunction(wingTarget->xi_1(i));
-                        double dw1 = wingTarget->phi1->weightFunctionDerivative(wingTarget->xi_1(i));
+                        double  w1 = wingTarget->phi1->weightFunction(wingTarget->x1(i));
+                        double dw1 = wingTarget->phi1->weightFunctionDerivative(wingTarget->x1(i));
                         for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
                         {
                             double m0 = 0, m1 = 0;
@@ -1156,15 +1249,13 @@ void Aerodynamics::solve()
                 }
                 case 3: // West
                 {
-                    arma::rowvec    MU(ny, arma::fill::zeros);
-                    arma::rowvec dMUd1(ny, arma::fill::zeros);
-                    arma::rowvec dMUd2(ny, arma::fill::zeros);
+                    arma::rowvec MU(ny), dMUd1(ny), dMUd2(ny);
                     double  w1 = wingTarget->phi1->weightFunction(-1);
                     double dw1 = wingTarget->phi1->weightFunctionDerivative(-1);
                     for (size_t j = 0; j < ny; j++) // Loop over Collocation Points in 2-direction
                     {
-                        double  w2 = wingTarget->phi2->weightFunction(wingTarget->xi_2(j));
-                        double dw2 = wingTarget->phi2->weightFunctionDerivative(wingTarget->xi_2(j));
+                        double  w2 = wingTarget->phi2->weightFunction(wingTarget->x2(j));
+                        double dw2 = wingTarget->phi2->weightFunctionDerivative(wingTarget->x2(j));
                         for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                         {
                             double m0 = 0, m2 = 0;

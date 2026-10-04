@@ -10,7 +10,7 @@ class Aerodynamics
     double residualTarget = 1e-10;
     Symmetry sym = Symmetry::none;
     Analysis analysis = Analysis::linear;
-    double lambda0 = 2;
+    double lambda0 = 2.0;
     double omega = 1.0;
     arma::field<arma::mat> bw;
     Aerodynamics fromWings(std::vector<Wing*>);
@@ -18,10 +18,6 @@ public:
     Aerodynamics() = default;
     Aerodynamics(const std::vector<Wing*> &_w, const std::vector<Interface> &_i) : wings(_w), interfaces(_i) {};
     explicit Aerodynamics(const std::vector<Wing*> &_w) : Aerodynamics(fromWings(_w)) {};
-    void setlambda(double l) pre(l > 0 && "lambda must be postiive!")
-    {
-        lambda0 = l;
-    }
     // Sets the dynamic pressure
     void dynamicPressure(double _qdyn)
     {
@@ -42,6 +38,14 @@ public:
     void setIterations(const size_t itt)
     {
         iterations = itt;
+    }
+    void setlambda(double l) pre(l > 0 && "lambda must be postiive!")
+    {
+        lambda0 = l;
+    }
+    void setomega(double o) pre(o > 0 && "omega must be positive!")
+    {
+        omega = o;
     }
     void boundary(const Lagrange::CurveInterpolant* dir, const BC bc)
     {

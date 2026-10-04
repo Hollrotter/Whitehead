@@ -156,6 +156,8 @@ void Wing::output(std::string filename) const
 
 void Wing::init()
 {
+    A.zeros();
+    b.zeros();
     xi_1 = phi1->xi;
     xi_2 = phi2->xi;
     PHI1.col(0)  = phi1->constant(nx);
