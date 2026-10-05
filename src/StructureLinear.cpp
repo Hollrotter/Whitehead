@@ -9,166 +9,26 @@ void Structure::linear()
     for (const Interface& interface:interfaces)
     {
         Direction targetDirection = static_cast<Direction>(interface.targetCurve);
-        Membrane *membraneTarget = membranes[interface.targetDomain];
-        switch (interface.sourceCurve)
-        {
-            case 0: // South
-            {
-                switch (interface.targetCurve)
-                {
-                    case 0: // South
-                        membraneTarget->boundary(Field::z, targetDirection, BC::Robin, interface.lambdaSource,-1);
-                        break;
-                    case 1: // East
-                        membraneTarget->boundary(Field::z, targetDirection, BC::Robin, interface.lambdaSource, 1);
-                        break;
-                    case 2: // North
-                        membraneTarget->boundary(Field::z, targetDirection, BC::Robin, interface.lambdaSource, 1);
-                        break;
-                    case 3: // West
-                        membraneTarget->boundary(Field::z, targetDirection, BC::Robin, interface.lambdaSource,-1);
-                        break;
-                }
-                break;
-            }
-            case 1: // East
-            {
-                switch (interface.targetCurve)
-                {
-                    case 0: // South
-                        membraneTarget->boundary(Field::z, targetDirection, BC::Robin, interface.lambdaSource,-1);
-                        break;
-                    case 1: // East
-                        membraneTarget->boundary(Field::z, targetDirection, BC::Robin, interface.lambdaSource, 1);
-                        break;
-                    case 2: // North
-                        membraneTarget->boundary(Field::z, targetDirection, BC::Robin, interface.lambdaSource, 1);
-                        break;
-                    case 3: // West
-                        membraneTarget->boundary(Field::z, targetDirection, BC::Robin, interface.lambdaSource,-1);
-                        break;
-                }
-                break;
-            }
-            case 2: // North
-            {
-                switch (interface.targetCurve)
-                {
-                    case 0: // South
-                        membraneTarget->boundary(Field::z, targetDirection, BC::Robin, interface.lambdaSource,-1);
-                        break;
-                    case 1: // East
-                        membraneTarget->boundary(Field::z, targetDirection, BC::Robin, interface.lambdaSource, 1);
-                        break;
-                    case 2: // North
-                        membraneTarget->boundary(Field::z, targetDirection, BC::Robin, interface.lambdaSource, 1);
-                        break;
-                    case 3: // West
-                        membraneTarget->boundary(Field::z, targetDirection, BC::Robin, interface.lambdaSource,-1);
-                        break;
-                }
-                break;
-            }
-            case 3: // West
-            {
-                switch (interface.targetCurve)
-                {
-                    case 0: // South
-                        membraneTarget->boundary(Field::z, targetDirection, BC::Robin, interface.lambdaSource,-1);
-                        break;
-                    case 1: // East
-                        membraneTarget->boundary(Field::z, targetDirection, BC::Robin, interface.lambdaSource, 1);
-                        break;
-                    case 2: // North
-                        membraneTarget->boundary(Field::z, targetDirection, BC::Robin, interface.lambdaSource, 1);
-                        break;
-                    case 3: // West
-                        membraneTarget->boundary(Field::z, targetDirection, BC::Robin, interface.lambdaSource,-1);
-                        break;
-                }
-                break;
-            }
-        }
         Direction sourceDirection = static_cast<Direction>(interface.sourceCurve);
+        Membrane *membraneTarget = membranes[interface.targetDomain];
         Membrane *membraneSource = membranes[interface.sourceDomain];
         switch (interface.targetCurve)
         {
-            case 0: // South
-            {
-                switch (interface.sourceCurve)
-                {
-                    case 0: // South
-                        membraneSource->boundary(Field::z, sourceDirection, BC::Robin, interface.lambdaTarget,-1);
-                        break;
-                    case 1: // East
-                        membraneSource->boundary(Field::z, sourceDirection, BC::Robin, interface.lambdaTarget, 1);
-                        break;
-                    case 2: // North
-                        membraneSource->boundary(Field::z, sourceDirection, BC::Robin, interface.lambdaTarget, 1);
-                        break;
-                    case 3: // West
-                        membraneSource->boundary(Field::z, sourceDirection, BC::Robin, interface.lambdaTarget,-1);
-                        break;
-                }
+            case 0: case 3: // South or West
+                membraneTarget->boundary(Field::z, targetDirection, BC::Robin, interface.lambdaSource,-1);
                 break;
-            }
-            case 1: // East
-            {
-                switch (interface.sourceCurve)
-                {
-                    case 0: // South
-                        membraneSource->boundary(Field::z, sourceDirection, BC::Robin, interface.lambdaTarget,-1);
-                        break;
-                    case 1: // East
-                        membraneSource->boundary(Field::z, sourceDirection, BC::Robin, interface.lambdaTarget, 1);
-                        break;
-                    case 2: // North
-                        membraneSource->boundary(Field::z, sourceDirection, BC::Robin, interface.lambdaTarget, 1);
-                        break;
-                    case 3: // West
-                        membraneSource->boundary(Field::z, sourceDirection, BC::Robin, interface.lambdaTarget,-1);
-                        break;
-                }
+            case 1: case 2: // East or North
+                membraneTarget->boundary(Field::z, targetDirection, BC::Robin, interface.lambdaSource, 1);
                 break;
-            }
-            case 2: // North
-            {
-                switch (interface.sourceCurve)
-                {
-                    case 0: // South
-                        membraneSource->boundary(Field::z, sourceDirection, BC::Robin, interface.lambdaTarget,-1);
-                        break;
-                    case 1: // East
-                        membraneSource->boundary(Field::z, sourceDirection, BC::Robin, interface.lambdaTarget, 1);
-                        break;
-                    case 2: // North
-                        membraneSource->boundary(Field::z, sourceDirection, BC::Robin, interface.lambdaTarget, 1);
-                        break;
-                    case 3: // West
-                        membraneSource->boundary(Field::z, sourceDirection, BC::Robin, interface.lambdaTarget,-1);
-                        break;
-                }
+        }
+        switch (interface.sourceCurve)
+        {
+            case 0: case 3: // South or West
+                membraneSource->boundary(Field::z, sourceDirection, BC::Robin, interface.lambdaTarget,-1);
                 break;
-            }
-            case 3: // West
-            {
-                switch (interface.sourceCurve)
-                {
-                    case 0: // South
-                        membraneSource->boundary(Field::z, sourceDirection, BC::Robin, interface.lambdaTarget,-1);
-                        break;
-                    case 1: // East
-                        membraneSource->boundary(Field::z, sourceDirection, BC::Robin, interface.lambdaTarget, 1);
-                        break;
-                    case 2: // North
-                        membraneSource->boundary(Field::z, sourceDirection, BC::Robin, interface.lambdaTarget, 1);
-                        break;
-                    case 3: // West
-                        membraneSource->boundary(Field::z, sourceDirection, BC::Robin, interface.lambdaTarget,-1);
-                        break;
-                }
+            case 1: case 2: // East or North
+                membraneSource->boundary(Field::z, sourceDirection, BC::Robin, interface.lambdaTarget, 1);
                 break;
-            }
         }
     }
     #pragma omp parallel for

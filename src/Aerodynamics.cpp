@@ -43,174 +43,56 @@ void Aerodynamics::solve()
     for (Interface& interface:interfaces)
     {
         Direction targetDirection = static_cast<Direction>(interface.targetCurve);
+        Direction sourceDirection = static_cast<Direction>(interface.sourceCurve);
         Wing *wingTarget = wings[interface.targetDomain];
+        Wing *wingSource = wings[interface.sourceDomain];
         switch (interface.sourceCurve)
         {
             case 0: // South
-            {
                 interface.lambdaSource = lambda0*mean(wings[interface.sourceDomain]->h_2s2_south);
-                switch (interface.targetCurve)
-                {
-                    case 0: // South
-                        wingTarget->boundary(targetDirection, BC::Robin, interface.lambdaSource,-1);
-                        break;
-                    case 1: // East
-                        wingTarget->boundary(targetDirection, BC::Robin, interface.lambdaSource, 1);
-                        break;
-                    case 2: // North
-                        wingTarget->boundary(targetDirection, BC::Robin, interface.lambdaSource, 1);
-                        break;
-                    case 3: // West
-                        wingTarget->boundary(targetDirection, BC::Robin, interface.lambdaSource,-1);
-                        break;
-                }
                 break;
-            }
             case 1: // East
-            {
                 interface.lambdaSource = lambda0*mean(wings[interface.sourceDomain]->h_1s1_east);
-                switch (interface.targetCurve)
-                {
-                    case 0: // South
-                        wingTarget->boundary(targetDirection, BC::Robin, interface.lambdaSource,-1);
-                        break;
-                    case 1: // East
-                        wingTarget->boundary(targetDirection, BC::Robin, interface.lambdaSource, 1);
-                        break;
-                    case 2: // North
-                        wingTarget->boundary(targetDirection, BC::Robin, interface.lambdaSource, 1);
-                        break;
-                    case 3: // West
-                        wingTarget->boundary(targetDirection, BC::Robin, interface.lambdaSource,-1);
-                        break;
-                }
                 break;
-            }
             case 2: // North
-            {
                 interface.lambdaSource = lambda0*mean(wings[interface.sourceDomain]->h_2s2_north);
-                switch (interface.targetCurve)
-                {
-                    case 0: // South
-                        wingTarget->boundary(targetDirection, BC::Robin, interface.lambdaSource,-1);
-                        break;
-                    case 1: // East
-                        wingTarget->boundary(targetDirection, BC::Robin, interface.lambdaSource, 1);
-                        break;
-                    case 2: // North
-                        wingTarget->boundary(targetDirection, BC::Robin, interface.lambdaSource, 1);
-                        break;
-                    case 3: // West
-                        wingTarget->boundary(targetDirection, BC::Robin, interface.lambdaSource,-1);
-                        break;
-                }
                 break;
-            }
             case 3: // West
-            {
                 interface.lambdaSource = lambda0*mean(wings[interface.sourceDomain]->h_1s1_west);
-                switch (interface.targetCurve)
-                {
-                    case 0: // South
-                        wingTarget->boundary(targetDirection, BC::Robin, interface.lambdaSource,-1);
-                        break;
-                    case 1: // East
-                        wingTarget->boundary(targetDirection, BC::Robin, interface.lambdaSource, 1);
-                        break;
-                    case 2: // North
-                        wingTarget->boundary(targetDirection, BC::Robin, interface.lambdaSource, 1);
-                        break;
-                    case 3: // West
-                        wingTarget->boundary(targetDirection, BC::Robin, interface.lambdaSource,-1);
-                        break;
-                }
                 break;
-            }
         }
-        Direction sourceDirection = static_cast<Direction>(interface.sourceCurve);
-        Wing *wingSource = wings[interface.sourceDomain];
         switch (interface.targetCurve)
         {
             case 0: // South
-            {
                 interface.lambdaTarget = lambda0*mean(wings[interface.targetDomain]->h_2s2_south);
-                switch (interface.sourceCurve)
-                {
-                    case 0: // South
-                        wingSource->boundary(sourceDirection, BC::Robin, interface.lambdaTarget,-1);
-                        break;
-                    case 1: // East
-                        wingSource->boundary(sourceDirection, BC::Robin, interface.lambdaTarget, 1);
-                        break;
-                    case 2: // North
-                        wingSource->boundary(sourceDirection, BC::Robin, interface.lambdaTarget, 1);
-                        break;
-                    case 3: // West
-                        wingSource->boundary(sourceDirection, BC::Robin, interface.lambdaTarget,-1);
-                        break;
-                }
                 break;
-            }
             case 1: // East
-            {
                 interface.lambdaTarget = lambda0*mean(wings[interface.targetDomain]->h_1s1_east);
-                switch (interface.sourceCurve)
-                {
-                    case 0: // South
-                        wingSource->boundary(sourceDirection, BC::Robin, interface.lambdaTarget,-1);
-                        break;
-                    case 1: // East
-                        wingSource->boundary(sourceDirection, BC::Robin, interface.lambdaTarget, 1);
-                        break;
-                    case 2: // North
-                        wingSource->boundary(sourceDirection, BC::Robin, interface.lambdaTarget, 1);
-                        break;
-                    case 3: // West
-                        wingSource->boundary(sourceDirection, BC::Robin, interface.lambdaTarget,-1);
-                        break;
-                }
                 break;
-            }
             case 2: // North
-            {
                 interface.lambdaTarget = lambda0*mean(wings[interface.targetDomain]->h_2s2_north);
-                switch (interface.sourceCurve)
-                {
-                    case 0: // South
-                        wingSource->boundary(sourceDirection, BC::Robin, interface.lambdaTarget,-1);
-                        break;
-                    case 1: // East
-                        wingSource->boundary(sourceDirection, BC::Robin, interface.lambdaTarget, 1);
-                        break;
-                    case 2: // North
-                        wingSource->boundary(sourceDirection, BC::Robin, interface.lambdaTarget, 1);
-                        break;
-                    case 3: // West
-                        wingSource->boundary(sourceDirection, BC::Robin, interface.lambdaTarget,-1);
-                        break;
-                }
                 break;
-            }
             case 3: // West
-            {
                 interface.lambdaTarget = lambda0*mean(wings[interface.targetDomain]->h_1s1_west);
-                switch (interface.sourceCurve)
-                {
-                    case 0: // South
-                        wingSource->boundary(sourceDirection, BC::Robin, interface.lambdaTarget,-1);
-                        break;
-                    case 1: // East
-                        wingSource->boundary(sourceDirection, BC::Robin, interface.lambdaTarget, 1);
-                        break;
-                    case 2: // North
-                        wingSource->boundary(sourceDirection, BC::Robin, interface.lambdaTarget, 1);
-                        break;
-                    case 3: // West
-                        wingSource->boundary(sourceDirection, BC::Robin, interface.lambdaTarget,-1);
-                        break;
-                }
                 break;
-            }
+        }
+        switch (interface.sourceCurve)
+        {
+            case 0: case 3: // South or West
+                wingSource->boundary(sourceDirection, BC::Robin, interface.lambdaTarget,-1);
+                break;
+            case 1: case 2: // East or North
+                wingSource->boundary(sourceDirection, BC::Robin, interface.lambdaTarget, 1);
+                break;
+        }
+        switch (interface.targetCurve)
+        {
+            case 0: case 3: // South or West
+                wingTarget->boundary(targetDirection, BC::Robin, interface.lambdaSource,-1);
+                break;
+            case 1: case 2: // East or North
+                wingTarget->boundary(targetDirection, BC::Robin, interface.lambdaSource, 1);
+                break;
         }
     }
     // Calculation for each wing surface

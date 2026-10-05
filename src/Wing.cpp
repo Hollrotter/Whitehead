@@ -521,8 +521,8 @@ void Wing::postprocessing()
             default:
                 std::println("Only linear and nonlinear analysis are implemented for Wing!");
                 exit(EXIT_FAILURE);
-            areaComputed = true;
         }
+        areaComputed = true;
     }
     else if (phi1->basis == Basis::T)
     {
