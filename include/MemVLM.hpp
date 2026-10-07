@@ -6,6 +6,7 @@ class MemVLM
 {
     Membrane* membrane; // Structure model
     VLM* vlm; // Aerodynamic model
+    Coupling coupling = Coupling::monolithic; // Coupling approach
     size_t iter = 100; // Max. number of iterations for partitioned solution
     double changeTarget = 1e-5; // Target change for cL and cM in partitioned solution
 public:

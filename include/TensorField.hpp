@@ -64,6 +64,7 @@ public:
     friend class Membrane;
     friend class Wing;
     friend class Aerodynamics;
+    friend class MemVLM;
 };
 
 inline arma::mat  operator+(TensorField A, const TensorField &B)

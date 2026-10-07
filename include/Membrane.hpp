@@ -443,6 +443,7 @@ public:
     void operator()(const std::array<Lagrange::CurveInterpolant*, 4>);
     TensorField operator()(const Field);
     friend class Structure;
+    friend class MemVLM;
 private:
     arma::mat ddx() const
     {

@@ -91,7 +91,7 @@ void VLM::vlmSolve()
 void VLM::vlmEval()
 {
     arma::vec r = repelem((ar.head(ny)+ar.tail(ny))/2, nx, 1);
-    arma::vec w = arma::zeros(nx*ny);
+    arma::vec w = wE;
     #pragma omp parallel for
     for (size_t n = 0; n < ny; n++)
         w.subvec(n*nx,(n+1)*nx-1) += c.diff((2*RC(arma::span(n*nx,(n+1)*nx-1),0)-x(0,n)-x(0,n+1))/(x(nx, n)-x(0, n)+x(nx, n+1)-x(0, n+1)));

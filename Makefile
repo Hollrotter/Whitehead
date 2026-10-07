@@ -14,10 +14,11 @@ VLM = lib/VLM.o lib/VLMAerodynamicMatrix.o lib/Vortex.o
 AIRFOIL = lib/Airfoil.o lib/AirfoilAerodynamicMatrix.o lib/AirfoilKernel.o
 WING = lib/Wing.o lib/WingAerodynamicMatrix.o lib/WingBoundary.o
 AERODYNAMICS = lib/Aerodynamics.o lib/AerodynamicsBoundary.o lib/AerodynamicsLinear.o lib/AerodynamicsNonlinear.o
+MEMVLM = lib/MemVLM.o
 MISC = lib/misc.o lib/fastgl.o lib/gaujac.o
 BASIS = lib/ChebyshevT.o lib/ChebyshevU.o lib/JacobiAlpha.o lib/JacobiBeta.o
 OBJS = $(STRING) $(MEMBRANE) $(STRUCTURE) $(CHEBYSHEV) $(LAGRANGE) $(METRIC) $(SPLINE) $(DVM) $(VLM) \
-$(AIRFOIL) $(WING) $(AERODYNAMICS) $(MISC) $(BASIS)
+$(AIRFOIL) $(WING) $(AERODYNAMICS) $(MEMVLM) $(MISC) $(BASIS)
 BINS = $(OBJS) lib/libWhitehead.a
 OPTIONS = g++ -Ofast -march=native -Wall -c
 INCLUDE = -I./include -fopenmp -fcontracts -std=c++26
@@ -68,6 +69,9 @@ cleanWing:
 
 cleanAerodynamics:
 	-rm $(AERODYNAMICS)
+
+cleanMemVLM:
+	-rm $(MEMVLM)
 
 cleanMisc:
 	-rm $(MISC)

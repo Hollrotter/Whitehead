@@ -24,6 +24,7 @@ class VLM
     arma::mat RC = arma::zeros(nxy, 3); // Collocation points as vector
     arma::cube rC = arma::zeros(nx, ny, 3); // Collocation points as matrix
     arma::cube rG = arma::zeros(nx, ny, 3); // Pressure point of panel
+    arma::vec wE = arma::zeros(nxy); // Slope from deformation
     arma::cube dcp = arma::zeros(nx+1, ny+1, con); // Difference of non-dimensional pressure
     double area = 0; // Wing area
     arma::vec lift   = arma::zeros(con); // Lift in N
@@ -105,6 +106,7 @@ public:
     {
         analysis = _analysis;
     }
+    friend class MemVLM;
 private:
     // Computing some geometrc properties like the collocation points
     void geometry();

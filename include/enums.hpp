@@ -33,6 +33,12 @@ enum class CamberType
     b_spline // The profile is approximated by a B-Spline
 };
 
+enum class Coupling
+{
+    monolithic, // Simultaneous solution of Fluid and Structure
+    partitioned // Iterative solution of FSI
+};
+
 enum class CurveType
 {
     Boundary,
