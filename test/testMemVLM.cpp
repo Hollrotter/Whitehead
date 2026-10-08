@@ -2,9 +2,9 @@
 
 int main()
 {
-    switch (0)
+    switch (1)
     {
-        case 0:
+        case 0: // Rectangular Wing
         {
             Point p1(-0.5, 0);
             Point p2( 0.5, 0);
@@ -47,6 +47,7 @@ int main()
             vlm.symmetry(Symmetry::y);
 
             MemVLM memvlm(&membrane, &vlm);
+            memvlm(Coupling::monolithic);
 
             memvlm.linear();
 
@@ -62,6 +63,75 @@ int main()
             std::cout << "cL = " << vlm.get_lift().t()   / 0.1   << '\n';
             std::cout << "cM = " << vlm.get_moment().t() / 0.1 << '\n';
 
+            break;
+        }
+        case 1: // Elliptic Wing
+        {
+            double b = 10;
+            double c = 1.39;
+
+            size_t nxS = 10;
+            size_t nyS = 20;
+
+            size_t nxA = 40;
+            size_t nyA = 60;
+
+            arma::mat data;
+            data.load(arma::csv_name("clarky-il.csv", arma::csv_opts::no_header));
+
+            arma::vec x1A = c/2*(1+Chebyshev::gaussLobatto(nxA));
+            arma::vec x2A = 0.98*b/4*(1+Chebyshev::gaussLobatto(nyA));
+
+            arma::vec yA = x2A;
+            arma::mat xA = (x1A - c/4)*sqrt(1-pow(x2A/(b/2), 2)).t();
+
+            VLM vlm(xA, yA);
+            vlm.pitch(5);
+            vlm.camber(Camber(Splinefit(data.col(0)/1e3, data.col(1)/1e3, 10)));
+
+            vlm.dynamicPressure(10);
+            vlm.symmetry(Symmetry::y);
+
+            arma::vec x1S = c/2*(1+Chebyshev::gaussLobatto(nxS));
+            arma::vec x2S = 0.98*b/4*(1+Chebyshev::gaussLobatto(nyS));
+
+            arma::mat yS = arma::ones(x1S.size(), 1)*x2S.t();
+            arma::mat xS = (x1S - c/4)*sqrt(1-pow(x2S/(b/2), 2)).t();
+
+            Lagrange::CurveInterpolant chi1(xS.col(0),         yS.col(0));
+            Lagrange::CurveInterpolant chi2(xS.row(nxS-1).t(), yS.row(nxS-1).t());
+            Lagrange::CurveInterpolant chi3(xS.col(nyS-1),     yS.col(nyS-1));
+            Lagrange::CurveInterpolant chi4(xS.row(0).t(),     yS.row(0).t());
+
+            Membrane membrane({&chi1, &chi2, &chi3, &chi4});
+            membrane.boundary(Field::z,   Direction::N, BC::Dirichlet);
+            membrane.boundary(Field::z,   Direction::S, BC::Neumann);
+            membrane.boundary(Field::z,   Direction::W, BC::Dirichlet);
+            membrane.boundary(Field::z,   Direction::E, BC::Dirichlet);
+
+            membrane.boundary(Field::n12, Direction::N, BC::Dirichlet);
+            membrane.boundary(Field::v1,  Direction::S, BC::Dirichlet);
+            membrane.boundary(Field::v1,  Direction::W, BC::Dirichlet);
+            membrane.boundary(Field::n11, Direction::E, BC::Dirichlet, 25);
+
+            membrane.boundary(Field::n22, Direction::N, BC::Dirichlet, 25);
+            membrane.boundary(Field::v2,  Direction::S, BC::Dirichlet);
+            membrane.boundary(Field::n12, Direction::W, BC::Dirichlet);
+            membrane.boundary(Field::n12, Direction::E, BC::Dirichlet);
+
+            membrane.planeStrain();
+
+            MemVLM memvlm(&membrane, &vlm);
+            memvlm(Coupling::monolithic);
+            memvlm.linear();
+
+            membrane.output(Field::z,   "plot/Data/MemVLM/z");
+            membrane.output(Field::v1,  "plot/Data/MemVLM/v1");
+            membrane.output(Field::v2,  "plot/Data/MemVLM/v2");
+            membrane.output(Field::n11, "plot/Data/MemVLM/n11");
+            membrane.output(Field::n12, "plot/Data/MemVLM/n12");
+            membrane.output(Field::n22, "plot/Data/MemVLM/n22");
+            vlm.output("plot/Data/MemVLM/p");
             break;
         }
     }

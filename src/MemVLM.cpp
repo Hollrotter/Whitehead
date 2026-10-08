@@ -91,7 +91,39 @@ void MemVLM::linear()
         {
             size_t nxy_m = membrane->nxy;
             size_t nxy_v = vlm->nxy;
+            size_t nxy = nxy_m + nxy_v;
             membrane->structuralMatrix();
+            for (size_t j = 1; j < ny_m-1; j++)
+            {
+                // BC west
+                membrane->zBoundary(membrane->z.westBC, membrane->z.west(j),      0, j, membrane->z.r1West, membrane->z.r2West, membrane->h_1s1_west(j), membrane->h_1s2_west(j));
+                // BC east
+                membrane->zBoundary(membrane->z.eastBC, membrane->z.east(j), nx_m-1, j, membrane->z.r1East, membrane->z.r2East, membrane->h_1s1_east(j), membrane->h_1s2_east(j));
+            }
+
+            for (size_t i = 1; i < nx_m-1; i++)
+            {
+                // BC south
+                membrane->zBoundary(membrane->z.southBC, membrane->z.south(i), i,      0, membrane->z.r1South, membrane->z.r2South, membrane->h_2s1_south(i), membrane->h_2s2_south(i));
+                // BC north
+                membrane->zBoundary(membrane->z.northBC, membrane->z.north(i), i, ny_m-1, membrane->z.r1North, membrane->z.r2North, membrane->h_2s1_north(i), membrane->h_2s2_north(i));
+            }
+
+            // BC south-west corner (i = 0, j = 0)
+            membrane->zBoundary(membrane->z.southBC, membrane->z.south(0), 0, 0, membrane->z.r1South, membrane->z.r2South, membrane->h_2s1_south(0), membrane->h_2s2_south(0));
+
+            // BC north-west corner (i = 0, j = ny-1)
+            size_t j = ny_m-1;
+            membrane->zBoundary(membrane->z.westBC, membrane->z.west(j),   0, j, membrane->z.r1West,  membrane->z.r2West,  membrane->h_1s1_west(j),  membrane->h_1s2_west(j));
+
+            // BC south-east corner (i = nx-1, j = 0)
+            size_t i = nx_m-1;
+            membrane->zBoundary(membrane->z.eastBC, membrane->z.east(0),   i, 0, membrane->z.r1East,  membrane->z.r2East,  membrane->h_1s1_east(0),  membrane->h_1s2_east(0));
+
+            // BC north-east corner (i = nx-1, j = ny-1)
+            i = nx_m-1;
+            j = ny_m-1;
+            membrane->zBoundary(membrane->z.northBC, membrane->z.north(i), i, j, membrane->z.r1North, membrane->z.r2North, membrane->h_2s1_north(i), membrane->h_2s2_north(i));
 
             arma::vec DX(nxy_v);
             for (size_t n = 0, k = 0; n < ny_v; n++)
@@ -103,117 +135,29 @@ void MemVLM::linear()
                                     join_horiz(-TA * (repelem(vectorise(J_inv.slice(0)), 1, nxy_m) % membrane->DD1
                                                    +  repelem(vectorise(J_inv.slice(1)), 1, nxy_m) % membrane->DD2), vlm->A));
 
-            arma::mat RHS(M.n_rows, vlm->con);
-            arma::mat DDX = membrane->DD1;
-            arma::mat DDY = membrane->DD2;
             for (size_t j = 0; j < ny_m; j++)
             {
                 size_t k = j*nx_m;
+                M(k, arma::span(nxy_m, nxy-1)).zeros();
 
-                switch (membrane->z.southBC)
-                {
-                    case BC::Dirichlet:
-                        M.row(k).zeros();
-                        M(k, k) = 1;
-                        RHS(k) = membrane->z.south(j);
-                        break;
-                    case BC::Neumann:
-                        M.row(k).zeros();
-                        M.row(k).cols(0, nxy_m-1) = DDX.row(k)*membrane->ec(0, j, 0) + DDY.row(k)*membrane->ec(0, j, 1);
-                        RHS(k) = membrane->z.south(j);
-                        break;
-                    case BC::Robin:
-                        M.row(k).zeros();
-                        M.row(k).cols(0, nxy_m-1) = membrane->z.r2South*(DDX.row(k)*membrane->ec(0, j, 0) + DDY.row(k)*membrane->ec(0, j, 1));
-                        M(k, k) += membrane->z.r1South;
-                        RHS(k) = membrane->z.south(j);
-                        break;
-                    case BC::None:
-                        break;
-                    default:
-                        std::println("A boundary condition was chosen, that is not implemented for membranes!");
-                        exit(EXIT_FAILURE);
-                }
                 size_t i = nx_m-1;
                 k = j*nx_m + i;
-                switch (membrane->z.northBC)
-                {
-                    case BC::Dirichlet:
-                        M.row(k).zeros();
-                        M(k, k) = 1;
-                        RHS(k) = membrane->z.north(j);
-                        break;
-                    case BC::Neumann:
-                        M.row(k).zeros();
-                        M.row(k).cols(0, nxy_m-1) = DDX.row(k)*membrane->ec(i, j, 0) + DDY.row(k)*membrane->ec(i, j, 1);
-                        RHS(k) = membrane->z.north(j);
-                        break;
-                    case BC::Robin:
-                        M.row(k).zeros();
-                        M.row(k).cols(0, nxy_m-1) = membrane->z.r2North*(DDX.row(k)*membrane->ec(i, j, 0) + DDY.row(k)*membrane->ec(i, j, 1));
-                        M(k, k) += membrane->z.r1North;
-                        RHS(k) = membrane->z.north(j);
-                        break;
-                    case BC::None:
-                        break;
-                    default:
-                        std::println("A boundary condition was chosen, that is not implemented for membranes!");
-                        exit(EXIT_FAILURE);
-                }
+                M(k, arma::span(nxy_m, nxy-1)).zeros();
             }
+
             for (size_t i = 0; i < nx_m; i++)
             {
-                switch (membrane->z.westBC)
-                {
-                    case BC::Dirichlet:
-                        M.row(i).zeros();
-                        M(i, i) = 1;
-                        RHS(i) = membrane->z.west(i);
-                        break;
-                    case BC::Neumann:
-                        M.row(i).zeros();
-                        M.row(i).cols(0, nxy_m-1) = DDY.row(i)*membrane->ec(i, 0, 2) + DDX.row(i)*membrane->ec(i, 0, 1);
-                        RHS(i) = membrane->z.west(i);
-                        break;
-                    case BC::Robin:
-                        M.row(i).zeros();
-                        M.row(i).cols(0, nxy_m-1) = membrane->z.r2West*(DDY.row(i)*membrane->ec(i, 0, 2) + DDX.row(i)*membrane->ec(i, 0, 1));
-                        M(i, i) += membrane->z.r1West;
-                        RHS(i) = membrane->z.west(i);
-                        break;
-                    case BC::None:
-                        break;
-                    default:
-                        std::println("A boundary condition was chosen, that is not implemented for membranes!");
-                        exit(EXIT_FAILURE);
-                }
+                M(i, arma::span(nxy_m, nxy-1)).zeros();
+
                 size_t j = ny_m-1;
                 size_t k = i + j*nx_m;
-                switch (membrane->z.eastBC)
-                {
-                    case BC::Dirichlet:
-                        M.row(k).zeros();
-                        M(k, k) = 1;
-                        RHS(k) = membrane->z.east(i);
-                        break;
-                    case BC::Neumann:
-                        M.row(k).zeros();
-                        M.row(k).cols(0, nxy_m-1) = DDY.row(i)*membrane->ec(i, j, 2) + DDX.row(i)*membrane->ec(i, j, 1);
-                        RHS(k) = membrane->z.east(i);
-                        break;
-                    case BC::Robin:
-                        M.row(k).zeros();
-                        M.row(k).cols(0, nxy_m-1) = membrane->z.r2East*(DDY.row(i)*membrane->ec(i, j, 2) + DDX.row(i)*membrane->ec(i, j, 1));
-                        M(k, k) += membrane->z.r1East;
-                        RHS(k) = membrane->z.east(i);
-                        break;
-                    case BC::None:
-                        break;
-                    default:
-                        std::println("A boundary condition was chosen, that is not implemented for membranes!");
-                        exit(EXIT_FAILURE);
-                }
+                M(k, arma::span(nxy_m, nxy-1)).zeros();
             }
+
+            arma::mat RHS(M.n_rows, vlm->con);
+            for (size_t c = 0; c < vlm->con; c++)
+                RHS(arma::span(0, nxy_m-1), c) = membrane->b(arma::span(0, nxy_m-1));
+
             arma::vec r = repelem((vlm->ar.head(ny_v)+vlm->ar.tail(ny_v))/2, nx_v, 1);
             arma::vec w = arma::zeros(nxy_v);
             #pragma omp parallel for

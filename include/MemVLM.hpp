@@ -12,6 +12,10 @@ class MemVLM
 public:
     MemVLM(Membrane* m, VLM* v) : membrane(m), vlm(v) {};
     MemVLM(VLM* v, Membrane* m) : membrane(m), vlm(v) {};
+    void operator()(const Coupling c)
+    {
+        coupling = c;
+    }
     // Linear analysis
     void linear();
 };
