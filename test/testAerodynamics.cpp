@@ -119,6 +119,13 @@ int main()
                 {
                     Aerodynamics aero({&w1[i], &w2[j]});
                     aero.pitch(5);
+                    aero.setIterations(100);
+                    aero.boundary(&chi1, BC::Neumann);
+                    aero.boundary(&chi3, BC::Dirichlet);
+                    aero.boundary(&chi4, BC::Dirichlet);
+                    aero.boundary(&chi5, BC::Neumann);
+                    aero.boundary(&chi6, BC::Dirichlet);
+                    aero.boundary(&chi7, BC::Dirichlet);
                     aero.linear();
                     aero.output("plot/Data/Aerodynamics/square"+std::to_string(i)+std::to_string(j));
                     cL(i, j) = aero.get_lift();

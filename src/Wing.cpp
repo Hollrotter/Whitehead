@@ -245,28 +245,32 @@ void Wing::linearSolve()
         muBoundaryNorth(i);
     }
     // BC south-west corner (i = 0, j = 0)
-    if (phi1->basis == Basis::T || phi1->basis == Basis::PA)
-        muBoundaryWest(0);
-    else
+    if ((chi[0]->curveType == CurveType::Interface && chi[3]->curveType == CurveType::Boundary)
+    || phi1->basis == Basis::U || phi1->basis == Basis::PB)
         muBoundarySouth(0);
+    else
+        muBoundaryWest(0);
 
     // BC north-west corner (i = 0, j = ny-1)
-    if (phi2->basis == Basis::T || phi2->basis == Basis::PB)
-        muBoundaryNorth(0);
-    else
+    if ((chi[2]->curveType == CurveType::Boundary && chi[3]->curveType == CurveType::Interface)
+    || phi2->basis == Basis::U || phi2->basis == Basis::PA)
         muBoundaryWest(ny-1);
+    else
+        muBoundaryNorth(0);
 
     // BC south-east corner (i = nx-1, j = 0)
-    if (phi2->basis == Basis::T || phi2->basis == Basis::PA)
-        muBoundarySouth(nx-1);
-    else
+    if ((chi[0]->curveType == CurveType::Boundary && chi[1]->curveType == CurveType::Interface)
+    || phi2->basis == Basis::U || phi2->basis == Basis::PB)
         muBoundaryEast(0);
+    else
+        muBoundarySouth(nx-1);
 
     // BC north-east corner (i = nx-1, j = ny-1)
-    if (phi1->basis == Basis::T || phi1->basis == Basis::PB)
-        muBoundaryEast(ny-1);
-    else
+    if ((chi[2]->curveType == CurveType::Interface && chi[1]->curveType == CurveType::Boundary)
+    || phi1->basis == Basis::U || phi1->basis == Basis::PA)
         muBoundaryNorth(nx-1);
+    else
+        muBoundaryEast(ny-1);
 
     size_t i_min = 0, i_max = nx, j_min = 0, j_max = ny;
     if (phi1->basis == Basis::T || phi1->basis == Basis::PA)
@@ -308,28 +312,32 @@ void Wing::nonlinearSolve()
         muBoundaryNorth(i);
     }
     // BC south-west corner (i = 0, j = 0)
-    if (phi1->basis == Basis::T || phi1->basis == Basis::PA)
-        muBoundaryWest(0);
-    else
+    if ((chi[0]->curveType == CurveType::Interface && chi[3]->curveType == CurveType::Boundary)
+    || phi1->basis == Basis::U || phi1->basis == Basis::PB)
         muBoundarySouth(0);
+    else
+        muBoundaryWest(0);
 
     // BC north-west corner (i = 0, j = ny-1)
-    if (phi2->basis == Basis::T || phi2->basis == Basis::PB)
-        muBoundaryNorth(0);
-    else
+    if ((chi[2]->curveType == CurveType::Boundary && chi[3]->curveType == CurveType::Interface)
+    || phi2->basis == Basis::U || phi2->basis == Basis::PA)
         muBoundaryWest(ny-1);
+    else
+        muBoundaryNorth(0);
 
     // BC south-east corner (i = nx-1, j = 0)
-    if (phi2->basis == Basis::T || phi2->basis == Basis::PA)
-        muBoundarySouth(nx-1);
-    else
+    if ((chi[0]->curveType == CurveType::Boundary && chi[1]->curveType == CurveType::Interface)
+    || phi2->basis == Basis::U || phi2->basis == Basis::PB)
         muBoundaryEast(0);
+    else
+        muBoundarySouth(nx-1);
 
     // BC north-east corner (i = nx-1, j = ny-1)
-    if (phi1->basis == Basis::T || phi1->basis == Basis::PB)
-        muBoundaryEast(ny-1);
-    else
+    if ((chi[2]->curveType == CurveType::Interface && chi[1]->curveType == CurveType::Boundary)
+    || phi1->basis == Basis::U || phi1->basis == Basis::PA)
         muBoundaryNorth(nx-1);
+    else
+        muBoundaryEast(ny-1);
 
     arma::vec Q = {cos(alpha), 0, sin(alpha)};
     size_t i_min = 0, i_max = nx, j_min = 0, j_max = ny;

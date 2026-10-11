@@ -130,54 +130,53 @@ void Aerodynamics::solve()
             size_t nyT = wingTarget->ny;
             arma::vec mu_hat = wingSource->mu_hat;
             arma::vec xiS, xiT;
-            if (interface.sourceCurve == 0)
+            switch (interface.sourceCurve)
             {
-                xiS = wingSource->xi_1;
-                if (interface.targetCurve == 0 || interface.targetCurve == 1)
-                    xiS =-reverse(xiS);
-            }
-            else if (interface.sourceCurve == 2)
-            {
-                xiS = wingSource->xi_1;
-                if (interface.targetCurve == 2 || interface.targetCurve == 3)
-                    xiS =-reverse(xiS);
-            }
-            else if (interface.sourceCurve == 1)
-            {
-                xiS = wingSource->xi_2;
-                if (interface.targetCurve == 0 || interface.targetCurve == 1)
-                    xiS =-reverse(xiS);
-            }
-            else
-            {
-                xiS = wingSource->xi_2;
-                if (interface.targetCurve == 2 || interface.targetCurve == 3)
-                    xiS =-reverse(xiS);
+                case 0:
+                    xiS = wingSource->xi_1;
+                    if (interface.targetCurve == 0 || interface.targetCurve == 1)
+                        xiS =-reverse(xiS);
+                    break;
+                
+                case 1:
+                    xiS = wingSource->xi_2;
+                    if (interface.targetCurve == 0 || interface.targetCurve == 1)
+                        xiS =-reverse(xiS);
+                    break;
+                case 2:
+                    xiS = wingSource->xi_1;
+                    if (interface.targetCurve == 2 || interface.targetCurve == 3)
+                        xiS =-reverse(xiS);
+                    break;
+                case 3:
+                    xiS = wingSource->xi_2;
+                    if (interface.targetCurve == 2 || interface.targetCurve == 3)
+                        xiS =-reverse(xiS);
+                    break;
             }
 
-            if (interface.targetCurve == 0)
+            switch (interface.targetCurve)
             {
-                xiT = wingTarget->xi_1;
-                if (interface.sourceCurve == 0 || interface.sourceCurve == 1)
-                    xiT =-reverse(xiT);
-            }
-            else if (interface.targetCurve == 2)
-            {
-                xiT = wingTarget->xi_1;
-                if (interface.sourceCurve == 2 || interface.sourceCurve == 3)
-                    xiT =-reverse(xiT);
-            }
-            else if (interface.targetCurve == 1)
-            {
-                xiT = wingTarget->xi_2;
-                if (interface.sourceCurve == 0 || interface.sourceCurve == 1)
-                    xiT =-reverse(xiT);
-            }
-            else
-            {
-                xiT = wingTarget->xi_2;
-                if (interface.sourceCurve == 2 || interface.sourceCurve == 3)
-                    xiT =-reverse(xiT);
+                case 0:
+                    xiT = wingTarget->xi_1;
+                    if (interface.sourceCurve == 0 || interface.sourceCurve == 1)
+                        xiT =-reverse(xiT);
+                    break;
+                case 1:
+                    xiT = wingTarget->xi_2;
+                    if (interface.sourceCurve == 0 || interface.sourceCurve == 1)
+                        xiT =-reverse(xiT);
+                    break;
+                case 2:
+                    xiT = wingTarget->xi_1;
+                    if (interface.sourceCurve == 2 || interface.sourceCurve == 3)
+                        xiT =-reverse(xiT);
+                    break;
+                case 3:
+                    xiT = wingTarget->xi_2;
+                    if (interface.sourceCurve == 2 || interface.sourceCurve == 3)
+                        xiT =-reverse(xiT);
+                    break;
             }
 
             switch (interface.sourceCurve)
@@ -227,36 +226,32 @@ void Aerodynamics::solve()
                     {
                         case 0: // South
                             sourceMU = reverse(sourceMU);
-                            for (size_t i = 1; i < nxT-1; i++)
-                                b0(interTarget)(i) = omega*sourceMU(i) + (1-omega)*b0(interTarget)(i);
-                            if (wingTarget->phi1->basis == Basis::U || wingTarget->phi1->basis == Basis::PB)
+                            if (wingTarget->chi[3]->curveType == CurveType::Boundary
+                            ||  wingTarget->phi1->basis == Basis::U || wingTarget->phi1->basis == Basis::PB)
                                 b0(interTarget)(0) = omega*sourceMU(0) + (1-omega)*b0(interTarget)(0);
-                            if (wingTarget->phi2->basis == Basis::T || wingTarget->phi2->basis == Basis::PA)
-                                b0(interTarget)(nxT-1) = omega*sourceMU.back() + (1-omega)*b0(interTarget)(nxT-1);
+                            for (size_t i = 1; i < nxT; i++)
+                                b0(interTarget)(i) = omega*sourceMU(i) + (1-omega)*b0(interTarget)(i);
                             break;
                         case 1: // East
                             sourceMU = reverse(sourceMU);
-                            for (size_t j = 1; j < nyT-1; j++)
-                                b0(interTarget)(nxT-1+j*nxT) = omega*sourceMU(j) + (1-omega)*b0(interTarget)(nxT-1+j*nxT);
-                            if (wingTarget->phi2->basis == Basis::U || wingTarget->phi2->basis == Basis::PB)
+                            if (wingTarget->chi[0]->curveType == CurveType::Boundary
+                            ||  wingTarget->phi2->basis == Basis::U || wingTarget->phi2->basis == Basis::PB)
                                 b0(interTarget)(nxT-1) = omega*sourceMU(0) + (1-omega)*b0(interTarget)(nxT-1);
-                            if (wingTarget->phi1->basis == Basis::T || wingTarget->phi1->basis == Basis::PB)
-                                b0(interTarget)(nxT-1+(nyT-1)*nxT) = omega*sourceMU.back() + (1-omega)*b0(interTarget)(nxT-1+(nyT-1)*nxT);
+                            for (size_t j = 1; j < nyT; j++)
+                                b0(interTarget)(nxT-1+j*nxT) = omega*sourceMU(j) + (1-omega)*b0(interTarget)(nxT-1+j*nxT);
                             break;
                         case 2: // North
-                            for (size_t i = 1; i < nxT-1; i++)
+                            for (size_t i = 0; i < nxT-1; i++)
                                 b0(interTarget)(i+(nyT-1)*nxT) = omega*sourceMU(i) + (1-omega)*b0(interTarget)(i+(nyT-1)*nxT);
-                            if (wingTarget->phi2->basis == Basis::T || wingTarget->phi2->basis == Basis::PB)
-                                b0(interTarget)((nyT-1)*nxT) = omega*sourceMU(0) + (1-omega)*b0(interTarget)((nyT-1)*nxT);
-                            if (wingTarget->phi1->basis == Basis::U || wingTarget->phi1->basis == Basis::PA)
+                            if (wingTarget->chi[1]->curveType == CurveType::Boundary
+                            ||  wingTarget->phi1->basis == Basis::U || wingTarget->phi1->basis == Basis::PA)
                                 b0(interTarget)(nxT-1+(nyT-1)*nxT) = omega*sourceMU.back() + (1-omega)*b0(interTarget)(nxT-1+(nyT-1)*nxT);
                             break;
                         case 3: // West
-                            for (size_t j = 1; j < nyT-1; j++)
+                            for (size_t j = 0; j < nyT-1; j++)
                                 b0(interTarget)(j*nxT) = omega*sourceMU(j) + (1-omega)*b0(interTarget)(j*nxT);
-                            if (wingTarget->phi1->basis == Basis::T || wingTarget->phi1->basis == Basis::PA)
-                                b0(interTarget)(0) = omega*sourceMU(0) + (1-omega)*b0(interTarget)(0);
-                            if (wingTarget->phi2->basis == Basis::U || wingTarget->phi2->basis == Basis::PA)
+                            if (wingTarget->chi[2]->curveType == CurveType::Boundary
+                            ||  wingTarget->phi2->basis == Basis::U || wingTarget->phi2->basis == Basis::PA)
                                 b0(interTarget)((nyT-1)*nxT) = omega*sourceMU.back() + (1-omega)*b0(interTarget)((nyT-1)*nxT);
                             break;
                     }
@@ -307,36 +302,32 @@ void Aerodynamics::solve()
                     {
                         case 0: // South
                             sourceMU = reverse(sourceMU);
-                            for (size_t i = 1; i < nxT-1; i++)
-                                b0(interTarget)(i) = omega*sourceMU(i) + (1-omega)*b0(interTarget)(i);
-                            if (wingTarget->phi1->basis == Basis::U || wingTarget->phi1->basis == Basis::PB)
+                            if (wingTarget->chi[3]->curveType == CurveType::Boundary
+                            ||  wingTarget->phi1->basis == Basis::U || wingTarget->phi1->basis == Basis::PB)
                                 b0(interTarget)(0) = omega*sourceMU(0) + (1-omega)*b0(interTarget)(0);
-                            if (wingTarget->phi2->basis == Basis::T || wingTarget->phi2->basis == Basis::PA)
-                                b0(interTarget)(nxT-1) = omega*sourceMU.back() + (1-omega)*b0(interTarget)(nxT-1);
+                            for (size_t i = 1; i < nxT; i++)
+                                b0(interTarget)(i) = omega*sourceMU(i) + (1-omega)*b0(interTarget)(i);
                             break;
                         case 1: // East
                             sourceMU = reverse(sourceMU);
-                            for (size_t j = 1; j < nyT-1; j++)
-                                b0(interTarget)(nxT-1+j*nxT) = omega*sourceMU(j) + (1-omega)*b0(interTarget)(nxT-1+j*nxT);
-                            if (wingTarget->phi2->basis == Basis::U || wingTarget->phi2->basis == Basis::PB)
+                            if (wingTarget->chi[0]->curveType == CurveType::Boundary
+                            ||  wingTarget->phi2->basis == Basis::U || wingTarget->phi2->basis == Basis::PB)
                                 b0(interTarget)(nxT-1) = omega*sourceMU(0) + (1-omega)*b0(interTarget)(nxT-1);
-                            if (wingTarget->phi1->basis == Basis::T || wingTarget->phi1->basis == Basis::PB)
-                                b0(interTarget)(nxT-1+(nyT-1)*nxT) = omega*sourceMU.back() + (1-omega)*b0(interTarget)(nxT-1+(nyT-1)*nxT);
+                            for (size_t j = 1; j < nyT; j++)
+                                b0(interTarget)(nxT-1+j*nxT) = omega*sourceMU(j) + (1-omega)*b0(interTarget)(nxT-1+j*nxT);
                             break;
                         case 2: // North
-                            for (size_t i = 1; i < nxT-1; i++)
+                            for (size_t i = 0; i < nxT-1; i++)
                                 b0(interTarget)(i+(nyT-1)*nxT) = omega*sourceMU(i) + (1-omega)*b0(interTarget)(i+(nyT-1)*nxT);
-                            if (wingTarget->phi2->basis == Basis::T || wingTarget->phi2->basis == Basis::PB)
-                                b0(interTarget)((nyT-1)*nxT) = omega*sourceMU(0) + (1-omega)*b0(interTarget)((nyT-1)*nxT);
-                            if (wingTarget->phi1->basis == Basis::U || wingTarget->phi1->basis == Basis::PA)
+                            if (wingTarget->chi[1]->curveType == CurveType::Boundary
+                            ||  wingTarget->phi1->basis == Basis::U || wingTarget->phi1->basis == Basis::PA)
                                 b0(interTarget)(nxT-1+(nyT-1)*nxT) = omega*sourceMU.back() + (1-omega)*b0(interTarget)(nxT-1+(nyT-1)*nxT);
                             break;
                         case 3: // West
-                            for (size_t j = 1; j < nyT-1; j++)
+                            for (size_t j = 0; j < nyT-1; j++)
                                 b0(interTarget)(j*nxT) = omega*sourceMU(j) + (1-omega)*b0(interTarget)(j*nxT);
-                            if (wingTarget->phi1->basis == Basis::T || wingTarget->phi1->basis == Basis::PA)
-                                b0(interTarget)(0) = omega*sourceMU(0) + (1-omega)*b0(interTarget)(0);
-                            if (wingTarget->phi2->basis == Basis::U || wingTarget->phi2->basis == Basis::PA)
+                            if (wingTarget->chi[2]->curveType == CurveType::Boundary
+                            ||  wingTarget->phi2->basis == Basis::U || wingTarget->phi2->basis == Basis::PA)
                                 b0(interTarget)((nyT-1)*nxT) = omega*sourceMU.back() + (1-omega)*b0(interTarget)((nyT-1)*nxT);
                             break;
                     }
@@ -386,37 +377,33 @@ void Aerodynamics::solve()
                     switch (interface.targetCurve)
                     {
                         case 0: // South
-                            for (size_t i = 1; i < nxT-1; i++)
-                                b0(interTarget)(i) = omega*sourceMU(i) + (1-omega)*b0(interTarget)(i);
-                            if (wingTarget->phi1->basis == Basis::U || wingTarget->phi1->basis == Basis::PB)
+                            if (wingTarget->chi[3]->curveType == CurveType::Boundary
+                            ||  wingTarget->phi1->basis == Basis::U || wingTarget->phi1->basis == Basis::PB)
                                 b0(interTarget)(0) = omega*sourceMU(0) + (1-omega)*b0(interTarget)(0);
-                            if (wingTarget->phi2->basis == Basis::T || wingTarget->phi2->basis == Basis::PA)
-                                b0(interTarget)(nxT-1) = omega*sourceMU.back() + (1-omega)*b0(interTarget)(nxT-1);
+                            for (size_t i = 1; i < nxT; i++)
+                                b0(interTarget)(i) = omega*sourceMU(i) + (1-omega)*b0(interTarget)(i);
                             break;
                         case 1: // East
-                            for (size_t j = 1; j < nyT-1; j++)
+                            for (size_t j = 1; j < nyT; j++)
                                 b0(interTarget)(nxT-1+j*nxT) = omega*sourceMU(j) + (1-omega)*b0(interTarget)(nxT-1+j*nxT);
-                            if (wingTarget->phi2->basis == Basis::U || wingTarget->phi2->basis == Basis::PB)
+                            if (wingTarget->chi[0]->curveType == CurveType::Boundary
+                            ||  wingTarget->phi2->basis == Basis::U || wingTarget->phi2->basis == Basis::PB)
                                 b0(interTarget)(nxT-1) = omega*sourceMU(0) + (1-omega)*b0(interTarget)(nxT-1);
-                            if (wingTarget->phi1->basis == Basis::T || wingTarget->phi1->basis == Basis::PB)
-                                b0(interTarget)(nxT-1+(nyT-1)*nxT) = omega*sourceMU.back() + (1-omega)*b0(interTarget)(nxT-1+(nyT-1)*nxT);
                             break;
                         case 2: // North
                             sourceMU = reverse(sourceMU);
-                            for (size_t i = 1; i < nxT-1; i++)
+                            for (size_t i = 0; i < nxT-1; i++)
                                 b0(interTarget)(i+(nyT-1)*nxT) = omega*sourceMU(i) + (1-omega)*b0(interTarget)(i+(nyT-1)*nxT);
-                            if (wingTarget->phi2->basis == Basis::T || wingTarget->phi2->basis == Basis::PB)
-                                b0(interTarget)((nyT-1)*nxT) = omega*sourceMU(0) + (1-omega)*b0(interTarget)((nyT-1)*nxT);
-                            if (wingTarget->phi1->basis == Basis::U || wingTarget->phi1->basis == Basis::PA)
+                            if (wingTarget->chi[1]->curveType == CurveType::Boundary
+                            ||  wingTarget->phi1->basis == Basis::U || wingTarget->phi1->basis == Basis::PA)
                                 b0(interTarget)(nxT-1+(nyT-1)*nxT) = omega*sourceMU.back() + (1-omega)*b0(interTarget)(nxT-1+(nyT-1)*nxT);
                             break;
                         case 3: // West
                             sourceMU = reverse(sourceMU);
-                            for (size_t j = 1; j < nyT-1; j++)
+                            for (size_t j = 0; j < nyT-1; j++)
                                 b0(interTarget)(j*nxT) = omega*sourceMU(j) + (1-omega)*b0(interTarget)(j*nxT);
-                            if (wingTarget->phi1->basis == Basis::T || wingTarget->phi1->basis == Basis::PA)
-                                b0(interTarget)(0) = omega*sourceMU(0) + (1-omega)*b0(interTarget)(0);
-                            if (wingTarget->phi2->basis == Basis::U || wingTarget->phi2->basis == Basis::PA)
+                            if (wingTarget->chi[2]->curveType == CurveType::Boundary
+                            ||  wingTarget->phi2->basis == Basis::U || wingTarget->phi2->basis == Basis::PA)
                                 b0(interTarget)((nyT-1)*nxT) = omega*sourceMU.back() + (1-omega)*b0(interTarget)((nyT-1)*nxT);
                             break;
                     }
@@ -466,37 +453,33 @@ void Aerodynamics::solve()
                     switch (interface.targetCurve)
                     {
                         case 0: // South
-                            for (size_t i = 1; i < nxT-1; i++)
-                                b0(interTarget)(i) = omega*sourceMU(i) + (1-omega)*b0(interTarget)(i);
-                            if (wingTarget->phi1->basis == Basis::U || wingTarget->phi1->basis == Basis::PB)
+                            if (wingTarget->chi[3]->curveType == CurveType::Boundary
+                            ||  wingTarget->phi1->basis == Basis::U || wingTarget->phi1->basis == Basis::PB)
                                 b0(interTarget)(0) = omega*sourceMU(0) + (1-omega)*b0(interTarget)(0);
-                            if (wingTarget->phi2->basis == Basis::T || wingTarget->phi2->basis == Basis::PA)
-                                b0(interTarget)(nxT-1) = omega*sourceMU.back() + (1-omega)*b0(interTarget)(nxT-1);
+                            for (size_t i = 1; i < nxT; i++)
+                                b0(interTarget)(i) = omega*sourceMU(i) + (1-omega)*b0(interTarget)(i);
                             break;
                         case 1: // East
-                            for (size_t j = 1; j < nyT-1; j++)
+                            for (size_t j = 1; j < nyT; j++)
                                 b0(interTarget)(nxT-1+j*nxT) = omega*sourceMU(j) + (1-omega)*b0(interTarget)(nxT-1+j*nxT);
-                            if (wingTarget->phi2->basis == Basis::U || wingTarget->phi2->basis == Basis::PB)
+                            if (wingTarget->chi[0]->curveType == CurveType::Boundary
+                            ||  wingTarget->phi2->basis == Basis::U || wingTarget->phi2->basis == Basis::PB)
                                 b0(interTarget)(nxT-1) = omega*sourceMU(0) + (1-omega)*b0(interTarget)(nxT-1);
-                            if (wingTarget->phi1->basis == Basis::T || wingTarget->phi1->basis == Basis::PB)
-                                b0(interTarget)(nxT-1+(nyT-1)*nxT) = omega*sourceMU.back() + (1-omega)*b0(interTarget)(nxT-1+(nyT-1)*nxT);
                             break;
                         case 2: // North
                             sourceMU = reverse(sourceMU);
-                            for (size_t i = 1; i < nxT-1; i++)
+                            for (size_t i = 0; i < nxT-1; i++)
                                 b0(interTarget)(i+(nyT-1)*nxT) = omega*sourceMU(i) + (1-omega)*b0(interTarget)(i+(nyT-1)*nxT);
-                            if (wingTarget->phi2->basis == Basis::T || wingTarget->phi2->basis == Basis::PB)
-                                b0(interTarget)((nyT-1)*nxT) = omega*sourceMU(0) + (1-omega)*b0(interTarget)((nyT-1)*nxT);
-                            if (wingTarget->phi1->basis == Basis::U || wingTarget->phi1->basis == Basis::PA)
+                            if (wingTarget->chi[1]->curveType == CurveType::Boundary
+                            ||  wingTarget->phi1->basis == Basis::U || wingTarget->phi1->basis == Basis::PA)
                                 b0(interTarget)(nxT-1+(nyT-1)*nxT) = omega*sourceMU.back() + (1-omega)*b0(interTarget)(nxT-1+(nyT-1)*nxT);
                             break;
                         case 3: // West
                             sourceMU = reverse(sourceMU);
-                            for (size_t j = 1; j < nyT-1; j++)
+                            for (size_t j = 0; j < nyT-1; j++)
                                 b0(interTarget)(j*nxT) = omega*sourceMU(j) + (1-omega)*b0(interTarget)(j*nxT);
-                            if (wingTarget->phi1->basis == Basis::T || wingTarget->phi1->basis == Basis::PA)
-                                b0(interTarget)(0) = omega*sourceMU(0) + (1-omega)*b0(interTarget)(0);
-                            if (wingTarget->phi2->basis == Basis::U || wingTarget->phi2->basis == Basis::PA)
+                            if (wingTarget->chi[2]->curveType == CurveType::Boundary
+                            ||  wingTarget->phi2->basis == Basis::U || wingTarget->phi2->basis == Basis::PA)
                                 b0(interTarget)((nyT-1)*nxT) = omega*sourceMU.back() + (1-omega)*b0(interTarget)((nyT-1)*nxT);
                             break;
                     }
@@ -551,36 +534,32 @@ void Aerodynamics::solve()
                     {
                         case 0: // South
                             targetMU = reverse(targetMU);
-                            for (size_t i = 1; i < nxS-1; i++)
-                                b0(interSource)(i) = omega*targetMU(i) + (1-omega)*b0(interSource)(i);
-                            if (wingSource->phi1->basis == Basis::U || wingSource->phi1->basis == Basis::PB)
+                            if (wingSource->chi[3]->curveType == CurveType::Boundary
+                            ||  wingSource->phi1->basis == Basis::U || wingSource->phi1->basis == Basis::PB)
                                 b0(interSource)(0) = omega*targetMU(0) + (1-omega)*b0(interSource)(0);
-                            if (wingSource->phi2->basis == Basis::T || wingSource->phi2->basis == Basis::PA)
-                                b0(interSource)(nxS-1) = omega*targetMU.back() + (1-omega)*b0(interSource)(nxS-1);
+                            for (size_t i = 1; i < nxS; i++)
+                                b0(interSource)(i) = omega*targetMU(i) + (1-omega)*b0(interSource)(i);
                             break;
                         case 1: // East
                             targetMU = reverse(targetMU);
-                            for (size_t j = 1; j < nyS-1; j++)
+                            for (size_t j = 1; j < nyS; j++)
                                 b0(interSource)(nxS-1+j*nxS) = omega*targetMU(j) + (1-omega)*b0(interSource)(nxS-1+j*nxS);
-                            if (wingSource->phi2->basis == Basis::U || wingSource->phi2->basis == Basis::PB)
+                            if (wingSource->chi[0]->curveType == CurveType::Boundary
+                            ||  wingSource->phi2->basis == Basis::U || wingSource->phi1->basis == Basis::PB)
                                 b0(interSource)(nxS-1) = omega*targetMU(0) + (1-omega)*b0(interSource)(nxS-1);
-                            if (wingSource->phi1->basis == Basis::T || wingSource->phi1->basis == Basis::PB)
-                                b0(interSource)(nxS-1+(nyS-1)*nxS) = omega*targetMU.back() + (1-omega)*b0(interSource)(nxS-1+(nyS-1)*nxS);
                             break;
                         case 2: // North
-                            for (size_t i = 1; i < nxS-1; i++)
+                            for (size_t i = 0; i < nxS-1; i++)
                                 b0(interSource)(i+(nyS-1)*nxS) = omega*targetMU(i) + (1-omega)*b0(interSource)(i+(nyS-1)*nxS);
-                            if (wingSource->phi2->basis == Basis::T || wingSource->phi2->basis == Basis::PB)
-                                b0(interSource)((nyS-1)*nxS) = omega*targetMU(0) + (1-omega)*b0(interSource)((nyS-1)*nxS);
-                            if (wingSource->phi1->basis == Basis::U || wingSource->phi1->basis == Basis::PA)
+                            if (wingSource->chi[1]->curveType == CurveType::Boundary
+                            ||  wingSource->phi1->basis == Basis::U || wingSource->phi1->basis == Basis::PA)
                                 b0(interSource)(nxS-1+(nyS-1)*nxS) = omega*targetMU.back() + (1-omega)*b0(interSource)(nxS-1+(nyS-1)*nxS);
                             break;
                         case 3: // West
-                            for (size_t j = 1; j < nyS-1; j++)
+                            for (size_t j = 0; j < nyS-1; j++)
                                 b0(interSource)(j*nxS) = omega*targetMU(j) + (1-omega)*b0(interSource)(j*nxS);
-                            if (wingSource->phi1->basis == Basis::T || wingSource->phi1->basis == Basis::PA)
-                                b0(interSource)(0) = omega*targetMU(0) + (1-omega)*b0(interSource)(0);
-                            if (wingSource->phi2->basis == Basis::U || wingSource->phi2->basis == Basis::PA)
+                            if (wingSource->chi[2]->curveType == CurveType::Boundary
+                            ||  wingSource->phi2->basis == Basis::U || wingSource->phi2->basis == Basis::PA)
                                 b0(interSource)((nyS-1)*nxS) = omega*targetMU.back() + (1-omega)*b0(interSource)((nyS-1)*nxS);
                             break;
                     }
@@ -631,36 +610,32 @@ void Aerodynamics::solve()
                     {
                         case 0: // South
                             targetMU = reverse(targetMU);
-                            for (size_t i = 1; i < nxS-1; i++)
-                                b0(interSource)(i) = omega*targetMU(i) + (1-omega)*b0(interSource)(i);
-                            if (wingSource->phi1->basis == Basis::U || wingSource->phi1->basis == Basis::PB)
+                            if (wingSource->chi[3]->curveType == CurveType::Boundary
+                            ||  wingSource->phi1->basis == Basis::U || wingSource->phi1->basis == Basis::PB)
                                 b0(interSource)(0) = omega*targetMU(0) + (1-omega)*b0(interSource)(0);
-                            if (wingSource->phi2->basis == Basis::T || wingSource->phi2->basis == Basis::PA)
-                                b0(interSource)(nxS-1) = omega*targetMU.back() + (1-omega)*b0(interSource)(nxS-1);
+                            for (size_t i = 1; i < nxS; i++)
+                                b0(interSource)(i) = omega*targetMU(i) + (1-omega)*b0(interSource)(i);
                             break;
                         case 1: // East
                             targetMU = reverse(targetMU);
-                            for (size_t j = 1; j < nyS-1; j++)
+                            for (size_t j = 1; j < nyS; j++)
                                 b0(interSource)(nxS-1+j*nxS) = omega*targetMU(j) + (1-omega)*b0(interSource)(nxS-1+j*nxS);
-                            if (wingSource->phi2->basis == Basis::U || wingSource->phi2->basis == Basis::PB)
+                            if (wingSource->chi[0]->curveType == CurveType::Boundary
+                            ||  wingSource->phi2->basis == Basis::U || wingSource->phi1->basis == Basis::PB)
                                 b0(interSource)(nxS-1) = omega*targetMU(0) + (1-omega)*b0(interSource)(nxS-1);
-                            if (wingSource->phi1->basis == Basis::T || wingSource->phi1->basis == Basis::PB)
-                                b0(interSource)(nxS-1+(nyS-1)*nxS) = omega*targetMU.back() + (1-omega)*b0(interSource)(nxS-1+(nyS-1)*nxS);
                             break;
                         case 2: // North
-                            for (size_t i = 1; i < nxS-1; i++)
+                            for (size_t i = 0; i < nxS-1; i++)
                                 b0(interSource)(i+(nyS-1)*nxS) = omega*targetMU(i) + (1-omega)*b0(interSource)(i+(nyS-1)*nxS);
-                            if (wingSource->phi2->basis == Basis::T || wingSource->phi2->basis == Basis::PB)
-                                b0(interSource)((nyS-1)*nxS) = omega*targetMU(0) + (1-omega)*b0(interSource)((nyS-1)*nxS);
-                            if (wingSource->phi1->basis == Basis::U || wingSource->phi1->basis == Basis::PA)
+                            if (wingSource->chi[1]->curveType == CurveType::Boundary
+                            ||  wingSource->phi1->basis == Basis::U || wingSource->phi1->basis == Basis::PA)
                                 b0(interSource)(nxS-1+(nyS-1)*nxS) = omega*targetMU.back() + (1-omega)*b0(interSource)(nxS-1+(nyS-1)*nxS);
                             break;
                         case 3: // West
-                            for (size_t j = 1; j < nyS-1; j++)
+                            for (size_t j = 0; j < nyS-1; j++)
                                 b0(interSource)(j*nxS) = omega*targetMU(j) + (1-omega)*b0(interSource)(j*nxS);
-                            if (wingSource->phi1->basis == Basis::T || wingSource->phi1->basis == Basis::PA)
-                                b0(interSource)(0) = omega*targetMU(0) + (1-omega)*b0(interSource)(0);
-                            if (wingSource->phi2->basis == Basis::U || wingSource->phi2->basis == Basis::PA)
+                            if (wingSource->chi[2]->curveType == CurveType::Boundary
+                            ||  wingSource->phi2->basis == Basis::U || wingSource->phi2->basis == Basis::PA)
                                 b0(interSource)((nyS-1)*nxS) = omega*targetMU.back() + (1-omega)*b0(interSource)((nyS-1)*nxS);
                             break;
                     }
@@ -710,37 +685,33 @@ void Aerodynamics::solve()
                     switch (interface.sourceCurve)
                     {
                         case 0: // South
-                            for (size_t i = 1; i < nxS-1; i++)
-                                b0(interSource)(i) = omega*targetMU(i) + (1-omega)*b0(interSource)(i);
-                            if (wingSource->phi1->basis == Basis::U || wingSource->phi1->basis == Basis::PB)
+                            if (wingSource->chi[3]->curveType == CurveType::Boundary
+                            ||  wingSource->phi1->basis == Basis::U || wingSource->phi1->basis == Basis::PB)
                                 b0(interSource)(0) = omega*targetMU(0) + (1-omega)*b0(interSource)(0);
-                            if (wingSource->phi2->basis == Basis::T || wingSource->phi2->basis == Basis::PA)
-                                b0(interSource)(nxS-1) = omega*targetMU.back() + (1-omega)*b0(interSource)(nxS-1);
+                            for (size_t i = 1; i < nxS; i++)
+                                b0(interSource)(i) = omega*targetMU(i) + (1-omega)*b0(interSource)(i);
                             break;
                         case 1: // East
-                            for (size_t j = 1; j < nyS-1; j++)
+                            for (size_t j = 1; j < nyS; j++)
                                 b0(interSource)(nxS-1+j*nxS) = omega*targetMU(j) + (1-omega)*b0(interSource)(nxS-1+j*nxS);
-                            if (wingSource->phi2->basis == Basis::U || wingSource->phi2->basis == Basis::PB)
+                            if (wingSource->chi[0]->curveType == CurveType::Boundary
+                            ||  wingSource->phi2->basis == Basis::U || wingSource->phi1->basis == Basis::PB)
                                 b0(interSource)(nxS-1) = omega*targetMU(0) + (1-omega)*b0(interSource)(nxS-1);
-                            if (wingSource->phi1->basis == Basis::T || wingSource->phi1->basis == Basis::PB)
-                                b0(interSource)(nxS-1+(nyS-1)*nxS) = omega*targetMU.back() + (1-omega)*b0(interSource)(nxS-1+(nyS-1)*nxS);
                             break;
                         case 2: // North
                             targetMU = reverse(targetMU);
-                            for (size_t i = 1; i < nxS-1; i++)
+                            for (size_t i = 0; i < nxS-1; i++)
                                 b0(interSource)(i+(nyS-1)*nxS) = omega*targetMU(i) + (1-omega)*b0(interSource)(i+(nyS-1)*nxS);
-                            if (wingSource->phi2->basis == Basis::T || wingSource->phi2->basis == Basis::PB)
-                                b0(interSource)((nyS-1)*nxS) = omega*targetMU(0) + (1-omega)*b0(interSource)((nyS-1)*nxS);
-                            if (wingSource->phi1->basis == Basis::U || wingSource->phi1->basis == Basis::PA)
+                            if (wingSource->chi[1]->curveType == CurveType::Boundary
+                            ||  wingSource->phi1->basis == Basis::U || wingSource->phi1->basis == Basis::PA)
                                 b0(interSource)(nxS-1+(nyS-1)*nxS) = omega*targetMU.back() + (1-omega)*b0(interSource)(nxS-1+(nyS-1)*nxS);
                             break;
                         case 3: // West
                             targetMU = reverse(targetMU);
-                            for (size_t j = 1; j < nyS-1; j++)
+                            for (size_t j = 0; j < nyS-1; j++)
                                 b0(interSource)(j*nxS) = omega*targetMU(j) + (1-omega)*b0(interSource)(j*nxS);
-                            if (wingSource->phi1->basis == Basis::T || wingSource->phi1->basis == Basis::PA)
-                                b0(interSource)(0) = omega*targetMU(0) + (1-omega)*b0(interSource)(0);
-                            if (wingSource->phi2->basis == Basis::U || wingSource->phi2->basis == Basis::PA)
+                            if (wingSource->chi[2]->curveType == CurveType::Boundary
+                            ||  wingSource->phi2->basis == Basis::U || wingSource->phi2->basis == Basis::PA)
                                 b0(interSource)((nyS-1)*nxS) = omega*targetMU.back() + (1-omega)*b0(interSource)((nyS-1)*nxS);
                             break;
                     }
@@ -790,37 +761,33 @@ void Aerodynamics::solve()
                     switch (interface.sourceCurve)
                     {
                         case 0: // South
-                            for (size_t i = 1; i < nxS-1; i++)
-                                b0(interSource)(i) = omega*targetMU(i) + (1-omega)*b0(interSource)(i);
-                            if (wingSource->phi1->basis == Basis::U || wingSource->phi1->basis == Basis::PB)
+                            if (wingSource->chi[3]->curveType == CurveType::Boundary
+                            ||  wingSource->phi1->basis == Basis::U || wingSource->phi1->basis == Basis::PB)
                                 b0(interSource)(0) = omega*targetMU(0) + (1-omega)*b0(interSource)(0);
-                            if (wingSource->phi2->basis == Basis::T || wingSource->phi2->basis == Basis::PA)
-                                b0(interSource)(nxS-1) = omega*targetMU.back() + (1-omega)*b0(interSource)(nxS-1);
+                            for (size_t i = 1; i < nxS; i++)
+                                b0(interSource)(i) = omega*targetMU(i) + (1-omega)*b0(interSource)(i);
                             break;
                         case 1: // East
-                            for (size_t j = 1; j < nyS-1; j++)
+                            for (size_t j = 1; j < nyS; j++)
                                 b0(interSource)(nxS-1+j*nxS) = omega*targetMU(j) + (1-omega)*b0(interSource)(nxS-1+j*nxS);
-                            if (wingSource->phi2->basis == Basis::U || wingSource->phi2->basis == Basis::PB)
+                            if (wingSource->chi[0]->curveType == CurveType::Boundary
+                            ||  wingSource->phi2->basis == Basis::U || wingSource->phi1->basis == Basis::PB)
                                 b0(interSource)(nxS-1) = omega*targetMU(0) + (1-omega)*b0(interSource)(nxS-1);
-                            if (wingSource->phi1->basis == Basis::T || wingSource->phi1->basis == Basis::PB)
-                                b0(interSource)(nxS-1+(nyS-1)*nxS) = omega*targetMU.back() + (1-omega)*b0(interSource)(nxS-1+(nyS-1)*nxS);
                             break;
                         case 2: // North
                             targetMU = reverse(targetMU);
-                            for (size_t i = 1; i < nxS-1; i++)
+                            for (size_t i = 0; i < nxS-1; i++)
                                 b0(interSource)(i+(nyS-1)*nxS) = omega*targetMU(i) + (1-omega)*b0(interSource)(i+(nyS-1)*nxS);
-                            if (wingSource->phi2->basis == Basis::T || wingSource->phi2->basis == Basis::PB)
-                                b0(interSource)((nyS-1)*nxS) = omega*targetMU(0) + (1-omega)*b0(interSource)((nyS-1)*nxS);
-                            if (wingSource->phi1->basis == Basis::U || wingSource->phi1->basis == Basis::PA)
+                            if (wingSource->chi[1]->curveType == CurveType::Boundary
+                            ||  wingSource->phi1->basis == Basis::U || wingSource->phi1->basis == Basis::PA)
                                 b0(interSource)(nxS-1+(nyS-1)*nxS) = omega*targetMU.back() + (1-omega)*b0(interSource)(nxS-1+(nyS-1)*nxS);
                             break;
                         case 3: // West
                             targetMU = reverse(targetMU);
-                            for (size_t j = 1; j < nyS-1; j++)
+                            for (size_t j = 0; j < nyS-1; j++)
                                 b0(interSource)(j*nxS) = omega*targetMU(j) + (1-omega)*b0(interSource)(j*nxS);
-                            if (wingSource->phi1->basis == Basis::T || wingSource->phi1->basis == Basis::PA)
-                                b0(interSource)(0) = omega*targetMU(0) + (1-omega)*b0(interSource)(0);
-                            if (wingSource->phi2->basis == Basis::U || wingSource->phi2->basis == Basis::PA)
+                            if (wingSource->chi[2]->curveType == CurveType::Boundary
+                            ||  wingSource->phi2->basis == Basis::U || wingSource->phi2->basis == Basis::PA)
                                 b0(interSource)((nyS-1)*nxS) = omega*targetMU.back() + (1-omega)*b0(interSource)((nyS-1)*nxS);
                             break;
                     }

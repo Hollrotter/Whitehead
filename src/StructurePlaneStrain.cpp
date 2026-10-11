@@ -244,15 +244,10 @@ void Structure::planeStrain()
                                 membraneTarget->bv(i)                     = sourceV1(i);
                                 membraneTarget->bv(i+membraneTarget->nxy) = sourceV2(i);
                             }
-                            if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Interface)
+                            if (membraneTarget->chi[3]->curveType == CurveType::Interface)
                             {
                                 membraneTarget->bv(0)                   = sourceV1(0);
                                 membraneTarget->bv(membraneTarget->nxy) = sourceV2(0);
-                            }
-                            if (membraneTarget->chi[0]->curveType == CurveType::Boundary  && membraneTarget->chi[1]->curveType == CurveType::Interface)
-                            {
-                                membraneTarget->bv(nxT-1)                     = sourceV1.back();
-                                membraneTarget->bv(nxT-1+membraneTarget->nxy) = sourceV2.back();
                             }
                             break;
                         case 1: // East
@@ -264,15 +259,10 @@ void Structure::planeStrain()
                                 membraneTarget->bv(nxT-1+j*nxT)                     = sourceV1(j);
                                 membraneTarget->bv(nxT-1+j*nxT+membraneTarget->nxy) = sourceV2(j);
                             }
-                            if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Interface)
+                            if (membraneTarget->chi[0]->curveType == CurveType::Interface)
                             {
                                 membraneTarget->bv(nxT-1)                     = sourceV1(0);
                                 membraneTarget->bv(nxT-1+membraneTarget->nxy) = sourceV2(0);
-                            }
-                            if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Boundary)
-                            {
-                                membraneTarget->bv(nxT-1+(nyT-1)*nxT)                     = sourceV1.back();
-                                membraneTarget->bv(nxT-1+(nyT-1)*nxT+membraneTarget->nxy) = sourceV2.back();
                             }
                             break;
                         case 2: // North
@@ -281,12 +271,7 @@ void Structure::planeStrain()
                                 membraneTarget->bv(i+(nyT-1)*nxT)                     = sourceV1(i);
                                 membraneTarget->bv(i+(nyT-1)*nxT+membraneTarget->nxy) = sourceV2(i);
                             }
-                            if (membraneTarget->chi[2]->curveType == CurveType::Boundary  && membraneTarget->chi[3]->curveType == CurveType::Interface)
-                            {
-                                membraneTarget->bv((nyT-1)*nxT)                     = sourceV1(0);
-                                membraneTarget->bv((nyT-1)*nxT+membraneTarget->nxy) = sourceV2(0);
-                            }
-                            if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Interface)
+                            if (membraneTarget->chi[1]->curveType == CurveType::Interface)
                             {
                                 membraneTarget->bv(nxT-1+(nyT-1)*nxT)                     = sourceV1.back();
                                 membraneTarget->bv(nxT-1+(nyT-1)*nxT+membraneTarget->nxy) = sourceV2.back();
@@ -299,12 +284,7 @@ void Structure::planeStrain()
                                 membraneTarget->bv(j*nxT)                     = sourceV1(j);
                                 membraneTarget->bv(j*nxT+membraneTarget->nxy) = sourceV2(j);
                             }
-                            if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Boundary)
-                            {
-                                membraneTarget->bv(0)                   = sourceV1(0);
-                                membraneTarget->bv(membraneTarget->nxy) = sourceV2(0);
-                            }
-                            if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Interface)
+                            if (membraneTarget->chi[2]->curveType == CurveType::Interface)
                             {
                                 membraneTarget->bv((nyT-1)*nxT)                     = sourceV1.back();
                                 membraneTarget->bv((nyT-1)*nxT+membraneTarget->nxy) = sourceV2.back();
@@ -333,15 +313,10 @@ void Structure::planeStrain()
                                 membraneTarget->bv(i)                     = sourceV1(i);
                                 membraneTarget->bv(i+membraneTarget->nxy) = sourceV2(i);
                             }
-                            if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Interface)
+                            if (membraneTarget->chi[0]->curveType == CurveType::Interface)
                             {
                                 membraneTarget->bv(0)                   = sourceV1(0);
                                 membraneTarget->bv(membraneTarget->nxy) = sourceV2(0);
-                            }
-                            if (membraneTarget->chi[0]->curveType == CurveType::Boundary  && membraneTarget->chi[1]->curveType == CurveType::Interface)
-                            {
-                                membraneTarget->bv(nxT-1)                     = sourceV1.back();
-                                membraneTarget->bv(nxT-1+membraneTarget->nxy) = sourceV2.back();
                             }
                             break;
                         case 1: // East
@@ -352,15 +327,10 @@ void Structure::planeStrain()
                                 membraneTarget->bv(nxT-1+j*nxT)                     = sourceV1(j);
                                 membraneTarget->bv(nxT-1+j*nxT+membraneTarget->nxy) = sourceV2(j);
                             }
-                            if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Interface)
+                            if (membraneTarget->chi[0]->curveType == CurveType::Interface)
                             {
                                 membraneTarget->bv(nxT-1)                     = sourceV1(0);
                                 membraneTarget->bv(nxT-1+membraneTarget->nxy) = sourceV2(0);
-                            }
-                            if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Boundary)
-                            {
-                                membraneTarget->bv(nxT-1+(nyT-1)*nxT)                     = sourceV1.back();
-                                membraneTarget->bv(nxT-1+(nyT-1)*nxT+membraneTarget->nxy) = sourceV2.back();
                             }
                             break;
                         case 2: // North
@@ -370,12 +340,7 @@ void Structure::planeStrain()
                                 membraneTarget->bv(i+(nyT-1)*nxT)                     = sourceV1(i);
                                 membraneTarget->bv(i+(nyT-1)*nxT+membraneTarget->nxy) = sourceV2(i);
                             }
-                            if (membraneTarget->chi[2]->curveType == CurveType::Boundary  && membraneTarget->chi[3]->curveType == CurveType::Interface)
-                            {
-                                membraneTarget->bv((nyT-1)*nxT)                     = sourceV1(0);
-                                membraneTarget->bv((nyT-1)*nxT+membraneTarget->nxy) = sourceV2(0);
-                            }
-                            if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Interface)
+                            if (membraneTarget->chi[1]->curveType == CurveType::Interface)
                             {
                                 membraneTarget->bv(nxT-1+(nyT-1)*nxT)                     = sourceV1.back();
                                 membraneTarget->bv(nxT-1+(nyT-1)*nxT+membraneTarget->nxy) = sourceV2.back();
@@ -387,12 +352,7 @@ void Structure::planeStrain()
                                 membraneTarget->bv(j*nxT)                     = sourceV1(j);
                                 membraneTarget->bv(j*nxT+membraneTarget->nxy) = sourceV2(j);
                             }
-                            if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Boundary)
-                            {
-                                membraneTarget->bv(0)                   = sourceV1(0);
-                                membraneTarget->bv(membraneTarget->nxy) = sourceV2(0);
-                            }
-                            if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Interface)
+                            if (membraneTarget->chi[2]->curveType == CurveType::Interface)
                             {
                                 membraneTarget->bv((nyT-1)*nxT)                     = sourceV1.back();
                                 membraneTarget->bv((nyT-1)*nxT+membraneTarget->nxy) = sourceV2.back();
@@ -418,15 +378,10 @@ void Structure::planeStrain()
                                 membraneTarget->bv(i)                     = sourceV1(i);
                                 membraneTarget->bv(i+membraneTarget->nxy) = sourceV2(i);
                             }
-                            if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Interface)
+                            if (membraneTarget->chi[3]->curveType == CurveType::Interface)
                             {
                                 membraneTarget->bv(0)                   = sourceV1(0);
                                 membraneTarget->bv(membraneTarget->nxy) = sourceV2(0);
-                            }
-                            if (membraneTarget->chi[0]->curveType == CurveType::Boundary  && membraneTarget->chi[1]->curveType == CurveType::Interface)
-                            {
-                                membraneTarget->bv(nxT-1)                     = sourceV1.back();
-                                membraneTarget->bv(nxT-1+membraneTarget->nxy) = sourceV2.back();
                             }
                             break;
                         case 1: // East
@@ -436,15 +391,10 @@ void Structure::planeStrain()
                                 membraneTarget->bv(nxT-1+j*nxT)                     = sourceV1(j);
                                 membraneTarget->bv(nxT-1+j*nxT+membraneTarget->nxy) = sourceV2(j);
                             }
-                            if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Interface)
+                            if (membraneTarget->chi[0]->curveType == CurveType::Interface)
                             {
                                 membraneTarget->bv(nxT-1)                     = sourceV1(0);
                                 membraneTarget->bv(nxT-1+membraneTarget->nxy) = sourceV2(0);
-                            }
-                            if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Boundary)
-                            {
-                                membraneTarget->bv(nxT-1+(nyT-1)*nxT)                     = sourceV1.back();
-                                membraneTarget->bv(nxT-1+(nyT-1)*nxT+membraneTarget->nxy) = sourceV2.back();
                             }
                             break;
                         case 2: // North
@@ -455,12 +405,7 @@ void Structure::planeStrain()
                                 membraneTarget->bv(i+(nyT-1)*nxT)                     = sourceV1(i);
                                 membraneTarget->bv(i+(nyT-1)*nxT+membraneTarget->nxy) = sourceV2(i);
                             }
-                            if (membraneTarget->chi[2]->curveType == CurveType::Boundary  && membraneTarget->chi[3]->curveType == CurveType::Interface)
-                            {
-                                membraneTarget->bv((nyT-1)*nxT)                     = sourceV1(0);
-                                membraneTarget->bv((nyT-1)*nxT+membraneTarget->nxy) = sourceV2(0);
-                            }
-                            if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Interface)
+                            if (membraneTarget->chi[1]->curveType == CurveType::Interface)
                             {
                                 membraneTarget->bv(nxT-1+(nyT-1)*nxT)                     = sourceV1.back();
                                 membraneTarget->bv(nxT-1+(nyT-1)*nxT+membraneTarget->nxy) = sourceV2.back();
@@ -475,12 +420,7 @@ void Structure::planeStrain()
                                 membraneTarget->bv(j*nxT)                     = sourceV1(j);
                                 membraneTarget->bv(j*nxT+membraneTarget->nxy) = sourceV2(j);
                             }
-                            if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Boundary)
-                            {
-                                membraneTarget->bv(0)                   = sourceV1(0);
-                                membraneTarget->bv(membraneTarget->nxy) = sourceV2(0);
-                            }
-                            if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Interface)
+                            if (membraneTarget->chi[2]->curveType == CurveType::Interface)
                             {
                                 membraneTarget->bv((nyT-1)*nxT)                     = sourceV1.back();
                                 membraneTarget->bv((nyT-1)*nxT+membraneTarget->nxy) = sourceV2.back();
@@ -507,15 +447,10 @@ void Structure::planeStrain()
                                 membraneTarget->bv(i)                     = sourceV1(i);
                                 membraneTarget->bv(i+membraneTarget->nxy) = sourceV2(i);
                             }
-                            if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Interface)
+                            if (membraneTarget->chi[3]->curveType == CurveType::Interface)
                             {
                                 membraneTarget->bv(0)                   = sourceV1(0);
                                 membraneTarget->bv(membraneTarget->nxy) = sourceV2(0);
-                            }
-                            if (membraneTarget->chi[0]->curveType == CurveType::Boundary  && membraneTarget->chi[1]->curveType == CurveType::Interface)
-                            {
-                                membraneTarget->bv(nxT-1)                     = sourceV1.back();
-                                membraneTarget->bv(nxT-1+membraneTarget->nxy) = sourceV2.back();
                             }
                             break;
                         case 1: // East
@@ -524,15 +459,10 @@ void Structure::planeStrain()
                                 membraneTarget->bv(nxT-1+j*nxT)                     = sourceV1(j);
                                 membraneTarget->bv(nxT-1+j*nxT+membraneTarget->nxy) = sourceV2(j);
                             }
-                            if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Interface)
+                            if (membraneTarget->chi[0]->curveType == CurveType::Interface)
                             {
                                 membraneTarget->bv(nxT-1)                     = sourceV1(0);
                                 membraneTarget->bv(nxT-1+membraneTarget->nxy) = sourceV2(0);
-                            }
-                            if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Boundary)
-                            {
-                                membraneTarget->bv(nxT-1+(nyT-1)*nxT)                     = sourceV1.back();
-                                membraneTarget->bv(nxT-1+(nyT-1)*nxT+membraneTarget->nxy) = sourceV2.back();
                             }
                             break;
                         case 2: // North
@@ -544,12 +474,7 @@ void Structure::planeStrain()
                                 membraneTarget->bv(i+(nyT-1)*nxT)                     = sourceV1(i);
                                 membraneTarget->bv(i+(nyT-1)*nxT+membraneTarget->nxy) = sourceV2(i);
                             }
-                            if (membraneTarget->chi[2]->curveType == CurveType::Boundary  && membraneTarget->chi[3]->curveType == CurveType::Interface)
-                            {
-                                membraneTarget->bv((nyT-1)*nxT)                     = sourceV1(0);
-                                membraneTarget->bv((nyT-1)*nxT+membraneTarget->nxy) = sourceV2(0);
-                            }
-                            if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[1]->curveType == CurveType::Interface)
+                            if (membraneTarget->chi[1]->curveType == CurveType::Interface)
                             {
                                 membraneTarget->bv(nxT-1+(nyT-1)*nxT)                     = sourceV1.back();
                                 membraneTarget->bv(nxT-1+(nyT-1)*nxT+membraneTarget->nxy) = sourceV2.back();
@@ -563,12 +488,7 @@ void Structure::planeStrain()
                                 membraneTarget->bv(j*nxT)                     = sourceV1(j);
                                 membraneTarget->bv(j*nxT+membraneTarget->nxy) = sourceV2(j);
                             }
-                            if (membraneTarget->chi[0]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Boundary)
-                            {
-                                membraneTarget->bv(0)                   = sourceV1(0);
-                                membraneTarget->bv(membraneTarget->nxy) = sourceV2(0);
-                            }
-                            if (membraneTarget->chi[2]->curveType == CurveType::Interface && membraneTarget->chi[3]->curveType == CurveType::Interface)
+                            if (membraneTarget->chi[2]->curveType == CurveType::Interface)
                             {
                                 membraneTarget->bv((nyT-1)*nxT)                     = sourceV1.back();
                                 membraneTarget->bv((nyT-1)*nxT+membraneTarget->nxy) = sourceV2.back();
@@ -605,15 +525,10 @@ void Structure::planeStrain()
                                 membraneSource->bv(i)                     = targetV1(i);
                                 membraneSource->bv(i+membraneSource->nxy) = targetV2(i);
                             }
-                            if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Interface)
+                            if (membraneSource->chi[3]->curveType == CurveType::Interface)
                             {
                                 membraneSource->bv(0)                   = targetV1(0);
                                 membraneSource->bv(membraneSource->nxy) = targetV2(0);
-                            }
-                            if (membraneSource->chi[0]->curveType == CurveType::Boundary  && membraneSource->chi[1]->curveType == CurveType::Interface)
-                            {
-                                membraneSource->bv(nxS-1)                     = targetV1.back();
-                                membraneSource->bv(nxS-1+membraneSource->nxy) = targetV2.back();
                             }
                             break;
                         case 1: // East
@@ -625,15 +540,10 @@ void Structure::planeStrain()
                                 membraneSource->bv(nxS-1+j*nxS)                     = targetV1(j);
                                 membraneSource->bv(nxS-1+j*nxS+membraneSource->nxy) = targetV2(j);
                             }
-                            if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Interface)
+                            if (membraneSource->chi[0]->curveType == CurveType::Interface)
                             {
                                 membraneSource->bv(nxS-1)                     = targetV1(0);
                                 membraneSource->bv(nxS-1+membraneSource->nxy) = targetV2(0);
-                            }
-                            if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Boundary)
-                            {
-                                membraneSource->bv(nxS-1+(nyS-1)*nxS)                     = targetV1.back();
-                                membraneSource->bv(nxS-1+(nyS-1)*nxS+membraneSource->nxy) = targetV2.back();
                             }
                             break;
                         case 2: // North
@@ -642,12 +552,7 @@ void Structure::planeStrain()
                                 membraneSource->bv(i+(nyS-1)*nxS)                     = targetV1(i);
                                 membraneSource->bv(i+(nyS-1)*nxS+membraneSource->nxy) = targetV2(i);
                             }
-                            if (membraneSource->chi[2]->curveType == CurveType::Boundary  && membraneSource->chi[3]->curveType == CurveType::Interface)
-                            {
-                                membraneSource->bv((nyS-1)*nxS)                     = targetV1(0);
-                                membraneSource->bv((nyS-1)*nxS+membraneSource->nxy) = targetV2(0);
-                            }
-                            if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Interface)
+                            if (membraneSource->chi[1]->curveType == CurveType::Interface)
                             {
                                 membraneSource->bv(nxS-1+(nyS-1)*nxS)                     = targetV1.back();
                                 membraneSource->bv(nxS-1+(nyS-1)*nxS+membraneSource->nxy) = targetV2.back();
@@ -660,12 +565,7 @@ void Structure::planeStrain()
                                 membraneSource->bv(j*nxS)                     = targetV1(j);
                                 membraneSource->bv(j*nxS+membraneSource->nxy) = targetV2(j);
                             }
-                            if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Boundary)
-                            {
-                                membraneSource->bv(0)                   = targetV1(0);
-                                membraneSource->bv(membraneSource->nxy) = targetV2(0);
-                            }
-                            if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Interface)
+                            if (membraneSource->chi[2]->curveType == CurveType::Interface)
                             {
                                 membraneSource->bv((nyS-1)*nxS)                     = targetV1.back();
                                 membraneSource->bv((nyS-1)*nxS+membraneSource->nxy) = targetV2.back();
@@ -694,15 +594,10 @@ void Structure::planeStrain()
                                 membraneSource->bv(i)                     = targetV1(i);
                                 membraneSource->bv(i+membraneSource->nxy) = targetV2(i);
                             }
-                            if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Interface)
+                            if (membraneSource->chi[3]->curveType == CurveType::Interface)
                             {
                                 membraneSource->bv(0)                   = targetV1(0);
                                 membraneSource->bv(membraneSource->nxy) = targetV2(0);
-                            }
-                            if (membraneSource->chi[0]->curveType == CurveType::Boundary  && membraneSource->chi[1]->curveType == CurveType::Interface)
-                            {
-                                membraneSource->bv(nxS-1)                     = targetV1.back();
-                                membraneSource->bv(nxS-1+membraneSource->nxy) = targetV2.back();
                             }
                             break;
                         case 1: // East
@@ -713,15 +608,10 @@ void Structure::planeStrain()
                                 membraneSource->bv(nxS-1+j*nxS)                     = targetV1(j);
                                 membraneSource->bv(nxS-1+j*nxS+membraneSource->nxy) = targetV2(j);
                             }
-                            if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Interface)
+                            if (membraneSource->chi[0]->curveType == CurveType::Interface)
                             {
                                 membraneSource->bv(nxS-1)                     = targetV1(0);
                                 membraneSource->bv(nxS-1+membraneSource->nxy) = targetV2(0);
-                            }
-                            if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Boundary)
-                            {
-                                membraneSource->bv(nxS-1+(nyS-1)*nxS)                     = targetV1.back();
-                                membraneSource->bv(nxS-1+(nyS-1)*nxS+membraneSource->nxy) = targetV2.back();
                             }
                             break;
                         case 2: // North
@@ -731,12 +621,7 @@ void Structure::planeStrain()
                                 membraneSource->bv(i+(nyS-1)*nxS)                     = targetV1(i);
                                 membraneSource->bv(i+(nyS-1)*nxS+membraneSource->nxy) = targetV2(i);
                             }
-                            if (membraneSource->chi[2]->curveType == CurveType::Boundary  && membraneSource->chi[3]->curveType == CurveType::Interface)
-                            {
-                                membraneSource->bv((nyS-1)*nxS)                     = targetV1(0);
-                                membraneSource->bv((nyS-1)*nxS+membraneSource->nxy) = targetV2(0);
-                            }
-                            if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Interface)
+                            if (membraneSource->chi[1]->curveType == CurveType::Interface)
                             {
                                 membraneSource->bv(nxS-1+(nyS-1)*nxS)                     = targetV1.back();
                                 membraneSource->bv(nxS-1+(nyS-1)*nxS+membraneSource->nxy) = targetV2.back();
@@ -748,12 +633,7 @@ void Structure::planeStrain()
                                 membraneSource->bv(j*nxS)                     = targetV1(j);
                                 membraneSource->bv(j*nxS+membraneSource->nxy) = targetV2(j);
                             }
-                            if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Boundary)
-                            {
-                                membraneSource->bv(0)                   = targetV1(0);
-                                membraneSource->bv(membraneSource->nxy) = targetV2(0);
-                            }
-                            if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Interface)
+                            if (membraneSource->chi[2]->curveType == CurveType::Interface)
                             {
                                 membraneSource->bv((nyS-1)*nxS)                     = targetV1.back();
                                 membraneSource->bv((nyS-1)*nxS+membraneSource->nxy) = targetV2.back();
@@ -779,15 +659,10 @@ void Structure::planeStrain()
                                 membraneSource->bv(i)                     = targetV1(i);
                                 membraneSource->bv(i+membraneSource->nxy) = targetV2(i);
                             }
-                            if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Interface)
+                            if (membraneSource->chi[3]->curveType == CurveType::Interface)
                             {
                                 membraneSource->bv(0)                   = targetV1(0);
                                 membraneSource->bv(membraneSource->nxy) = targetV2(0);
-                            }
-                            if (membraneSource->chi[0]->curveType == CurveType::Boundary  && membraneSource->chi[1]->curveType == CurveType::Interface)
-                            {
-                                membraneSource->bv(nxS-1)                     = targetV1.back();
-                                membraneSource->bv(nxS-1+membraneSource->nxy) = targetV2.back();
                             }
                             break;
                         case 1: // East
@@ -797,15 +672,10 @@ void Structure::planeStrain()
                                 membraneSource->bv(nxS-1+j*nxS)                     = targetV1(j);
                                 membraneSource->bv(nxS-1+j*nxS+membraneSource->nxy) = targetV2(j);
                             }
-                            if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Interface)
+                            if (membraneSource->chi[0]->curveType == CurveType::Interface)
                             {
                                 membraneSource->bv(nxS-1)                     = targetV1(0);
                                 membraneSource->bv(nxS-1+membraneSource->nxy) = targetV2(0);
-                            }
-                            if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Boundary)
-                            {
-                                membraneSource->bv(nxS-1+(nyS-1)*nxS)                     = targetV1.back();
-                                membraneSource->bv(nxS-1+(nyS-1)*nxS+membraneSource->nxy) = targetV2.back();
                             }
                             break;
                         case 2: // North
@@ -816,12 +686,7 @@ void Structure::planeStrain()
                                 membraneSource->bv(i+(nyS-1)*nxS)                     = targetV1(i);
                                 membraneSource->bv(i+(nyS-1)*nxS+membraneSource->nxy) = targetV2(i);
                             }
-                            if (membraneSource->chi[2]->curveType == CurveType::Boundary  && membraneSource->chi[3]->curveType == CurveType::Interface)
-                            {
-                                membraneSource->bv((nyS-1)*nxS)                     = targetV1(0);
-                                membraneSource->bv((nyS-1)*nxS+membraneSource->nxy) = targetV2(0);
-                            }
-                            if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Interface)
+                            if (membraneSource->chi[1]->curveType == CurveType::Interface)
                             {
                                 membraneSource->bv(nxS-1+(nyS-1)*nxS)                     = targetV1.back();
                                 membraneSource->bv(nxS-1+(nyS-1)*nxS+membraneSource->nxy) = targetV2.back();
@@ -836,12 +701,7 @@ void Structure::planeStrain()
                                 membraneSource->bv(j*nxS)                     = targetV1(j);
                                 membraneSource->bv(j*nxS+membraneSource->nxy) = targetV2(j);
                             }
-                            if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Boundary)
-                            {
-                                membraneSource->bv(0)                   = targetV1(0);
-                                membraneSource->bv(membraneSource->nxy) = targetV2(0);
-                            }
-                            if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Interface)
+                            if (membraneSource->chi[2]->curveType == CurveType::Interface)
                             {
                                 membraneSource->bv((nyS-1)*nxS)                     = targetV1.back();
                                 membraneSource->bv((nyS-1)*nxS+membraneSource->nxy) = targetV2.back();
@@ -868,15 +728,10 @@ void Structure::planeStrain()
                                 membraneSource->bv(i)                     = targetV1(i);
                                 membraneSource->bv(i+membraneSource->nxy) = targetV2(i);
                             }
-                            if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Interface)
+                            if (membraneSource->chi[3]->curveType == CurveType::Interface)
                             {
                                 membraneSource->bv(0)                   = targetV1(0);
                                 membraneSource->bv(membraneSource->nxy) = targetV2(0);
-                            }
-                            if (membraneSource->chi[0]->curveType == CurveType::Boundary  && membraneSource->chi[1]->curveType == CurveType::Interface)
-                            {
-                                membraneSource->bv(nxS-1)                     = targetV1.back();
-                                membraneSource->bv(nxS-1+membraneSource->nxy) = targetV2.back();
                             }
                             break;
                         case 1: // East
@@ -885,15 +740,10 @@ void Structure::planeStrain()
                                 membraneSource->bv(nxS-1+j*nxS)                     = targetV1(j);
                                 membraneSource->bv(nxS-1+j*nxS+membraneSource->nxy) = targetV2(j);
                             }
-                            if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Interface)
+                            if (membraneSource->chi[0]->curveType == CurveType::Interface)
                             {
                                 membraneSource->bv(nxS-1)                     = targetV1(0);
                                 membraneSource->bv(nxS-1+membraneSource->nxy) = targetV2(0);
-                            }
-                            if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Boundary)
-                            {
-                                membraneSource->bv(nxS-1+(nyS-1)*nxS)                     = targetV1.back();
-                                membraneSource->bv(nxS-1+(nyS-1)*nxS+membraneSource->nxy) = targetV2.back();
                             }
                             break;
                         case 2: // North
@@ -905,12 +755,7 @@ void Structure::planeStrain()
                                 membraneSource->bv(i+(nyS-1)*nxS)                     = targetV1(i);
                                 membraneSource->bv(i+(nyS-1)*nxS+membraneSource->nxy) = targetV2(i);
                             }
-                            if (membraneSource->chi[2]->curveType == CurveType::Boundary  && membraneSource->chi[3]->curveType == CurveType::Interface)
-                            {
-                                membraneSource->bv((nyS-1)*nxS)                     = targetV1(0);
-                                membraneSource->bv((nyS-1)*nxS+membraneSource->nxy) = targetV2(0);
-                            }
-                            if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[1]->curveType == CurveType::Interface)
+                            if (membraneSource->chi[1]->curveType == CurveType::Interface)
                             {
                                 membraneSource->bv(nxS-1+(nyS-1)*nxS)                     = targetV1.back();
                                 membraneSource->bv(nxS-1+(nyS-1)*nxS+membraneSource->nxy) = targetV2.back();
@@ -924,12 +769,7 @@ void Structure::planeStrain()
                                 membraneSource->bv(j*nxS)                     = targetV1(j);
                                 membraneSource->bv(j*nxS+membraneSource->nxy) = targetV2(j);
                             }
-                            if (membraneSource->chi[0]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Boundary)
-                            {
-                                membraneSource->bv(0)                   = targetV1(0);
-                                membraneSource->bv(membraneSource->nxy) = targetV2(0);
-                            }
-                            if (membraneSource->chi[2]->curveType == CurveType::Interface && membraneSource->chi[3]->curveType == CurveType::Interface)
+                            if (membraneSource->chi[2]->curveType == CurveType::Interface)
                             {
                                 membraneSource->bv((nyS-1)*nxS)                     = targetV1.back();
                                 membraneSource->bv((nyS-1)*nxS+membraneSource->nxy) = targetV2.back();
