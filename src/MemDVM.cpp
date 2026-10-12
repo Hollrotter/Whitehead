@@ -28,8 +28,8 @@ void MemDVM::linear()
                 case BC::Robin:
                     printf("Robin BC not implemented for String");
                     exit(EXIT_FAILURE);
-                case BC::None:
-                    printf("No BC provided at front");
+                default:
+                    printf("No suitable BC provided at front");
                     exit(EXIT_FAILURE);
             }
             switch(string->back)
@@ -44,8 +44,8 @@ void MemDVM::linear()
                 case BC::Robin:
                     printf("Robin BC not implemented for String");
                     exit(EXIT_FAILURE);
-                case BC::None:
-                    printf("No BC provided at front");
+                default:
+                    printf("No suitable BC provided at front");
                     exit(EXIT_FAILURE);
             }
             RHS.row(0).fill(string->frontBC);

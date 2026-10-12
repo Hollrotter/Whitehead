@@ -13,7 +13,7 @@ void Structure::semilinear()
         iter_old(k) = membranes[k]->iter;
         membranes[k]->iter = 1;
     }
-    do
+    while (converged == false)
     {
         std::cout << "Iteration " << count << '/' << iterations << '\n';
         for (Interface& interface:interfaces)
@@ -349,7 +349,7 @@ void Structure::semilinear()
         count++;
         if (count > iterations)
             converged = true;
-    } while (converged == false);
+    }
     for (size_t k = 0; k < membranes.size(); k++)
         membranes[k]->iter = iter_old(k);
 }

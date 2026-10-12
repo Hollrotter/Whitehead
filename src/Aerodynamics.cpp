@@ -115,7 +115,7 @@ void Aerodynamics::solve()
     arma::field<arma::vec> b0(wings.size());
     for (size_t w = 0; w < wings.size(); w++)
         b0(w) = wings[w]->b;
-    do
+    while (converged == false)
     {
         std::cout << "Iteration " << count << '/' << iterations << std::endl;
         for (const Interface& interface:interfaces)
@@ -1148,7 +1148,7 @@ void Aerodynamics::solve()
         count++;
         if (count > iterations)
             converged = true;
-    } while (converged == false);
+    }
     #pragma omp parallel for
     for (auto& wing:wings)
         wing->postprocessing();

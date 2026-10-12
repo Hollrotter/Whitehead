@@ -206,7 +206,7 @@ void Structure::planeStrain()
     #pragma omp parallel for
     for (auto& membrane:membranes)
         membrane->planeStrainSolve();
-    do
+    while (converged == false)
     {
         std::cout << "Iteration " << count << '/' << iterations << '\n';
         for (const Interface& interface:interfaces)
@@ -1029,5 +1029,5 @@ void Structure::planeStrain()
         count++;
         if (count > iterations)
             converged = true;
-    } while (converged == false);
+    }
 }

@@ -34,7 +34,7 @@ void Structure::linear()
     #pragma omp parallel for
     for (auto& membrane:membranes)
         membrane->solve_S();
-    do
+    while (converged == false)
     {
         std::cout << "Iteration " << count << '/' << iterations << std::endl;
         for (const Interface& interface:interfaces)
@@ -480,5 +480,5 @@ void Structure::linear()
         count++;
         if (count > iterations)
             converged = true;
-    } while (converged == false);
+    }
 }
