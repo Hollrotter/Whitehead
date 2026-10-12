@@ -13,6 +13,16 @@
 
 constexpr size_t NMAX = 100;
 
+constexpr std::array<size_t, NMAX> factorial = []() -> std::array<size_t, NMAX>
+{
+    std::array<size_t, NMAX> f = {};
+    f[0] = 1;
+    f[1] = 1;
+    for (size_t i = 2; i < NMAX; i++)
+        f[i] = i*f[i-1];
+    return f;
+}();
+
 constexpr std::array<std::array<size_t, NMAX>, NMAX> bi = []() -> std::array<std::array<size_t, NMAX>, NMAX>
 {
     std::array<std::array<size_t, NMAX>, NMAX> b = {};

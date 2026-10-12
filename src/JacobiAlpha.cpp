@@ -17,7 +17,7 @@ std::pair<arma::vec, arma::vec> JacobiAlpha::powerSeries(size_t k, double x) con
         for (size_t kk = 0; kk <= pp; kk++)
             c(kk) += g * bi[pp][kk]*pow(-1, kk);
     }
-    c /= factorial(k);
+    c /= factorial[k];
     for (size_t s = 0; s <= k; s++)
     {
         arma::vec F(k+1);
