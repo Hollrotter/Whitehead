@@ -2,7 +2,7 @@
 
 int main()
 {
-    switch (1)
+    switch (0)
     {
         case 0: // Rectangular Wing
         {
@@ -60,7 +60,7 @@ int main()
 
             vlm.output("plot/Data/MemVLM/p");
 
-            std::cout << "cL = " << vlm.get_lift().t()   / 0.1   << '\n';
+            std::cout << "cL = " << vlm.get_lift().t()   / 0.1 << '\n';
             std::cout << "cM = " << vlm.get_moment().t() / 0.1 << '\n';
 
             break;
