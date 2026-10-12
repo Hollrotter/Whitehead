@@ -179,8 +179,7 @@ void MemVLM::linear()
             std::println("Solving membrane");
             membrane->solve_S();
 
-            double L_old = 0;
-            double M_old = 0;
+            double L_old = 0, M_old = 0;
             for (size_t n = 1; n <= iter; n++)
             {
                 std::println("Iteration {}/{}", n, iter);

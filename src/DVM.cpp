@@ -66,7 +66,7 @@ void DVM::dvmSolve()
  */
 void DVM::dvmEval()
 {
-    arma::vec w = camber.diff(xC/c);
+    arma::vec w = camber.diff(xC/c) + wE;
     arma::mat g = solve(trimatu(U), solve(trimatl(L), P*(repelem(w, 1, con) - repelem(alpha.t(), nx, 1))));
     postprocessing(g);
 }

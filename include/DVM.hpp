@@ -16,6 +16,7 @@ class DVM
     arma::vec xC; // x-coordinates of Collocation points
     arma::vec zg; // z-coordinates of Pressure points
     arma::vec zC; // z-coordinates of Collocation points
+    arma::vec wE = arma::zeros(nx);
     arma::mat dcp; // Difference of non-dimensional pressure
     arma::vec cL; // Lift coefficient
     arma::vec cM; // Moment coefficient
@@ -80,6 +81,7 @@ public:
     {
         analysis = _analysis;
     }
+    friend class MemDVM;
 private:
     // Computes some geometric properties like the collocation points
     void geometry();

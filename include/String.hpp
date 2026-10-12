@@ -75,6 +75,7 @@ public:
     {
         materialModel = _materialModel;
     }
+    friend class MemDVM;
 private:
     void structuralMatrix();
     void solve_S();
