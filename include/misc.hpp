@@ -12,6 +12,7 @@
     initializer(omp_priv = omp_orig)
 
 constexpr size_t NMAX = 100;
+constexpr size_t MMAX =  20;
 
 constexpr std::array<std::array<size_t, NMAX>, NMAX> bi = []() -> std::array<std::array<size_t, NMAX>, NMAX>
 {
@@ -22,6 +23,22 @@ constexpr std::array<std::array<size_t, NMAX>, NMAX> bi = []() -> std::array<std
         b[i][i] = 1;
         for (size_t j = 1; j < i+1; j++)
             b[i][j] = b[i-1][j-1] + b[i-1][j];
+    }
+    return b;
+}();
+
+constexpr std::array<std::array<double, MMAX>, 2> bi_05 = []() ->std::array<std::array<double, MMAX>, 2>
+{
+    std::array<std::array<double, MMAX>, 2> b = {};
+    for (size_t i = 0; i < MMAX; i++)
+    {
+        b[0][i] = 1;
+        b[1][i] = 1;
+        for (size_t j = 1; j <= i; j++)
+        {
+            b[0][i] *= 0.5/j-1;
+            b[1][i] *= 1.5/j-1;
+        }
     }
     return b;
 }();

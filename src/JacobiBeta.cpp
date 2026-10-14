@@ -36,13 +36,13 @@ std::pair<arma::vec, arma::vec> JacobiBeta::powerSeries(size_t k, double x) cons
     return std::make_pair(f, df);
 }
 
-std::pair<arma::vec, arma::vec> JacobiBeta::powerSeriesWeight(size_t i, arma::mat &bi_05) const
+std::pair<arma::vec, arma::vec> JacobiBeta::powerSeriesWeight(size_t i) const
 {
     arma::vec c(m+1), d(m+1);
     for (size_t k = 0; k <= m; k++)
     {
-        c(k) = bi_05(1, k) / pow(1+xi(i), k-0.5);
-        d(k) = bi_05(0, k) / pow(1+xi(i), k+0.5)/2;
+        c(k) = bi_05[1][k] / pow(1+xi(i), k-0.5);
+        d(k) = bi_05[0][k] / pow(1+xi(i), k+0.5)/2;
     }
     return std::make_pair(c, d);
 }

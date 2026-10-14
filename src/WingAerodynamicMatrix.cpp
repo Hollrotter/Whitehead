@@ -188,14 +188,6 @@ void Wing::aerodynamicMatrix()
         sT.col(i) = sT.col(i-1)%sT.col(1);
     }
 
-    arma::mat bi_05(2, std::max(phi1->m, phi2->m)+1, arma::fill::ones);
-    for (size_t ii = 0; ii < bi_05.n_cols; ii++)
-        for (size_t j = 1; j <= ii; j++)
-        {
-            bi_05(0, ii) *= 0.5/j-1;
-            bi_05(1, ii) *= 1.5/j-1;
-        }
-
     auto [J11, J12, J21, J22] = Lagrange::TransfiniteQuadMetrics(xi_1, xi_2, chi);
     arma::mat dJ11dxi_1 = D1*J11;
     arma::mat dJ11dxi_2 = J11*D2.t();
@@ -221,7 +213,7 @@ void Wing::aerodynamicMatrix()
             #pragma omp parallel for
             for (size_t j = j_min; j < j_max; j++) // Loop over Collocation Points in 2-direction
             {
-                auto [c2, d2] = phi2->powerSeriesWeight(j, bi_05);
+                auto [c2, d2] = phi2->powerSeriesWeight(j);
 
                 double y_lower = std::max(-1., xi_2(j)-delta/2);
                 double y_upper = std::min(xi_2(j)+delta/2,  1.);
@@ -240,7 +232,7 @@ void Wing::aerodynamicMatrix()
                 }
                 for (size_t i = i_min; i < i_max; i++) // Loop over Collocation Points in 1-direction
                 {
-                    auto [c1, d1] = phi1->powerSeriesWeight(i, bi_05);
+                    auto [c1, d1] = phi1->powerSeriesWeight(i);
 
                     double x_left  = std::max(-1., xi_1(i)-delta/2);
                     double x_right = std::min(xi_1(i)+delta/2,  1.);
@@ -817,7 +809,7 @@ void Wing::aerodynamicMatrix()
             // #pragma omp parallel // This one does not work properly for some reason!
             for (size_t j = j_min; j < j_max; j++) // Loop over Collocation Points in 2-direction
             {
-                auto [c2, d2] = phi2->powerSeriesWeight(j, bi_05);
+                auto [c2, d2] = phi2->powerSeriesWeight(j);
 
                 double y_lower = std::max(-1., xi_2(j)-delta/2);
                 double y_upper = std::min(xi_2(j)+delta/2,  1.);
@@ -836,7 +828,7 @@ void Wing::aerodynamicMatrix()
                 }
                 for (size_t i = i_min; i < i_max; i++) // Loop over Collocation Points in 1-direction
                 {
-                    auto [c1, d1] = phi1->powerSeriesWeight(i, bi_05);
+                    auto [c1, d1] = phi1->powerSeriesWeight(i);
 
                     double x_left  = std::max(-1., xi_1(i)-delta/2);
                     double x_right = std::min(xi_1(i)+delta/2,  1.);

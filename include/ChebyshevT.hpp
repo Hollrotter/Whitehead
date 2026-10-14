@@ -72,7 +72,7 @@ public:
         return k*k;
     }
     virtual std::pair<arma::vec, arma::vec> powerSeries(size_t k, double x) const override;
-    virtual std::pair<arma::vec, arma::vec> powerSeriesWeight(size_t _, arma::mat &bi_05) const override;
+    virtual std::pair<arma::vec, arma::vec> powerSeriesWeight(size_t _) const override;
     virtual inline double weightFunction(double _) const override
     {
         return 1;
