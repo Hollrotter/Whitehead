@@ -13,16 +13,6 @@
 
 constexpr size_t NMAX = 100;
 
-constexpr std::array<size_t, NMAX> factorial = []() -> std::array<size_t, NMAX>
-{
-    std::array<size_t, NMAX> f = {};
-    f[0] = 1;
-    f[1] = 1;
-    for (size_t i = 2; i < NMAX; i++)
-        f[i] = i*f[i-1];
-    return f;
-}();
-
 constexpr std::array<std::array<size_t, NMAX>, NMAX> bi = []() -> std::array<std::array<size_t, NMAX>, NMAX>
 {
     std::array<std::array<size_t, NMAX>, NMAX> b = {};
@@ -34,6 +24,14 @@ constexpr std::array<std::array<size_t, NMAX>, NMAX> bi = []() -> std::array<std
             b[i][j] = b[i-1][j-1] + b[i-1][j];
     }
     return b;
+}();
+
+constexpr std::array<double, 2*NMAX+1> LGAMMA = []() -> std::array<double, 2*NMAX+1>
+{
+    std::array<double, 2*NMAX+1> G = {};
+    for (size_t i = 0; i <= 2*NMAX; i++)
+        G[i] = log(tgamma(0.5*(i+1))); // lgamma is not a constexpr by now!
+    return G;
 }();
 
 // Comparing two floating point numbers for (almost) equality.

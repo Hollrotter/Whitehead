@@ -13,11 +13,11 @@ std::pair<arma::vec, arma::vec> JacobiAlpha::powerSeries(size_t k, double x) con
     arma::vec c(k+1), f(k+1), df(k);
     for (size_t pp = 0; pp <= k; pp++)
     {
-        double g = bi[k][pp]*tgamma(1.5+k+pp)/tgamma(1.5+pp)/pow(-2., pp);
+        double g = bi[k][pp]*exp(LGAMMA[2+2*k+2*pp] - LGAMMA[2+2*pp])/pow(-2., pp);
         for (size_t kk = 0; kk <= pp; kk++)
             c(kk) += g * bi[pp][kk]*pow(-1, kk);
     }
-    c /= factorial[k];
+    c /= exp(LGAMMA[2*k+1]);
     for (size_t s = 0; s <= k; s++)
     {
         arma::vec F(k+1);

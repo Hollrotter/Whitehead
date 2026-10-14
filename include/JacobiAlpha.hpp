@@ -67,15 +67,15 @@ public:
     }
     virtual inline double right(size_t k) const override
     {
-        return tgamma(k+1.5)/factorial[k]/tgamma(1.5);
+        return exp(LGAMMA[2*k+2] - LGAMMA[2*k+1] - LGAMMA[2]);
     }
     virtual inline double leftDerivative(size_t k) const override
     {
-        return k<1 ? 0 : k%2==0 ? -(k+1.5)*tgamma(k+1)/2/factorial[k-1]/tgamma(2) : (k+1.5)*tgamma(k+1)/2/factorial[k-1]/tgamma(2);
+        return k<1 ? 0 : k%2==0 ? -(k+1.5)/2*exp(LGAMMA[2*k+1] - LGAMMA[2*k] - LGAMMA[3]) : (k+1.5)/2*exp(LGAMMA[2*k+1] - LGAMMA[2*k] - LGAMMA[3]);
     }
     virtual inline double rightDerivative(size_t k) const override
     {
-        return k<1 ? 0 : (k+1.5)*tgamma(k+1.5)/2/factorial[k-1]/tgamma(2.5);
+        return k<1 ? 0 : (k+1.5)/2*exp(LGAMMA[2*k+2] - LGAMMA[2*k] - LGAMMA[4]);
     }
     virtual std::pair<arma::vec, arma::vec> powerSeries(size_t k, double x) const override;
     virtual std::pair<arma::vec, arma::vec> powerSeriesWeight(size_t i, arma::mat &bi_05) const override;

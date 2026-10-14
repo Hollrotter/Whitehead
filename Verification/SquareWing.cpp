@@ -7,16 +7,18 @@ int main()
     size_t n1A = 6;
     size_t n2A = 6;
 
-    double q_dyn = 0.1;
-
-    Point p1(-1, 0);
-    Point p2( 1, 0);
-    Point p3( 1, 2);
-    Point p4(-1, 2);
-
     std::ofstream file("plot/Data/SquareWing");
-    for (size_t i = 0; i < 20; i++, n1S++, n2S++, n1A+=6, n2A+=6)
+    for (size_t i = 0; i < 11; i++, n1S+=2, n2S+=2, n1A+=12, n2A+=12)
     {
+        auto t1 = std::chrono::high_resolution_clock::now();
+
+        double q_dyn = 1;
+
+        Point p1(-1, 0);
+        Point p2( 1, 0);
+        Point p3( 1, 2);
+        Point p4(-1, 2);
+        
         std::cout << "n1S = " << n1S << " n2S = " << n2S << std::endl;
         std::cout << "n1A = " << n1A << " n2A = " << n2A << std::endl;
 
@@ -33,13 +35,13 @@ int main()
         membrane.boundary(Field::z,   &chi4, BC::Dirichlet);
 
         membrane.boundary(Field::v1,  &chi1, BC::Neumann);
-        membrane.boundary(Field::n11, &chi2, BC::Dirichlet, 0.6);
+        membrane.boundary(Field::n11, &chi2, BC::Dirichlet, 6);
         membrane.boundary(Field::n12, &chi3, BC::Dirichlet);
         membrane.boundary(Field::v1,  &chi4, BC::Dirichlet);
 
         membrane.boundary(Field::v2,  &chi1, BC::Dirichlet);
         membrane.boundary(Field::n12, &chi2, BC::Dirichlet);
-        membrane.boundary(Field::n22, &chi3, BC::Dirichlet, 0.6);
+        membrane.boundary(Field::n22, &chi3, BC::Dirichlet, 6);
         membrane.boundary(Field::v2,  &chi4, BC::Neumann);
 
         membrane.planeStrain();
@@ -60,13 +62,16 @@ int main()
 
         memvlm.linear();
         
-        double cL = vlm.get_lift()(0);
-        double cM = vlm.get_moment()(0);
+        double cL = vlm.get_lift()(0)   / 4 / q_dyn;
+        double cM = vlm.get_moment()(0) / 8 / q_dyn;
 
-        std::cout << "cL = " << cL / 4 / q_dyn << '\n';
-        std::cout << "cM = " << cM / 4 / q_dyn << '\n';
+        std::cout << "cL = " << cL << '\n';
+        std::cout << "cM = " << cM << '\n';
 
-        file << n1S << ' ' << n2S << ' ' << n1A << ' ' << n2A << ' ' << cL << ' ' << cM << '\n';
+        auto t2 = std::chrono::high_resolution_clock::now();
+
+        std::chrono::duration<double> dt = t2 - t1;
+        file << n1S << ' ' << n2S << ' ' << n1A << ' ' << n2A << ' ' << cL << ' ' << cM << ' ' << dt.count() << '\n';
     }
     file.close();
 }
