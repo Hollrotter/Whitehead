@@ -8,11 +8,11 @@ int main()
     size_t n2A = 6;
 
     std::ofstream file("plot/Data/SquareWing");
-    for (size_t i = 0; i < 11; i++, n1S+=2, n2S+=2, n1A+=12, n2A+=12)
+    for (size_t i = 0; i < 13; i++, n1S+=2, n2S+=2, n1A+=12, n2A+=12)
     {
         auto t1 = std::chrono::high_resolution_clock::now();
 
-        double q_dyn = 1;
+        double q_dyn = 25;
 
         Point p1(-1, 0);
         Point p2( 1, 0);
@@ -35,13 +35,13 @@ int main()
         membrane.boundary(Field::z,   &chi4, BC::Dirichlet);
 
         membrane.boundary(Field::v1,  &chi1, BC::Neumann);
-        membrane.boundary(Field::n11, &chi2, BC::Dirichlet, 6);
+        membrane.boundary(Field::n11, &chi2, BC::Dirichlet, 60);
         membrane.boundary(Field::n12, &chi3, BC::Dirichlet);
         membrane.boundary(Field::v1,  &chi4, BC::Dirichlet);
 
         membrane.boundary(Field::v2,  &chi1, BC::Dirichlet);
         membrane.boundary(Field::n12, &chi2, BC::Dirichlet);
-        membrane.boundary(Field::n22, &chi3, BC::Dirichlet, 6);
+        membrane.boundary(Field::n22, &chi3, BC::Dirichlet, 60);
         membrane.boundary(Field::v2,  &chi4, BC::Neumann);
 
         membrane.planeStrain();
@@ -53,7 +53,7 @@ int main()
         arma::mat xA = x1A*arma::ones(1, x2A.size());
 
         VLM vlm(xA, yA);
-        vlm.pitch(3);
+        vlm.pitch(5);
         vlm.dynamicPressure(q_dyn);
         vlm.symmetry(Symmetry::y);
 

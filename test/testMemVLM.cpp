@@ -6,15 +6,15 @@ int main()
     {
         case 0: // Rectangular Wing
         {
-            Point p1(-0.5, 0);
-            Point p2( 0.5, 0);
-            Point p3( 0.5, 1);
-            Point p4(-0.5, 1);
+            Point p1(-1, 0);
+            Point p2( 1, 0);
+            Point p3( 1, 2);
+            Point p4(-1, 2);
 
-            Lagrange::CurveInterpolant chi1(p1, p2, 10);
-            Lagrange::CurveInterpolant chi2(p2, p3, 10);
-            Lagrange::CurveInterpolant chi3(p3, p4, 10);
-            Lagrange::CurveInterpolant chi4(p4, p1, 10);
+            Lagrange::CurveInterpolant chi1(p1, p2, 30);
+            Lagrange::CurveInterpolant chi2(p2, p3, 30);
+            Lagrange::CurveInterpolant chi3(p3, p4, 30);
+            Lagrange::CurveInterpolant chi4(p4, p1, 30);
 
             Membrane membrane({&chi1, &chi2, &chi3, &chi4});
 
@@ -25,25 +25,25 @@ int main()
 
             membrane.boundary(Field::v2,  &chi1, BC::Dirichlet);
             membrane.boundary(Field::n12, &chi2, BC::Dirichlet);
-            membrane.boundary(Field::n22, &chi3, BC::Dirichlet, 0.15);
+            membrane.boundary(Field::n22, &chi3, BC::Dirichlet, 60);
             membrane.boundary(Field::v2,  &chi4, BC::Neumann);
 
             membrane.boundary(Field::v1,  &chi1, BC::Neumann);
-            membrane.boundary(Field::n11, &chi2, BC::Dirichlet, 0.15);
+            membrane.boundary(Field::n11, &chi2, BC::Dirichlet, 60);
             membrane.boundary(Field::n12, &chi3, BC::Dirichlet);
             membrane.boundary(Field::v1,  &chi4, BC::Dirichlet);
 
             membrane.planeStrain();
 
-            arma::vec x1A = Chebyshev::gaussLobatto(30)/2;
-            arma::vec x2A = (1+Chebyshev::gaussLobatto(40))/2;
+            arma::vec x1A = Chebyshev::gaussLobatto(30);
+            arma::vec x2A = (1+Chebyshev::gaussLobatto(30));
 
             arma::vec yA = x2A;
             arma::mat xA = x1A*arma::ones(1, x2A.size());
 
             VLM vlm(xA, yA);
-            vlm.pitch(3);
-            vlm.dynamicPressure(0.1);
+            vlm.pitch(5);
+            vlm.dynamicPressure(25);
             vlm.symmetry(Symmetry::y);
 
             MemVLM memvlm(&membrane, &vlm);
@@ -60,8 +60,8 @@ int main()
 
             vlm.output("plot/Data/MemVLM/p");
 
-            std::cout << "cL = " << vlm.get_lift().t()   / 0.1 << '\n';
-            std::cout << "cM = " << vlm.get_moment().t() / 0.1 << '\n';
+            std::cout << "cL = " << vlm.get_lift().t()   / 4 / 10 << '\n';
+            std::cout << "cM = " << vlm.get_moment().t() / 8 / 10 << '\n';
 
             break;
         }
