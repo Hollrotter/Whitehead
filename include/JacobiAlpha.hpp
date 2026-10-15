@@ -71,8 +71,7 @@ public:
     }
     virtual inline double leftDerivative(size_t k) const override
     {
-        double dPdx = (k+1.5)/2*exp(LGAMMA[2*k+1] - LGAMMA[2*k-1] - LGAMMA[3]);
-        return k<1 ? 0 : k%2==0 ? -dPdx : dPdx;
+        return k<1 ? 0 : k%2==0 ? -(k+1.5)/2*exp(LGAMMA[2*k+1]-LGAMMA[2*k-1]-LGAMMA[3]) : (k+1.5)/2*exp(LGAMMA[2*k+1]-LGAMMA[2*k-1]-LGAMMA[3]);
     }
     virtual inline double rightDerivative(size_t k) const override
     {

@@ -121,11 +121,11 @@ int main()
                     aero.pitch(5);
                     aero.setIterations(100);
                     aero.boundary(&chi1, BC::Neumann);
-                    aero.boundary(&chi3, BC::Dirichlet);
-                    aero.boundary(&chi4, BC::Dirichlet);
+                    // aero.boundary(&chi3, BC::Dirichlet);
+                    // aero.boundary(&chi4, BC::Dirichlet);
                     aero.boundary(&chi5, BC::Neumann);
-                    aero.boundary(&chi6, BC::Dirichlet);
-                    aero.boundary(&chi7, BC::Dirichlet);
+                    // aero.boundary(&chi6, BC::Dirichlet);
+                    // aero.boundary(&chi7, BC::Dirichlet);
                     aero.linear();
                     aero.output("plot/Data/Aerodynamics/square"+std::to_string(i)+std::to_string(j));
                     cL(i, j) = aero.get_lift();
@@ -135,7 +135,54 @@ int main()
             cM.print();
             break;
         }
-        case 2: // More complex shape
+        case 2: // L
+        {
+            size_t n = 10;
+
+            Point p1(0, 0);
+            Point p2(2, 0);
+            Point p3(2, 2);
+            Point p4(0, 2);
+            Point p5(4, 0);
+            Point p6(4, 2);
+            Point p7(2, 4);
+            Point p8(0, 4);
+
+            Lagrange::CurveInterpolant chi1 (p1, p2, n);
+            Lagrange::CurveInterpolant chi2 (p2, p3, n);
+            Lagrange::CurveInterpolant chi3 (p3, p4, n);
+            Lagrange::CurveInterpolant chi4 (p4, p1, n);
+            Lagrange::CurveInterpolant chi5 (p2, p5, n);
+            Lagrange::CurveInterpolant chi6 (p5, p6, n);
+            Lagrange::CurveInterpolant chi7 (p6, p3, n);
+            Lagrange::CurveInterpolant chi8 (p3, p7, n);
+            Lagrange::CurveInterpolant chi9 (p7, p8, n);
+            Lagrange::CurveInterpolant chi10(p8, p4, n);
+
+            Wing w1({&chi1, &chi2, &chi3, &chi4 });
+            Wing w2({&chi5, &chi6, &chi7, &chi2 });
+            Wing w3({&chi3, &chi8, &chi9, &chi10});
+
+            Aerodynamics a({&w1, &w2, &w3});
+
+            // a.boundary(&chi1,  BC::Dirichlet);
+            // a.boundary(&chi4,  BC::Dirichlet);
+            // a.boundary(&chi5,  BC::Dirichlet);
+            // a.boundary(&chi6,  BC::Dirichlet);
+            // a.boundary(&chi7,  BC::Dirichlet);
+            // a.boundary(&chi8,  BC::Dirichlet);
+            // a.boundary(&chi9,  BC::Dirichlet);
+            // a.boundary(&chi10, BC::Dirichlet);
+
+            a.pitch(1);
+            a.setIterations(1000);
+            a.setomega(0.5);
+            a.linear();
+
+            a.output("plot/Data/Aerodynamics/L");
+            break;
+        }
+        case 3: // More complex shape
         {
             Point p1(-1, 0);
             Point p2( 1, 0);
@@ -181,7 +228,7 @@ int main()
             a.output("plot/Data/Aerodynamics/v");
             break;
         }
-        case 3: // Nonsmooth Surface
+        case 4: // Nonsmooth Surface
         {
             size_t nx = 10;
             size_t ny = 15;
@@ -226,7 +273,7 @@ int main()
             a.output("plot/Data/Aerodynamics/nonsmooth");
             break;
         }
-        case 4: // Panel
+        case 5: // Panel
         {
             /**
              * Rectangular Wing split up into an arbitrary number of Panels.

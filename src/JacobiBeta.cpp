@@ -17,7 +17,7 @@ std::pair<arma::vec, arma::vec> JacobiBeta::powerSeries(size_t k, double x) cons
         for (size_t kk = 0; kk <= pp; kk++)
             c(kk) += g * bi[pp][kk]*pow(-1, kk);
     }
-    c *= exp(LGAMMA[2*k+1] - LGAMMA[2*k+1] - LGAMMA[2*k+2]);
+    c /= exp(LGAMMA[2*k+2]);
     for (size_t s = 0; s <= k; s++)
     {
         arma::vec F(k+1);
