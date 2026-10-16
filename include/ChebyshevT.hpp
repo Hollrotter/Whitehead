@@ -53,7 +53,7 @@ public:
     }
     virtual inline void nextDerivative(size_t k, arma::vec _, arma::mat &T, arma::mat &dT) const override
     {
-        dT.col(k+1) = arma::vec((k+2)*(2*T.col(k) + dT.col(k-1)/k));
+        dT.col(k+1) = arma::vec((k+1)*(2*T.col(k) + dT.col(k-1)/(k-1)));
     }
     virtual inline double left(size_t k) const override
     {

@@ -1,3 +1,4 @@
+#include <boost/math/special_functions/jacobi.hpp>
 #include "JacobiAlpha.hpp"
 #include "JacobiBeta.hpp"
 
@@ -7,7 +8,7 @@ int main()
     size_t m = 10;
     JacobiAlpha phiA(n, 0);
     JacobiBeta  phiB(m, 0);
-    switch (0)
+    switch (1)
     {
         case 0: // Left and Right
         {
@@ -77,6 +78,44 @@ int main()
                 phiB.nextDerivative(q, -1, TL, dTL, dTLp1);
                 phiB.nextDerivative(q,  1, TR, dTR, dTRp1);
             }
+            break;
+        }
+        case 1:
+        {
+            size_t N = 5*n, M = 5*m;
+
+            arma::mat t1(N, n);
+            arma::mat t2(M, m);
+
+            arma::vec x1 = arma::linspace(-1, 1, N);
+            arma::vec x2 = arma::linspace(-1, 1, M);
+            t1.col(0) = phiA.constant(N);
+            t1.col(1) = phiA.linear(x1);
+            for (size_t p = 1; p < n-1; p++)
+                phiA.next(p, x1, t1);
+            t2.col(0) = phiB.constant(N);
+            t2.col(1) = phiB.linear(x2);
+            for (size_t q = 1; q < m-1; q++)
+                phiB.next(q, x2, t2);
+
+            std::ofstream fileA("plot/Data/Jacobi/JacobiA");
+            for (size_t i = 0; i < N; i++)
+            {
+                fileA << x1(i) << ' ';
+                for (size_t p = 0; p < n; p++)
+                    fileA << t1(i, p) << ' ';
+                fileA << '\n';
+            }
+            fileA.close();
+            std::ofstream fileB("plot/Data/Jacobi/JacobiB");
+            for (size_t j = 0; j < M; j++)
+            {
+                fileB << x2(j) << ' ';
+                for (size_t q = 0; q < m; q++)
+                    fileB << t2(j, q) << ' ';
+                fileB << '\n';
+            }
+            fileB.close();
             break;
         }
     }

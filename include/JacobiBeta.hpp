@@ -45,9 +45,9 @@ public:
     }
     virtual inline void next(size_t k, arma::vec x, arma::mat &P) const override
     {
-        double gamma = 2*k + 3.5;
-        P.col(k+1) = (gamma*((pow(gamma, 2) - 1)*x - 0.25)%P.col(k) - 2*(k+1)*(k+1.5)*(gamma + 1)*P.col(k-1))
-                   / (2*(k+2)*(gamma-k-1)*(gamma-1));
+        double gamma = 2*k + 1.5;
+        P.col(k+1) = (gamma*((pow(gamma, 2) - 1)*x - 0.25)%P.col(k) - 2*k*(k+0.5)*(gamma + 1)*P.col(k-1))
+                   / (2*(k+1)*(gamma-k)*(gamma-1));
     }
     virtual inline void nextDerivative(size_t k, double x, double &P, double &dP, double &dPp1) const override
     {
@@ -57,9 +57,9 @@ public:
     }
     virtual inline void nextDerivative(size_t k, arma::vec x, arma::mat &P, arma::mat &dP) const override
     {
-        double gamma = 2*k + 3.5;
-        dP.col(k+1) = (gamma*(pow(gamma, 2) - 1)*P.col(k) + gamma*((pow(gamma, 2)-1)*x - 0.25)%dP.col(k) - 2*(k+1)*(k+1.5)*(gamma+1)*dP.col(k-1))
-                    / (2*(k+2)*(gamma-k-1)*(gamma-1));
+        double gamma = 2*k + 1.5;
+        dP.col(k+1) = (gamma*(pow(gamma, 2) - 1)*P.col(k) + gamma*((pow(gamma, 2)-1)*x - 0.25)%dP.col(k) - 2*k*(k+0.5)*(gamma+1)*dP.col(k-1))
+                    / (2*(k+1)*(gamma-k)*(gamma-1));
     }
     virtual inline double left(size_t k) const override
     {
