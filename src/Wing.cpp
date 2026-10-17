@@ -189,8 +189,12 @@ void Wing::init()
         Tx = Lagrange::interpolationMatrix(x1, xi_1);
         Ty = Lagrange::interpolationMatrix(x2, xi_2);
         zC = Lagrange::interpolation2D(Tx, Ty, z, xi_1, xi_2);
+        arma::mat d1 = Chebyshev::derivativeMatrix(x1, Derivative::first);
+        arma::mat d2 = Chebyshev::derivativeMatrix(x2, Derivative::first);
+        arma::mat dzdx1 = d1 * z;
+        arma::mat dzdx2 = z * d2.t();
         std::tie(h_2s2_south, h_2s1_south, h_1s1_east, h_1s2_east, h_2s2_north, h_2s1_north, h_1s1_west, h_1s2_west)
-            = Lagrange::covariantScaleFactors(xi_1, xi_2, chi, z, D1, D2);
+            = Lagrange::covariantScaleFactors(xi_1, xi_2, chi, dzdx1, dzdx2);
         nC = calculateNormal();
     }
 }

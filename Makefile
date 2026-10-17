@@ -6,7 +6,7 @@ lib/MembraneSemilinear.o lib/MembraneNonlinear.o lib/MembraneStructuralMatrix.o 
 STRUCTURE = lib/Structure.o lib/StructureLinear.o lib/StructureSemilinear.o lib/StructureNonlinear.o \
 lib/StructurePlaneStrain.o
 CHEBYSHEV = lib/Chebyshev.o lib/ChebyshevFFT.o lib/ChebyshevPolynomial.o
-LAGRANGE = lib/Lagrange.o lib/CurveInterpolant.o
+LAGRANGE = lib/Lagrange.o lib/CurveInterpolant.o lib/covariantScaleFactors.o
 METRIC = lib/Christoffel.o lib/Metric.o lib/MetricCo.o lib/Jacobian.o
 SPLINE = lib/B_Spline.o lib/setQR.o lib/Splinefit.o lib/SplinefitDiff.o
 DVM = lib/Camber.o lib/DVM.o lib/DVMAerodynamicMatrix.o

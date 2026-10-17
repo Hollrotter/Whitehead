@@ -41,8 +41,8 @@ namespace Lagrange
         // Constructor to set an arbitrary node distribution by inserting s
         CurveInterpolant(arma::vec _x, arma::vec _y, arma::vec s) : x(_x), y(_y), nodes(parametrize(s)) {}
         CurveInterpolant(Point p1, Point p2, size_t n) : x((p2.X()-p1.X())*(Chebyshev::gaussLobatto(n)+1)/2 + p1.X()),
-                                                         y((p2.Y()-p1.Y())*(Chebyshev::gaussLobatto(n)+1)/2 + p1.Y()), nodes(Chebyshev::gaussLobatto(n)) {};
-        CurveInterpolant(Point p1, Point p2, Point pm, double r, size_t n) : CurveInterpolant(arc(p1, p2, pm, r, n)) {};
+                                                         y((p2.Y()-p1.Y())*(Chebyshev::gaussLobatto(n)+1)/2 + p1.Y()), nodes(Chebyshev::gaussLobatto(n)) {}
+        CurveInterpolant(Point p1, Point p2, Point pm, double r, size_t n) : CurveInterpolant(arc(p1, p2, pm, r, n)) {}
         std::pair<arma::vec, arma::vec> evaluate() const
         {
             return {interpolation(nodes, nodes, x, w), interpolation(nodes, nodes, y, w)};
@@ -80,6 +80,7 @@ namespace Lagrange
         arma::vec parametrize();
         arma::vec parametrize(arma::vec s);
     };
+    std::tuple<double, double, double, double> signs(const std::string s, const std::array<CurveInterpolant*, 4> chi);
     std::pair<arma::mat, arma::mat> TransfiniteQuadMap(const std::array<CurveInterpolant*, 4> chi);
     std::pair<arma::mat, arma::mat> TransfiniteQuadMap(const arma::vec &x1, const arma::vec &x2, const std::array<CurveInterpolant*, 4> chi);
     std::tuple<arma::mat, arma::mat, arma::mat, arma::mat> TransfiniteQuadMetrics(const std::array<CurveInterpolant*, 4> chi);
@@ -90,8 +91,28 @@ namespace Lagrange
     std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::vec, arma::rowvec, arma::rowvec>
         covariantScaleFactors(const arma::vec &x1, const arma::vec &x2, const std::array<CurveInterpolant*, 4> chi);
     std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::vec, arma::rowvec, arma::rowvec>
-        covariantScaleFactors(const std::array<CurveInterpolant*, 4> chi, const arma::mat &z, const arma::mat &D1, const arma::mat &D2);
+        covariantScaleFactors(const std::array<CurveInterpolant*, 4> chi, const arma::mat &dzdx1, const arma::mat &dzdx2);
     std::tuple<arma::vec, arma::vec, arma::rowvec, arma::rowvec, arma::vec, arma::vec, arma::rowvec, arma::rowvec>
         covariantScaleFactors(const arma::vec &x1, const arma::vec &x2, const std::array<CurveInterpolant*, 4> chi,
-            const arma::mat &z, const arma::mat &D1, const arma::mat &D2);
+            const arma::mat &dzdx1, const arma::mat &dzdx2);
+    std::tuple<arma::vec, arma::vec> covariantScaleFactorsSouth(const std::array<CurveInterpolant*, 4> chi);
+    std::tuple<arma::vec, arma::vec> covariantScaleFactorsSouth(const arma::vec &x1, const std::array<CurveInterpolant*, 4> chi);
+    std::tuple<arma::vec, arma::vec> covariantScaleFactorsSouth(const std::array<CurveInterpolant*, 4> chi, const arma::mat &dzdx1, const arma::mat &dzdx2);
+    std::tuple<arma::vec, arma::vec> covariantScaleFactorsSouth(const arma::vec &x1, const std::array<CurveInterpolant*, 4> chi,
+        const arma::mat &dzdx1, const arma::mat &dzdx2);
+    std::tuple<arma::rowvec, arma::rowvec> covariantScaleFactorsEast(const std::array<CurveInterpolant*, 4> chi);
+    std::tuple<arma::rowvec, arma::rowvec> covariantScaleFactorsEast(const arma::vec &x2, const std::array<CurveInterpolant*, 4> chi);
+    std::tuple<arma::rowvec, arma::rowvec> covariantScaleFactorsEast(const std::array<CurveInterpolant*, 4> chi, const arma::mat &dzdx1, const arma::mat &dzdx2);
+    std::tuple<arma::rowvec, arma::rowvec> covariantScaleFactorsEast(const arma::vec &x2, const std::array<CurveInterpolant*, 4> chi,
+        const arma::mat &dzdx1, const arma::mat &dzdx2);
+    std::tuple<arma::vec, arma::vec> covariantScaleFactorsNorth(const std::array<CurveInterpolant*, 4> chi);
+    std::tuple<arma::vec, arma::vec> covariantScaleFactorsNorth(const arma::vec &x1, const std::array<CurveInterpolant*, 4> chi);
+    std::tuple<arma::vec, arma::vec> covariantScaleFactorsNorth(const std::array<CurveInterpolant*, 4> chi, const arma::mat &dzdx1, const arma::mat &dzdx2);
+    std::tuple<arma::vec, arma::vec> covariantScaleFactorsNorth(const arma::vec &x1, const std::array<CurveInterpolant*, 4> chi,
+        const arma::mat &dzdx1, const arma::mat &dzdx2);
+    std::tuple<arma::rowvec, arma::rowvec> covariantScaleFactorsWest(const std::array<CurveInterpolant*, 4> chi);
+    std::tuple<arma::rowvec, arma::rowvec> covariantScaleFactorsWest(const arma::vec &x2, const std::array<CurveInterpolant*, 4> chi);
+    std::tuple<arma::rowvec, arma::rowvec> covariantScaleFactorsWest(const std::array<CurveInterpolant*, 4> chi, const arma::mat &dzdx1, const arma::mat &dzdx2);
+    std::tuple<arma::rowvec, arma::rowvec> covariantScaleFactorsWest(const arma::vec &x2, const std::array<CurveInterpolant*, 4> chi,
+        const arma::mat &dzdx1, const arma::mat &dzdx2);
 }

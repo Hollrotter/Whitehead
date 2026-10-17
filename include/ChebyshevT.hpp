@@ -51,9 +51,9 @@ public:
     {
         dTp1 = (k == 0) ? 4*x : (k+2)*(2*T + dTp1/k);
     }
-    virtual inline void nextDerivative(size_t k, arma::vec _, arma::mat &T, arma::mat &dT) const override
+    virtual inline void nextDerivative(size_t k, arma::vec x, arma::mat &T, arma::mat &dT) const override
     {
-        dT.col(k+1) = arma::vec((k+1)*(2*T.col(k) + dT.col(k-1)/(k-1)));
+        dT.col(k+1) = (k == 1) ? 4*x : arma::vec((k+1)*(2*T.col(k) + dT.col(k-1)/(k-1)));
     }
     virtual inline double left(size_t k) const override
     {
