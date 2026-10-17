@@ -219,8 +219,17 @@ void Aerodynamics::solve()
                     }
                     MU    *= w2;
                     dMUd1 *= w2;
-                    arma::vec h_2s1 = wingSource->h_2s1_south;
-                    arma::vec h_2s2 = wingSource->h_2s2_south;
+                    arma::vec h_2s1, h_2s2;
+                    if (analysis == Analysis::linear)
+                        std::tie(h_2s2, h_2s1) = Lagrange::covariantScaleFactorsSouth(xiT, wingSource->chi);
+                    else
+                    {
+                        arma::mat d1 = Lagrange::derivativeMatrix(xiT);
+                        arma::mat d2 = Lagrange::derivativeMatrix(wingSource->x2);
+                        arma::mat dzdx1 = d1 * wingSource->z;
+                        arma::mat dzdx2 = wingSource->z * d2.t();
+                        std::tie(h_2s2, h_2s1) = Lagrange::covariantScaleFactorsSouth(xiT, wingSource->chi, dzdx1, dzdx2);
+                    }
                     arma::vec sourceMU = interface.lambdaSource*MU + h_2s1%dMUd1 + h_2s2%dMUd2;
                     switch (interface.targetCurve)
                     {
@@ -295,8 +304,17 @@ void Aerodynamics::solve()
                     }
                     MU    *= w1;
                     dMUd2 *= w1;
-                    arma::rowvec h_1s1 = wingSource->h_1s1_east;
-                    arma::rowvec h_1s2 = wingSource->h_1s2_east;
+                    arma::rowvec h_1s1, h_1s2;
+                    if (analysis == Analysis::linear)
+                        std::tie(h_1s1, h_1s2) = Lagrange::covariantScaleFactorsEast(xiT, wingSource->chi);
+                    else
+                    {
+                        arma::mat d1 = Lagrange::derivativeMatrix(wingSource->x1);
+                        arma::mat d2 = Lagrange::derivativeMatrix(xiT);
+                        arma::mat dzdx1 = d1 * wingSource->z;
+                        arma::mat dzdx2 = wingSource->z * d2.t();
+                        std::tie(h_1s1, h_1s2) = Lagrange::covariantScaleFactorsEast(xiT, wingSource->chi, dzdx1, dzdx2);
+                    }
                     arma::vec sourceMU = (interface.lambdaSource*MU - (h_1s1%dMUd1 + h_1s2%dMUd2)).t();
                     switch (interface.targetCurve)
                     {
@@ -371,8 +389,17 @@ void Aerodynamics::solve()
                     }
                     MU    *= w2;
                     dMUd1 *= w2;
-                    arma::vec h_2s1 = wingSource->h_2s1_north;
-                    arma::vec h_2s2 = wingSource->h_2s2_north;
+                    arma::vec h_2s1, h_2s2;
+                    if (analysis == Analysis::linear)
+                        std::tie(h_2s2, h_2s1) = Lagrange::covariantScaleFactorsNorth(xiT, wingSource->chi);
+                    else
+                    {
+                        arma::mat d1 = Lagrange::derivativeMatrix(xiT);
+                        arma::mat d2 = Lagrange::derivativeMatrix(wingSource->x2);
+                        arma::mat dzdx1 = d1 * wingSource->z;
+                        arma::mat dzdx2 = wingSource->z * d2.t();
+                        std::tie(h_2s2, h_2s1) = Lagrange::covariantScaleFactorsNorth(xiT, wingSource->chi, dzdx1, dzdx2);
+                    }
                     arma::vec sourceMU = interface.lambdaSource*MU - (h_2s1%dMUd1 + h_2s2%dMUd2);
                     switch (interface.targetCurve)
                     {
@@ -447,8 +474,17 @@ void Aerodynamics::solve()
                     }
                     MU    *= w1;
                     dMUd2 *= w1;
-                    arma::rowvec h_1s1 = wingSource->h_1s1_west;
-                    arma::rowvec h_1s2 = wingSource->h_1s2_west;
+                    arma::rowvec h_1s1, h_1s2;
+                    if (analysis == Analysis::linear)
+                        std::tie(h_1s1, h_1s2) = Lagrange::covariantScaleFactorsWest(xiT, wingSource->chi);
+                    else
+                    {
+                        arma::mat d1 = Lagrange::derivativeMatrix(wingSource->x1);
+                        arma::mat d2 = Lagrange::derivativeMatrix(xiT);
+                        arma::mat dzdx1 = d1 * wingSource->z;
+                        arma::mat dzdx2 = wingSource->z * d2.t();
+                        std::tie(h_1s1, h_1s2) = Lagrange::covariantScaleFactorsWest(xiT, wingSource->chi, dzdx1, dzdx2);
+                    }
                     arma::vec sourceMU = (interface.lambdaSource*MU + h_1s1%dMUd1 + h_1s2%dMUd2).t();
                     switch (interface.targetCurve)
                     {
@@ -527,8 +563,17 @@ void Aerodynamics::solve()
                     }
                     MU    *= w2;
                     dMUd1 *= w2;
-                    arma::vec h_2s1 = wingTarget->h_2s1_south;
-                    arma::vec h_2s2 = wingTarget->h_2s2_south;
+                    arma::vec h_2s1, h_2s2;
+                    if (analysis == Analysis::linear)
+                        std::tie(h_2s2, h_2s1) = Lagrange::covariantScaleFactorsSouth(xiS, wingTarget->chi);
+                    else
+                    {
+                        arma::mat d1 = Lagrange::derivativeMatrix(xiS);
+                        arma::mat d2 = Lagrange::derivativeMatrix(wingTarget->x2);
+                        arma::mat dzdx1 = d1 * wingTarget->z;
+                        arma::mat dzdx2 = wingTarget->z * d2.t();
+                        std::tie(h_2s2, h_2s1) = Lagrange::covariantScaleFactorsSouth(xiS, wingTarget->chi, dzdx1, dzdx2);
+                    }
                     arma::vec targetMU = interface.lambdaTarget*MU + h_2s1%dMUd1 + h_2s2%dMUd2;
                     switch (interface.sourceCurve)
                     {
@@ -603,8 +648,17 @@ void Aerodynamics::solve()
                     }
                     MU    *= w1;
                     dMUd2 *= w1;
-                    arma::rowvec h_1s1 = wingTarget->h_1s1_east;
-                    arma::rowvec h_1s2 = wingTarget->h_1s2_east;
+                    arma::rowvec h_1s1, h_1s2;
+                    if (analysis == Analysis::linear)
+                        std::tie(h_1s1, h_1s2) = Lagrange::covariantScaleFactorsEast(xiS, wingTarget->chi);
+                    else
+                    {
+                        arma::mat d1 = Lagrange::derivativeMatrix(wingTarget->x1);
+                        arma::mat d2 = Lagrange::derivativeMatrix(xiS);
+                        arma::mat dzdx1 = d1 * wingTarget->z;
+                        arma::mat dzdx2 = wingTarget->z * d2.t();
+                        std::tie(h_1s1, h_1s2) = Lagrange::covariantScaleFactorsEast(xiS, wingTarget->chi, dzdx1, dzdx2);
+                    }
                     arma::vec targetMU = (interface.lambdaTarget*MU - (h_1s1%dMUd1 + h_1s2%dMUd2)).t();
                     switch (interface.sourceCurve)
                     {
@@ -678,9 +732,18 @@ void Aerodynamics::solve()
                         dMUd2(i) *= w1;
                     }
                     MU    *= w2;
-                    dMUd1 *= w2;
-                    arma::vec h_2s1 = wings[interTarget]->h_2s1_north;
-                    arma::vec h_2s2 = wings[interTarget]->h_2s2_north;
+                    dMUd1 *= w2;    
+                    arma::vec h_2s1, h_2s2;
+                    if (analysis == Analysis::linear)
+                        std::tie(h_2s2, h_2s1) = Lagrange::covariantScaleFactorsNorth(xiS, wingTarget->chi);
+                    else
+                    {
+                        arma::mat d1 = Lagrange::derivativeMatrix(xiS);
+                        arma::mat d2 = Lagrange::derivativeMatrix(wingTarget->x2);
+                        arma::mat dzdx1 = d1 * wingTarget->z;
+                        arma::mat dzdx2 = wingTarget->z * d2.t();
+                        std::tie(h_2s2, h_2s1) = Lagrange::covariantScaleFactorsNorth(xiS, wingTarget->chi, dzdx1, dzdx2);
+                    }
                     arma::vec targetMU = interface.lambdaTarget*MU - (h_2s1%dMUd1 + h_2s2%dMUd2);
                     switch (interface.sourceCurve)
                     {
@@ -755,8 +818,17 @@ void Aerodynamics::solve()
                     }
                     MU    *= w1;
                     dMUd2 *= w1;
-                    arma::rowvec h_1s1 = wings[interTarget]->h_1s1_west;
-                    arma::rowvec h_1s2 = wings[interTarget]->h_1s2_west;
+                    arma::rowvec h_1s1, h_1s2;
+                    if (analysis == Analysis::linear)
+                        std::tie(h_1s1, h_1s2) = Lagrange::covariantScaleFactorsWest(xiS, wingTarget->chi);
+                    else
+                    {
+                        arma::mat d1 = Lagrange::derivativeMatrix(wingTarget->x1);
+                        arma::mat d2 = Lagrange::derivativeMatrix(xiS);
+                        arma::mat dzdx1 = d1 * wingTarget->z;
+                        arma::mat dzdx2 = wingTarget->z * d2.t();
+                        std::tie(h_1s1, h_1s2) = Lagrange::covariantScaleFactorsWest(xiS, wingTarget->chi, dzdx1, dzdx2);
+                    }
                     arma::vec targetMU = (interface.lambdaTarget*MU + h_1s1%dMUd1 + h_1s2%dMUd2).t();
                     switch (interface.sourceCurve)
                     {
