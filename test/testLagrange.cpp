@@ -75,8 +75,8 @@ int main()
 
             arma::mat  xS_hat  = Chebyshev::DiscreteChebyshevTransform(x1, x2, xS);
             arma::mat  yS_hat  = Chebyshev::DiscreteChebyshevTransform(x1, x2, yS);
-            arma::cube x_w_bar = Chebyshev::ChebyshevDerivativeCoefficients(xS_hat);
-            arma::cube y_w_bar = Chebyshev::ChebyshevDerivativeCoefficients(yS_hat);
+            auto [x1_w_bar, x2_w_bar] = Chebyshev::DerivativeCoefficients(xS_hat);
+            auto [y1_w_bar, y2_w_bar] = Chebyshev::DerivativeCoefficients(yS_hat);
 
             arma::mat XC = repelem(arma::linspace(-1, 1, y1S.size()),     1, y2S.size());
             arma::mat YC = repelem(arma::linspace(-1, 1, y2S.size()).t(), y1S.size(), 1);
@@ -98,8 +98,8 @@ int main()
                                 double Txy = Tx*boost::math::chebyshev_t(q,-YC(i, j));
                                 x_w += xS_hat(p, q)*Txy;
                                 y_w += yS_hat(p, q)*Txy;
-                                J += Txy*arma::mat{{x_w_bar(p, q, 0), x_w_bar(p, q, 1)},
-                                                   {y_w_bar(p, q, 0), y_w_bar(p, q, 1)}};
+                                J += Txy*arma::mat{{x1_w_bar(p, q), x2_w_bar(p, q)},
+                                                   {y1_w_bar(p, q), y2_w_bar(p, q)}};
 
                                 dx -= Txy*arma::vec{xS_hat(p, q), yS_hat(p, q)};
                             }
