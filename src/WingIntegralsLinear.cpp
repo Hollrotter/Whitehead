@@ -2,14 +2,23 @@
 
 void Wing::integralRightLinear(size_t i, size_t j, size_t n1, size_t n2, double xp)
 {
-    std::vector<fastgl::QuadPair> gl_x(n1);
     arma::vec x1_gl(n1, arma::fill::none);
-    for (size_t ii = 0; ii < n1; ii++)
+    arma::vec w1_gl(n1, arma::fill::none);
+    if (phi1->basis == Basis::U)
     {
-        gl_x[ii] = fastgl::GLPair(n1, ii+1);
-        x1_gl(ii) = (1 - gl_x[ii].x()) * (1 - xp)/2 + xp;
+        auto [X1, W1] = gaujac(n1, 0.5, 0.0);
+        x1_gl = ((1-xp)*X1 + xp+1)/2;
+        w1_gl = pow((1 - xp)/2, 1.5)*W1%sqrt(1+x1_gl);
     }
+    else
+        for (size_t ii = 0; ii < n1; ii++)
+        {
+            fastgl::QuadPair gl_x = fastgl::GLPair(n1, ii+1);
+            x1_gl(ii) = (1 - gl_x.x()) * (1 - xp)/2 + xp;
+            w1_gl(ii) = gl_x.weight*(1 - xp)/2;
+        }
     arma::vec x2_gl = phi2->xg;
+    arma::vec w2_gl = phi2->wg;
     auto [x_gl, y_gl] = Lagrange::TransfiniteQuadMap(x1_gl, x2_gl, chi);
     auto [dx_gldx1, dx_gldx2, dy_gldx1, dy_gldx2] = Lagrange::TransfiniteQuadMetrics(x1_gl, x2_gl, chi);
     for (size_t jj = 0; jj < n2; jj++)
@@ -45,7 +54,7 @@ void Wing::integralRightLinear(size_t i, size_t j, size_t n1, size_t n2, double 
                     double dpsi1 = w1*dt1 + dw1*t1;
                     double dmudx1 = dpsi1 *  psi2;
                     double dmudx2 =  psi1 * dpsi2;
-                    A(i+j*nx, p+q*nx) += gl_x[ii].weight*phi2->wg(jj)/r3*(1 - xp)/2
+                    A(i+j*nx, p+q*nx) += w1_gl(ii)*w2_gl(jj)/r3
                                        *(r(0)*(dy_gldx2(ii, jj)*dmudx1 - dy_gldx1(ii, jj)*dmudx2)
                                        - r(1)*(dx_gldx2(ii, jj)*dmudx1 - dx_gldx1(ii, jj)*dmudx2));
                     std::swap(t1, t1p1); // Swap order so the oldes Chebyshev Polynomial will be overwritten
@@ -66,14 +75,23 @@ void Wing::integralRightLinear(size_t i, size_t j, size_t n1, size_t n2, double 
 
 void Wing::integralLeftLinear(size_t i, size_t j, size_t n1, size_t n2, double xm)
 {
-    std::vector<fastgl::QuadPair> gl_x(n1);
     arma::vec x1_gl(n1, arma::fill::none);
-    for (size_t ii = 0; ii < n1; ii++)
+    arma::vec w1_gl(n1, arma::fill::none);
+    if (phi1->basis == Basis::U)
     {
-        gl_x[ii] = fastgl::GLPair(n1, ii+1);
-        x1_gl(ii) = (1 - gl_x[ii].x()) * (xm + 1)/2 - 1;
+        auto [X1, W1] = gaujac(n1, 0.0, 0.5);
+        x1_gl = ((xm+1)*X1 + xm-1)/2;
+        w1_gl = pow((xm + 1)/2, 1.5)*W1%sqrt(1-x1_gl);
     }
+    else
+        for (size_t ii = 0; ii < n1; ii++)
+        {
+            fastgl::QuadPair gl_x = fastgl::GLPair(n1, ii+1);
+            x1_gl(ii) = (1 - gl_x.x()) * (xm + 1)/2 - 1;
+            w1_gl(ii) = gl_x.weight*(xm + 1)/2;
+        }
     arma::vec x2_gl = phi2->xg;
+    arma::vec w2_gl = phi2->wg;
     auto [x_gl, y_gl] = Lagrange::TransfiniteQuadMap(x1_gl, x2_gl, chi);
     auto [dx_gldx1, dx_gldx2, dy_gldx1, dy_gldx2] = Lagrange::TransfiniteQuadMetrics(x1_gl, x2_gl, chi);
     for (size_t jj = 0; jj < n2; jj++)
@@ -109,7 +127,7 @@ void Wing::integralLeftLinear(size_t i, size_t j, size_t n1, size_t n2, double x
                     double dpsi1 = w1*dt1 + dw1*t1;
                     double dmudx1 = dpsi1 *  psi2;
                     double dmudx2 =  psi1 * dpsi2;
-                    A(i+j*nx, p+q*nx) += gl_x[ii].weight*phi2->wg(jj)/r3*(xm + 1)/2
+                    A(i+j*nx, p+q*nx) += w1_gl(ii)*w2_gl(jj)/r3
                                        *(r(0)*(dy_gldx2(ii, jj)*dmudx1 - dy_gldx1(ii, jj)*dmudx2)
                                        - r(1)*(dx_gldx2(ii, jj)*dmudx1 - dx_gldx1(ii, jj)*dmudx2));
                     std::swap(t1, t1p1); // Swap order so the oldes Chebyshev Polynomial will be overwritten
@@ -131,13 +149,22 @@ void Wing::integralLeftLinear(size_t i, size_t j, size_t n1, size_t n2, double x
 void Wing::integralUpperLinear(size_t i, size_t j, size_t n1, size_t n2, double yp)
 {
     arma::vec x1_gl = phi1->xg;
-    std::vector<fastgl::QuadPair> gl_y(n2);
+    arma::vec w1_gl = phi1->wg;
     arma::vec x2_gl(n2, arma::fill::none);
-    for (size_t jj = 0; jj < n2; jj++)
+    arma::vec w2_gl(n2, arma::fill::none);
+    if (phi2->basis == Basis::U)
     {
-        gl_y[jj] = fastgl::GLPair(n2, jj+1);
-        x2_gl(jj) = (1 - gl_y[jj].x()) * (1 - yp)/2 + yp;
+        auto [X2, W2] = gaujac(n2, 0.5, 0.0);
+        x2_gl = ((1-yp)*X2 + yp+1)/2;
+        w2_gl = pow((1 - yp)/2, 1.5)*W2%sqrt(1+x2_gl);
     }
+    else
+        for (size_t jj = 0; jj < n2; jj++)
+        {
+            fastgl::QuadPair gl_y = fastgl::GLPair(n2, jj+1);
+            x2_gl(jj) = (1 - gl_y.x()) * (1 - yp)/2 + yp;
+            w2_gl(jj) = gl_y.weight*(1 - yp)/2;
+        }
     auto [x_gl, y_gl] = Lagrange::TransfiniteQuadMap(x1_gl, x2_gl, chi);
     auto [dx_gldx1, dx_gldx2, dy_gldx1, dy_gldx2] = Lagrange::TransfiniteQuadMetrics(x1_gl, x2_gl, chi);
     for (size_t jj = 0; jj < n2; jj++)
@@ -173,7 +200,7 @@ void Wing::integralUpperLinear(size_t i, size_t j, size_t n1, size_t n2, double 
                     double dpsi1 = w1*dt1 + dw1*t1;
                     double dmudx1 = dpsi1 *  psi2;
                     double dmudx2 =  psi1 * dpsi2;
-                    A(i+j*nx, p+q*nx) += phi1->wg(ii)*gl_y[jj].weight/r3*(1 - yp)/2
+                    A(i+j*nx, p+q*nx) += w1_gl(ii)*w2_gl(jj)/r3
                                        *(r(0)*(dy_gldx2(ii, jj)*dmudx1 - dy_gldx1(ii, jj)*dmudx2)
                                        - r(1)*(dx_gldx2(ii, jj)*dmudx1 - dx_gldx1(ii, jj)*dmudx2));
                     std::swap(t1, t1p1); // Swap order so the oldes Chebyshev Polynomial will be overwritten
@@ -195,13 +222,22 @@ void Wing::integralUpperLinear(size_t i, size_t j, size_t n1, size_t n2, double 
 void Wing::integralLowerLinear(size_t i, size_t j, size_t n1, size_t n2, double ym)
 {
     arma::vec x1_gl = phi1->xg;
-    std::vector<fastgl::QuadPair> gl_y(n2);
+    arma::vec w1_gl = phi1->wg;
     arma::vec x2_gl(n2, arma::fill::none);
-    for (size_t jj = 0; jj < n2; jj++)
+    arma::vec w2_gl(n2, arma::fill::none);
+    if (phi2->basis == Basis::U)
     {
-        gl_y[jj] = fastgl::GLPair(n2, jj+1);
-        x2_gl(jj) = (1 - gl_y[jj].x()) * (ym + 1)/2 - 1;
+        auto [X2, W2] = gaujac(n2, 0.0, 0.5);
+        x2_gl = ((ym+1)*X2 + ym-1)/2;
+        w2_gl = pow((ym + 1)/2, 1.5)*W2%sqrt(1-x2_gl);
     }
+    else
+        for (size_t jj = 0; jj < n2; jj++)
+        {
+            fastgl::QuadPair gl_y = fastgl::GLPair(n2, jj+1);
+            x2_gl(jj) = (1 - gl_y.x()) * (ym + 1)/2 - 1;
+            w2_gl(jj) = gl_y.weight*(ym + 1)/2;
+        }
     auto [x_gl, y_gl] = Lagrange::TransfiniteQuadMap(x1_gl, x2_gl, chi);
     auto [dx_gldx1, dx_gldx2, dy_gldx1, dy_gldx2] = Lagrange::TransfiniteQuadMetrics(x1_gl, x2_gl, chi);
     for (size_t jj = 0; jj < n2; jj++)
@@ -237,7 +273,7 @@ void Wing::integralLowerLinear(size_t i, size_t j, size_t n1, size_t n2, double 
                     double dpsi1 = w1*dt1 + dw1*t1;
                     double dmudx1 = dpsi1 *  psi2;
                     double dmudx2 =  psi1 * dpsi2;
-                    A(i+j*nx, p+q*nx) += phi1->wg(ii)*gl_y[jj].weight/r3*(ym + 1)/2
+                    A(i+j*nx, p+q*nx) += w1_gl(ii)*w2_gl(jj)/r3
                                        *(r(0)*(dy_gldx2(ii, jj)*dmudx1 - dy_gldx1(ii, jj)*dmudx2)
                                        - r(1)*(dx_gldx2(ii, jj)*dmudx1 - dx_gldx1(ii, jj)*dmudx2));
                     std::swap(t1, t1p1); // Swap order so the oldes Chebyshev Polynomial will be overwritten
@@ -258,18 +294,34 @@ void Wing::integralLowerLinear(size_t i, size_t j, size_t n1, size_t n2, double 
 
 void Wing::integralLowerRightLinear(size_t i, size_t j, size_t n1, size_t n2, double xp, double yp)
 {
-    std::vector<fastgl::QuadPair> gl_x(n1), gl_y(n2);
     arma::vec x1_gl(n1, arma::fill::none), x2_gl(n2, arma::fill::none);
-    for (size_t ii = 0; ii < n1; ii++)
+    arma::vec w1_gl(n1, arma::fill::none), w2_gl(n2, arma::fill::none);
+    if (phi1->basis == Basis::U)
     {
-        gl_x[ii] = fastgl::GLPair(n1, ii+1);
-        x1_gl(ii) = (1 - gl_x[ii].x()) * (1 - xp)/2 + xp;
+        auto [X1, W1] = gaujac(n1, 0.5, 0.0);
+        x1_gl = ((1-xp)*X1 + xp+1)/2;
+        w1_gl = pow((1 - xp)/2, 1.5)*W1%sqrt(1+x1_gl);
     }
-    for (size_t jj = 0; jj < n2; jj++)
+    else
+        for (size_t ii = 0; ii < n1; ii++)
+        {
+            fastgl::QuadPair gl_x = fastgl::GLPair(n1, ii+1);
+            x1_gl(ii) = (1 - gl_x.x()) * (1 - xp)/2 + xp;
+            w1_gl(ii) = gl_x.weight*(1 - xp)/2;
+        }
+    if (phi2->basis == Basis::U)
     {
-        gl_y[jj] = fastgl::GLPair(n2, jj+1);
-        x2_gl(jj) = (1 - gl_y[jj].x()) * (yp + 1)/2 - 1;
+        auto [X2, W2] = gaujac(n2, 0.0, 0.5);
+        x2_gl = ((yp+1)*X2 + yp-1)/2;
+        w2_gl = pow((yp + 1)/2, 1.5)*W2%sqrt(1-x2_gl);
     }
+    else
+        for (size_t jj = 0; jj < n2; jj++)
+        {
+            fastgl::QuadPair gl_y = fastgl::GLPair(n2, jj+1);
+            x2_gl(jj) = (1 - gl_y.x()) * (yp + 1)/2 - 1;
+            w2_gl(jj) = gl_y.weight*(yp + 1)/2;
+        }
     auto [x_gl, y_gl] = Lagrange::TransfiniteQuadMap(x1_gl, x2_gl, chi);
     auto [dx_gldx1, dx_gldx2, dy_gldx1, dy_gldx2] = Lagrange::TransfiniteQuadMetrics(x1_gl, x2_gl, chi);
     for (size_t jj = 0; jj < n2; jj++)
@@ -305,7 +357,7 @@ void Wing::integralLowerRightLinear(size_t i, size_t j, size_t n1, size_t n2, do
                     double dpsi1 = w1*dt1 + dw1*t1;
                     double dmudx1 = dpsi1 *  psi2;
                     double dmudx2 =  psi1 * dpsi2;
-                    A(i+j*nx, p+q*nx) += gl_x[ii].weight*gl_y[jj].weight/r3*(1 - xp)*(yp + 1)/4
+                    A(i+j*nx, p+q*nx) += w1_gl(ii)*w2_gl(jj)/r3
                                        *(r(0)*(dy_gldx2(ii, jj)*dmudx1 - dy_gldx1(ii, jj)*dmudx2)
                                        - r(1)*(dx_gldx2(ii, jj)*dmudx1 - dx_gldx1(ii, jj)*dmudx2));
                     std::swap(t1, t1p1); // Swap order so the oldes Chebyshev Polynomial will be overwritten
@@ -326,18 +378,34 @@ void Wing::integralLowerRightLinear(size_t i, size_t j, size_t n1, size_t n2, do
 
 void Wing::integralLowerLeftLinear(size_t i, size_t j, size_t n1, size_t n2, double xp, double ym)
 {
-    std::vector<fastgl::QuadPair> gl_x(n1), gl_y(n2);
     arma::vec x1_gl(n1, arma::fill::none), x2_gl(n2, arma::fill::none);
-    for (size_t ii = 0; ii < n1; ii++)
+    arma::vec w1_gl(n1, arma::fill::none), w2_gl(n2, arma::fill::none);
+    if (phi1->basis == Basis::U)
     {
-        gl_x[ii] = fastgl::GLPair(n1, ii+1);
-        x1_gl(ii) = (1 - gl_x[ii].x()) * (xp + 1)/2 - 1;
+        auto [X1, W1] = gaujac(n1, 0.0, 0.5);
+        x1_gl = ((xp+1)*X1 + xp-1)/2;
+        w1_gl = pow((xp + 1)/2, 1.5)*W1%sqrt(1-x1_gl);
     }
-    for (size_t jj = 0; jj < n2; jj++)
+    else
+        for (size_t ii = 0; ii < n1; ii++)
+        {
+            fastgl::QuadPair gl_x = fastgl::GLPair(n1, ii+1);
+            x1_gl(ii) = (1 - gl_x.x()) * (xp + 1)/2 - 1;
+            w1_gl(ii) = gl_x.weight*(xp + 1)/2;
+        }
+    if (phi2->basis == Basis::U)
     {
-        gl_y[jj] = fastgl::GLPair(n2, jj+1);
-        x2_gl(jj) = (1 - gl_y[jj].x()) * (ym + 1)/2 - 1;
+        auto [X2, W2] = gaujac(n2, 0.0, 0.5);
+        x2_gl = ((ym+1)*X2 + ym-1)/2;
+        w2_gl = pow((ym + 1)/2, 1.5)*W2%sqrt(1-x2_gl);
     }
+    else
+        for (size_t jj = 0; jj < n2; jj++)
+        {
+            fastgl::QuadPair gl_y = fastgl::GLPair(n2, jj+1);
+            x2_gl(jj) = (1 - gl_y.x()) * (ym + 1)/2 - 1;
+            w2_gl(jj) = gl_y.weight*(ym + 1)/2;
+        }
     auto [x_gl, y_gl] = Lagrange::TransfiniteQuadMap(x1_gl, x2_gl, chi);
     auto [dx_gldx1, dx_gldx2, dy_gldx1, dy_gldx2] = Lagrange::TransfiniteQuadMetrics(x1_gl, x2_gl, chi);
     for (size_t jj = 0; jj < n2; jj++)
@@ -373,7 +441,7 @@ void Wing::integralLowerLeftLinear(size_t i, size_t j, size_t n1, size_t n2, dou
                     double dpsi1 = w1*dt1 + dw1*t1;
                     double dmudx1 = dpsi1 *  psi2;
                     double dmudx2 =  psi1 * dpsi2;
-                    A(i+j*nx, p+q*nx) += gl_x[ii].weight*gl_y[jj].weight/r3*(xp + 1)*(ym + 1)/4
+                    A(i+j*nx, p+q*nx) += w1_gl(ii)*w2_gl(jj)/r3
                                        *(r(0)*(dy_gldx2(ii, jj)*dmudx1 - dy_gldx1(ii, jj)*dmudx2)
                                        - r(1)*(dx_gldx2(ii, jj)*dmudx1 - dx_gldx1(ii, jj)*dmudx2));
                     std::swap(t1, t1p1); // Swap order so the oldes Chebyshev Polynomial will be overwritten
@@ -394,18 +462,34 @@ void Wing::integralLowerLeftLinear(size_t i, size_t j, size_t n1, size_t n2, dou
 
 void Wing::integralUpperRightLinear(size_t i, size_t j, size_t n1, size_t n2, double xm, double yp)
 {
-    std::vector<fastgl::QuadPair> gl_x(n1), gl_y(n2);
     arma::vec x1_gl(n1, arma::fill::none), x2_gl(n2, arma::fill::none);
-    for (size_t ii = 0; ii < n1; ii++)
+    arma::vec w1_gl(n1, arma::fill::none), w2_gl(n2, arma::fill::none);
+    if (phi1->basis == Basis::U)
     {
-        gl_x[ii] = fastgl::GLPair(n1, ii+1);
-        x1_gl(ii) = (1 - gl_x[ii].x()) * (1 - xm)/2 + xm;
+        auto [X1, W1] = gaujac(n1, 0.5, 0.0);
+        x1_gl = ((1-xm)*X1 + xm+1)/2;
+        w1_gl = pow((1 - xm)/2, 1.5)*W1%sqrt(1+x1_gl);
     }
-    for (size_t jj = 0; jj < n2; jj++)
+    else
+        for (size_t ii = 0; ii < n1; ii++)
+        {
+            fastgl::QuadPair gl_x = fastgl::GLPair(n1, ii+1);
+            x1_gl(ii) = (1 - gl_x.x()) * (1 - xm)/2 + xm;
+            w1_gl(ii) = gl_x.weight*(1 - xm)/2;
+        }
+    if (phi2->basis == Basis::U)
     {
-        gl_y[jj] = fastgl::GLPair(n2, jj+1);
-        x2_gl(jj) = (1 - gl_y[jj].x()) * (1 - yp)/2 + yp;
+        auto [X2, W2] = gaujac(n2, 0.5, 0.0);
+        x2_gl = ((1-yp)*X2 + yp+1)/2;
+        w2_gl = pow((1 - yp)/2, 1.5)*W2%sqrt(1+x2_gl);
     }
+    else
+        for (size_t jj = 0; jj < n2; jj++)
+        {
+            fastgl::QuadPair gl_y = fastgl::GLPair(n2, jj+1);
+            x2_gl(jj) = (1 - gl_y.x()) * (1 - yp)/2 + yp;
+            w2_gl(jj) = gl_y.weight*(1 - yp)/2;
+        }
     auto [x_gl, y_gl] = Lagrange::TransfiniteQuadMap(x1_gl, x2_gl, chi);
     auto [dx_gldx1, dx_gldx2, dy_gldx1, dy_gldx2] = Lagrange::TransfiniteQuadMetrics(x1_gl, x2_gl, chi);
     for (size_t jj = 0; jj < n2; jj++)
@@ -441,7 +525,7 @@ void Wing::integralUpperRightLinear(size_t i, size_t j, size_t n1, size_t n2, do
                     double dpsi1 = w1*dt1 + dw1*t1;
                     double dmudx1 = dpsi1 *  psi2;
                     double dmudx2 =  psi1 * dpsi2;
-                    A(i+j*nx, p+q*nx) += gl_x[ii].weight*gl_y[jj].weight/r3*(1 - xm)*(1 - yp)/4
+                    A(i+j*nx, p+q*nx) += w1_gl(ii)*w2_gl(jj)/r3
                                        *(r(0)*(dy_gldx2(ii, jj)*dmudx1 - dy_gldx1(ii, jj)*dmudx2)
                                        - r(1)*(dx_gldx2(ii, jj)*dmudx1 - dx_gldx1(ii, jj)*dmudx2));
                     std::swap(t1, t1p1); // Swap order so the oldes Chebyshev Polynomial will be overwritten
@@ -462,18 +546,34 @@ void Wing::integralUpperRightLinear(size_t i, size_t j, size_t n1, size_t n2, do
 
 void Wing::integralUpperLeftLinear(size_t i, size_t j, size_t n1, size_t n2, double xm, double ym)
 {
-    std::vector<fastgl::QuadPair> gl_x(n1), gl_y(n2);
     arma::vec x1_gl(n1, arma::fill::none), x2_gl(n2, arma::fill::none);
-    for (size_t ii = 0; ii < n1; ii++)
+    arma::vec w1_gl(n1, arma::fill::none), w2_gl(n2, arma::fill::none);
+    if (phi1->basis == Basis::U)
     {
-        gl_x[ii] = fastgl::GLPair(n1, ii+1);
-        x1_gl(ii) = (1 - gl_x[ii].x()) * (xm + 1)/2 - 1;
+        auto [X1, W1] = gaujac(n1, 0.0, 0.5);
+        x1_gl = ((xm+1)*X1 + xm-1)/2;
+        w1_gl = pow((xm + 1)/2, 1.5)*W1%sqrt(1-x1_gl);
     }
-    for (size_t jj = 0; jj < n2; jj++)
+    else
+        for (size_t ii = 0; ii < n1; ii++)
+        {
+            fastgl::QuadPair gl_x = fastgl::GLPair(n1, ii+1);
+            x1_gl(ii) = (1 - gl_x.x()) * (xm + 1)/2 - 1;
+            w1_gl(ii) = gl_x.weight*(xm + 1)/2;
+        }
+    if (phi2->basis == Basis::U)
     {
-        gl_y[jj] = fastgl::GLPair(n2, jj+1);
-        x2_gl(jj) = (1 - gl_y[jj].x()) * (1 - ym)/2 + ym;
+        auto [X2, W2] = gaujac(n2, 0.5, 0.0);
+        x2_gl = ((1-ym)*X2 + ym+1)/2;
+        w2_gl = pow((1 - ym)/2, 1.5)*W2%sqrt(1+x2_gl);
     }
+    else
+        for (size_t jj = 0; jj < n2; jj++)
+        {
+            fastgl::QuadPair gl_y = fastgl::GLPair(n2, jj+1);
+            x2_gl(jj) = (1 - gl_y.x()) * (1 - ym)/2 + ym;
+            w2_gl(jj) = gl_y.weight*(1 - ym)/2;
+        }
     auto [x_gl, y_gl] = Lagrange::TransfiniteQuadMap(x1_gl, x2_gl, chi);
     auto [dx_gldx1, dx_gldx2, dy_gldx1, dy_gldx2] = Lagrange::TransfiniteQuadMetrics(x1_gl, x2_gl, chi);
     for (size_t jj = 0; jj < n2; jj++)
@@ -509,7 +609,7 @@ void Wing::integralUpperLeftLinear(size_t i, size_t j, size_t n1, size_t n2, dou
                     double dpsi1 = w1*dt1 + dw1*t1;
                     double dmudx1 = dpsi1 *  psi2;
                     double dmudx2 =  psi1 * dpsi2;
-                    A(i+j*nx, p+q*nx) += gl_x[ii].weight*gl_y[jj].weight/r3*(xm + 1)*(1 - ym)/4
+                    A(i+j*nx, p+q*nx) += w1_gl(ii)*w2_gl(jj)/r3
                                        *(r(0)*(dy_gldx2(ii, jj)*dmudx1 - dy_gldx1(ii, jj)*dmudx2)
                                        - r(1)*(dx_gldx2(ii, jj)*dmudx1 - dx_gldx1(ii, jj)*dmudx2));
                     std::swap(t1, t1p1); // Swap order so the oldes Chebyshev Polynomial will be overwritten
