@@ -4,21 +4,44 @@ void Wing::integralRightNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
 {
     arma::vec x1_gl(n1, arma::fill::none);
     arma::vec w1_gl(n1, arma::fill::none);
-    if (phi1->basis == Basis::U)
+    arma::vec w1, dw1;
+    switch (phi1->basis)
     {
-        auto [X1, W1] = gaujac(n1, 0.5, 0.0);
-        x1_gl = ((1-xp)*X1 + xp+1)/2;
-        w1_gl = pow((1 - xp)/2, 1.5)*W1%sqrt(1+x1_gl);
-    }
-    else
-        for (size_t ii = 0; ii < n1; ii++)
+        case Basis::U:
         {
-            fastgl::QuadPair gl_x = fastgl::GLPair(n1, ii+1);
-            x1_gl(ii) = (1 - gl_x.x()) * (1 - xp)/2 + xp;
-            w1_gl(ii) = gl_x.weight*(1 - xp)/2;
+            auto [X1, W1] = gaujac(n1, 0.5, 0.0);
+            x1_gl = ((1-xp)*X1 + xp+1)/2;
+            w1  = phi1->weightFunction(x1_gl);
+            dw1 = phi1->weightFunctionDerivative(x1_gl);
+            w1_gl = pow((1-xp)/2, 1.5)*W1/w1%sqrt(1+x1_gl);
+            break;
         }
+        case Basis::PA:
+        {
+            auto [X1, W1] = gaujac(n1, 0.5, 0.0);
+            x1_gl = ((1-xp)*X1 + xp+1)/2;
+            w1  = phi1->weightFunction(x1_gl);
+            dw1 = phi1->weightFunctionDerivative(x1_gl);
+            w1_gl = pow((1-xp)/2, 1.5)*W1/w1;
+            break;
+        }
+        default:
+        {
+            for (size_t ii = 0; ii < n1; ii++)
+            {
+                fastgl::QuadPair gl_x = fastgl::GLPair(n1, ii+1);
+                x1_gl(ii) = (1 - gl_x.x()) * (1 - xp)/2 + xp;
+                w1_gl(ii) = gl_x.weight*(1 - xp)/2;
+                w1  = phi1->weightFunction(x1_gl);
+                dw1 = phi1->weightFunctionDerivative(x1_gl);
+            }
+            break;
+        }
+    }
     arma::vec x2_gl = phi2->xg;
     arma::vec w2_gl = phi2->wg;
+    arma::vec  w2 = phi2->weightFunction(x2_gl);
+    arma::vec dw2 = phi2->weightFunctionDerivative(x2_gl);
     arma::mat Tx_gl = Lagrange::interpolationMatrix(x1, x1_gl);
     arma::mat Ty_gl = Lagrange::interpolationMatrix(x2, x2_gl);
     arma::mat z_gl  = Lagrange::interpolation2D(Tx_gl, Ty_gl, z, x1_gl, x2_gl);
@@ -34,9 +57,6 @@ void Wing::integralRightNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
     arma::mat e_gl = e_c_gl.slice(0)%e_c_gl.slice(2) - pow(e_c_gl.slice(1), 2);
     arma::mat sqrt_a = sqrt(e_gl%(1 + ec_gl.slice(0)%pow(dz_gldx1, 2) + 2*ec_gl.slice(1)%dz_gldx1%dz_gldx2 + ec_gl.slice(2)%pow(dz_gldx2, 2)));
     for (size_t ii = 0; ii < n1; ii++)
-    {
-        double  w1 = phi1->weightFunction(x1_gl(ii));
-        double dw1 = phi1->weightFunctionDerivative(x1_gl(ii));
         for (size_t jj = 0; jj < n2; jj++)
         {
             arma::vec::fixed<3> r = {x_gl(ii, jj) - xC(i, j), y_gl(ii, jj) - yC(i, j), z_gl(ii, jj) - zC(i, j)};
@@ -47,9 +67,6 @@ void Wing::integralRightNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
             arma::mat::fixed<3, 2> J_red = {{dy_gldx2(ii, jj)*n_gl(2) - n_gl(1)*dz_gldx2(ii, jj),n_gl(1)*dz_gldx1(ii, jj) - dy_gldx1(ii, jj)*n_gl(2)},
                                             {n_gl(0)*dz_gldx2(ii, jj) - dx_gldx2(ii, jj)*n_gl(2),dx_gldx1(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx1(ii, jj)},
                                             {dx_gldx2(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx2(ii, jj),n_gl(0)*dy_gldx1(ii, jj) - dx_gldx1(ii, jj)*n_gl(1)}};
-            
-            double  w2 = phi2->weightFunction(x2_gl(jj));
-            double dw2 = phi2->weightFunctionDerivative(x2_gl(jj));
 
             double t2   = phi2->constant(); // First Chebyshev Polynomial (j)
             double t2p1 = phi2->linear(x2_gl(jj)); // Second Chebyshev Polynomial (j+1 -> jp1)
@@ -58,8 +75,8 @@ void Wing::integralRightNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
             double dt2p1 = phi2->linearDerivative();
             for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
             {
-                double  psi2 = w2*t2;
-                double dpsi2 = w2*dt2 + dw2*t2;
+                double  psi2 = w2(jj)*t2;
+                double dpsi2 = w2(jj)*dt2 + dw2(jj)*t2;
 
                 double t1   = phi1->constant(); // First Chebyshev Polynomial (i)
                 double t1p1 = phi1->linear(x1_gl(ii)); // Second Chebyshev Polynomial (i+1 -> ip1)
@@ -68,8 +85,8 @@ void Wing::integralRightNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
                 double dt1p1 = phi1->linearDerivative();
                 for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                 {
-                    double  psi1 = w1*t1;
-                    double dpsi1 = w1*dt1 + dw1*t1;
+                    double  psi1 = w1(ii)*t1;
+                    double dpsi1 = w1(ii)*dt1 + dw1(ii)*t1;
                     arma::vec::fixed<2> dmudxi = {dpsi1 * psi2, psi1 * dpsi2};
                     arma::vec::fixed<3> gradmu = J_red*dmudxi;
                     arma::vec::fixed<3> gamma_gl = cross(gradmu, n_gl);
@@ -88,28 +105,50 @@ void Wing::integralRightNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
                 phi2->nextDerivative(q, x2_gl(jj), t2, dt2, dt2p1);
             }
         }
-    }
 }
 
 void Wing::integralLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, double xm)
 {
     arma::vec x1_gl(n1, arma::fill::none);
     arma::vec w1_gl(n1, arma::fill::none);
-    if (phi1->basis == Basis::U)
+    arma::vec w1, dw1;
+    switch (phi1->basis)
     {
-        auto [X1, W1] = gaujac(n1, 0.0, 0.5);
-        x1_gl = ((xm+1)*X1 + xm-1)/2;
-        w1_gl = pow((xm + 1)/2, 1.5)*W1%sqrt(1-x1_gl);
-    }
-    else
-        for (size_t ii = 0; ii < n1; ii++)
+        case Basis::U:
         {
-            fastgl::QuadPair gl_x = fastgl::GLPair(n1, ii+1);
-            x1_gl(ii) = (1 - gl_x.x()) * (xm + 1)/2 - 1;
-            w1_gl(ii) = gl_x.weight*(xm + 1)/2;
+            auto [X1, W1] = gaujac(n1, 0.0, 0.5);
+            x1_gl = ((xm+1)*X1 + xm-1)/2;
+            w1  = phi1->weightFunction(x1_gl);
+            dw1 = phi1->weightFunctionDerivative(x1_gl);
+            w1_gl = pow((xm+1)/2, 1.5)*W1/w1%sqrt(1-x1_gl);
+            break;
         }
+        case Basis::PB:
+        {
+            auto [X1, W1] = gaujac(n1, 0.0, 0.5);
+            x1_gl = ((xm+1)*X1 + xm-1)/2;
+            w1  = phi1->weightFunction(x1_gl);
+            dw1 = phi1->weightFunctionDerivative(x1_gl);
+            w1_gl = pow((xm+1)/2, 1.5)*W1/w1;
+            break;
+        }
+        default:
+        {
+            for (size_t ii = 0; ii < n1; ii++)
+            {
+                fastgl::QuadPair gl_x = fastgl::GLPair(n1, ii+1);
+                x1_gl(ii) = (1 - gl_x.x()) * (xm + 1)/2 - 1;
+                w1_gl(ii) = gl_x.weight*(xm + 1)/2;
+                w1  = phi1->weightFunction(x1_gl);
+                dw1 = phi1->weightFunctionDerivative(x1_gl);
+            }
+            break;
+        }
+    }
     arma::vec x2_gl = phi2->xg;
     arma::vec w2_gl = phi2->wg;
+    arma::vec  w2 = phi2->weightFunction(x2_gl);
+    arma::vec dw2 = phi2->weightFunctionDerivative(x2_gl);
     arma::mat Tx_gl = Lagrange::interpolationMatrix(x1, x1_gl);
     arma::mat Ty_gl = Lagrange::interpolationMatrix(x2, x2_gl);
     arma::mat z_gl  = Lagrange::interpolation2D(Tx_gl, Ty_gl, z, x1_gl, x2_gl);
@@ -125,9 +164,6 @@ void Wing::integralLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, doubl
     arma::mat e_gl = e_c_gl.slice(0)%e_c_gl.slice(2) - pow(e_c_gl.slice(1), 2);
     arma::mat sqrt_a = sqrt(e_gl%(1 + ec_gl.slice(0)%pow(dz_gldx1, 2) + 2*ec_gl.slice(1)%dz_gldx1%dz_gldx2 + ec_gl.slice(2)%pow(dz_gldx2, 2)));
     for (size_t ii = 0; ii < n1; ii++)
-    {
-        double  w1 = phi1->weightFunction(x1_gl(ii));
-        double dw1 = phi1->weightFunctionDerivative(x1_gl(ii));
         for (size_t jj = 0; jj < n2; jj++)
         {
             arma::vec::fixed<3> r = {x_gl(ii, jj) - xC(i, j), y_gl(ii, jj) - yC(i, j), z_gl(ii, jj) - zC(i, j)};
@@ -138,9 +174,6 @@ void Wing::integralLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, doubl
             arma::mat::fixed<3, 2> J_red = {{dy_gldx2(ii, jj)*n_gl(2) - n_gl(1)*dz_gldx2(ii, jj),n_gl(1)*dz_gldx1(ii, jj) - dy_gldx1(ii, jj)*n_gl(2)},
                                             {n_gl(0)*dz_gldx2(ii, jj) - dx_gldx2(ii, jj)*n_gl(2),dx_gldx1(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx1(ii, jj)},
                                             {dx_gldx2(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx2(ii, jj),n_gl(0)*dy_gldx1(ii, jj) - dx_gldx1(ii, jj)*n_gl(1)}};
-            
-            double  w2 = phi2->weightFunction(x2_gl(jj));
-            double dw2 = phi2->weightFunctionDerivative(x2_gl(jj));
 
             double t2   = phi2->constant(); // First Chebyshev Polynomial (j)
             double t2p1 = phi2->linear(x2_gl(jj)); // Second Chebyshev Polynomial (j+1 -> jp1)
@@ -149,8 +182,8 @@ void Wing::integralLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, doubl
             double dt2p1 = phi2->linearDerivative();
             for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
             {
-                double  psi2 = w2*t2;
-                double dpsi2 = w2*dt2 + dw2*t2;
+                double  psi2 = w2(jj)*t2;
+                double dpsi2 = w2(jj)*dt2 + dw2(jj)*t2;
 
                 double t1   = phi1->constant(); // First Chebyshev Polynomial (i)
                 double t1p1 = phi1->linear(x1_gl(ii)); // Second Chebyshev Polynomial (i+1 -> ip1)
@@ -159,8 +192,8 @@ void Wing::integralLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, doubl
                 double dt1p1 = phi1->linearDerivative();
                 for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                 {
-                    double  psi1 = w1*t1;
-                    double dpsi1 = w1*dt1 + dw1*t1;
+                    double  psi1 = w1(ii)*t1;
+                    double dpsi1 = w1(ii)*dt1 + dw1(ii)*t1;
                     arma::vec::fixed<2> dmudxi = {dpsi1 * psi2, psi1 * dpsi2};
                     arma::vec::fixed<3> gradmu = J_red*dmudxi;
                     arma::vec::fixed<3> gamma_gl = cross(gradmu, n_gl);
@@ -179,28 +212,50 @@ void Wing::integralLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, doubl
                 phi2->nextDerivative(q, x2_gl(jj), t2, dt2, dt2p1);
             }
         }
-    }
 }
 
 void Wing::integralUpperNonlinear(size_t i, size_t j, size_t n1, size_t n2, double yp)
 {
     arma::vec x1_gl = phi1->xg;
     arma::vec w1_gl = phi1->wg;
+    arma::vec w1  = phi1->weightFunction(x1_gl);
+    arma::vec dw1 = phi1->weightFunctionDerivative(x1_gl);
     arma::vec x2_gl(n2, arma::fill::none);
     arma::vec w2_gl(n2, arma::fill::none);
-    if (phi2->basis == Basis::U)
+    arma::vec w2, dw2;
+    switch (phi2->basis)
     {
-        auto [X2, W2] = gaujac(n2, 0.5, 0.0);
-        x2_gl = ((1-yp)*X2 + yp+1)/2;
-        w2_gl = pow((1 - yp)/2, 1.5)*W2%sqrt(1+x2_gl);
-    }
-    else
-        for (size_t jj = 0; jj < n2; jj++)
+        case Basis::U:
         {
-            fastgl::QuadPair gl_y = fastgl::GLPair(n2, jj+1);
-            x2_gl(jj) = (1 - gl_y.x()) * (1 - yp)/2 + yp;
-            w2_gl(jj) = gl_y.weight*(1 - yp)/2;
+            auto [X2, W2] = gaujac(n2, 0.5, 0.0);
+            x2_gl = ((1-yp)*X2 + yp+1)/2;
+            w2  = phi2->weightFunction(x2_gl);
+            dw2 = phi2->weightFunctionDerivative(x2_gl);
+            w2_gl = pow((1-yp)/2, 1.5)*W2/w2%sqrt(1+x2_gl);
+            break;
         }
+        case Basis::PA:
+        {
+            auto [X2, W2] = gaujac(n2, 0.5, 0.0);
+            x2_gl = ((1-yp)*X2 + yp+1)/2;
+            w2  = phi2->weightFunction(x2_gl);
+            dw2 = phi2->weightFunctionDerivative(x2_gl);
+            w2_gl = pow((1-yp)/2, 1.5)*W2/w2;
+            break;
+        }
+        default:
+        {
+            for (size_t jj = 0; jj < n2; jj++)
+            {
+                fastgl::QuadPair gl_y = fastgl::GLPair(n2, jj+1);
+                x2_gl(jj) = (1 - gl_y.x()) * (1 - yp)/2 + yp;
+                w2_gl(jj) = gl_y.weight*(1 - yp)/2;
+                w2  = phi2->weightFunction(x2_gl);
+                dw2 = phi2->weightFunctionDerivative(x2_gl);
+            }
+            break;
+        }
+    }
     arma::mat Tx_gl = Lagrange::interpolationMatrix(x1, x1_gl);
     arma::mat Ty_gl = Lagrange::interpolationMatrix(x2, x2_gl);
     arma::mat z_gl  = Lagrange::interpolation2D(Tx_gl, Ty_gl, z, x1_gl, x2_gl);
@@ -216,9 +271,6 @@ void Wing::integralUpperNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
     arma::mat e_gl = e_c_gl.slice(0)%e_c_gl.slice(2) - pow(e_c_gl.slice(1), 2);
     arma::mat sqrt_a = sqrt(e_gl%(1 + ec_gl.slice(0)%pow(dz_gldx1, 2) + 2*ec_gl.slice(1)%dz_gldx1%dz_gldx2 + ec_gl.slice(2)%pow(dz_gldx2, 2)));
     for (size_t ii = 0; ii < n1; ii++)
-    {
-        double  w1 = phi1->weightFunction(x1_gl(ii));
-        double dw1 = phi1->weightFunctionDerivative(x1_gl(ii));
         for (size_t jj = 0; jj < n2; jj++)
         {
             arma::vec::fixed<3> r = {x_gl(ii, jj) - xC(i, j), y_gl(ii, jj) - yC(i, j), z_gl(ii, jj) - zC(i, j)};
@@ -229,9 +281,6 @@ void Wing::integralUpperNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
             arma::mat::fixed<3, 2> J_red = {{dy_gldx2(ii, jj)*n_gl(2) - n_gl(1)*dz_gldx2(ii, jj),n_gl(1)*dz_gldx1(ii, jj) - dy_gldx1(ii, jj)*n_gl(2)},
                                             {n_gl(0)*dz_gldx2(ii, jj) - dx_gldx2(ii, jj)*n_gl(2),dx_gldx1(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx1(ii, jj)},
                                             {dx_gldx2(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx2(ii, jj),n_gl(0)*dy_gldx1(ii, jj) - dx_gldx1(ii, jj)*n_gl(1)}};
-            
-            double  w2 = phi2->weightFunction(x2_gl(jj));
-            double dw2 = phi2->weightFunctionDerivative(x2_gl(jj));
 
             double t2   = phi2->constant(); // First Chebyshev Polynomial (j)
             double t2p1 = phi2->linear(x2_gl(jj)); // Second Chebyshev Polynomial (j+1 -> jp1)
@@ -240,8 +289,8 @@ void Wing::integralUpperNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
             double dt2p1 = phi2->linearDerivative();
             for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
             {
-                double  psi2 = w2*t2;
-                double dpsi2 = w2*dt2 + dw2*t2;
+                double  psi2 = w2(jj)*t2;
+                double dpsi2 = w2(jj)*dt2 + dw2(jj)*t2;
 
                 double t1   = phi1->constant(); // First Chebyshev Polynomial (i)
                 double t1p1 = phi1->linear(x1_gl(ii)); // Second Chebyshev Polynomial (i+1 -> ip1)
@@ -250,8 +299,8 @@ void Wing::integralUpperNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
                 double dt1p1 = phi1->linearDerivative();
                 for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                 {
-                    double  psi1 = w1*t1;
-                    double dpsi1 = w1*dt1 + dw1*t1;
+                    double  psi1 = w1(ii)*t1;
+                    double dpsi1 = w1(ii)*dt1 + dw1(ii)*t1;
                     arma::vec::fixed<2> dmudxi = {dpsi1 * psi2, psi1 * dpsi2};
                     arma::vec::fixed<3> gradmu = J_red*dmudxi;
                     arma::vec::fixed<3> gamma_gl = cross(gradmu, n_gl);
@@ -270,28 +319,50 @@ void Wing::integralUpperNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
                 phi2->nextDerivative(q, x2_gl(jj), t2, dt2, dt2p1);
             }
         }
-    }
 }
 
 void Wing::integralLowerNonlinear(size_t i, size_t j, size_t n1, size_t n2, double ym)
 {
     arma::vec x1_gl = phi1->xg;
     arma::vec w1_gl = phi1->wg;
+    arma::vec  w1 = phi1->weightFunction(x1_gl);
+    arma::vec dw1 = phi1->weightFunctionDerivative(x1_gl);
     arma::vec x2_gl(n2, arma::fill::none);
     arma::vec w2_gl(n2, arma::fill::none);
-    if (phi2->basis == Basis::U)
+    arma::vec w2, dw2;
+    switch (phi2->basis)
     {
-        auto [X2, W2] = gaujac(n2, 0.0, 0.5);
-        x2_gl = ((ym+1)*X2 + ym-1)/2;
-        w2_gl = pow((ym + 1)/2, 1.5)*W2%sqrt(1-x2_gl);
-    }
-    else
-        for (size_t jj = 0; jj < n2; jj++)
+        case Basis::U:
         {
-            fastgl::QuadPair gl_y = fastgl::GLPair(n2, jj+1);
-            x2_gl(jj) = (1 - gl_y.x()) * (ym + 1)/2 - 1;
-            w2_gl(jj) = gl_y.weight*(ym + 1)/2;
+            auto [X2, W2] = gaujac(n2, 0.0, 0.5);
+            x2_gl = ((ym+1)*X2 + ym-1)/2;
+            w2  = phi2->weightFunction(x2_gl);
+            dw2 = phi2->weightFunctionDerivative(x2_gl);
+            w2_gl = pow((ym+1)/2, 1.5)*W2/w2%sqrt(1-x2_gl);
+            break;
         }
+        case Basis::PB:
+        {
+            auto [X2, W2] = gaujac(n2, 0.0, 0.5);
+            x2_gl = ((ym+1)*X2 + ym-1)/2;
+            w2  = phi2->weightFunction(x2_gl);
+            dw2 = phi2->weightFunctionDerivative(x2_gl);
+            w2_gl = pow((ym+1)/2, 1.5)*W2/w2;
+            break;
+        }
+        default:
+        {
+            for (size_t jj = 0; jj < n2; jj++)
+            {
+                fastgl::QuadPair gl_y = fastgl::GLPair(n2, jj+1);
+                x2_gl(jj) = (1 - gl_y.x()) * (ym + 1)/2 - 1;
+                w2_gl(jj) = gl_y.weight*(ym + 1)/2;
+                w2  = phi2->weightFunction(x2_gl);
+                dw2 = phi2->weightFunctionDerivative(x2_gl);
+            }
+            break;
+        }
+    }
     arma::mat Tx_gl = Lagrange::interpolationMatrix(x1, x1_gl);
     arma::mat Ty_gl = Lagrange::interpolationMatrix(x2, x2_gl);
     arma::mat z_gl  = Lagrange::interpolation2D(Tx_gl, Ty_gl, z, x1_gl, x2_gl);
@@ -307,9 +378,6 @@ void Wing::integralLowerNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
     arma::mat e_gl = e_c_gl.slice(0)%e_c_gl.slice(2) - pow(e_c_gl.slice(1), 2);
     arma::mat sqrt_a = sqrt(e_gl%(1 + ec_gl.slice(0)%pow(dz_gldx1, 2) + 2*ec_gl.slice(1)%dz_gldx1%dz_gldx2 + ec_gl.slice(2)%pow(dz_gldx2, 2)));
     for (size_t ii = 0; ii < n1; ii++)
-    {
-        double  w1 = phi1->weightFunction(x1_gl(ii));
-        double dw1 = phi1->weightFunctionDerivative(x1_gl(ii));
         for (size_t jj = 0; jj < n2; jj++)
         {
             arma::vec::fixed<3> r = {x_gl(ii, jj) - xC(i, j), y_gl(ii, jj) - yC(i, j), z_gl(ii, jj) - zC(i, j)};
@@ -320,9 +388,6 @@ void Wing::integralLowerNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
             arma::mat::fixed<3, 2> J_red = {{dy_gldx2(ii, jj)*n_gl(2) - n_gl(1)*dz_gldx2(ii, jj),n_gl(1)*dz_gldx1(ii, jj) - dy_gldx1(ii, jj)*n_gl(2)},
                                             {n_gl(0)*dz_gldx2(ii, jj) - dx_gldx2(ii, jj)*n_gl(2),dx_gldx1(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx1(ii, jj)},
                                             {dx_gldx2(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx2(ii, jj),n_gl(0)*dy_gldx1(ii, jj) - dx_gldx1(ii, jj)*n_gl(1)}};
-            
-            double  w2 = phi2->weightFunction(x2_gl(jj));
-            double dw2 = phi2->weightFunctionDerivative(x2_gl(jj));
 
             double t2   = phi2->constant(); // First Chebyshev Polynomial (j)
             double t2p1 = phi2->linear(x2_gl(jj)); // Second Chebyshev Polynomial (j+1 -> jp1)
@@ -331,8 +396,8 @@ void Wing::integralLowerNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
             double dt2p1 = phi2->linearDerivative();
             for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
             {
-                double  psi2 = w2*t2;
-                double dpsi2 = w2*dt2 + dw2*t2;
+                double  psi2 = w2(jj)*t2;
+                double dpsi2 = w2(jj)*dt2 + dw2(jj)*t2;
 
                 double t1   = phi1->constant(); // First Chebyshev Polynomial (i)
                 double t1p1 = phi1->linear(x1_gl(ii)); // Second Chebyshev Polynomial (i+1 -> ip1)
@@ -341,8 +406,8 @@ void Wing::integralLowerNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
                 double dt1p1 = phi1->linearDerivative();
                 for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                 {
-                    double  psi1 = w1*t1;
-                    double dpsi1 = w1*dt1 + dw1*t1;
+                    double  psi1 = w1(ii)*t1;
+                    double dpsi1 = w1(ii)*dt1 + dw1(ii)*t1;
                     arma::vec::fixed<2> dmudxi = {dpsi1 * psi2, psi1 * dpsi2};
                     arma::vec::fixed<3> gradmu = J_red*dmudxi;
                     arma::vec::fixed<3> gamma_gl = cross(gradmu, n_gl);
@@ -361,39 +426,79 @@ void Wing::integralLowerNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
                 phi2->nextDerivative(q, x2_gl(jj), t2, dt2, dt2p1);
             }
         }
-    }
 }
 
 void Wing::integralLowerRightNonlinear(size_t i, size_t j, size_t n1, size_t n2, double xp, double yp)
 {
     arma::vec x1_gl(n1, arma::fill::none), x2_gl(n2, arma::fill::none);
     arma::vec w1_gl(n1, arma::fill::none), w2_gl(n2, arma::fill::none);
-    if (phi1->basis == Basis::U)
+    arma::vec w1, dw1, w2, dw2;
+    switch (phi1->basis)
     {
-        auto [X1, W1] = gaujac(n1, 0.5, 0.0);
-        x1_gl = ((1-xp)*X1 + xp+1)/2;
-        w1_gl = pow((1 - xp)/2, 1.5)*W1%sqrt(1+x1_gl);
-    }
-    else
-        for (size_t ii = 0; ii < n1; ii++)
+        case Basis::U:
         {
-            fastgl::QuadPair gl_x = fastgl::GLPair(n1, ii+1);
-            x1_gl(ii) = (1 - gl_x.x()) * (1 - xp)/2 + xp;
-            w1_gl(ii) = gl_x.weight*(1 - xp)/2;
+            auto [X1, W1] = gaujac(n1, 0.5, 0.0);
+            x1_gl = ((1-xp)*X1 + xp+1)/2;
+            w1  = phi1->weightFunction(x1_gl);
+            dw1 = phi1->weightFunctionDerivative(x1_gl);
+            w1_gl = pow((1-xp)/2, 1.5)*W1/w1%sqrt(1+x1_gl);
+            break;
         }
-    if (phi2->basis == Basis::U)
+        case Basis::PA:
+        {
+            auto [X1, W1] = gaujac(n1, 0.5, 0.0);
+            x1_gl = ((1-xp)*X1 + xp+1)/2;
+            w1  = phi1->weightFunction(x1_gl);
+            dw1 = phi1->weightFunctionDerivative(x1_gl);
+            w1_gl = pow((1-xp)/2, 1.5)*W1/w1;
+            break;
+        }
+        default:
+        {
+            for (size_t ii = 0; ii < n1; ii++)
+            {
+                fastgl::QuadPair gl_x = fastgl::GLPair(n1, ii+1);
+                x1_gl(ii) = (1 - gl_x.x()) * (1 - xp)/2 + xp;
+                w1_gl(ii) = gl_x.weight*(1 - xp)/2;
+                w1  = phi1->weightFunction(x1_gl);
+                dw1 = phi1->weightFunctionDerivative(x1_gl);
+            }
+            break;
+        }
+    }
+    switch (phi2->basis)
     {
-        auto [X2, W2] = gaujac(n2, 0.0, 0.5);
-        x2_gl = ((yp+1)*X2 + yp-1)/2;
-        w2_gl = pow((yp + 1)/2, 1.5)*W2%sqrt(1-x2_gl);
-    }
-    else
-        for (size_t jj = 0; jj < n2; jj++)
+        case Basis::U:
         {
-            fastgl::QuadPair gl_y = fastgl::GLPair(n2, jj+1);
-            x2_gl(jj) = (1 - gl_y.x()) * (yp + 1)/2 - 1;
-            w2_gl(jj) = gl_y.weight*(yp + 1)/2;
+            auto [X2, W2] = gaujac(n2, 0.0, 0.5);
+            x2_gl = ((yp+1)*X2 + yp-1)/2;
+            w2  = phi2->weightFunction(x2_gl);
+            dw2 = phi2->weightFunctionDerivative(x2_gl);
+            w2_gl = pow((yp+1)/2, 1.5)*W2/w2%sqrt(1-x2_gl);
+            break;
         }
+        case Basis::PB:
+        {
+            auto [X2, W2] = gaujac(n2, 0.0, 0.5);
+            x2_gl = ((yp+1)*X2 + yp-1)/2;
+            w2  = phi2->weightFunction(x2_gl);
+            dw2 = phi2->weightFunctionDerivative(x2_gl);
+            w2_gl = pow((yp+1)/2, 1.5)*W2/w2;
+            break;
+        }
+        default:
+        {
+            for (size_t jj = 0; jj < n2; jj++)
+            {
+                fastgl::QuadPair gl_y = fastgl::GLPair(n2, jj+1);
+                x2_gl(jj) = (1 - gl_y.x()) * (yp + 1)/2 - 1;
+                w2_gl(jj) = gl_y.weight*(yp + 1)/2;
+                w2  = phi2->weightFunction(x2_gl);
+                dw2 = phi2->weightFunctionDerivative(x2_gl);
+            }
+            break;
+        }
+    }
     arma::mat Tx_gl = Lagrange::interpolationMatrix(x1, x1_gl);
     arma::mat Ty_gl = Lagrange::interpolationMatrix(x2, x2_gl);
     arma::mat z_gl  = Lagrange::interpolation2D(Tx_gl, Ty_gl, z, x1_gl, x2_gl);
@@ -409,9 +514,6 @@ void Wing::integralLowerRightNonlinear(size_t i, size_t j, size_t n1, size_t n2,
     arma::mat e_gl = e_c_gl.slice(0)%e_c_gl.slice(2) - pow(e_c_gl.slice(1), 2);
     arma::mat sqrt_a = sqrt(e_gl%(1 + ec_gl.slice(0)%pow(dz_gldx1, 2) + 2*ec_gl.slice(1)%dz_gldx1%dz_gldx2 + ec_gl.slice(2)%pow(dz_gldx2, 2)));
     for (size_t ii = 0; ii < n1; ii++)
-    {
-        double  w1 = phi1->weightFunction(x1_gl(ii));
-        double dw1 = phi1->weightFunctionDerivative(x1_gl(ii));
         for (size_t jj = 0; jj < n2; jj++)
         {
             arma::vec::fixed<3> r = {x_gl(ii, jj) - xC(i, j), y_gl(ii, jj) - yC(i, j), z_gl(ii, jj) - zC(i, j)};
@@ -422,9 +524,6 @@ void Wing::integralLowerRightNonlinear(size_t i, size_t j, size_t n1, size_t n2,
             arma::mat::fixed<3, 2> J_red = {{dy_gldx2(ii, jj)*n_gl(2) - n_gl(1)*dz_gldx2(ii, jj),n_gl(1)*dz_gldx1(ii, jj) - dy_gldx1(ii, jj)*n_gl(2)},
                                             {n_gl(0)*dz_gldx2(ii, jj) - dx_gldx2(ii, jj)*n_gl(2),dx_gldx1(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx1(ii, jj)},
                                             {dx_gldx2(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx2(ii, jj),n_gl(0)*dy_gldx1(ii, jj) - dx_gldx1(ii, jj)*n_gl(1)}};
-            
-            double  w2 = phi2->weightFunction(x2_gl(jj));
-            double dw2 = phi2->weightFunctionDerivative(x2_gl(jj));
 
             double t2   = phi2->constant(); // First Chebyshev Polynomial (j)
             double t2p1 = phi2->linear(x2_gl(jj)); // Second Chebyshev Polynomial (j+1 -> jp1)
@@ -433,8 +532,8 @@ void Wing::integralLowerRightNonlinear(size_t i, size_t j, size_t n1, size_t n2,
             double dt2p1 = phi2->linearDerivative();
             for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
             {
-                double  psi2 = w2*t2;
-                double dpsi2 = w2*dt2 + dw2*t2;
+                double  psi2 = w2(jj)*t2;
+                double dpsi2 = w2(jj)*dt2 + dw2(jj)*t2;
 
                 double t1   = phi1->constant(); // First Chebyshev Polynomial (i)
                 double t1p1 = phi1->linear(x1_gl(ii)); // Second Chebyshev Polynomial (i+1 -> ip1)
@@ -443,8 +542,8 @@ void Wing::integralLowerRightNonlinear(size_t i, size_t j, size_t n1, size_t n2,
                 double dt1p1 = phi1->linearDerivative();
                 for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                 {
-                    double  psi1 = w1*t1;
-                    double dpsi1 = w1*dt1 + dw1*t1;
+                    double  psi1 = w1(ii)*t1;
+                    double dpsi1 = w1(ii)*dt1 + dw1(ii)*t1;
                     arma::vec::fixed<2> dmudxi = {dpsi1 * psi2, psi1 * dpsi2};
                     arma::vec::fixed<3> gradmu = J_red*dmudxi;
                     arma::vec::fixed<3> gamma_gl = cross(gradmu, n_gl);
@@ -463,39 +562,79 @@ void Wing::integralLowerRightNonlinear(size_t i, size_t j, size_t n1, size_t n2,
                 phi2->nextDerivative(q, x2_gl(jj), t2, dt2, dt2p1);
             }
         }
-    }
 }
 
 void Wing::integralLowerLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, double xp, double ym)
 {
     arma::vec x1_gl(n1, arma::fill::none), x2_gl(n2, arma::fill::none);
     arma::vec w1_gl(n1, arma::fill::none), w2_gl(n2, arma::fill::none);
-    if (phi1->basis == Basis::U)
+    arma::vec w1, dw1, w2, dw2;
+    switch (phi1->basis)
     {
-        auto [X1, W1] = gaujac(n1, 0.0, 0.5);
-        x1_gl = ((xp+1)*X1 + xp-1)/2;
-        w1_gl = pow((xp + 1)/2, 1.5)*W1%sqrt(1-x1_gl);
-    }
-    else
-        for (size_t ii = 0; ii < n1; ii++)
+        case Basis::U:
         {
-            fastgl::QuadPair gl_x = fastgl::GLPair(n1, ii+1);
-            x1_gl(ii) = (1 - gl_x.x()) * (xp + 1)/2 - 1;
-            w1_gl(ii) = gl_x.weight*(xp + 1)/2;
+            auto [X1, W1] = gaujac(n1, 0.0, 0.5);
+            x1_gl = ((xp+1)*X1 + xp-1)/2;
+            w1  = phi1->weightFunction(x1_gl);
+            dw1 = phi1->weightFunctionDerivative(x1_gl);
+            w1_gl = pow((xp+1)/2, 1.5)*W1/w1%sqrt(1-x1_gl);
+            break;
         }
-    if (phi2->basis == Basis::U)
+        case Basis::PB:
+        {
+            auto [X1, W1] = gaujac(n1, 0.0, 0.5);
+            x1_gl = ((xp+1)*X1 + xp-1)/2;
+            w1  = phi1->weightFunction(x1_gl);
+            dw1 = phi1->weightFunctionDerivative(x1_gl);
+            w1_gl = pow((xp+1)/2, 1.5)*W1/w1;
+            break;
+        }
+        default:
+        {
+            for (size_t ii = 0; ii < n1; ii++)
+            {
+                fastgl::QuadPair gl_x = fastgl::GLPair(n1, ii+1);
+                x1_gl(ii) = (1 - gl_x.x()) * (xp + 1)/2 - 1;
+                w1_gl(ii) = gl_x.weight*(xp + 1)/2;
+                w1  = phi1->weightFunction(x1_gl);
+                dw1 = phi1->weightFunctionDerivative(x1_gl);
+            }
+            break;
+        }
+    }
+    switch (phi2->basis)
     {
-        auto [X2, W2] = gaujac(n2, 0.0, 0.5);
-        x2_gl = ((ym+1)*X2 + ym-1)/2;
-        w2_gl = pow((ym + 1)/2, 1.5)*W2%sqrt(1-x2_gl);
-    }
-    else
-        for (size_t jj = 0; jj < n2; jj++)
+        case Basis::U:
         {
-            fastgl::QuadPair gl_y = fastgl::GLPair(n2, jj+1);
-            x2_gl(jj) = (1 - gl_y.x()) * (ym + 1)/2 - 1;
-            w2_gl(jj) = gl_y.weight*(ym + 1)/2;
+            auto [X2, W2] = gaujac(n2, 0.0, 0.5);
+            x2_gl = ((ym+1)*X2 + ym-1)/2;
+            w2  = phi2->weightFunction(x2_gl);
+            dw2 = phi2->weightFunctionDerivative(x2_gl);
+            w2_gl = pow((ym+1)/2, 1.5)*W2/w2%sqrt(1-x2_gl);
+            break;
         }
+        case Basis::PB:
+        {
+            auto [X2, W2] = gaujac(n2, 0.0, 0.5);
+            x2_gl = ((ym+1)*X2 + ym-1)/2;
+            w2  = phi2->weightFunction(x2_gl);
+            dw2 = phi2->weightFunctionDerivative(x2_gl);
+            w2_gl = pow((ym+1)/2, 1.5)*W2/w2;
+            break;
+        }
+        default:
+        {
+            for (size_t jj = 0; jj < n2; jj++)
+            {
+                fastgl::QuadPair gl_y = fastgl::GLPair(n2, jj+1);
+                x2_gl(jj) = (1 - gl_y.x()) * (ym + 1)/2 - 1;
+                w2_gl(jj) = gl_y.weight*(ym + 1)/2;
+                w2  = phi2->weightFunction(x2_gl);
+                dw2 = phi2->weightFunctionDerivative(x2_gl);
+            }
+            break;
+        }
+    }
     arma::mat Tx_gl = Lagrange::interpolationMatrix(x1, x1_gl);
     arma::mat Ty_gl = Lagrange::interpolationMatrix(x2, x2_gl);
     arma::mat z_gl  = Lagrange::interpolation2D(Tx_gl, Ty_gl, z, x1_gl, x2_gl);
@@ -511,9 +650,6 @@ void Wing::integralLowerLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, 
     arma::mat e_gl = e_c_gl.slice(0)%e_c_gl.slice(2) - pow(e_c_gl.slice(1), 2);
     arma::mat sqrt_a = sqrt(e_gl%(1 + ec_gl.slice(0)%pow(dz_gldx1, 2) + 2*ec_gl.slice(1)%dz_gldx1%dz_gldx2 + ec_gl.slice(2)%pow(dz_gldx2, 2)));
     for (size_t ii = 0; ii < n1; ii++)
-    {
-        double  w1 = phi1->weightFunction(x1_gl(ii));
-        double dw1 = phi1->weightFunctionDerivative(x1_gl(ii));
         for (size_t jj = 0; jj < n2; jj++)
         {
             arma::vec::fixed<3> r = {x_gl(ii, jj) - xC(i, j), y_gl(ii, jj) - yC(i, j), z_gl(ii, jj) - zC(i, j)};
@@ -524,9 +660,6 @@ void Wing::integralLowerLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, 
             arma::mat::fixed<3, 2> J_red = {{dy_gldx2(ii, jj)*n_gl(2) - n_gl(1)*dz_gldx2(ii, jj),n_gl(1)*dz_gldx1(ii, jj) - dy_gldx1(ii, jj)*n_gl(2)},
                                             {n_gl(0)*dz_gldx2(ii, jj) - dx_gldx2(ii, jj)*n_gl(2),dx_gldx1(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx1(ii, jj)},
                                             {dx_gldx2(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx2(ii, jj),n_gl(0)*dy_gldx1(ii, jj) - dx_gldx1(ii, jj)*n_gl(1)}};
-            
-            double  w2 = phi2->weightFunction(x2_gl(jj));
-            double dw2 = phi2->weightFunctionDerivative(x2_gl(jj));
 
             double t2   = phi2->constant(); // First Chebyshev Polynomial (j)
             double t2p1 = phi2->linear(x2_gl(jj)); // Second Chebyshev Polynomial (j+1 -> jp1)
@@ -535,8 +668,8 @@ void Wing::integralLowerLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, 
             double dt2p1 = phi2->linearDerivative();
             for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
             {
-                double  psi2 = w2*t2;
-                double dpsi2 = w2*dt2 + dw2*t2;
+                double  psi2 = w2(jj)*t2;
+                double dpsi2 = w2(jj)*dt2 + dw2(jj)*t2;
 
                 double t1   = phi1->constant(); // First Chebyshev Polynomial (i)
                 double t1p1 = phi1->linear(x1_gl(ii)); // Second Chebyshev Polynomial (i+1 -> ip1)
@@ -545,8 +678,8 @@ void Wing::integralLowerLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, 
                 double dt1p1 = phi1->linearDerivative();
                 for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                 {
-                    double  psi1 = w1*t1;
-                    double dpsi1 = w1*dt1 + dw1*t1;
+                    double  psi1 = w1(ii)*t1;
+                    double dpsi1 = w1(ii)*dt1 + dw1(ii)*t1;
                     arma::vec::fixed<2> dmudxi = {dpsi1 * psi2, psi1 * dpsi2};
                     arma::vec::fixed<3> gradmu = J_red*dmudxi;
                     arma::vec::fixed<3> gamma_gl = cross(gradmu, n_gl);
@@ -565,39 +698,79 @@ void Wing::integralLowerLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, 
                 phi2->nextDerivative(q, x2_gl(jj), t2, dt2, dt2p1);
             }
         }
-    }
 }
 
 void Wing::integralUpperRightNonlinear(size_t i, size_t j, size_t n1, size_t n2, double xm, double yp)
 {
     arma::vec x1_gl(n1, arma::fill::none), x2_gl(n2, arma::fill::none);
     arma::vec w1_gl(n1, arma::fill::none), w2_gl(n2, arma::fill::none);
-    if (phi1->basis == Basis::U)
+    arma::vec w1, dw1, w2, dw2;
+    switch (phi1->basis)
     {
-        auto [X1, W1] = gaujac(n1, 0.5, 0.0);
-        x1_gl = ((1-xm)*X1 + xm+1)/2;
-        w1_gl = pow((1 - xm)/2, 1.5)*W1%sqrt(1+x1_gl);
-    }
-    else
-        for (size_t ii = 0; ii < n1; ii++)
+        case Basis::U:
         {
-            fastgl::QuadPair gl_x = fastgl::GLPair(n1, ii+1);
-            x1_gl(ii) = (1 - gl_x.x()) * (1 - xm)/2 + xm;
-            w1_gl(ii) = gl_x.weight*(1 - xm)/2;
+            auto [X1, W1] = gaujac(n1, 0.5, 0.0);
+            x1_gl = ((1-xm)*X1 + xm+1)/2;
+            w1  = phi1->weightFunction(x1_gl);
+            dw1 = phi1->weightFunctionDerivative(x1_gl);
+            w1_gl = pow((1-xm)/2, 1.5)*W1/w1%sqrt(1+x1_gl);
+            break;
         }
-    if (phi2->basis == Basis::U)
+        case Basis::PA:
+        {
+            auto [X1, W1] = gaujac(n1, 0.5, 0.0);
+            x1_gl = ((1-xm)*X1 + xm+1)/2;
+            w1  = phi1->weightFunction(x1_gl);
+            dw1 = phi1->weightFunctionDerivative(x1_gl);
+            w1_gl = pow((1-xm)/2, 1.5)*W1/w1;
+            break;
+        }
+        default:
+        {
+            for (size_t ii = 0; ii < n1; ii++)
+            {
+                fastgl::QuadPair gl_x = fastgl::GLPair(n1, ii+1);
+                x1_gl(ii) = (1 - gl_x.x()) * (1 - xm)/2 + xm;
+                w1_gl(ii) = gl_x.weight*(1 - xm)/2;
+                w1  = phi1->weightFunction(x1_gl);
+                dw1 = phi1->weightFunctionDerivative(x1_gl);
+            }
+            break;
+        }
+    }
+    switch (phi2->basis)
     {
-        auto [X2, W2] = gaujac(n2, 0.5, 0.0);
-        x2_gl = ((1-yp)*X2 + yp+1)/2;
-        w2_gl = pow((1 - yp)/2, 1.5)*W2%sqrt(1+x2_gl);
-    }
-    else
-        for (size_t jj = 0; jj < n2; jj++)
+        case Basis::U:
         {
-            fastgl::QuadPair gl_y = fastgl::GLPair(n2, jj+1);
-            x2_gl(jj) = (1 - gl_y.x()) * (1 - yp)/2 + yp;
-            w2_gl(jj) = gl_y.weight*(1 - yp)/2;
+            auto [X2, W2] = gaujac(n2, 0.5, 0.0);
+            x2_gl = ((1-yp)*X2 + yp+1)/2;
+            w2  = phi2->weightFunction(x2_gl);
+            dw2 = phi2->weightFunctionDerivative(x2_gl);
+            w2_gl = pow((1-yp)/2, 1.5)*W2/w2%sqrt(1+x2_gl);
+            break;
         }
+        case Basis::PA:
+        {
+            auto [X2, W2] = gaujac(n2, 0.5, 0.0);
+            x2_gl = ((1-yp)*X2 + yp+1)/2;
+            w2  = phi2->weightFunction(x2_gl);
+            dw2 = phi2->weightFunctionDerivative(x2_gl);
+            w2_gl = pow((1-yp)/2, 1.5)*W2/w2;
+            break;
+        }
+        default:
+        {
+            for (size_t jj = 0; jj < n2; jj++)
+            {
+                fastgl::QuadPair gl_y = fastgl::GLPair(n2, jj+1);
+                x2_gl(jj) = (1 - gl_y.x()) * (1 - yp)/2 + yp;
+                w2_gl(jj) = gl_y.weight*(1 - yp)/2;
+                w2  = phi2->weightFunction(x2_gl);
+                dw2 = phi2->weightFunctionDerivative(x2_gl);
+            }
+            break;
+        }
+    }
     arma::mat Tx_gl = Lagrange::interpolationMatrix(x1, x1_gl);
     arma::mat Ty_gl = Lagrange::interpolationMatrix(x2, x2_gl);
     arma::mat z_gl  = Lagrange::interpolation2D(Tx_gl, Ty_gl, z, x1_gl, x2_gl);
@@ -613,9 +786,6 @@ void Wing::integralUpperRightNonlinear(size_t i, size_t j, size_t n1, size_t n2,
     arma::mat e_gl = e_c_gl.slice(0)%e_c_gl.slice(2) - pow(e_c_gl.slice(1), 2);
     arma::mat sqrt_a = sqrt(e_gl%(1 + ec_gl.slice(0)%pow(dz_gldx1, 2) + 2*ec_gl.slice(1)%dz_gldx1%dz_gldx2 + ec_gl.slice(2)%pow(dz_gldx2, 2)));
     for (size_t ii = 0; ii < n1; ii++)
-    {
-        double  w1 = phi1->weightFunction(x1_gl(ii));
-        double dw1 = phi1->weightFunctionDerivative(x1_gl(ii));
         for (size_t jj = 0; jj < n2; jj++)
         {
             arma::vec::fixed<3> r = {x_gl(ii, jj) - xC(i, j), y_gl(ii, jj) - yC(i, j), z_gl(ii, jj) - zC(i, j)};
@@ -626,9 +796,6 @@ void Wing::integralUpperRightNonlinear(size_t i, size_t j, size_t n1, size_t n2,
             arma::mat::fixed<3, 2> J_red = {{dy_gldx2(ii, jj)*n_gl(2) - n_gl(1)*dz_gldx2(ii, jj),n_gl(1)*dz_gldx1(ii, jj) - dy_gldx1(ii, jj)*n_gl(2)},
                                             {n_gl(0)*dz_gldx2(ii, jj) - dx_gldx2(ii, jj)*n_gl(2),dx_gldx1(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx1(ii, jj)},
                                             {dx_gldx2(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx2(ii, jj),n_gl(0)*dy_gldx1(ii, jj) - dx_gldx1(ii, jj)*n_gl(1)}};
-            
-            double  w2 = phi2->weightFunction(x2_gl(jj));
-            double dw2 = phi2->weightFunctionDerivative(x2_gl(jj));
 
             double t2   = phi2->constant(); // First Chebyshev Polynomial (j)
             double t2p1 = phi2->linear(x2_gl(jj)); // Second Chebyshev Polynomial (j+1 -> jp1)
@@ -637,8 +804,8 @@ void Wing::integralUpperRightNonlinear(size_t i, size_t j, size_t n1, size_t n2,
             double dt2p1 = phi2->linearDerivative();
             for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
             {
-                double  psi2 = w2*t2;
-                double dpsi2 = w2*dt2 + dw2*t2;
+                double  psi2 = w2(jj)*t2;
+                double dpsi2 = w2(jj)*dt2 + dw2(jj)*t2;
 
                 double t1   = phi1->constant(); // First Chebyshev Polynomial (i)
                 double t1p1 = phi1->linear(x1_gl(ii)); // Second Chebyshev Polynomial (i+1 -> ip1)
@@ -647,8 +814,8 @@ void Wing::integralUpperRightNonlinear(size_t i, size_t j, size_t n1, size_t n2,
                 double dt1p1 = phi1->linearDerivative();
                 for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                 {
-                    double  psi1 = w1*t1;
-                    double dpsi1 = w1*dt1 + dw1*t1;
+                    double  psi1 = w1(ii)*t1;
+                    double dpsi1 = w1(ii)*dt1 + dw1(ii)*t1;
                     arma::vec::fixed<2> dmudxi = {dpsi1 * psi2, psi1 * dpsi2};
                     arma::vec::fixed<3> gradmu = J_red*dmudxi;
                     arma::vec::fixed<3> gamma_gl = cross(gradmu, n_gl);
@@ -667,39 +834,79 @@ void Wing::integralUpperRightNonlinear(size_t i, size_t j, size_t n1, size_t n2,
                 phi2->nextDerivative(q, x2_gl(jj), t2, dt2, dt2p1);
             }
         }
-    }
 }
 
 void Wing::integralUpperLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, double xm, double ym)
 {
     arma::vec x1_gl(n1, arma::fill::none), x2_gl(n2, arma::fill::none);
     arma::vec w1_gl(n1, arma::fill::none), w2_gl(n2, arma::fill::none);
-    if (phi1->basis == Basis::U)
+    arma::vec w1, dw1, w2, dw2;
+    switch (phi1->basis)
     {
-        auto [X1, W1] = gaujac(n1, 0.0, 0.5);
-        x1_gl = ((xm+1)*X1 + xm-1)/2;
-        w1_gl = pow((xm + 1)/2, 1.5)*W1%sqrt(1-x1_gl);
-    }
-    else
-        for (size_t ii = 0; ii < n1; ii++)
+        case Basis::U:
         {
-            fastgl::QuadPair gl_x = fastgl::GLPair(n1, ii+1);
-            x1_gl(ii) = (1 - gl_x.x()) * (xm + 1)/2 - 1;
-            w1_gl(ii) = gl_x.weight*(xm + 1)/2;
+            auto [X1, W1] = gaujac(n1, 0.0, 0.5);
+            x1_gl = ((xm+1)*X1 + xm-1)/2;
+            w1  = phi1->weightFunction(x1_gl);
+            dw1 = phi1->weightFunctionDerivative(x1_gl);
+            w1_gl = pow((xm + 1)/2, 1.5)*W1/w1%sqrt(1-x1_gl);
+            break;
         }
-    if (phi2->basis == Basis::U)
+        case Basis::PB:
+        {
+            auto [X1, W1] = gaujac(n1, 0.0, 0.5);
+            x1_gl = ((xm+1)*X1 + xm-1)/2;
+            w1  = phi1->weightFunction(x1_gl);
+            dw1 = phi1->weightFunctionDerivative(x1_gl);
+            w1_gl = pow((xm+1)/2, 1.5)*W1/w1;
+            break;
+        }
+        default:
+        {
+            for (size_t ii = 0; ii < n1; ii++)
+            {
+                fastgl::QuadPair gl_x = fastgl::GLPair(n1, ii+1);
+                x1_gl(ii) = (1 - gl_x.x()) * (xm + 1)/2 - 1;
+                w1_gl(ii) = gl_x.weight*(xm + 1)/2;
+                w1  = phi1->weightFunction(x1_gl);
+                dw1 = phi1->weightFunctionDerivative(x1_gl);
+            }
+            break;
+        }
+    }
+    switch (phi2->basis)
     {
-        auto [X2, W2] = gaujac(n2, 0.5, 0.0);
-        x2_gl = ((1-ym)*X2 + ym+1)/2;
-        w2_gl = pow((1 - ym)/2, 1.5)*W2%sqrt(1+x2_gl);
-    }
-    else
-        for (size_t jj = 0; jj < n2; jj++)
+        case Basis::U:
         {
-            fastgl::QuadPair gl_y = fastgl::GLPair(n2, jj+1);
-            x2_gl(jj) = (1 - gl_y.x()) * (1 - ym)/2 + ym;
-            w2_gl(jj) = gl_y.weight*(1 - ym)/2;
+            auto [X2, W2] = gaujac(n2, 0.5, 0.0);
+            x2_gl = ((1-ym)*X2 + ym+1)/2;
+            w2  = phi2->weightFunction(x2_gl);
+            dw2 = phi2->weightFunctionDerivative(x2_gl);
+            w2_gl = pow((1-ym)/2, 1.5)*W2/w2%sqrt(1+x2_gl);
+            break;
         }
+        case Basis::PA:
+        {
+            auto [X2, W2] = gaujac(n2, 0.5, 0.0);
+            x2_gl = ((1-ym)*X2 + ym+1)/2;
+            w2  = phi2->weightFunction(x2_gl);
+            dw2 = phi2->weightFunctionDerivative(x2_gl);
+            w2_gl = pow((1-ym)/2, 1.5)*W2/w2;
+            break;
+        }
+        default:
+        {
+            for (size_t jj = 0; jj < n2; jj++)
+            {
+                fastgl::QuadPair gl_y = fastgl::GLPair(n2, jj+1);
+                x2_gl(jj) = (1 - gl_y.x()) * (1 - ym)/2 + ym;
+                w2_gl(jj) = gl_y.weight*(1 - ym)/2;
+                w2  = phi2->weightFunction(x2_gl);
+                dw2 = phi2->weightFunctionDerivative(x2_gl);
+            }
+            break;
+        }
+    }
     arma::mat Tx_gl = Lagrange::interpolationMatrix(x1, x1_gl);
     arma::mat Ty_gl = Lagrange::interpolationMatrix(x2, x2_gl);
     arma::mat z_gl  = Lagrange::interpolation2D(Tx_gl, Ty_gl, z, x1_gl, x2_gl);
@@ -715,9 +922,6 @@ void Wing::integralUpperLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, 
     arma::mat e_gl = e_c_gl.slice(0)%e_c_gl.slice(2) - pow(e_c_gl.slice(1), 2);
     arma::mat sqrt_a = sqrt(e_gl%(1 + ec_gl.slice(0)%pow(dz_gldx1, 2) + 2*ec_gl.slice(1)%dz_gldx1%dz_gldx2 + ec_gl.slice(2)%pow(dz_gldx2, 2)));
     for (size_t ii = 0; ii < n1; ii++)
-    {
-        double  w1 = phi1->weightFunction(x1_gl(ii));
-        double dw1 = phi1->weightFunctionDerivative(x1_gl(ii));
         for (size_t jj = 0; jj < n2; jj++)
         {
             arma::vec::fixed<3> r = {x_gl(ii, jj) - xC(i, j), y_gl(ii, jj) - yC(i, j), z_gl(ii, jj) - zC(i, j)};
@@ -728,9 +932,6 @@ void Wing::integralUpperLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, 
             arma::mat::fixed<3, 2> J_red = {{dy_gldx2(ii, jj)*n_gl(2) - n_gl(1)*dz_gldx2(ii, jj),n_gl(1)*dz_gldx1(ii, jj) - dy_gldx1(ii, jj)*n_gl(2)},
                                             {n_gl(0)*dz_gldx2(ii, jj) - dx_gldx2(ii, jj)*n_gl(2),dx_gldx1(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx1(ii, jj)},
                                             {dx_gldx2(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx2(ii, jj),n_gl(0)*dy_gldx1(ii, jj) - dx_gldx1(ii, jj)*n_gl(1)}};
-            
-            double  w2 = phi2->weightFunction(x2_gl(jj));
-            double dw2 = phi2->weightFunctionDerivative(x2_gl(jj));
 
             double t2   = phi2->constant(); // First Chebyshev Polynomial (j)
             double t2p1 = phi2->linear(x2_gl(jj)); // Second Chebyshev Polynomial (j+1 -> jp1)
@@ -739,8 +940,8 @@ void Wing::integralUpperLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, 
             double dt2p1 = phi2->linearDerivative();
             for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
             {
-                double  psi2 = w2*t2;
-                double dpsi2 = w2*dt2 + dw2*t2;
+                double  psi2 = w2(jj)*t2;
+                double dpsi2 = w2(jj)*dt2 + dw2(jj)*t2;
 
                 double t1   = phi1->constant(); // First Chebyshev Polynomial (i)
                 double t1p1 = phi1->linear(x1_gl(ii)); // Second Chebyshev Polynomial (i+1 -> ip1)
@@ -749,8 +950,8 @@ void Wing::integralUpperLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, 
                 double dt1p1 = phi1->linearDerivative();
                 for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
                 {
-                    double  psi1 = w1*t1;
-                    double dpsi1 = w1*dt1 + dw1*t1;
+                    double  psi1 = w1(ii)*t1;
+                    double dpsi1 = w1(ii)*dt1 + dw1(ii)*t1;
                     arma::vec::fixed<2> dmudxi = {dpsi1 * psi2, psi1 * dpsi2};
                     arma::vec::fixed<3> gradmu = J_red*dmudxi;
                     arma::vec::fixed<3> gamma_gl = cross(gradmu, n_gl);
@@ -769,7 +970,6 @@ void Wing::integralUpperLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, 
                 phi2->nextDerivative(q, x2_gl(jj), t2, dt2, dt2p1);
             }
         }
-    }
 }
 
 void Wing::regularIntegralNonlinear(size_t i, size_t j, size_t n1, size_t n2, double xm, double xp, double ym, double yp)
