@@ -4,6 +4,7 @@
 #include <print>
 #include <omp.h>
 #include "float.h"
+#include "gaujac.hpp"
 
 #pragma omp declare reduction(+ : arma::vec : omp_out += omp_in) \
     initializer(omp_priv = omp_orig)
@@ -11,8 +12,8 @@
 #pragma omp declare reduction(+ : arma::mat : omp_out += omp_in) \
     initializer(omp_priv = omp_orig)
 
-constexpr size_t NMAX = 100;
-constexpr size_t MMAX =  20;
+constexpr size_t NMAX = 50;
+constexpr size_t MMAX = 20;
 
 constexpr std::array<std::array<size_t, NMAX>, NMAX> bi = []() -> std::array<std::array<size_t, NMAX>, NMAX>
 {
@@ -49,6 +50,71 @@ constexpr std::array<double, 2*NMAX+1> LGAMMA = []() -> std::array<double, 2*NMA
     for (size_t i = 0; i <= 2*NMAX; i++)
         G[i] = log(tgamma(0.5*(i+1))); // lgamma is not a constexpr by now!
     return G;
+}();
+
+constexpr std::array<std::pair<std::array<double, NMAX>, std::array<double, NMAX>>, NMAX> GAUJACA
+    = []() -> std::array<std::pair<std::array<double, NMAX>, std::array<double, NMAX>>, NMAX>
+{
+    std::array<std::pair<std::array<double, NMAX>, std::array<double, NMAX>>, NMAX> GJ = {};
+    for (size_t i = 0; i < NMAX; i++)
+    {
+        auto [X, W] = gaujac<NMAX>(i, 0.5, 0.0);
+        GJ[i].first  = X;
+        GJ[i].second = W;
+    }
+    return GJ;
+}();
+
+constexpr std::array<std::pair<std::array<double, NMAX>, std::array<double, NMAX>>, NMAX> GAUJACB
+    = []() -> std::array<std::pair<std::array<double, NMAX>, std::array<double, NMAX>>, NMAX>
+{
+    std::array<std::pair<std::array<double, NMAX>, std::array<double, NMAX>>, NMAX> GJ = {};
+    for (size_t i = 0; i < NMAX; i++)
+    {
+        auto [X, W] = gaujac<NMAX>(i, 0.0, 0.5);
+        GJ[i].first  = X;
+        GJ[i].second = W;
+    }
+    return GJ;
+}();
+
+constexpr std::array<std::pair<std::array<double, NMAX>, std::array<double, NMAX>>, NMAX> GAUJACA2
+    = []() -> std::array<std::pair<std::array<double, NMAX>, std::array<double, NMAX>>, NMAX>
+{
+    std::array<std::pair<std::array<double, NMAX>, std::array<double, NMAX>>, NMAX> GJ = {};
+    for (size_t i = 0; i < NMAX; i++)
+    {
+        auto [X, W] = gaujac<NMAX>(i,-0.5, 0.0);
+        GJ[i].first  = X;
+        GJ[i].second = W;
+    }
+    return GJ;
+}();
+
+constexpr std::array<std::pair<std::array<double, NMAX>, std::array<double, NMAX>>, NMAX> GAUJACB2
+    = []() -> std::array<std::pair<std::array<double, NMAX>, std::array<double, NMAX>>, NMAX>
+{
+    std::array<std::pair<std::array<double, NMAX>, std::array<double, NMAX>>, NMAX> GJ = {};
+    for (size_t i = 0; i < NMAX; i++)
+    {
+        auto [X, W] = gaujac<NMAX>(i, 0.0,-0.5);
+        GJ[i].first  = X;
+        GJ[i].second = W;
+    }
+    return GJ;
+}();
+
+constexpr std::array<std::pair<std::array<double, NMAX>, std::array<double, NMAX>>, NMAX> GAUJACU2
+    = []() -> std::array<std::pair<std::array<double, NMAX>, std::array<double, NMAX>>, NMAX>
+{
+    std::array<std::pair<std::array<double, NMAX>, std::array<double, NMAX>>, NMAX> GJ = {};
+    for (size_t i = 0; i < NMAX; i++)
+    {
+        auto [X, W] = gaujac<NMAX>(i,-0.5,-0.5);
+        GJ[i].first  = X;
+        GJ[i].second = W;
+    }
+    return GJ;
 }();
 
 // Comparing two floating point numbers for (almost) equality.

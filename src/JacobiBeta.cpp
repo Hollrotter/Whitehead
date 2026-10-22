@@ -3,9 +3,9 @@
 JacobiBeta::JacobiBeta(size_t _n, size_t _m) : BasisFunction{_n, _m}
 {
     basis = Basis::PB;
-    std::tie(xg, wg) = gaujac(n, 0.0, 0.5);
+    std::tie( xg,  wg) = convert<NMAX>(n, GAUJACB[n]);
+    std::tie(dxg, dwg) = convert<NMAX>(n, GAUJACB2[n]);
     xi = xg;
-    std::tie(dxg, dwg) = gaujac(n, 0.0, -0.5);
 };
 
 std::pair<arma::vec, arma::vec> JacobiBeta::powerSeries(size_t k, double x) const

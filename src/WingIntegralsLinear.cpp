@@ -9,7 +9,7 @@ void Wing::integralRightLinear(size_t i, size_t j, size_t n1, size_t n2, double 
     {
         case Basis::U:
         {
-            auto [X1, W1] = gaujac(n1, 0.5, 0.0);
+            auto [X1, W1] = convert<NMAX>(n1, GAUJACA[n1]);
             x1_gl = ((1-xp)*X1 + xp+1)/2;
             w1  = phi1->weightFunction(x1_gl);
             dw1 = phi1->weightFunctionDerivative(x1_gl);
@@ -18,7 +18,7 @@ void Wing::integralRightLinear(size_t i, size_t j, size_t n1, size_t n2, double 
         }
         case Basis::PA:
         {
-            auto [X1, W1] = gaujac(n1, 0.5, 0.0);
+            auto [X1, W1] = convert<NMAX>(n1, GAUJACA[n1]);
             x1_gl = ((1-xp)*X1 + xp+1)/2;
             w1  = phi1->weightFunction(x1_gl);
             dw1 = phi1->weightFunctionDerivative(x1_gl);
@@ -99,7 +99,7 @@ void Wing::integralLeftLinear(size_t i, size_t j, size_t n1, size_t n2, double x
     {
         case Basis::U:
         {
-            auto [X1, W1] = gaujac(n1, 0.0, 0.5);
+            auto [X1, W1] = convert<NMAX>(n1, GAUJACB[n1]);
             x1_gl = ((xm+1)*X1 + xm-1)/2;
             w1  = phi1->weightFunction(x1_gl);
             dw1 = phi1->weightFunctionDerivative(x1_gl);
@@ -108,7 +108,7 @@ void Wing::integralLeftLinear(size_t i, size_t j, size_t n1, size_t n2, double x
         }
         case Basis::PB:
         {
-            auto [X1, W1] = gaujac(n1, 0.0, 0.5);
+            auto [X1, W1] = convert<NMAX>(n1, GAUJACB[n1]);
             x1_gl = ((xm+1)*X1 + xm-1)/2;
             w1  = phi1->weightFunction(x1_gl);
             dw1 = phi1->weightFunctionDerivative(x1_gl);
@@ -193,7 +193,7 @@ void Wing::integralUpperLinear(size_t i, size_t j, size_t n1, size_t n2, double 
     {
         case Basis::U:
         {
-            auto [X2, W2] = gaujac(n2, 0.5, 0.0);
+            auto [X2, W2] = convert<NMAX>(n2, GAUJACA[n2]);
             x2_gl = ((1-yp)*X2 + yp+1)/2;
             w2  = phi2->weightFunction(x2_gl);
             dw2 = phi2->weightFunctionDerivative(x2_gl);
@@ -202,7 +202,7 @@ void Wing::integralUpperLinear(size_t i, size_t j, size_t n1, size_t n2, double 
         }
         case Basis::PA:
         {
-            auto [X2, W2] = gaujac(n2, 0.5, 0.0);
+            auto [X2, W2] = convert<NMAX>(n2, GAUJACA[n2]);
             x2_gl = ((1-yp)*X2 + yp+1)/2;
             w2  = phi2->weightFunction(x2_gl);
             dw2 = phi2->weightFunctionDerivative(x2_gl);
@@ -283,7 +283,7 @@ void Wing::integralLowerLinear(size_t i, size_t j, size_t n1, size_t n2, double 
     {
         case Basis::U:
         {
-            auto [X2, W2] = gaujac(n2, 0.0, 0.5);
+            auto [X2, W2] = convert<NMAX>(n2, GAUJACB[n2]);
             x2_gl = ((ym+1)*X2 + ym-1)/2;
             w2  = phi2->weightFunction(x2_gl);
             dw2 = phi2->weightFunctionDerivative(x2_gl);
@@ -292,7 +292,7 @@ void Wing::integralLowerLinear(size_t i, size_t j, size_t n1, size_t n2, double 
         }
         case Basis::PB:
         {
-            auto [X2, W2] = gaujac(n2, 0.0, 0.5);
+            auto [X2, W2] = convert<NMAX>(n2, GAUJACB[n2]);
             x2_gl = ((ym+1)*X2 + ym-1)/2;
             w2  = phi2->weightFunction(x2_gl);
             dw2 = phi2->weightFunctionDerivative(x2_gl);
@@ -369,7 +369,7 @@ void Wing::integralLowerRightLinear(size_t i, size_t j, size_t n1, size_t n2, do
     {
         case Basis::U:
         {
-            auto [X1, W1] = gaujac(n1, 0.5, 0.0);
+            auto [X1, W1] = convert<NMAX>(n1, GAUJACA[n1]);
             x1_gl = ((1-xp)*X1 + xp+1)/2;
             w1  = phi1->weightFunction(x1_gl);
             dw1 = phi1->weightFunctionDerivative(x1_gl);
@@ -378,7 +378,7 @@ void Wing::integralLowerRightLinear(size_t i, size_t j, size_t n1, size_t n2, do
         }
         case Basis::PA:
         {
-            auto [X1, W1] = gaujac(n1, 0.5, 0.0);
+            auto [X1, W1] = convert<NMAX>(n1, GAUJACA[n1]);
             x1_gl = ((1-xp)*X1 + xp+1)/2;
             w1  = phi1->weightFunction(x1_gl);
             dw1 = phi1->weightFunctionDerivative(x1_gl);
@@ -402,7 +402,7 @@ void Wing::integralLowerRightLinear(size_t i, size_t j, size_t n1, size_t n2, do
     {
         case Basis::U:
         {
-            auto [X2, W2] = gaujac(n2, 0.0, 0.5);
+            auto [X2, W2] = convert<NMAX>(n2, GAUJACB[n2]);
             x2_gl = ((yp+1)*X2 + yp-1)/2;
             w2  = phi2->weightFunction(x2_gl);
             dw2 = phi2->weightFunctionDerivative(x2_gl);
@@ -411,7 +411,7 @@ void Wing::integralLowerRightLinear(size_t i, size_t j, size_t n1, size_t n2, do
         }
         case Basis::PB:
         {
-            auto [X2, W2] = gaujac(n2, 0.0, 0.5);
+            auto [X2, W2] = convert<NMAX>(n2, GAUJACB[n2]);
             x2_gl = ((yp+1)*X2 + yp-1)/2;
             w2  = phi2->weightFunction(x2_gl);
             dw2 = phi2->weightFunctionDerivative(x2_gl);
@@ -488,7 +488,7 @@ void Wing::integralLowerLeftLinear(size_t i, size_t j, size_t n1, size_t n2, dou
     {
         case Basis::U:
         {
-            auto [X1, W1] = gaujac(n1, 0.0, 0.5);
+            auto [X1, W1] = convert<NMAX>(n1, GAUJACB[n1]);
             x1_gl = ((xp+1)*X1 + xp-1)/2;
             w1  = phi1->weightFunction(x1_gl);
             dw1 = phi1->weightFunctionDerivative(x1_gl);
@@ -497,7 +497,7 @@ void Wing::integralLowerLeftLinear(size_t i, size_t j, size_t n1, size_t n2, dou
         }
         case Basis::PB:
         {
-            auto [X1, W1] = gaujac(n1, 0.0, 0.5);
+            auto [X1, W1] = convert<NMAX>(n1, GAUJACB[n1]);
             x1_gl = ((xp+1)*X1 + xp-1)/2;
             w1  = phi1->weightFunction(x1_gl);
             dw1 = phi1->weightFunctionDerivative(x1_gl);
@@ -521,7 +521,7 @@ void Wing::integralLowerLeftLinear(size_t i, size_t j, size_t n1, size_t n2, dou
     {
         case Basis::U:
         {
-            auto [X2, W2] = gaujac(n2, 0.0, 0.5);
+            auto [X2, W2] = convert<NMAX>(n2, GAUJACB[n2]);
             x2_gl = ((ym+1)*X2 + ym-1)/2;
             w2  = phi2->weightFunction(x2_gl);
             dw2 = phi2->weightFunctionDerivative(x2_gl);
@@ -530,7 +530,7 @@ void Wing::integralLowerLeftLinear(size_t i, size_t j, size_t n1, size_t n2, dou
         }
         case Basis::PB:
         {
-            auto [X2, W2] = gaujac(n2, 0.0, 0.5);
+            auto [X2, W2] = convert<NMAX>(n2, GAUJACB[n2]);
             x2_gl = ((ym+1)*X2 + ym-1)/2;
             w2  = phi2->weightFunction(x2_gl);
             dw2 = phi2->weightFunctionDerivative(x2_gl);
@@ -607,7 +607,7 @@ void Wing::integralUpperRightLinear(size_t i, size_t j, size_t n1, size_t n2, do
     {
         case Basis::U:
         {
-            auto [X1, W1] = gaujac(n1, 0.5, 0.0);
+            auto [X1, W1] = convert<NMAX>(n1, GAUJACA[n1]);
             x1_gl = ((1-xm)*X1 + xm+1)/2;
             w1  = phi1->weightFunction(x1_gl);
             dw1 = phi1->weightFunctionDerivative(x1_gl);
@@ -616,7 +616,7 @@ void Wing::integralUpperRightLinear(size_t i, size_t j, size_t n1, size_t n2, do
         }
         case Basis::PA:
         {
-            auto [X1, W1] = gaujac(n1, 0.5, 0.0);
+            auto [X1, W1] = convert<NMAX>(n1, GAUJACA[n1]);
             x1_gl = ((1-xm)*X1 + xm+1)/2;
             w1  = phi1->weightFunction(x1_gl);
             dw1 = phi1->weightFunctionDerivative(x1_gl);
@@ -640,7 +640,7 @@ void Wing::integralUpperRightLinear(size_t i, size_t j, size_t n1, size_t n2, do
     {
         case Basis::U:
         {
-            auto [X2, W2] = gaujac(n2, 0.5, 0.0);
+            auto [X2, W2] = convert<NMAX>(n2, GAUJACA[n2]);
             x2_gl = ((1-yp)*X2 + yp+1)/2;
             w2  = phi2->weightFunction(x2_gl);
             dw2 = phi2->weightFunctionDerivative(x2_gl);
@@ -649,7 +649,7 @@ void Wing::integralUpperRightLinear(size_t i, size_t j, size_t n1, size_t n2, do
         }
         case Basis::PA:
         {
-            auto [X2, W2] = gaujac(n2, 0.5, 0.0);
+            auto [X2, W2] = convert<NMAX>(n2, GAUJACA[n2]);
             x2_gl = ((1-yp)*X2 + yp+1)/2;
             w2  = phi2->weightFunction(x2_gl);
             dw2 = phi2->weightFunctionDerivative(x2_gl);
@@ -726,7 +726,7 @@ void Wing::integralUpperLeftLinear(size_t i, size_t j, size_t n1, size_t n2, dou
     {
         case Basis::U:
         {
-            auto [X1, W1] = gaujac(n1, 0.0, 0.5);
+            auto [X1, W1] = convert<NMAX>(n1, GAUJACB[n1]);
             x1_gl = ((xm+1)*X1 + xm-1)/2;
             w1  = phi1->weightFunction(x1_gl);
             dw1 = phi1->weightFunctionDerivative(x1_gl);
@@ -735,7 +735,7 @@ void Wing::integralUpperLeftLinear(size_t i, size_t j, size_t n1, size_t n2, dou
         }
         case Basis::PB:
         {
-            auto [X1, W1] = gaujac(n1, 0.0, 0.5);
+            auto [X1, W1] = convert<NMAX>(n1, GAUJACB[n1]);
             x1_gl = ((xm+1)*X1 + xm-1)/2;
             w1  = phi1->weightFunction(x1_gl);
             dw1 = phi1->weightFunctionDerivative(x1_gl);
@@ -759,7 +759,7 @@ void Wing::integralUpperLeftLinear(size_t i, size_t j, size_t n1, size_t n2, dou
     {
         case Basis::U:
         {
-            auto [X2, W2] = gaujac(n2, 0.5, 0.0);
+            auto [X2, W2] = convert<NMAX>(n2, GAUJACA[n2]);
             x2_gl = ((1-ym)*X2 + ym+1)/2;
             w2  = phi2->weightFunction(x2_gl);
             dw2 = phi2->weightFunctionDerivative(x2_gl);
@@ -768,7 +768,7 @@ void Wing::integralUpperLeftLinear(size_t i, size_t j, size_t n1, size_t n2, dou
         }
         case Basis::PA:
         {
-            auto [X2, W2] = gaujac(n2, 0.5, 0.0);
+            auto [X2, W2] = convert<NMAX>(n2, GAUJACA[n2]);
             x2_gl = ((1-ym)*X2 + ym+1)/2;
             w2  = phi2->weightFunction(x2_gl);
             dw2 = phi2->weightFunctionDerivative(x2_gl);
