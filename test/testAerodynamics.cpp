@@ -3,7 +3,7 @@
 
 int main()
 {
-    switch (1)
+    switch (3)
     {
         case 0: // Rectangle (divided at y=0)
         {
@@ -184,14 +184,16 @@ int main()
         }
         case 3: // More complex shape
         {
-            Point p1(-1, 0);
-            Point p2( 1, 0);
-            Point p3( 0, 1);
-            Point p4( 0,-1);
-            Point p5(0.5, 4);
-            Point p6(1, 4);
-            Point p7(0.5,-4);
-            Point p8(1,-4);
+            double c = 2;
+            double b = 2;
+            Point p1(-c/2,   0);
+            Point p2( c/2,   0);
+            Point p3(  0,  b/4);
+            Point p4(  0, -b/4);
+            Point p5( c/4, b/2);
+            Point p6( c/2, b/2);
+            Point p7( c/4,-b/2);
+            Point p8( c/2,-b/2);
 
             size_t n = 15;
 
@@ -222,7 +224,8 @@ int main()
             a.boundary(&chi10, BC::Dirichlet);
 
             a.pitch(1);
-            a.setIterations(75);
+            a.setIterations(1000);
+            a.setlambda(100);
             a.linear();
 
             a.output("plot/Data/Aerodynamics/v");
