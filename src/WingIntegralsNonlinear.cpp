@@ -32,9 +32,9 @@ void Wing::integralRightNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
                 fastgl::QuadPair gl_x = fastgl::GLPair(n1, ii+1);
                 x1_gl(ii) = (1 - gl_x.x()) * (1 - xp)/2 + xp;
                 w1_gl(ii) = gl_x.weight*(1 - xp)/2;
-                w1  = phi1->weightFunction(x1_gl);
-                dw1 = phi1->weightFunctionDerivative(x1_gl);
             }
+            w1  = phi1->weightFunction(x1_gl);
+            dw1 = phi1->weightFunctionDerivative(x1_gl);
             break;
         }
     }
@@ -139,9 +139,9 @@ void Wing::integralLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, doubl
                 fastgl::QuadPair gl_x = fastgl::GLPair(n1, ii+1);
                 x1_gl(ii) = (1 - gl_x.x()) * (xm + 1)/2 - 1;
                 w1_gl(ii) = gl_x.weight*(xm + 1)/2;
-                w1  = phi1->weightFunction(x1_gl);
-                dw1 = phi1->weightFunctionDerivative(x1_gl);
             }
+            w1  = phi1->weightFunction(x1_gl);
+            dw1 = phi1->weightFunctionDerivative(x1_gl);
             break;
         }
     }
@@ -250,9 +250,9 @@ void Wing::integralUpperNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
                 fastgl::QuadPair gl_y = fastgl::GLPair(n2, jj+1);
                 x2_gl(jj) = (1 - gl_y.x()) * (1 - yp)/2 + yp;
                 w2_gl(jj) = gl_y.weight*(1 - yp)/2;
-                w2  = phi2->weightFunction(x2_gl);
-                dw2 = phi2->weightFunctionDerivative(x2_gl);
             }
+            w2  = phi2->weightFunction(x2_gl);
+            dw2 = phi2->weightFunctionDerivative(x2_gl);
             break;
         }
     }
@@ -357,9 +357,9 @@ void Wing::integralLowerNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
                 fastgl::QuadPair gl_y = fastgl::GLPair(n2, jj+1);
                 x2_gl(jj) = (1 - gl_y.x()) * (ym + 1)/2 - 1;
                 w2_gl(jj) = gl_y.weight*(ym + 1)/2;
-                w2  = phi2->weightFunction(x2_gl);
-                dw2 = phi2->weightFunctionDerivative(x2_gl);
             }
+            w2  = phi2->weightFunction(x2_gl);
+            dw2 = phi2->weightFunctionDerivative(x2_gl);
             break;
         }
     }
@@ -460,9 +460,9 @@ void Wing::integralLowerRightNonlinear(size_t i, size_t j, size_t n1, size_t n2,
                 fastgl::QuadPair gl_x = fastgl::GLPair(n1, ii+1);
                 x1_gl(ii) = (1 - gl_x.x()) * (1 - xp)/2 + xp;
                 w1_gl(ii) = gl_x.weight*(1 - xp)/2;
-                w1  = phi1->weightFunction(x1_gl);
-                dw1 = phi1->weightFunctionDerivative(x1_gl);
             }
+            w1  = phi1->weightFunction(x1_gl);
+            dw1 = phi1->weightFunctionDerivative(x1_gl);
             break;
         }
     }
@@ -493,9 +493,9 @@ void Wing::integralLowerRightNonlinear(size_t i, size_t j, size_t n1, size_t n2,
                 fastgl::QuadPair gl_y = fastgl::GLPair(n2, jj+1);
                 x2_gl(jj) = (1 - gl_y.x()) * (yp + 1)/2 - 1;
                 w2_gl(jj) = gl_y.weight*(yp + 1)/2;
-                w2  = phi2->weightFunction(x2_gl);
-                dw2 = phi2->weightFunctionDerivative(x2_gl);
             }
+            w2  = phi2->weightFunction(x2_gl);
+            dw2 = phi2->weightFunctionDerivative(x2_gl);
             break;
         }
     }
@@ -596,9 +596,9 @@ void Wing::integralLowerLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, 
                 fastgl::QuadPair gl_x = fastgl::GLPair(n1, ii+1);
                 x1_gl(ii) = (1 - gl_x.x()) * (xp + 1)/2 - 1;
                 w1_gl(ii) = gl_x.weight*(xp + 1)/2;
-                w1  = phi1->weightFunction(x1_gl);
-                dw1 = phi1->weightFunctionDerivative(x1_gl);
             }
+            w1  = phi1->weightFunction(x1_gl);
+            dw1 = phi1->weightFunctionDerivative(x1_gl);
             break;
         }
     }
@@ -629,9 +629,9 @@ void Wing::integralLowerLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, 
                 fastgl::QuadPair gl_y = fastgl::GLPair(n2, jj+1);
                 x2_gl(jj) = (1 - gl_y.x()) * (ym + 1)/2 - 1;
                 w2_gl(jj) = gl_y.weight*(ym + 1)/2;
-                w2  = phi2->weightFunction(x2_gl);
-                dw2 = phi2->weightFunctionDerivative(x2_gl);
             }
+            w2  = phi2->weightFunction(x2_gl);
+            dw2 = phi2->weightFunctionDerivative(x2_gl);
             break;
         }
     }
@@ -732,9 +732,9 @@ void Wing::integralUpperRightNonlinear(size_t i, size_t j, size_t n1, size_t n2,
                 fastgl::QuadPair gl_x = fastgl::GLPair(n1, ii+1);
                 x1_gl(ii) = (1 - gl_x.x()) * (1 - xm)/2 + xm;
                 w1_gl(ii) = gl_x.weight*(1 - xm)/2;
-                w1  = phi1->weightFunction(x1_gl);
-                dw1 = phi1->weightFunctionDerivative(x1_gl);
             }
+            w1  = phi1->weightFunction(x1_gl);
+            dw1 = phi1->weightFunctionDerivative(x1_gl);
             break;
         }
     }
@@ -765,9 +765,9 @@ void Wing::integralUpperRightNonlinear(size_t i, size_t j, size_t n1, size_t n2,
                 fastgl::QuadPair gl_y = fastgl::GLPair(n2, jj+1);
                 x2_gl(jj) = (1 - gl_y.x()) * (1 - yp)/2 + yp;
                 w2_gl(jj) = gl_y.weight*(1 - yp)/2;
-                w2  = phi2->weightFunction(x2_gl);
-                dw2 = phi2->weightFunctionDerivative(x2_gl);
             }
+            w2  = phi2->weightFunction(x2_gl);
+            dw2 = phi2->weightFunctionDerivative(x2_gl);
             break;
         }
     }
@@ -868,9 +868,9 @@ void Wing::integralUpperLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, 
                 fastgl::QuadPair gl_x = fastgl::GLPair(n1, ii+1);
                 x1_gl(ii) = (1 - gl_x.x()) * (xm + 1)/2 - 1;
                 w1_gl(ii) = gl_x.weight*(xm + 1)/2;
-                w1  = phi1->weightFunction(x1_gl);
-                dw1 = phi1->weightFunctionDerivative(x1_gl);
             }
+            w1  = phi1->weightFunction(x1_gl);
+            dw1 = phi1->weightFunctionDerivative(x1_gl);
             break;
         }
     }
@@ -901,9 +901,9 @@ void Wing::integralUpperLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, 
                 fastgl::QuadPair gl_y = fastgl::GLPair(n2, jj+1);
                 x2_gl(jj) = (1 - gl_y.x()) * (1 - ym)/2 + ym;
                 w2_gl(jj) = gl_y.weight*(1 - ym)/2;
-                w2  = phi2->weightFunction(x2_gl);
-                dw2 = phi2->weightFunctionDerivative(x2_gl);
             }
+            w2  = phi2->weightFunction(x2_gl);
+            dw2 = phi2->weightFunctionDerivative(x2_gl);
             break;
         }
     }
