@@ -68,22 +68,22 @@ void Wing::integralRightNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
                                             {n_gl(0)*dz_gldx2(ii, jj) - dx_gldx2(ii, jj)*n_gl(2),dx_gldx1(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx1(ii, jj)},
                                             {dx_gldx2(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx2(ii, jj),n_gl(0)*dy_gldx1(ii, jj) - dx_gldx1(ii, jj)*n_gl(1)}};
 
-            double t2   = phi2->constant(); // First Chebyshev Polynomial (j)
-            double t2p1 = phi2->linear(x2_gl(jj)); // Second Chebyshev Polynomial (j+1 -> jp1)
+            double t2   = phi2->constant(); // First Polynomial (j)
+            double t2p1 = phi2->linear(x2_gl(jj)); // Second Polynomial (j+1 -> jp1)
 
             double dt2   = phi2->constantDerivative();
             double dt2p1 = phi2->linearDerivative();
-            for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+            for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
             {
                 double  psi2 = w2(jj)*t2;
                 double dpsi2 = w2(jj)*dt2 + dw2(jj)*t2;
 
-                double t1   = phi1->constant(); // First Chebyshev Polynomial (i)
-                double t1p1 = phi1->linear(x1_gl(ii)); // Second Chebyshev Polynomial (i+1 -> ip1)
+                double t1   = phi1->constant(); // First Polynomial (i)
+                double t1p1 = phi1->linear(x1_gl(ii)); // Second Polynomial (i+1 -> ip1)
 
                 double dt1   = phi1->constantDerivative();
                 double dt1p1 = phi1->linearDerivative();
-                for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
                 {
                     double  psi1 = w1(ii)*t1;
                     double dpsi1 = w1(ii)*dt1 + dw1(ii)*t1;
@@ -92,13 +92,13 @@ void Wing::integralRightNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
                     arma::vec::fixed<3> gamma_gl = cross(gradmu, n_gl);
                     arma::vec q_mu = w1_gl(ii) * w2_gl(jj) * cross(gamma_gl, r)/r3;
                     A(i+j*nx, p+q*nx) += dot(q_mu, nC.row(i+j*nx));
-                    std::swap(t1, t1p1);
+                    std::swap(t1, t1p1); // Swap order so the oldest Polynomial will be overwritten
                     phi1->next(p, x1_gl(ii), t1, t1p1);
 
                     std::swap(dt1, dt1p1);
                     phi1->nextDerivative(p, x1_gl(ii), t1, dt1, dt1p1);
                 }
-                std::swap(t2, t2p1);
+                std::swap(t2, t2p1); // Swap order so the oldest Polynomial will be overwritten
                 phi2->next(q, x2_gl(jj), t2, t2p1);
 
                 std::swap(dt2, dt2p1);
@@ -175,22 +175,22 @@ void Wing::integralLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, doubl
                                             {n_gl(0)*dz_gldx2(ii, jj) - dx_gldx2(ii, jj)*n_gl(2),dx_gldx1(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx1(ii, jj)},
                                             {dx_gldx2(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx2(ii, jj),n_gl(0)*dy_gldx1(ii, jj) - dx_gldx1(ii, jj)*n_gl(1)}};
 
-            double t2   = phi2->constant(); // First Chebyshev Polynomial (j)
-            double t2p1 = phi2->linear(x2_gl(jj)); // Second Chebyshev Polynomial (j+1 -> jp1)
+            double t2   = phi2->constant(); // First Polynomial (j)
+            double t2p1 = phi2->linear(x2_gl(jj)); // Second Polynomial (j+1 -> jp1)
 
             double dt2   = phi2->constantDerivative();
             double dt2p1 = phi2->linearDerivative();
-            for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+            for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
             {
                 double  psi2 = w2(jj)*t2;
                 double dpsi2 = w2(jj)*dt2 + dw2(jj)*t2;
 
-                double t1   = phi1->constant(); // First Chebyshev Polynomial (i)
-                double t1p1 = phi1->linear(x1_gl(ii)); // Second Chebyshev Polynomial (i+1 -> ip1)
+                double t1   = phi1->constant(); // First Polynomial (i)
+                double t1p1 = phi1->linear(x1_gl(ii)); // Second Polynomial (i+1 -> ip1)
 
                 double dt1   = phi1->constantDerivative();
                 double dt1p1 = phi1->linearDerivative();
-                for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
                 {
                     double  psi1 = w1(ii)*t1;
                     double dpsi1 = w1(ii)*dt1 + dw1(ii)*t1;
@@ -199,13 +199,13 @@ void Wing::integralLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, doubl
                     arma::vec::fixed<3> gamma_gl = cross(gradmu, n_gl);
                     arma::vec q_mu = w1_gl(ii) * w2_gl(jj) * cross(gamma_gl, r)/r3;
                     A(i+j*nx, p+q*nx) += dot(q_mu, nC.row(i+j*nx));
-                    std::swap(t1, t1p1);
+                    std::swap(t1, t1p1); // Swap order so the oldest Polynomial will be overwritten
                     phi1->next(p, x1_gl(ii), t1, t1p1);
 
                     std::swap(dt1, dt1p1);
                     phi1->nextDerivative(p, x1_gl(ii), t1, dt1, dt1p1);
                 }
-                std::swap(t2, t2p1);
+                std::swap(t2, t2p1); // Swap order so the oldest Polynomial will be overwritten
                 phi2->next(q, x2_gl(jj), t2, t2p1);
 
                 std::swap(dt2, dt2p1);
@@ -282,22 +282,22 @@ void Wing::integralUpperNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
                                             {n_gl(0)*dz_gldx2(ii, jj) - dx_gldx2(ii, jj)*n_gl(2),dx_gldx1(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx1(ii, jj)},
                                             {dx_gldx2(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx2(ii, jj),n_gl(0)*dy_gldx1(ii, jj) - dx_gldx1(ii, jj)*n_gl(1)}};
 
-            double t2   = phi2->constant(); // First Chebyshev Polynomial (j)
-            double t2p1 = phi2->linear(x2_gl(jj)); // Second Chebyshev Polynomial (j+1 -> jp1)
+            double t2   = phi2->constant(); // First Polynomial (j)
+            double t2p1 = phi2->linear(x2_gl(jj)); // Second Polynomial (j+1 -> jp1)
 
             double dt2   = phi2->constantDerivative();
             double dt2p1 = phi2->linearDerivative();
-            for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+            for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
             {
                 double  psi2 = w2(jj)*t2;
                 double dpsi2 = w2(jj)*dt2 + dw2(jj)*t2;
 
-                double t1   = phi1->constant(); // First Chebyshev Polynomial (i)
-                double t1p1 = phi1->linear(x1_gl(ii)); // Second Chebyshev Polynomial (i+1 -> ip1)
+                double t1   = phi1->constant(); // First Polynomial (i)
+                double t1p1 = phi1->linear(x1_gl(ii)); // Second Polynomial (i+1 -> ip1)
 
                 double dt1   = phi1->constantDerivative();
                 double dt1p1 = phi1->linearDerivative();
-                for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
                 {
                     double  psi1 = w1(ii)*t1;
                     double dpsi1 = w1(ii)*dt1 + dw1(ii)*t1;
@@ -306,13 +306,13 @@ void Wing::integralUpperNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
                     arma::vec::fixed<3> gamma_gl = cross(gradmu, n_gl);
                     arma::vec q_mu = w1_gl(ii) * w2_gl(jj) * cross(gamma_gl, r)/r3;
                     A(i+j*nx, p+q*nx) += dot(q_mu, nC.row(i+j*nx));
-                    std::swap(t1, t1p1);
+                    std::swap(t1, t1p1); // Swap order so the oldest Polynomial will be overwritten
                     phi1->next(p, x1_gl(ii), t1, t1p1);
 
                     std::swap(dt1, dt1p1);
                     phi1->nextDerivative(p, x1_gl(ii), t1, dt1, dt1p1);
                 }
-                std::swap(t2, t2p1);
+                std::swap(t2, t2p1); // Swap order so the oldest Polynomial will be overwritten
                 phi2->next(q, x2_gl(jj), t2, t2p1);
 
                 std::swap(dt2, dt2p1);
@@ -389,22 +389,22 @@ void Wing::integralLowerNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
                                             {n_gl(0)*dz_gldx2(ii, jj) - dx_gldx2(ii, jj)*n_gl(2),dx_gldx1(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx1(ii, jj)},
                                             {dx_gldx2(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx2(ii, jj),n_gl(0)*dy_gldx1(ii, jj) - dx_gldx1(ii, jj)*n_gl(1)}};
 
-            double t2   = phi2->constant(); // First Chebyshev Polynomial (j)
-            double t2p1 = phi2->linear(x2_gl(jj)); // Second Chebyshev Polynomial (j+1 -> jp1)
+            double t2   = phi2->constant(); // First Polynomial (j)
+            double t2p1 = phi2->linear(x2_gl(jj)); // Second Polynomial (j+1 -> jp1)
 
             double dt2   = phi2->constantDerivative();
             double dt2p1 = phi2->linearDerivative();
-            for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+            for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
             {
                 double  psi2 = w2(jj)*t2;
                 double dpsi2 = w2(jj)*dt2 + dw2(jj)*t2;
 
-                double t1   = phi1->constant(); // First Chebyshev Polynomial (i)
-                double t1p1 = phi1->linear(x1_gl(ii)); // Second Chebyshev Polynomial (i+1 -> ip1)
+                double t1   = phi1->constant(); // First Polynomial (i)
+                double t1p1 = phi1->linear(x1_gl(ii)); // Second Polynomial (i+1 -> ip1)
 
                 double dt1   = phi1->constantDerivative();
                 double dt1p1 = phi1->linearDerivative();
-                for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
                 {
                     double  psi1 = w1(ii)*t1;
                     double dpsi1 = w1(ii)*dt1 + dw1(ii)*t1;
@@ -413,13 +413,13 @@ void Wing::integralLowerNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
                     arma::vec::fixed<3> gamma_gl = cross(gradmu, n_gl);
                     arma::vec q_mu = w1_gl(ii) * w2_gl(jj) * cross(gamma_gl, r)/r3;
                     A(i+j*nx, p+q*nx) += dot(q_mu, nC.row(i+j*nx));
-                    std::swap(t1, t1p1);
+                    std::swap(t1, t1p1); // Swap order so the oldest Polynomial will be overwritten
                     phi1->next(p, x1_gl(ii), t1, t1p1);
 
                     std::swap(dt1, dt1p1);
                     phi1->nextDerivative(p, x1_gl(ii), t1, dt1, dt1p1);
                 }
-                std::swap(t2, t2p1);
+                std::swap(t2, t2p1); // Swap order so the oldest Polynomial will be overwritten
                 phi2->next(q, x2_gl(jj), t2, t2p1);
 
                 std::swap(dt2, dt2p1);
@@ -525,22 +525,22 @@ void Wing::integralLowerRightNonlinear(size_t i, size_t j, size_t n1, size_t n2,
                                             {n_gl(0)*dz_gldx2(ii, jj) - dx_gldx2(ii, jj)*n_gl(2),dx_gldx1(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx1(ii, jj)},
                                             {dx_gldx2(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx2(ii, jj),n_gl(0)*dy_gldx1(ii, jj) - dx_gldx1(ii, jj)*n_gl(1)}};
 
-            double t2   = phi2->constant(); // First Chebyshev Polynomial (j)
-            double t2p1 = phi2->linear(x2_gl(jj)); // Second Chebyshev Polynomial (j+1 -> jp1)
+            double t2   = phi2->constant(); // First Polynomial (j)
+            double t2p1 = phi2->linear(x2_gl(jj)); // Second Polynomial (j+1 -> jp1)
 
             double dt2   = phi2->constantDerivative();
             double dt2p1 = phi2->linearDerivative();
-            for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+            for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
             {
                 double  psi2 = w2(jj)*t2;
                 double dpsi2 = w2(jj)*dt2 + dw2(jj)*t2;
 
-                double t1   = phi1->constant(); // First Chebyshev Polynomial (i)
-                double t1p1 = phi1->linear(x1_gl(ii)); // Second Chebyshev Polynomial (i+1 -> ip1)
+                double t1   = phi1->constant(); // First Polynomial (i)
+                double t1p1 = phi1->linear(x1_gl(ii)); // Second Polynomial (i+1 -> ip1)
 
                 double dt1   = phi1->constantDerivative();
                 double dt1p1 = phi1->linearDerivative();
-                for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
                 {
                     double  psi1 = w1(ii)*t1;
                     double dpsi1 = w1(ii)*dt1 + dw1(ii)*t1;
@@ -549,13 +549,13 @@ void Wing::integralLowerRightNonlinear(size_t i, size_t j, size_t n1, size_t n2,
                     arma::vec::fixed<3> gamma_gl = cross(gradmu, n_gl);
                     arma::vec q_mu = w1_gl(ii) * w2_gl(jj) * cross(gamma_gl, r)/r3;
                     A(i+j*nx, p+q*nx) += dot(q_mu, nC.row(i+j*nx));
-                    std::swap(t1, t1p1);
+                    std::swap(t1, t1p1); // Swap order so the oldest Polynomial will be overwritten
                     phi1->next(p, x1_gl(ii), t1, t1p1);
 
                     std::swap(dt1, dt1p1);
                     phi1->nextDerivative(p, x1_gl(ii), t1, dt1, dt1p1);
                 }
-                std::swap(t2, t2p1);
+                std::swap(t2, t2p1); // Swap order so the oldest Polynomial will be overwritten
                 phi2->next(q, x2_gl(jj), t2, t2p1);
 
                 std::swap(dt2, dt2p1);
@@ -661,22 +661,22 @@ void Wing::integralLowerLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, 
                                             {n_gl(0)*dz_gldx2(ii, jj) - dx_gldx2(ii, jj)*n_gl(2),dx_gldx1(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx1(ii, jj)},
                                             {dx_gldx2(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx2(ii, jj),n_gl(0)*dy_gldx1(ii, jj) - dx_gldx1(ii, jj)*n_gl(1)}};
 
-            double t2   = phi2->constant(); // First Chebyshev Polynomial (j)
-            double t2p1 = phi2->linear(x2_gl(jj)); // Second Chebyshev Polynomial (j+1 -> jp1)
+            double t2   = phi2->constant(); // First Polynomial (j)
+            double t2p1 = phi2->linear(x2_gl(jj)); // Second Polynomial (j+1 -> jp1)
 
             double dt2   = phi2->constantDerivative();
             double dt2p1 = phi2->linearDerivative();
-            for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+            for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
             {
                 double  psi2 = w2(jj)*t2;
                 double dpsi2 = w2(jj)*dt2 + dw2(jj)*t2;
 
-                double t1   = phi1->constant(); // First Chebyshev Polynomial (i)
-                double t1p1 = phi1->linear(x1_gl(ii)); // Second Chebyshev Polynomial (i+1 -> ip1)
+                double t1   = phi1->constant(); // First Polynomial (i)
+                double t1p1 = phi1->linear(x1_gl(ii)); // Second Polynomial (i+1 -> ip1)
 
                 double dt1   = phi1->constantDerivative();
                 double dt1p1 = phi1->linearDerivative();
-                for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
                 {
                     double  psi1 = w1(ii)*t1;
                     double dpsi1 = w1(ii)*dt1 + dw1(ii)*t1;
@@ -685,13 +685,13 @@ void Wing::integralLowerLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, 
                     arma::vec::fixed<3> gamma_gl = cross(gradmu, n_gl);
                     arma::vec q_mu = w1_gl(ii) * w2_gl(jj) * cross(gamma_gl, r)/r3;
                     A(i+j*nx, p+q*nx) += dot(q_mu, nC.row(i+j*nx));
-                    std::swap(t1, t1p1);
+                    std::swap(t1, t1p1); // Swap order so the oldest Polynomial will be overwritten
                     phi1->next(p, x1_gl(ii), t1, t1p1);
 
                     std::swap(dt1, dt1p1);
                     phi1->nextDerivative(p, x1_gl(ii), t1, dt1, dt1p1);
                 }
-                std::swap(t2, t2p1);
+                std::swap(t2, t2p1); // Swap order so the oldest Polynomial will be overwritten
                 phi2->next(q, x2_gl(jj), t2, t2p1);
 
                 std::swap(dt2, dt2p1);
@@ -797,22 +797,22 @@ void Wing::integralUpperRightNonlinear(size_t i, size_t j, size_t n1, size_t n2,
                                             {n_gl(0)*dz_gldx2(ii, jj) - dx_gldx2(ii, jj)*n_gl(2),dx_gldx1(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx1(ii, jj)},
                                             {dx_gldx2(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx2(ii, jj),n_gl(0)*dy_gldx1(ii, jj) - dx_gldx1(ii, jj)*n_gl(1)}};
 
-            double t2   = phi2->constant(); // First Chebyshev Polynomial (j)
-            double t2p1 = phi2->linear(x2_gl(jj)); // Second Chebyshev Polynomial (j+1 -> jp1)
+            double t2   = phi2->constant(); // First Polynomial (j)
+            double t2p1 = phi2->linear(x2_gl(jj)); // Second Polynomial (j+1 -> jp1)
 
             double dt2   = phi2->constantDerivative();
             double dt2p1 = phi2->linearDerivative();
-            for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+            for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
             {
                 double  psi2 = w2(jj)*t2;
                 double dpsi2 = w2(jj)*dt2 + dw2(jj)*t2;
 
-                double t1   = phi1->constant(); // First Chebyshev Polynomial (i)
-                double t1p1 = phi1->linear(x1_gl(ii)); // Second Chebyshev Polynomial (i+1 -> ip1)
+                double t1   = phi1->constant(); // First Polynomial (i)
+                double t1p1 = phi1->linear(x1_gl(ii)); // Second Polynomial (i+1 -> ip1)
 
                 double dt1   = phi1->constantDerivative();
                 double dt1p1 = phi1->linearDerivative();
-                for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
                 {
                     double  psi1 = w1(ii)*t1;
                     double dpsi1 = w1(ii)*dt1 + dw1(ii)*t1;
@@ -821,13 +821,13 @@ void Wing::integralUpperRightNonlinear(size_t i, size_t j, size_t n1, size_t n2,
                     arma::vec::fixed<3> gamma_gl = cross(gradmu, n_gl);
                     arma::vec q_mu = w1_gl(ii) * w2_gl(jj) * cross(gamma_gl, r)/r3;
                     A(i+j*nx, p+q*nx) += dot(q_mu, nC.row(i+j*nx));
-                    std::swap(t1, t1p1);
+                    std::swap(t1, t1p1); // Swap order so the oldest Polynomial will be overwritten
                     phi1->next(p, x1_gl(ii), t1, t1p1);
 
                     std::swap(dt1, dt1p1);
                     phi1->nextDerivative(p, x1_gl(ii), t1, dt1, dt1p1);
                 }
-                std::swap(t2, t2p1);
+                std::swap(t2, t2p1); // Swap order so the oldest Polynomial will be overwritten
                 phi2->next(q, x2_gl(jj), t2, t2p1);
 
                 std::swap(dt2, dt2p1);
@@ -933,22 +933,22 @@ void Wing::integralUpperLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, 
                                             {n_gl(0)*dz_gldx2(ii, jj) - dx_gldx2(ii, jj)*n_gl(2),dx_gldx1(ii, jj)*n_gl(2) - n_gl(0)*dz_gldx1(ii, jj)},
                                             {dx_gldx2(ii, jj)*n_gl(1) - n_gl(0)*dy_gldx2(ii, jj),n_gl(0)*dy_gldx1(ii, jj) - dx_gldx1(ii, jj)*n_gl(1)}};
 
-            double t2   = phi2->constant(); // First Chebyshev Polynomial (j)
-            double t2p1 = phi2->linear(x2_gl(jj)); // Second Chebyshev Polynomial (j+1 -> jp1)
+            double t2   = phi2->constant(); // First Polynomial (j)
+            double t2p1 = phi2->linear(x2_gl(jj)); // Second Polynomial (j+1 -> jp1)
 
             double dt2   = phi2->constantDerivative();
             double dt2p1 = phi2->linearDerivative();
-            for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+            for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
             {
                 double  psi2 = w2(jj)*t2;
                 double dpsi2 = w2(jj)*dt2 + dw2(jj)*t2;
 
-                double t1   = phi1->constant(); // First Chebyshev Polynomial (i)
-                double t1p1 = phi1->linear(x1_gl(ii)); // Second Chebyshev Polynomial (i+1 -> ip1)
+                double t1   = phi1->constant(); // First Polynomial (i)
+                double t1p1 = phi1->linear(x1_gl(ii)); // Second Polynomial (i+1 -> ip1)
 
                 double dt1   = phi1->constantDerivative();
                 double dt1p1 = phi1->linearDerivative();
-                for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
                 {
                     double  psi1 = w1(ii)*t1;
                     double dpsi1 = w1(ii)*dt1 + dw1(ii)*t1;
@@ -957,13 +957,13 @@ void Wing::integralUpperLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, 
                     arma::vec::fixed<3> gamma_gl = cross(gradmu, n_gl);
                     arma::vec q_mu = w1_gl(ii) * w2_gl(jj) * cross(gamma_gl, r)/r3;
                     A(i+j*nx, p+q*nx) += dot(q_mu, nC.row(i+j*nx));
-                    std::swap(t1, t1p1);
+                    std::swap(t1, t1p1); // Swap order so the oldest Polynomial will be overwritten
                     phi1->next(p, x1_gl(ii), t1, t1p1);
 
                     std::swap(dt1, dt1p1);
                     phi1->nextDerivative(p, x1_gl(ii), t1, dt1, dt1p1);
                 }
-                std::swap(t2, t2p1);
+                std::swap(t2, t2p1); // Swap order so the oldest Polynomial will be overwritten
                 phi2->next(q, x2_gl(jj), t2, t2p1);
 
                 std::swap(dt2, dt2p1);
@@ -1018,22 +1018,22 @@ void Wing::regularIntegralNonlinear(size_t i, size_t j, size_t n1, size_t n2, do
             double  w2 = phi2->weightFunction(x2_gl(jj));
             double dw2 = phi2->weightFunctionDerivative(x2_gl(jj));
 
-            double t2   = phi2->constant(); // First Chebyshev Polynomial (j)
-            double t2p1 = phi2->linear(x2_gl(jj)); // Second Chebyshev Polynomial (j+1 -> jp1)
+            double t2   = phi2->constant(); // First Polynomial (j)
+            double t2p1 = phi2->linear(x2_gl(jj)); // Second Polynomial (j+1 -> jp1)
 
             double dt2   = phi2->constantDerivative();
             double dt2p1 = phi2->linearDerivative();
-            for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+            for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
             {
                 double  psi2 = w2*t2;
                 double dpsi2 = w2*dt2 + dw2*t2;
 
-                double t1   = phi1->constant(); // First Chebyshev Polynomial (i)
-                double t1p1 = phi1->linear(x1_gl(ii)); // Second Chebyshev Polynomial (i+1 -> ip1)
+                double t1   = phi1->constant(); // First Polynomial (i)
+                double t1p1 = phi1->linear(x1_gl(ii)); // Second Polynomial (i+1 -> ip1)
 
                 double dt1   = phi1->constantDerivative();
                 double dt1p1 = phi1->linearDerivative();
-                for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
                 {
                     double  psi1 = w1*t1;
                     double dpsi1 = w1*dt1 + dw1*t1;
@@ -1042,13 +1042,13 @@ void Wing::regularIntegralNonlinear(size_t i, size_t j, size_t n1, size_t n2, do
                     arma::vec::fixed<3> gamma_gl = cross(gradmu, n_gl);
                     arma::vec q_mu = gl_x[ii].weight * gl_y[jj].weight * cross(gamma_gl, r)/r3 * (xp - xm) * (yp - ym)/4;
                     A(i+j*nx, p+q*nx) += dot(q_mu, nC.row(i+j*nx));
-                    std::swap(t1, t1p1);
+                    std::swap(t1, t1p1); // Swap order so the oldest Polynomial will be overwritten
                     phi1->next(p, x1_gl(ii), t1, t1p1);
 
                     std::swap(dt1, dt1p1);
                     phi1->nextDerivative(p, x1_gl(ii), t1, dt1, dt1p1);
                 }
-                std::swap(t2, t2p1);
+                std::swap(t2, t2p1); // Swap order so the oldest Polynomial will be overwritten
                 phi2->next(q, x2_gl(jj), t2, t2p1);
 
                 std::swap(dt2, dt2p1);

@@ -87,22 +87,22 @@ void Aerodynamics::nonlinear()
                         double  w1 = wings[sD]->phi1->weightFunction(x1_gl(ii));
                         double dw1 = wings[sD]->phi1->weightFunctionDerivative(x1_gl(ii));
 
-                        double t2   = wings[sD]->phi2->constant(); // First Chebyshev Polynomial (j)
-                        double t2p1 = wings[sD]->phi2->linear(x2_gl(jj)); // Second Chebyshev Polynomial (j+1 -> jp1)
+                        double t2   = wings[sD]->phi2->constant(); // First Polynomial (j)
+                        double t2p1 = wings[sD]->phi2->linear(x2_gl(jj)); // Second Polynomial (j+1 -> jp1)
 
                         double dt2   = wings[sD]->phi2->constantDerivative();
                         double dt2p1 = wings[sD]->phi2->linearDerivative();
-                        for (size_t q = 0; q < wings[sD]->ny; q++) // Loop over Chebyshev Polynomial 2-direction
+                        for (size_t q = 0; q < wings[sD]->ny; q++) // Loop over Polynomial 2-direction
                         {
                             double  psi2 = w2*t2;
                             double dpsi2 = w2*dt2 + dw2*t2;
 
-                            double t1   = wings[sD]->phi1->constant(); // First Chebyshev Polynomial (i)
-                            double t1p1 = wings[sD]->phi1->linear(x1_gl(ii)); // Second Chebyshev Polynomial (i+1 -> ip1)
+                            double t1   = wings[sD]->phi1->constant(); // First Polynomial (i)
+                            double t1p1 = wings[sD]->phi1->linear(x1_gl(ii)); // Second Polynomial (i+1 -> ip1)
 
                             double dt1   = wings[sD]->phi1->constantDerivative();
                             double dt1p1 = wings[sD]->phi1->linearDerivative();
-                            for (size_t p = 0; p < wings[sD]->nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                            for (size_t p = 0; p < wings[sD]->nx; p++) // Loop over Polynomial 1-direction
                             {
                                 double  psi1 = w1*t1;
                                 double dpsi1 = w1*dt1 + dw1*t1;
@@ -501,22 +501,22 @@ void Aerodynamics::nonlinear()
                             double  w1 = wings[sD]->phi1->weightFunction(x1_gl(ii));
                             double dw1 = wings[sD]->phi1->weightFunctionDerivative(x1_gl(ii));
 
-                            double t2   = wings[sD]->phi2->constant(); // First Chebyshev Polynomial (j)
-                            double t2p1 = wings[sD]->phi2->linear(x2_gl(jj)); // Second Chebyshev Polynomial (j+1 -> jp1)
+                            double t2   = wings[sD]->phi2->constant(); // First Polynomial (j)
+                            double t2p1 = wings[sD]->phi2->linear(x2_gl(jj)); // Second Polynomial (j+1 -> jp1)
 
                             double dt2   = wings[sD]->phi2->constantDerivative();
                             double dt2p1 = wings[sD]->phi2->linearDerivative();
-                            for (size_t q = 0; q < wings[sD]->ny; q++) // Loop over Chebyshev Polynomial 2-direction
+                            for (size_t q = 0; q < wings[sD]->ny; q++) // Loop over Polynomial 2-direction
                             {
                                 double  psi2 = w2*t2;
                                 double dpsi2 = w2*dt2 + dw2*t2;
                                 
-                                double t1   = wings[sD]->phi1->constant(); // First Chebyshev Polynomial (i)
-                                double t1p1 = wings[sD]->phi1->linear(x1_gl(ii)); // Second Chebyshev Polynomial (i+1 -> ip1)
+                                double t1   = wings[sD]->phi1->constant(); // First Polynomial (i)
+                                double t1p1 = wings[sD]->phi1->linear(x1_gl(ii)); // Second Polynomial (i+1 -> ip1)
 
                                 double dt1   = wings[sD]->phi1->constantDerivative();
                                 double dt1p1 = wings[sD]->phi1->linearDerivative();
-                                for (size_t p = 0; p < wings[sD]->nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                                for (size_t p = 0; p < wings[sD]->nx; p++) // Loop over Polynomial 1-direction
                                 {
                                     double  psi1 = w1*t1;
                                     double dpsi1 = w1*dt1 + dw1*t1;

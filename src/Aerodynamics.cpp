@@ -190,14 +190,14 @@ void Aerodynamics::solve()
                     {
                         double  w1 = wingSource->phi1->weightFunction(xiT(i));
                         double dw1 = wingSource->phi1->weightFunctionDerivative(xiT(i));
-                        for (size_t q = 0; q < nyS; q++) // Loop over Chebyshev Polynomial 2-direction
+                        for (size_t q = 0; q < nyS; q++) // Loop over Polynomial 2-direction
                         {
                             double m0 = 0, m1 = 0;
                             double  t1   = wingSource->phi1->constant();
                             double  t1p1 = wingSource->phi1->linear(xiT(i));
                             double dt1   = wingSource->phi1->constantDerivative();
                             double dt1p1 = wingSource->phi1->linearDerivative();
-                            for (size_t p = 0; p < nxS; p++) // Loop over Chebyshev Polynomial 1-direction
+                            for (size_t p = 0; p < nxS; p++) // Loop over Polynomial 1-direction
                             {
                                 double dpsi1 = w1*dt1 + dw1*t1;
                                 m0 += mu_hat(p+q*nxS) *    t1;
@@ -275,14 +275,14 @@ void Aerodynamics::solve()
                     {
                         double  w2 = wingSource->phi2->weightFunction(xiT(j));
                         double dw2 = wingSource->phi2->weightFunctionDerivative(xiT(j));
-                        for (size_t p = 0; p < nxS; p++) // Loop over Chebyshev Polynomial 1-direction
+                        for (size_t p = 0; p < nxS; p++) // Loop over Polynomial 1-direction
                         {
                             double m0 = 0, m2 = 0;
                             double  t2   = wingSource->phi2->constant();
                             double  t2p1 = wingSource->phi2->linear(xiT(j));
                             double dt2   = wingSource->phi2->constantDerivative();
                             double dt2p1 = wingSource->phi2->linearDerivative();
-                            for (size_t q = 0; q < nyS; q++) // Loop over Chebyshev Polynomial 2-direction
+                            for (size_t q = 0; q < nyS; q++) // Loop over Polynomial 2-direction
                             {
                                 double dpsi2 = w2*dt2 + dw2*t2;
                                 m0 += mu_hat(p+q*nxS) *    t2;
@@ -360,14 +360,14 @@ void Aerodynamics::solve()
                     {
                         double  w1 = wingSource->phi1->weightFunction(xiT(i));
                         double dw1 = wingSource->phi1->weightFunctionDerivative(xiT(i));
-                        for (size_t q = 0; q < nyS; q++) // Loop over Chebyshev Polynomial 2-direction
+                        for (size_t q = 0; q < nyS; q++) // Loop over Polynomial 2-direction
                         {
                             double m0 = 0, m1 = 0;
                             double  t1   = wingSource->phi1->constant();
                             double  t1p1 = wingSource->phi1->linear(xiT(i));
                             double dt1   = wingSource->phi1->constantDerivative();
                             double dt1p1 = wingSource->phi1->linearDerivative();
-                            for (size_t p = 0; p < nxS; p++) // Loop over Chebyshev Polynomial 1-direction
+                            for (size_t p = 0; p < nxS; p++) // Loop over Polynomial 1-direction
                             {
                                 double dpsi1 = w1*dt1 + dw1*t1;
                                 m0 += mu_hat(p+q*nxS) *    t1;
@@ -445,14 +445,14 @@ void Aerodynamics::solve()
                     {
                         double  w2 = wingSource->phi2->weightFunction(xiT(j));
                         double dw2 = wingSource->phi2->weightFunctionDerivative(xiT(j));
-                        for (size_t p = 0; p < nxS; p++) // Loop over Chebyshev Polynomial 1-direction
+                        for (size_t p = 0; p < nxS; p++) // Loop over Polynomial 1-direction
                         {
                             double m0 = 0, m2 = 0;
                             double  t2   = wingSource->phi2->constant();
                             double  t2p1 = wingSource->phi2->linear(xiT(j));
                             double dt2   = wingSource->phi2->constantDerivative();
                             double dt2p1 = wingSource->phi2->linearDerivative();
-                            for (size_t q = 0; q < nyS; q++) // Loop over Chebyshev Polynomial 2-direction
+                            for (size_t q = 0; q < nyS; q++) // Loop over Polynomial 2-direction
                             {
                                 double dpsi2 = w2*dt2 + dw2*t2;
                                 m0 += mu_hat(p+q*nxS) *    t2;
@@ -534,14 +534,14 @@ void Aerodynamics::solve()
                     {
                         double  w1 = wingTarget->phi1->weightFunction(xiS(i));
                         double dw1 = wingTarget->phi1->weightFunctionDerivative(xiS(i));
-                        for (size_t q = 0; q < nyT; q++) // Loop over Chebyshev Polynomial 2-direction
+                        for (size_t q = 0; q < nyT; q++) // Loop over Polynomial 2-direction
                         {
                             double m0 = 0, m1 = 0;
                             double  t1   = wingTarget->phi1->constant();
                             double  t1p1 = wingTarget->phi1->linear(xiS(i));
                             double dt1   = wingTarget->phi1->constantDerivative();
                             double dt1p1 = wingTarget->phi1->linearDerivative();
-                            for (size_t p = 0; p < nxT; p++) // Loop over Chebyshev Polynomial 1-direction
+                            for (size_t p = 0; p < nxT; p++) // Loop over Polynomial 1-direction
                             {
                                 double dpsi1 = w1*dt1 + dw1*t1;
                                 m0 += mu_hat(p+q*nxT) *    t1;
@@ -619,14 +619,14 @@ void Aerodynamics::solve()
                     {
                         double  w2 = wingTarget->phi2->weightFunction(xiS(j));
                         double dw2 = wingTarget->phi2->weightFunctionDerivative(xiS(j));
-                        for (size_t p = 0; p < nxT; p++) // Loop over Chebyshev Polynomial 1-direction
+                        for (size_t p = 0; p < nxT; p++) // Loop over Polynomial 1-direction
                         {
                             double m0 = 0, m2 = 0;
                             double  t2   = wingTarget->phi2->constant();
                             double  t2p1 = wingTarget->phi2->linear(xiS(j));
                             double dt2   = wingTarget->phi2->constantDerivative();
                             double dt2p1 = wingTarget->phi2->linearDerivative();
-                            for (size_t q = 0; q < nyT; q++) // Loop over Chebyshev Polynomial 2-direction
+                            for (size_t q = 0; q < nyT; q++) // Loop over Polynomial 2-direction
                             {
                                 double dpsi2 = w2*dt2 + dw2*t2;
                                 m0 += mu_hat(p+q*nxT) *    t2;
@@ -704,14 +704,14 @@ void Aerodynamics::solve()
                     {
                         double  w1 = wingTarget->phi1->weightFunction(xiS(i));
                         double dw1 = wingTarget->phi1->weightFunctionDerivative(xiS(i));
-                        for (size_t q = 0; q < nyT; q++) // Loop over Chebyshev Polynomial 2-direction
+                        for (size_t q = 0; q < nyT; q++) // Loop over Polynomial 2-direction
                         {
                             double m0 = 0, m1 = 0;
                             double  t1   = wingTarget->phi1->constant();
                             double  t1p1 = wingTarget->phi1->linear(xiS(i));
                             double dt1   = wingTarget->phi1->constantDerivative();
                             double dt1p1 = wingTarget->phi1->linearDerivative();
-                            for (size_t p = 0; p < nxT; p++) // Loop over Chebyshev Polynomial 1-direction
+                            for (size_t p = 0; p < nxT; p++) // Loop over Polynomial 1-direction
                             {
                                 double dpsi1 = w1*dt1 + dw1*t1;
                                 m0 += mu_hat(p+q*nxT) *    t1;
@@ -789,14 +789,14 @@ void Aerodynamics::solve()
                     {
                         double  w2 = wingTarget->phi2->weightFunction(xiS(j));
                         double dw2 = wingTarget->phi2->weightFunctionDerivative(xiS(j));
-                        for (size_t p = 0; p < nxT; p++) // Loop over Chebyshev Polynomial 1-direction
+                        for (size_t p = 0; p < nxT; p++) // Loop over Polynomial 1-direction
                         {
                             double m0 = 0, m2 = 0;
                             double  t2   = wingTarget->phi2->constant();
                             double  t2p1 = wingTarget->phi2->linear(xiS(j));
                             double dt2   = wingTarget->phi2->constantDerivative();
                             double dt2p1 = wingTarget->phi2->linearDerivative();
-                            for (size_t q = 0; q < nyT; q++) // Loop over Chebyshev Polynomial 2-direction
+                            for (size_t q = 0; q < nyT; q++) // Loop over Polynomial 2-direction
                             {
                                 double dpsi2 = w2*dt2 + dw2*t2;
                                 m0 += mu_hat(p+q*nxT) *    t2;
@@ -915,10 +915,10 @@ void Aerodynamics::solve()
                     {
                         double  w1 = wingSource->phi1->weightFunction(wingSource->x1(i));
                         double dw1 = wingSource->phi1->weightFunctionDerivative(wingSource->x1(i));
-                        for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+                        for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
                         {
                             double m0 = 0, m1 = 0;
-                            for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                            for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
                             {
                                 double dpsi1 = w1*dPHI1(i, p) + dw1*PHI1(i, p);
                                 m0 += mu_hat(p+q*nx) * PHI1(i, p);
@@ -950,10 +950,10 @@ void Aerodynamics::solve()
                     {
                         double  w2 = wingSource->phi2->weightFunction(wingSource->x2(j));
                         double dw2 = wingSource->phi2->weightFunctionDerivative(wingSource->x2(j));
-                        for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                        for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
                         {
                             double m0 = 0, m2 = 0;
-                            for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+                            for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
                             {
                                 double dpsi2 = w2*dPHI2(j, q) + dw2*PHI2(j, q);
                                 m0 += mu_hat(p+q*nx) * PHI2(j, q);
@@ -985,10 +985,10 @@ void Aerodynamics::solve()
                     {
                         double  w1 = wingSource->phi1->weightFunction(wingSource->x1(i));
                         double dw1 = wingSource->phi1->weightFunctionDerivative(wingSource->x1(i));
-                        for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+                        for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
                         {
                             double m0 = 0, m1 = 0;
-                            for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                            for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
                             {
                                 double dpsi1 = w1*dPHI1(i, p) + dw1*PHI1(i, p);
                                 m0 += mu_hat(p+q*nx) * PHI1(i, p);
@@ -1020,10 +1020,10 @@ void Aerodynamics::solve()
                     {
                         double  w2 = wingSource->phi2->weightFunction(wingSource->x2(j));
                         double dw2 = wingSource->phi2->weightFunctionDerivative(wingSource->x2(j));
-                        for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction   
+                        for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction   
                         {
                             double m0 = 0, m2 = 0;
-                            for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+                            for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
                             {
                                 double dpsi2 = w2*dPHI2(j, q) + dw2*PHI2(j, q);
                                 m0 += mu_hat(p+q*nx) * PHI2(j, q);
@@ -1066,10 +1066,10 @@ void Aerodynamics::solve()
                     {
                         double  w1 = wingTarget->phi1->weightFunction(wingTarget->x1(i));
                         double dw1 = wingTarget->phi1->weightFunctionDerivative(wingTarget->x1(i));
-                        for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+                        for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
                         {
                             double m0 = 0, m1 = 0;
-                            for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                            for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
                             {
                                 double dpsi1 = w1*dPHI1(i, p) + dw1*PHI1(i, p);
                                 m0 += mu_hat(p+q*nx) * PHI1(i, p);
@@ -1103,10 +1103,10 @@ void Aerodynamics::solve()
                     {
                         double  w2 = wingTarget->phi2->weightFunction(wingTarget->x2(j));
                         double dw2 = wingTarget->phi2->weightFunctionDerivative(wingTarget->x2(j));
-                        for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                        for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
                         {
                             double m0 = 0, m2 = 0;
-                            for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+                            for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
                             {
                                 double dpsi2 = w2*dPHI2(j, q) + dw2*PHI2(j, q);
                                 m0 += mu_hat(p+q*nx) * PHI2(j, q);
@@ -1140,10 +1140,10 @@ void Aerodynamics::solve()
                     {
                         double  w1 = wingTarget->phi1->weightFunction(wingTarget->x1(i));
                         double dw1 = wingTarget->phi1->weightFunctionDerivative(wingTarget->x1(i));
-                        for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+                        for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
                         {
                             double m0 = 0, m1 = 0;
-                            for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                            for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
                             {
                                 double dpsi1 = w1*dPHI1(i, p) + dw1*PHI1(i, p);
                                 m0 += mu_hat(p+q*nx) * PHI1(i, p);
@@ -1177,10 +1177,10 @@ void Aerodynamics::solve()
                     {
                         double  w2 = wingTarget->phi2->weightFunction(wingTarget->x2(j));
                         double dw2 = wingTarget->phi2->weightFunctionDerivative(wingTarget->x2(j));
-                        for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                        for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
                         {
                             double m0 = 0, m2 = 0;
-                            for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+                            for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
                             {
                                 double dpsi2 = w2*dPHI2(j, q) + dw2*PHI2(j, q);
                                 m0 += mu_hat(p+q*nx) * PHI2(j, q);

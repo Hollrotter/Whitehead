@@ -104,10 +104,10 @@ void Wing::aerodynamicMatrix()
                     arma::vec rho_tilde = externalContour(x_left, x_right, y_lower, y_upper, xi_1(i), xi_2(j), theta);
 
                     size_t k = i+j*nx;
-                    for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+                    for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
                     {
                         auto [f2, df2] = phi2->powerSeries(q, xi_2(j));
-                        for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                        for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
                         {
                             auto [f1, df1] = phi1->powerSeries(p, xi_1(i));
 
@@ -458,12 +458,12 @@ void Wing::aerodynamicMatrix()
                     double  w2 = phi2->weightFunction(x2_gl(jj));
                     double dw2 = phi2->weightFunctionDerivative(x2_gl(jj));
 
-                    double t2   = phi2->constant(); // First Chebyshev Polynomial (j)
-                    double t2p1 = phi2->linear(x2_gl(jj)); // Second Chebyshev Polynomial (j+1 -> jp1)
+                    double t2   = phi2->constant(); // First Polynomial (j)
+                    double t2p1 = phi2->linear(x2_gl(jj)); // Second Polynomial (j+1 -> jp1)
 
                     double dt2   = phi2->constantDerivative();
                     double dt2p1 = phi2->linearDerivative();
-                    for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+                    for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
                     {
                         double  psi2 = w2*t2;
                         double dpsi2 = w2*dt2 + dw2*t2;
@@ -472,12 +472,12 @@ void Wing::aerodynamicMatrix()
                             double  w1 = phi1->weightFunction(x1_gl(ii));
                             double dw1 = phi1->weightFunctionDerivative(x1_gl(ii));
 
-                            double t1   = phi1->constant(); // First Chebyshev Polynomial (i)
-                            double t1p1 = phi1->linear(x1_gl(ii)); // Second Chebyshev Polynomial (i+1 -> ip1)
+                            double t1   = phi1->constant(); // First Polynomial (i)
+                            double t1p1 = phi1->linear(x1_gl(ii)); // Second Polynomial (i+1 -> ip1)
 
                             double dt1   = phi1->constantDerivative();
                             double dt1p1 = phi1->linearDerivative();
-                            for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                            for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
                             {
                                 double  psi1 = w1*t1;
                                 double dpsi1 = w1*dt1 + dw1*t1;
@@ -493,14 +493,14 @@ void Wing::aerodynamicMatrix()
                                                     *(r(0)*(dy_gldx2(ii, jj)*dmudx1 - dy_gldx1(ii, jj)*dmudx2)
                                                     - r(1)*(dx_gldx2(ii, jj)*dmudx1 - dx_gldx1(ii, jj)*dmudx2));
                                     }
-                                std::swap(t1, t1p1); // Swap order so the oldes Chebyshev Polynomial will be overwritten
+                                std::swap(t1, t1p1); // Swap order so the oldest Polynomial will be overwritten
                                 phi1->next(p, x1_gl(ii), t1, t1p1);
 
                                 std::swap(dt1, dt1p1);
                                 phi1->nextDerivative(p, x1_gl(ii), t1, dt1, dt1p1);
                             }
                         }
-                        std::swap(t2, t2p1); // Swap order so the oldest Chebyshev Polynomial will be overwritten
+                        std::swap(t2, t2p1); // Swap order so the oldest Polynomial will be overwritten
                         phi2->next(q, x2_gl(jj), t2, t2p1);
 
                         std::swap(dt2, dt2p1);
@@ -751,10 +751,10 @@ void Wing::aerodynamicMatrix()
                     arma::vec rho_tilde = externalContour(x_left, x_right, y_lower, y_upper, xi_1(i), xi_2(j), theta); 
 
                     size_t k = i+j*nx;
-                    for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+                    for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
                     {
                         auto [f2, df2] = phi2->powerSeries(q, xi_2(j));
-                        for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                        for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
                         {
                             auto [f1, df1] = phi1->powerSeries(p, xi_1(i));
 
@@ -1253,21 +1253,21 @@ void Wing::aerodynamicMatrix()
                                 double  w2 = phi2->weightFunction(x2_gl(jj));
                                 double dw2 = phi2->weightFunctionDerivative(x2_gl(jj));
 
-                                double t2   = phi2->constant(); // First Chebyshev Polynomial (j)
-                                double t2p1 = phi2->linear(x2_gl(jj)); // Second Chebyshev Polynomial (j+1 -> jp1)
+                                double t2   = phi2->constant(); // First Polynomial (j)
+                                double t2p1 = phi2->linear(x2_gl(jj)); // Second Polynomial (j+1 -> jp1)
 
                                 double dt2   = phi2->constantDerivative();
                                 double dt2p1 = phi2->linearDerivative();
-                                for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
+                                for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
                                 {
                                     double  psi2 = w2*t2;
                                     double dpsi2 = w2*dt2 + dw2*t2;
-                                    double t1   = phi1->constant(); // First Chebyshev Polynomial (i)
-                                    double t1p1 = phi1->linear(x1_gl(ii)); // Second Chebyshev Polynomial (i+1 -> ip1)
+                                    double t1   = phi1->constant(); // First Polynomial (i)
+                                    double t1p1 = phi1->linear(x1_gl(ii)); // Second Polynomial (i+1 -> ip1)
 
                                     double dt1   = phi1->constantDerivative();
                                     double dt1p1 = phi1->linearDerivative();
-                                    for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
+                                    for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
                                     {
                                         double  psi1 = w1*t1;
                                         double dpsi1 = w1*dt1 + dw1*t1;
