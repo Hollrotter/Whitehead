@@ -4,7 +4,6 @@
 #include <print>
 #include <omp.h>
 #include "float.h"
-// #include "misc.hpp"
 
 std::pair<arma::vec, arma::vec> gaujac(size_t n, double alpha, double beta);
 
@@ -102,8 +101,7 @@ constexpr std::pair<std::array<double, N>, std::array<double, N>> gaujac(size_t 
 template <size_t N>
 std::pair<arma::vec, arma::vec> convert(size_t n, std::pair<std::array<double, N>, std::array<double, N>> xw)
 {
-    arma::vec xg(n);
-    arma::vec wg(n);
+    arma::vec xg(n), wg(n);
     std::copy(xw.first.begin(),  xw.first.begin()+n,  xg.memptr());
     std::copy(xw.second.begin(), xw.second.begin()+n, wg.memptr());
     return std::make_tuple(xg, wg);

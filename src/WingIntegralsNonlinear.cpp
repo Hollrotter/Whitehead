@@ -75,8 +75,8 @@ void Wing::integralRightNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
             double dt2p1 = phi2->linearDerivative();
             for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
             {
-                double  psi2 = w2(jj)*t2;
-                double dpsi2 = w2(jj)*dt2 + dw2(jj)*t2;
+                double  psi2 =  t2;
+                double dpsi2 = dt2 + dw2(jj)/w2(jj)*t2;
 
                 double t1   = phi1->constant(); // First Polynomial (i)
                 double t1p1 = phi1->linear(x1_gl(ii)); // Second Polynomial (i+1 -> ip1)
@@ -182,8 +182,8 @@ void Wing::integralLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, doubl
             double dt2p1 = phi2->linearDerivative();
             for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
             {
-                double  psi2 = w2(jj)*t2;
-                double dpsi2 = w2(jj)*dt2 + dw2(jj)*t2;
+                double  psi2 =  t2;
+                double dpsi2 = dt2 + dw2(jj)/w2(jj)*t2;
 
                 double t1   = phi1->constant(); // First Polynomial (i)
                 double t1p1 = phi1->linear(x1_gl(ii)); // Second Polynomial (i+1 -> ip1)
@@ -299,8 +299,8 @@ void Wing::integralUpperNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
                 double dt1p1 = phi1->linearDerivative();
                 for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
                 {
-                    double  psi1 = w1(ii)*t1;
-                    double dpsi1 = w1(ii)*dt1 + dw1(ii)*t1;
+                    double  psi1 =  t1;
+                    double dpsi1 = dt1 + dw1(ii)/w1(ii)*t1;
                     arma::vec::fixed<2> dmudxi = {dpsi1 * psi2, psi1 * dpsi2};
                     arma::vec::fixed<3> gradmu = J_red*dmudxi;
                     arma::vec::fixed<3> gamma_gl = cross(gradmu, n_gl);
@@ -406,8 +406,8 @@ void Wing::integralLowerNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
                 double dt1p1 = phi1->linearDerivative();
                 for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
                 {
-                    double  psi1 = w1(ii)*t1;
-                    double dpsi1 = w1(ii)*dt1 + dw1(ii)*t1;
+                    double  psi1 =  t1;
+                    double dpsi1 = dt1 + dw1(ii)/w1(ii)*t1;
                     arma::vec::fixed<2> dmudxi = {dpsi1 * psi2, psi1 * dpsi2};
                     arma::vec::fixed<3> gradmu = J_red*dmudxi;
                     arma::vec::fixed<3> gamma_gl = cross(gradmu, n_gl);
