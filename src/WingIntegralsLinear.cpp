@@ -50,75 +50,8 @@ void Wing::integralRightLinear(size_t i, size_t j, size_t n1, size_t n2, double 
     arma::vec  w2_gl = phi2->wg;
     arma::vec dx2_gl = (phi2->basis == Basis::T) ? x2_gl : phi2->dxg;
     arma::vec dw2_gl = phi2->dwg;
-    auto [x_0_gl, y_0_gl] = Lagrange::TransfiniteQuadMap( x1_gl,  x2_gl, chi);
-    auto [x_1_gl, y_1_gl] = Lagrange::TransfiniteQuadMap(dx1_gl,  x2_gl, chi);
-    auto [x_2_gl, y_2_gl] = Lagrange::TransfiniteQuadMap( x1_gl, dx2_gl, chi);
-    auto [dx_0_gldx1, dx_0_gldx2, dy_0_gldx1, dy_0_gldx2] = Lagrange::TransfiniteQuadMetrics( x1_gl,  x2_gl, chi);
-    auto [dx_1_gldx1, dx_1_gldx2, dy_1_gldx1, dy_1_gldx2] = Lagrange::TransfiniteQuadMetrics(dx1_gl,  x2_gl, chi);
-    auto [dx_2_gldx1, dx_2_gldx2, dy_2_gldx1, dy_2_gldx2] = Lagrange::TransfiniteQuadMetrics( x1_gl, dx2_gl, chi);
-    for (size_t jj = 0; jj < n2; jj++)
-    {
-        double t2   = phi2->constant(); // First Polynomial (j)
-        double t2p1 = phi2->linear(x2_gl(jj)); // Second Polynomial (j+1 -> jp1)
 
-        double t2_2   = phi2->constant(); // First Polynomial (j)
-        double t2p1_2 = phi2->linear(dx2_gl(jj)); // Second Polynomial (j+1 -> jp1)
-
-        double dt2   = phi2->constantDerivative();
-        double dt2p1 = phi2->linearDerivative();
-        for (size_t q = 0; q < ny; q++) // Loop over Chebyshev Polynomial 2-direction
-        {
-            for (size_t ii = 0; ii < n1; ii++)
-            {
-                arma::vec::fixed<2> r_0 = {x_0_gl(ii, jj) - xC(i, j), y_0_gl(ii, jj) - yC(i, j)};
-                arma::vec::fixed<2> r_1 = {x_1_gl(ii, jj) - xC(i, j), y_1_gl(ii, jj) - yC(i, j)};
-                arma::vec::fixed<2> r_2 = {x_2_gl(ii, jj) - xC(i, j), y_2_gl(ii, jj) - yC(i, j)};
-                double r3_0 = pow(norm(r_0), 3);
-                double r3_1 = pow(norm(r_1), 3);
-                double r3_2 = pow(norm(r_2), 3);
-
-                double c1_0 =  w1_gl(ii)* w2_gl(jj)/r3_0 * (r_0(0)*dy_0_gldx2(ii, jj) - r_0(1)*dx_0_gldx2(ii, jj));
-                double c2_0 =  w1_gl(ii)* w2_gl(jj)/r3_0 * (r_0(0)*dy_0_gldx1(ii, jj) - r_0(1)*dx_0_gldx1(ii, jj));
-                double c1_1 = dw1_gl(ii)* w2_gl(jj)/r3_1 * (r_1(0)*dy_1_gldx2(ii, jj) - r_1(1)*dx_1_gldx2(ii, jj));
-                double c2_2 =  w1_gl(ii)*dw2_gl(jj)/r3_2 * (r_2(0)*dy_2_gldx1(ii, jj) - r_2(1)*dx_2_gldx1(ii, jj));
-
-                double t1   = phi1->constant(); // First Polynomial (i)
-                double t1p1 = phi1->linear(x1_gl(ii)); // Second Polynomial (i+1 -> ip1)
-
-                double t1_1   = phi1->constant(); // First Polynomial (i)
-                double t1p1_1 = phi1->linear(dx1_gl(ii)); // Second Polynomial (i+1 -> ip1)
-
-                double dt1   = phi1->constantDerivative();
-                double dt1p1 = phi1->linearDerivative();
-                for (size_t p = 0; p < nx; p++) // Loop over Chebyshev Polynomial 1-direction
-                {
-                    double dmu0dx1 = dt1 *  t2;
-                    double dmu0dx2 =  t1 * dt2;
-                    double dmu1dx1 = t1_1 * t2   * phi1->weightFunctionDerivativeFactor(dx1_gl(ii));
-                    double dmu2dx2 = t1   * t2_2 * phi2->weightFunctionDerivativeFactor(dx2_gl(jj));
-
-                    A(i+j*nx, p+q*nx) += c1_0*dmu0dx1 - c2_0*dmu0dx2 + c1_1*dmu1dx1 - c2_2*dmu2dx2;
-
-                    std::swap(t1, t1p1); // Swap order so the oldest Polynomial will be overwritten
-                    phi1->next(p, x1_gl(ii), t1, t1p1);
-
-                    std::swap(t1_1, t1p1_1); // Swap order so the oldest Polynomial will be overwritten
-                    phi1->next(p, dx1_gl(ii), t1_1, t1p1_1);
-
-                    std::swap(dt1, dt1p1);
-                    phi1->nextDerivative(p, x1_gl(ii), t1, dt1, dt1p1);
-                }
-            }
-            std::swap(t2, t2p1); // Swap order so the oldest Polynomial will be overwritten
-            phi2->next(q, x2_gl(jj), t2, t2p1);
-
-            std::swap(t2_2, t2p1_2); // Swap order so the oldest Polynomial will be overwritten
-            phi2->next(q, dx2_gl(jj), t2_2, t2p1_2);
-
-            std::swap(dt2, dt2p1);
-            phi2->nextDerivative(q, x2_gl(jj), t2, dt2, dt2p1);
-        }
-    }
+    integralLinearEval(i, j, n1, n2, x1_gl, x2_gl, dx1_gl, dx2_gl, w1_gl, w2_gl, dw1_gl, dw2_gl);
 }
 
 void Wing::integralLeftLinear(size_t i, size_t j, size_t n1, size_t n2, double xm)
@@ -171,75 +104,8 @@ void Wing::integralLeftLinear(size_t i, size_t j, size_t n1, size_t n2, double x
     arma::vec  w2_gl = phi2->wg;
     arma::vec dx2_gl = (phi2->basis == Basis::T) ? x2_gl : phi2->dxg;
     arma::vec dw2_gl = phi2->dwg;
-    auto [x_0_gl, y_0_gl] = Lagrange::TransfiniteQuadMap( x1_gl,  x2_gl, chi);
-    auto [x_1_gl, y_1_gl] = Lagrange::TransfiniteQuadMap(dx1_gl,  x2_gl, chi);
-    auto [x_2_gl, y_2_gl] = Lagrange::TransfiniteQuadMap( x1_gl, dx2_gl, chi);
-    auto [dx_0_gldx1, dx_0_gldx2, dy_0_gldx1, dy_0_gldx2] = Lagrange::TransfiniteQuadMetrics( x1_gl,  x2_gl, chi);
-    auto [dx_1_gldx1, dx_1_gldx2, dy_1_gldx1, dy_1_gldx2] = Lagrange::TransfiniteQuadMetrics(dx1_gl,  x2_gl, chi);
-    auto [dx_2_gldx1, dx_2_gldx2, dy_2_gldx1, dy_2_gldx2] = Lagrange::TransfiniteQuadMetrics( x1_gl, dx2_gl, chi);
-    for (size_t jj = 0; jj < n2; jj++)
-    {
-        double t2   = phi2->constant(); // First Polynomial (j)
-        double t2p1 = phi2->linear(x2_gl(jj)); // Second Polynomial (j+1 -> jp1)
 
-        double t2_2   = phi2->constant(); // First Polynomial (j)
-        double t2p1_2 = phi2->linear(dx2_gl(jj)); // Second Polynomial (j+1 -> jp1)
-
-        double dt2   = phi2->constantDerivative();
-        double dt2p1 = phi2->linearDerivative();
-        for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
-        {
-            for (size_t ii = 0; ii < n1; ii++)
-            {
-                arma::vec::fixed<2> r_0 = {x_0_gl(ii, jj) - xC(i, j), y_0_gl(ii, jj) - yC(i, j)};
-                arma::vec::fixed<2> r_1 = {x_1_gl(ii, jj) - xC(i, j), y_1_gl(ii, jj) - yC(i, j)};
-                arma::vec::fixed<2> r_2 = {x_2_gl(ii, jj) - xC(i, j), y_2_gl(ii, jj) - yC(i, j)};
-                double r3_0 = pow(norm(r_0), 3);
-                double r3_1 = pow(norm(r_1), 3);
-                double r3_2 = pow(norm(r_2), 3);
-
-                double c1_0 =  w1_gl(ii)* w2_gl(jj)/r3_0 * (r_0(0)*dy_0_gldx2(ii, jj) - r_0(1)*dx_0_gldx2(ii, jj));
-                double c2_0 =  w1_gl(ii)* w2_gl(jj)/r3_0 * (r_0(0)*dy_0_gldx1(ii, jj) - r_0(1)*dx_0_gldx1(ii, jj));
-                double c1_1 = dw1_gl(ii)* w2_gl(jj)/r3_1 * (r_1(0)*dy_1_gldx2(ii, jj) - r_1(1)*dx_1_gldx2(ii, jj));
-                double c2_2 =  w1_gl(ii)*dw2_gl(jj)/r3_2 * (r_2(0)*dy_2_gldx1(ii, jj) - r_2(1)*dx_2_gldx1(ii, jj));
-
-                double t1   = phi1->constant(); // First Polynomial (i)
-                double t1p1 = phi1->linear(x1_gl(ii)); // Second Polynomial (i+1 -> ip1)
-
-                double t1_1   = phi1->constant(); // First Polynomial (i)
-                double t1p1_1 = phi1->linear(dx1_gl(ii)); // Second Polynomial (i+1 -> ip1)
-
-                double dt1   = phi1->constantDerivative();
-                double dt1p1 = phi1->linearDerivative();
-                for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
-                {
-                    double dmu0dx1 = dt1 *  t2;
-                    double dmu0dx2 =  t1 * dt2;
-                    double dmu1dx1 = t1_1 * t2   * phi1->weightFunctionDerivativeFactor(dx1_gl(ii));
-                    double dmu2dx2 = t1   * t2_2 * phi2->weightFunctionDerivativeFactor(dx2_gl(jj));
-
-                    A(i+j*nx, p+q*nx) += c1_0*dmu0dx1 - c2_0*dmu0dx2 + c1_1*dmu1dx1 - c2_2*dmu2dx2;
-
-                    std::swap(t1, t1p1); // Swap order so the oldest Polynomial will be overwritten
-                    phi1->next(p, x1_gl(ii), t1, t1p1);
-
-                    std::swap(t1_1, t1p1_1); // Swap order so the oldest Polynomial will be overwritten
-                    phi1->next(p, dx1_gl(ii), t1_1, t1p1_1);
-
-                    std::swap(dt1, dt1p1);
-                    phi1->nextDerivative(p, x1_gl(ii), t1, dt1, dt1p1);
-                }
-            }
-            std::swap(t2, t2p1); // Swap order so the oldest Polynomial will be overwritten
-            phi2->next(q, x2_gl(jj), t2, t2p1);
-
-            std::swap(t2_2, t2p1_2); // Swap order so the oldest Polynomial will be overwritten
-            phi2->next(q, dx2_gl(jj), t2_2, t2p1_2);
-
-            std::swap(dt2, dt2p1);
-            phi2->nextDerivative(q, x2_gl(jj), t2, dt2, dt2p1);
-        }
-    }
+    integralLinearEval(i, j, n1, n2, x1_gl, x2_gl, dx1_gl, dx2_gl, w1_gl, w2_gl, dw1_gl, dw2_gl);
 }
 
 void Wing::integralUpperLinear(size_t i, size_t j, size_t n1, size_t n2, double yp)
@@ -292,75 +158,8 @@ void Wing::integralUpperLinear(size_t i, size_t j, size_t n1, size_t n2, double 
             break;
         }
     }
-    auto [x_0_gl, y_0_gl] = Lagrange::TransfiniteQuadMap( x1_gl,  x2_gl, chi);
-    auto [x_1_gl, y_1_gl] = Lagrange::TransfiniteQuadMap(dx1_gl,  x2_gl, chi);
-    auto [x_2_gl, y_2_gl] = Lagrange::TransfiniteQuadMap( x1_gl, dx2_gl, chi);
-    auto [dx_0_gldx1, dx_0_gldx2, dy_0_gldx1, dy_0_gldx2] = Lagrange::TransfiniteQuadMetrics( x1_gl,  x2_gl, chi);
-    auto [dx_1_gldx1, dx_1_gldx2, dy_1_gldx1, dy_1_gldx2] = Lagrange::TransfiniteQuadMetrics(dx1_gl,  x2_gl, chi);
-    auto [dx_2_gldx1, dx_2_gldx2, dy_2_gldx1, dy_2_gldx2] = Lagrange::TransfiniteQuadMetrics( x1_gl, dx2_gl, chi);
-    for (size_t jj = 0; jj < n2; jj++)
-    {
-        double t2   = phi2->constant(); // First Polynomial (j)
-        double t2p1 = phi2->linear(x2_gl(jj)); // Second Polynomial (j+1 -> jp1)
 
-        double t2_2   = phi2->constant(); // First Polynomial (j)
-        double t2p1_2 = phi2->linear(dx2_gl(jj)); // Second Polynomial (j+1 -> jp1)
-
-        double dt2   = phi2->constantDerivative();
-        double dt2p1 = phi2->linearDerivative();
-        for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
-        {
-            for (size_t ii = 0; ii < n1; ii++)
-            {
-                arma::vec::fixed<2> r_0 = {x_0_gl(ii, jj) - xC(i, j), y_0_gl(ii, jj) - yC(i, j)};
-                arma::vec::fixed<2> r_1 = {x_1_gl(ii, jj) - xC(i, j), y_1_gl(ii, jj) - yC(i, j)};
-                arma::vec::fixed<2> r_2 = {x_2_gl(ii, jj) - xC(i, j), y_2_gl(ii, jj) - yC(i, j)};
-                double r3_0 = pow(norm(r_0), 3);
-                double r3_1 = pow(norm(r_1), 3);
-                double r3_2 = pow(norm(r_2), 3);
-
-                double c1_0 =  w1_gl(ii)* w2_gl(jj)/r3_0 * (r_0(0)*dy_0_gldx2(ii, jj) - r_0(1)*dx_0_gldx2(ii, jj));
-                double c2_0 =  w1_gl(ii)* w2_gl(jj)/r3_0 * (r_0(0)*dy_0_gldx1(ii, jj) - r_0(1)*dx_0_gldx1(ii, jj));
-                double c1_1 = dw1_gl(ii)* w2_gl(jj)/r3_1 * (r_1(0)*dy_1_gldx2(ii, jj) - r_1(1)*dx_1_gldx2(ii, jj));
-                double c2_2 =  w1_gl(ii)*dw2_gl(jj)/r3_2 * (r_2(0)*dy_2_gldx1(ii, jj) - r_2(1)*dx_2_gldx1(ii, jj));
-
-                double t1   = phi1->constant(); // First Polynomial (i)
-                double t1p1 = phi1->linear(x1_gl(ii)); // Second Polynomial (i+1 -> ip1)
-
-                double t1_1   = phi1->constant(); // First Polynomial (i)
-                double t1p1_1 = phi1->linear(dx1_gl(ii)); // Second Polynomial (i+1 -> ip1)
-
-                double dt1   = phi1->constantDerivative();
-                double dt1p1 = phi1->linearDerivative();
-                for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
-                {
-                    double dmu0dx1 = dt1 *  t2;
-                    double dmu0dx2 =  t1 * dt2;
-                    double dmu1dx1 = t1_1 * t2   * phi1->weightFunctionDerivativeFactor(dx1_gl(ii));
-                    double dmu2dx2 = t1   * t2_2 * phi2->weightFunctionDerivativeFactor(dx2_gl(jj));
-
-                    A(i+j*nx, p+q*nx) += c1_0*dmu0dx1 - c2_0*dmu0dx2 + c1_1*dmu1dx1 - c2_2*dmu2dx2;
-
-                    std::swap(t1, t1p1); // Swap order so the oldest Polynomial will be overwritten
-                    phi1->next(p, x1_gl(ii), t1, t1p1);
-
-                    std::swap(t1_1, t1p1_1); // Swap order so the oldest Polynomial will be overwritten
-                    phi1->next(p, dx1_gl(ii), t1_1, t1p1_1);
-
-                    std::swap(dt1, dt1p1);
-                    phi1->nextDerivative(p, x1_gl(ii), t1, dt1, dt1p1);
-                }
-            }
-            std::swap(t2, t2p1); // Swap order so the oldest Polynomial will be overwritten
-            phi2->next(q, x2_gl(jj), t2, t2p1);
-
-            std::swap(t2_2, t2p1_2); // Swap order so the oldest Polynomial will be overwritten
-            phi2->next(q, dx2_gl(jj), t2_2, t2p1_2);
-
-            std::swap(dt2, dt2p1);
-            phi2->nextDerivative(q, x2_gl(jj), t2, dt2, dt2p1);
-        }
-    }
+    integralLinearEval(i, j, n1, n2, x1_gl, x2_gl, dx1_gl, dx2_gl, w1_gl, w2_gl, dw1_gl, dw2_gl);
 }
 
 void Wing::integralLowerLinear(size_t i, size_t j, size_t n1, size_t n2, double ym)
@@ -413,75 +212,8 @@ void Wing::integralLowerLinear(size_t i, size_t j, size_t n1, size_t n2, double 
             break;
         }
     }
-    auto [x_0_gl, y_0_gl] = Lagrange::TransfiniteQuadMap( x1_gl,  x2_gl, chi);
-    auto [x_1_gl, y_1_gl] = Lagrange::TransfiniteQuadMap(dx1_gl,  x2_gl, chi);
-    auto [x_2_gl, y_2_gl] = Lagrange::TransfiniteQuadMap( x1_gl, dx2_gl, chi);
-    auto [dx_0_gldx1, dx_0_gldx2, dy_0_gldx1, dy_0_gldx2] = Lagrange::TransfiniteQuadMetrics( x1_gl,  x2_gl, chi);
-    auto [dx_1_gldx1, dx_1_gldx2, dy_1_gldx1, dy_1_gldx2] = Lagrange::TransfiniteQuadMetrics(dx1_gl,  x2_gl, chi);
-    auto [dx_2_gldx1, dx_2_gldx2, dy_2_gldx1, dy_2_gldx2] = Lagrange::TransfiniteQuadMetrics( x1_gl, dx2_gl, chi);
-    for (size_t jj = 0; jj < n2; jj++)
-    {
-        double t2   = phi2->constant(); // First Polynomial (j)
-        double t2p1 = phi2->linear(x2_gl(jj)); // Second Polynomial (j+1 -> jp1)
 
-        double t2_2   = phi2->constant(); // First Polynomial (j)
-        double t2p1_2 = phi2->linear(dx2_gl(jj)); // Second Polynomial (j+1 -> jp1)
-
-        double dt2   = phi2->constantDerivative();
-        double dt2p1 = phi2->linearDerivative();
-        for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
-        {
-            for (size_t ii = 0; ii < n1; ii++)
-            {
-                arma::vec::fixed<2> r_0 = {x_0_gl(ii, jj) - xC(i, j), y_0_gl(ii, jj) - yC(i, j)};
-                arma::vec::fixed<2> r_1 = {x_1_gl(ii, jj) - xC(i, j), y_1_gl(ii, jj) - yC(i, j)};
-                arma::vec::fixed<2> r_2 = {x_2_gl(ii, jj) - xC(i, j), y_2_gl(ii, jj) - yC(i, j)};
-                double r3_0 = pow(norm(r_0), 3);
-                double r3_1 = pow(norm(r_1), 3);
-                double r3_2 = pow(norm(r_2), 3);
-
-                double c1_0 =  w1_gl(ii)* w2_gl(jj)/r3_0 * (r_0(0)*dy_0_gldx2(ii, jj) - r_0(1)*dx_0_gldx2(ii, jj));
-                double c2_0 =  w1_gl(ii)* w2_gl(jj)/r3_0 * (r_0(0)*dy_0_gldx1(ii, jj) - r_0(1)*dx_0_gldx1(ii, jj));
-                double c1_1 = dw1_gl(ii)* w2_gl(jj)/r3_1 * (r_1(0)*dy_1_gldx2(ii, jj) - r_1(1)*dx_1_gldx2(ii, jj));
-                double c2_2 =  w1_gl(ii)*dw2_gl(jj)/r3_2 * (r_2(0)*dy_2_gldx1(ii, jj) - r_2(1)*dx_2_gldx1(ii, jj));
-
-                double t1   = phi1->constant(); // First Polynomial (i)
-                double t1p1 = phi1->linear(x1_gl(ii)); // Second Polynomial (i+1 -> ip1)
-
-                double t1_1   = phi1->constant(); // First Polynomial (i)
-                double t1p1_1 = phi1->linear(dx1_gl(ii)); // Second Polynomial (i+1 -> ip1)
-
-                double dt1   = phi1->constantDerivative();
-                double dt1p1 = phi1->linearDerivative();
-                for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
-                {
-                    double dmu0dx1 = dt1 *  t2;
-                    double dmu0dx2 =  t1 * dt2;
-                    double dmu1dx1 = t1_1 * t2   * phi1->weightFunctionDerivativeFactor(dx1_gl(ii));
-                    double dmu2dx2 = t1   * t2_2 * phi2->weightFunctionDerivativeFactor(dx2_gl(jj));
-
-                    A(i+j*nx, p+q*nx) += c1_0*dmu0dx1 - c2_0*dmu0dx2 + c1_1*dmu1dx1 - c2_2*dmu2dx2;
-
-                    std::swap(t1, t1p1); // Swap order so the oldest Polynomial will be overwritten
-                    phi1->next(p, x1_gl(ii), t1, t1p1);
-
-                    std::swap(t1_1, t1p1_1); // Swap order so the oldest Polynomial will be overwritten
-                    phi1->next(p, dx1_gl(ii), t1_1, t1p1_1);
-
-                    std::swap(dt1, dt1p1);
-                    phi1->nextDerivative(p, x1_gl(ii), t1, dt1, dt1p1);
-                }
-            }
-            std::swap(t2, t2p1); // Swap order so the oldest Polynomial will be overwritten
-            phi2->next(q, x2_gl(jj), t2, t2p1);
-
-            std::swap(t2_2, t2p1_2); // Swap order so the oldest Polynomial will be overwritten
-            phi2->next(q, dx2_gl(jj), t2_2, t2p1_2);
-
-            std::swap(dt2, dt2p1);
-            phi2->nextDerivative(q, x2_gl(jj), t2, dt2, dt2p1);
-        }
-    }
+    integralLinearEval(i, j, n1, n2, x1_gl, x2_gl, dx1_gl, dx2_gl, w1_gl, w2_gl, dw1_gl, dw2_gl);
 }
 
 void Wing::integralLowerRightLinear(size_t i, size_t j, size_t n1, size_t n2, double xp, double yp)
@@ -574,75 +306,8 @@ void Wing::integralLowerRightLinear(size_t i, size_t j, size_t n1, size_t n2, do
             break;
         }
     }
-    auto [x_0_gl, y_0_gl] = Lagrange::TransfiniteQuadMap( x1_gl,  x2_gl, chi);
-    auto [x_1_gl, y_1_gl] = Lagrange::TransfiniteQuadMap(dx1_gl,  x2_gl, chi);
-    auto [x_2_gl, y_2_gl] = Lagrange::TransfiniteQuadMap( x1_gl, dx2_gl, chi);
-    auto [dx_0_gldx1, dx_0_gldx2, dy_0_gldx1, dy_0_gldx2] = Lagrange::TransfiniteQuadMetrics( x1_gl,  x2_gl, chi);
-    auto [dx_1_gldx1, dx_1_gldx2, dy_1_gldx1, dy_1_gldx2] = Lagrange::TransfiniteQuadMetrics(dx1_gl,  x2_gl, chi);
-    auto [dx_2_gldx1, dx_2_gldx2, dy_2_gldx1, dy_2_gldx2] = Lagrange::TransfiniteQuadMetrics( x1_gl, dx2_gl, chi);
-    for (size_t jj = 0; jj < n2; jj++)
-    {
-        double t2   = phi2->constant(); // First Polynomial (j)
-        double t2p1 = phi2->linear(x2_gl(jj)); // Second Polynomial (j+1 -> jp1)
 
-        double t2_2   = phi2->constant(); // First Polynomial (j)
-        double t2p1_2 = phi2->linear(dx2_gl(jj)); // Second Polynomial (j+1 -> jp1)
-
-        double dt2   = phi2->constantDerivative();
-        double dt2p1 = phi2->linearDerivative();
-        for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
-        {
-            for (size_t ii = 0; ii < n1; ii++)
-            {
-                arma::vec::fixed<2> r_0 = {x_0_gl(ii, jj) - xC(i, j), y_0_gl(ii, jj) - yC(i, j)};
-                arma::vec::fixed<2> r_1 = {x_1_gl(ii, jj) - xC(i, j), y_1_gl(ii, jj) - yC(i, j)};
-                arma::vec::fixed<2> r_2 = {x_2_gl(ii, jj) - xC(i, j), y_2_gl(ii, jj) - yC(i, j)};
-                double r3_0 = pow(norm(r_0), 3);
-                double r3_1 = pow(norm(r_1), 3);
-                double r3_2 = pow(norm(r_2), 3);
-
-                double c1_0 =  w1_gl(ii)* w2_gl(jj)/r3_0 * (r_0(0)*dy_0_gldx2(ii, jj) - r_0(1)*dx_0_gldx2(ii, jj));
-                double c2_0 =  w1_gl(ii)* w2_gl(jj)/r3_0 * (r_0(0)*dy_0_gldx1(ii, jj) - r_0(1)*dx_0_gldx1(ii, jj));
-                double c1_1 = dw1_gl(ii)* w2_gl(jj)/r3_1 * (r_1(0)*dy_1_gldx2(ii, jj) - r_1(1)*dx_1_gldx2(ii, jj));
-                double c2_2 =  w1_gl(ii)*dw2_gl(jj)/r3_2 * (r_2(0)*dy_2_gldx1(ii, jj) - r_2(1)*dx_2_gldx1(ii, jj));
-
-                double t1   = phi1->constant(); // First Polynomial (i)
-                double t1p1 = phi1->linear(x1_gl(ii)); // Second Polynomial (i+1 -> ip1)
-
-                double t1_1   = phi1->constant(); // First Polynomial (i)
-                double t1p1_1 = phi1->linear(dx1_gl(ii)); // Second Polynomial (i+1 -> ip1)
-
-                double dt1   = phi1->constantDerivative();
-                double dt1p1 = phi1->linearDerivative();
-                for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
-                {
-                    double dmu0dx1 = dt1 *  t2;
-                    double dmu0dx2 =  t1 * dt2;
-                    double dmu1dx1 =  t1_1 * t2   * phi1->weightFunctionDerivativeFactor(dx1_gl(ii));
-                    double dmu2dx2 =  t1   * t2_2 * phi2->weightFunctionDerivativeFactor(dx2_gl(jj));
-
-                    A(i+j*nx, p+q*nx) += c1_0*dmu0dx1 - c2_0*dmu0dx2 + c1_1*dmu1dx1 - c2_2*dmu2dx2;
-
-                    std::swap(t1, t1p1); // Swap order so the oldest Polynomial will be overwritten
-                    phi1->next(p, x1_gl(ii), t1, t1p1);
-
-                    std::swap(t1_1, t1p1_1); // Swap order so the oldest Polynomial will be overwritten
-                    phi1->next(p, dx1_gl(ii), t1_1, t1p1_1);
-
-                    std::swap(dt1, dt1p1);
-                    phi1->nextDerivative(p, x1_gl(ii), t1, dt1, dt1p1);
-                }
-            }
-            std::swap(t2, t2p1); // Swap order so the oldest Polynomial will be overwritten
-            phi2->next(q, x2_gl(jj), t2, t2p1);
-
-            std::swap(t2_2, t2p1_2); // Swap order so the oldest Polynomial will be overwritten
-            phi2->next(q, dx2_gl(jj), t2_2, t2p1_2);
-
-            std::swap(dt2, dt2p1);
-            phi2->nextDerivative(q, x2_gl(jj), t2, dt2, dt2p1);
-        }
-    }
+    integralLinearEval(i, j, n1, n2, x1_gl, x2_gl, dx1_gl, dx2_gl, w1_gl, w2_gl, dw1_gl, dw2_gl);
 }
 
 void Wing::integralLowerLeftLinear(size_t i, size_t j, size_t n1, size_t n2, double xp, double ym)
@@ -735,75 +400,8 @@ void Wing::integralLowerLeftLinear(size_t i, size_t j, size_t n1, size_t n2, dou
             break;
         }
     }
-    auto [x_0_gl, y_0_gl] = Lagrange::TransfiniteQuadMap( x1_gl,  x2_gl, chi);
-    auto [x_1_gl, y_1_gl] = Lagrange::TransfiniteQuadMap(dx1_gl,  x2_gl, chi);
-    auto [x_2_gl, y_2_gl] = Lagrange::TransfiniteQuadMap( x1_gl, dx2_gl, chi);
-    auto [dx_0_gldx1, dx_0_gldx2, dy_0_gldx1, dy_0_gldx2] = Lagrange::TransfiniteQuadMetrics( x1_gl,  x2_gl, chi);
-    auto [dx_1_gldx1, dx_1_gldx2, dy_1_gldx1, dy_1_gldx2] = Lagrange::TransfiniteQuadMetrics(dx1_gl,  x2_gl, chi);
-    auto [dx_2_gldx1, dx_2_gldx2, dy_2_gldx1, dy_2_gldx2] = Lagrange::TransfiniteQuadMetrics( x1_gl, dx2_gl, chi);
-    for (size_t jj = 0; jj < n2; jj++)
-    {
-        double t2   = phi2->constant(); // First Polynomial (j)
-        double t2p1 = phi2->linear(x2_gl(jj)); // Second Polynomial (j+1 -> jp1)
 
-        double t2_2   = phi2->constant(); // First Polynomial (j)
-        double t2p1_2 = phi2->linear(dx2_gl(jj)); // Second Polynomial (j+1 -> jp1)
-
-        double dt2   = phi2->constantDerivative();
-        double dt2p1 = phi2->linearDerivative();
-        for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
-        {
-            for (size_t ii = 0; ii < n1; ii++)
-            {
-                arma::vec::fixed<2> r_0 = {x_0_gl(ii, jj) - xC(i, j), y_0_gl(ii, jj) - yC(i, j)};
-                arma::vec::fixed<2> r_1 = {x_1_gl(ii, jj) - xC(i, j), y_1_gl(ii, jj) - yC(i, j)};
-                arma::vec::fixed<2> r_2 = {x_2_gl(ii, jj) - xC(i, j), y_2_gl(ii, jj) - yC(i, j)};
-                double r3_0 = pow(norm(r_0), 3);
-                double r3_1 = pow(norm(r_1), 3);
-                double r3_2 = pow(norm(r_2), 3);
-
-                double c1_0 =  w1_gl(ii)* w2_gl(jj)/r3_0 * (r_0(0)*dy_0_gldx2(ii, jj) - r_0(1)*dx_0_gldx2(ii, jj));
-                double c2_0 =  w1_gl(ii)* w2_gl(jj)/r3_0 * (r_0(0)*dy_0_gldx1(ii, jj) - r_0(1)*dx_0_gldx1(ii, jj));
-                double c1_1 = dw1_gl(ii)* w2_gl(jj)/r3_1 * (r_1(0)*dy_1_gldx2(ii, jj) - r_1(1)*dx_1_gldx2(ii, jj));
-                double c2_2 =  w1_gl(ii)*dw2_gl(jj)/r3_2 * (r_2(0)*dy_2_gldx1(ii, jj) - r_2(1)*dx_2_gldx1(ii, jj));
-
-                double t1   = phi1->constant(); // First Polynomial (i)
-                double t1p1 = phi1->linear(x1_gl(ii)); // Second Polynomial (i+1 -> ip1)
-
-                double t1_1   = phi1->constant(); // First Polynomial (i)
-                double t1p1_1 = phi1->linear(dx1_gl(ii)); // Second Polynomial (i+1 -> ip1)
-
-                double dt1   = phi1->constantDerivative();
-                double dt1p1 = phi1->linearDerivative();
-                for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
-                {
-                    double dmu0dx1 = dt1 *  t2;
-                    double dmu0dx2 =  t1 * dt2;
-                    double dmu1dx1 = t1_1 * t2   * phi1->weightFunctionDerivativeFactor(dx1_gl(ii));
-                    double dmu2dx2 = t1   * t2_2 * phi2->weightFunctionDerivativeFactor(dx2_gl(jj));
-
-                    A(i+j*nx, p+q*nx) += c1_0*dmu0dx1 - c2_0*dmu0dx2 + c1_1*dmu1dx1 - c2_2*dmu2dx2;
-
-                    std::swap(t1, t1p1); // Swap order so the oldest Polynomial will be overwritten
-                    phi1->next(p, x1_gl(ii), t1, t1p1);
-
-                    std::swap(t1_1, t1p1_1); // Swap order so the oldest Polynomial will be overwritten
-                    phi1->next(p, dx1_gl(ii), t1_1, t1p1_1);
-
-                    std::swap(dt1, dt1p1);
-                    phi1->nextDerivative(p, x1_gl(ii), t1, dt1, dt1p1);
-                }
-            }
-            std::swap(t2, t2p1); // Swap order so the oldest Polynomial will be overwritten
-            phi2->next(q, x2_gl(jj), t2, t2p1);
-
-            std::swap(t2_2, t2p1_2); // Swap order so the oldest Polynomial will be overwritten
-            phi2->next(q, dx2_gl(jj), t2_2, t2p1_2);
-
-            std::swap(dt2, dt2p1);
-            phi2->nextDerivative(q, x2_gl(jj), t2, dt2, dt2p1);
-        }
-    }
+    integralLinearEval(i, j, n1, n2, x1_gl, x2_gl, dx1_gl, dx2_gl, w1_gl, w2_gl, dw1_gl, dw2_gl);
 }
 
 void Wing::integralUpperRightLinear(size_t i, size_t j, size_t n1, size_t n2, double xm, double yp)
@@ -896,75 +494,8 @@ void Wing::integralUpperRightLinear(size_t i, size_t j, size_t n1, size_t n2, do
             break;
         }
     }
-    auto [x_0_gl, y_0_gl] = Lagrange::TransfiniteQuadMap( x1_gl,  x2_gl, chi);
-    auto [x_1_gl, y_1_gl] = Lagrange::TransfiniteQuadMap(dx1_gl,  x2_gl, chi);
-    auto [x_2_gl, y_2_gl] = Lagrange::TransfiniteQuadMap( x1_gl, dx2_gl, chi);
-    auto [dx_0_gldx1, dx_0_gldx2, dy_0_gldx1, dy_0_gldx2] = Lagrange::TransfiniteQuadMetrics( x1_gl,  x2_gl, chi);
-    auto [dx_1_gldx1, dx_1_gldx2, dy_1_gldx1, dy_1_gldx2] = Lagrange::TransfiniteQuadMetrics(dx1_gl,  x2_gl, chi);
-    auto [dx_2_gldx1, dx_2_gldx2, dy_2_gldx1, dy_2_gldx2] = Lagrange::TransfiniteQuadMetrics( x1_gl, dx2_gl, chi);
-    for (size_t jj = 0; jj < n2; jj++)
-    {
-        double t2   = phi2->constant(); // First Polynomial (j)
-        double t2p1 = phi2->linear(x2_gl(jj)); // Second Polynomial (j+1 -> jp1)
 
-        double t2_2   = phi2->constant(); // First Polynomial (j)
-        double t2p1_2 = phi2->linear(dx2_gl(jj)); // Second Polynomial (j+1 -> jp1)
-
-        double dt2   = phi2->constantDerivative();
-        double dt2p1 = phi2->linearDerivative();
-        for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
-        {
-            for (size_t ii = 0; ii < n1; ii++)
-            {
-                arma::vec::fixed<2> r_0 = {x_0_gl(ii, jj) - xC(i, j), y_0_gl(ii, jj) - yC(i, j)};
-                arma::vec::fixed<2> r_1 = {x_1_gl(ii, jj) - xC(i, j), y_1_gl(ii, jj) - yC(i, j)};
-                arma::vec::fixed<2> r_2 = {x_2_gl(ii, jj) - xC(i, j), y_2_gl(ii, jj) - yC(i, j)};
-                double r3_0 = pow(norm(r_0), 3);
-                double r3_1 = pow(norm(r_1), 3);
-                double r3_2 = pow(norm(r_2), 3);
-
-                double c1_0 =  w1_gl(ii)* w2_gl(jj)/r3_0 * (r_0(0)*dy_0_gldx2(ii, jj) - r_0(1)*dx_0_gldx2(ii, jj));
-                double c2_0 =  w1_gl(ii)* w2_gl(jj)/r3_0 * (r_0(0)*dy_0_gldx1(ii, jj) - r_0(1)*dx_0_gldx1(ii, jj));
-                double c1_1 = dw1_gl(ii)* w2_gl(jj)/r3_1 * (r_1(0)*dy_1_gldx2(ii, jj) - r_1(1)*dx_1_gldx2(ii, jj));
-                double c2_2 =  w1_gl(ii)*dw2_gl(jj)/r3_2 * (r_2(0)*dy_2_gldx1(ii, jj) - r_2(1)*dx_2_gldx1(ii, jj));
-
-                double t1   = phi1->constant(); // First Polynomial (i)
-                double t1p1 = phi1->linear(x1_gl(ii)); // Second Polynomial (i+1 -> ip1)
-
-                double t1_1   = phi1->constant(); // First Polynomial (i)
-                double t1p1_1 = phi1->linear(dx1_gl(ii)); // Second Polynomial (i+1 -> ip1)
-
-                double dt1   = phi1->constantDerivative();
-                double dt1p1 = phi1->linearDerivative();
-                for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
-                {
-                    double dmu0dx1 = dt1 *  t2;
-                    double dmu0dx2 =  t1 * dt2;
-                    double dmu1dx1 = t1_1 * t2   * phi1->weightFunctionDerivativeFactor(dx1_gl(ii));
-                    double dmu2dx2 = t1   * t2_2 * phi2->weightFunctionDerivativeFactor(dx2_gl(jj));
-
-                    A(i+j*nx, p+q*nx) += c1_0*dmu0dx1 - c2_0*dmu0dx2 + c1_1*dmu1dx1 - c2_2*dmu2dx2;
-
-                    std::swap(t1, t1p1); // Swap order so the oldest Polynomial will be overwritten
-                    phi1->next(p, x1_gl(ii), t1, t1p1);
-
-                    std::swap(t1_1, t1p1_1); // Swap order so the oldest Polynomial will be overwritten
-                    phi1->next(p, dx1_gl(ii), t1_1, t1p1_1);
-
-                    std::swap(dt1, dt1p1);
-                    phi1->nextDerivative(p, x1_gl(ii), t1, dt1, dt1p1);
-                }
-            }
-            std::swap(t2, t2p1); // Swap order so the oldest Polynomial will be overwritten
-            phi2->next(q, x2_gl(jj), t2, t2p1);
-
-            std::swap(t2_2, t2p1_2); // Swap order so the oldest Polynomial will be overwritten
-            phi2->next(q, dx2_gl(jj), t2_2, t2p1_2);
-
-            std::swap(dt2, dt2p1);
-            phi2->nextDerivative(q, x2_gl(jj), t2, dt2, dt2p1);
-        }
-    }
+    integralLinearEval(i, j, n1, n2, x1_gl, x2_gl, dx1_gl, dx2_gl, w1_gl, w2_gl, dw1_gl, dw2_gl);
 }
 
 void Wing::integralUpperLeftLinear(size_t i, size_t j, size_t n1, size_t n2, double xm, double ym)
@@ -1057,6 +588,14 @@ void Wing::integralUpperLeftLinear(size_t i, size_t j, size_t n1, size_t n2, dou
             break;
         }
     }
+
+    integralLinearEval(i, j, n1, n2, x1_gl, x2_gl, dx1_gl, dx2_gl, w1_gl, w2_gl, dw1_gl, dw2_gl);
+}
+
+void Wing::integralLinearEval(size_t &i, size_t &j, size_t &n1, size_t &n2,
+    arma::vec &x1_gl, arma::vec &x2_gl, arma::vec &dx1_gl, arma::vec &dx2_gl,
+    arma::vec &w1_gl, arma::vec &w2_gl, arma::vec &dw1_gl, arma::vec &dw2_gl)
+{
     auto [x_0_gl, y_0_gl] = Lagrange::TransfiniteQuadMap( x1_gl,  x2_gl, chi);
     auto [x_1_gl, y_1_gl] = Lagrange::TransfiniteQuadMap(dx1_gl,  x2_gl, chi);
     auto [x_2_gl, y_2_gl] = Lagrange::TransfiniteQuadMap( x1_gl, dx2_gl, chi);

@@ -152,6 +152,8 @@ private:
     void integralLowerLeftLinear(size_t, size_t, size_t, size_t, double, double);
     void integralUpperRightLinear(size_t, size_t, size_t, size_t, double, double);
     void integralUpperLeftLinear(size_t, size_t, size_t, size_t, double, double);
+    void integralLinearEval(size_t&, size_t&, size_t&, size_t&,
+        arma::vec&, arma::vec&, arma::vec&, arma::vec&, arma::vec&, arma::vec&, arma::vec&, arma::vec&);
     void regularIntegralLinear(size_t, size_t, size_t, size_t, double, double, double, double);
     void integralRightNonlinear(size_t, size_t, size_t, size_t, double);
     void integralLeftNonlinear(size_t, size_t, size_t, size_t, double);
@@ -161,6 +163,8 @@ private:
     void integralLowerLeftNonlinear(size_t, size_t, size_t, size_t, double, double);
     void integralUpperRightNonlinear(size_t, size_t, size_t, size_t, double, double);
     void integralUpperLeftNonlinear(size_t, size_t, size_t, size_t, double, double);
+    void integralNonlinearEval(size_t&, size_t&, size_t&, size_t&,
+        arma::vec&, arma::vec&, arma::vec&, arma::vec&, arma::vec&, arma::vec&, arma::vec&, arma::vec&);
     void regularIntegralNonlinear(size_t, size_t, size_t, size_t, double, double, double, double);
     // Calculating the Aerodynamic Matrix for the Panel Method
     void aerodynamicMatrix();
