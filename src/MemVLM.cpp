@@ -135,21 +135,21 @@ void MemVLM::linear()
                                     join_horiz(-TA * (repelem(vectorise(J_inv.slice(0)), 1, nxy_m) % membrane->DD1
                                                    +  repelem(vectorise(J_inv.slice(1)), 1, nxy_m) % membrane->DD2), vlm->A));
 
-            for (size_t j = 0; j < ny_m; j++)
+            for (j = 0; j < ny_m; j++)
             {
                 size_t k = j*nx_m;
                 M(k, arma::span(nxy_m, nxy-1)).zeros();
 
-                size_t i = nx_m-1;
+                i = nx_m-1;
                 k = j*nx_m + i;
                 M(k, arma::span(nxy_m, nxy-1)).zeros();
             }
 
-            for (size_t i = 0; i < nx_m; i++)
+            for (i = 0; i < nx_m; i++)
             {
                 M(i, arma::span(nxy_m, nxy-1)).zeros();
 
-                size_t j = ny_m-1;
+                j = ny_m-1;
                 size_t k = i + j*nx_m;
                 M(k, arma::span(nxy_m, nxy-1)).zeros();
             }

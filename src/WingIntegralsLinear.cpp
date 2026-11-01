@@ -48,7 +48,7 @@ void Wing::integralRightLinear(size_t i, size_t j, size_t n1, size_t n2, double 
     }
     arma::vec  x2_gl = phi2->xg;
     arma::vec  w2_gl = phi2->wg;
-    arma::vec dx2_gl = phi2->dxg;
+    arma::vec dx2_gl = (phi2->basis == Basis::T) ? x2_gl : phi2->dxg;
     arma::vec dw2_gl = phi2->dwg;
     auto [x_0_gl, y_0_gl] = Lagrange::TransfiniteQuadMap( x1_gl,  x2_gl, chi);
     auto [x_1_gl, y_1_gl] = Lagrange::TransfiniteQuadMap(dx1_gl,  x2_gl, chi);
@@ -169,7 +169,7 @@ void Wing::integralLeftLinear(size_t i, size_t j, size_t n1, size_t n2, double x
     }
     arma::vec  x2_gl = phi2->xg;
     arma::vec  w2_gl = phi2->wg;
-    arma::vec dx2_gl = phi2->dxg;
+    arma::vec dx2_gl = (phi2->basis == Basis::T) ? x2_gl : phi2->dxg;
     arma::vec dw2_gl = phi2->dwg;
     auto [x_0_gl, y_0_gl] = Lagrange::TransfiniteQuadMap( x1_gl,  x2_gl, chi);
     auto [x_1_gl, y_1_gl] = Lagrange::TransfiniteQuadMap(dx1_gl,  x2_gl, chi);
@@ -246,7 +246,7 @@ void Wing::integralUpperLinear(size_t i, size_t j, size_t n1, size_t n2, double 
 {
     arma::vec  x1_gl = phi1->xg;
     arma::vec  w1_gl = phi1->wg;
-    arma::vec dx1_gl = phi1->dxg;
+    arma::vec dx1_gl = (phi1->basis == Basis::T) ? x1_gl : phi1->dxg;
     arma::vec dw1_gl = phi1->dwg;
     arma::vec x2_gl(n2, arma::fill::none), dx2_gl(n2, arma::fill::none);
     arma::vec w2_gl(n2, arma::fill::none), dw2_gl(n2, arma::fill::none);
@@ -367,7 +367,7 @@ void Wing::integralLowerLinear(size_t i, size_t j, size_t n1, size_t n2, double 
 {
     arma::vec  x1_gl = phi1->xg;
     arma::vec  w1_gl = phi1->wg;
-    arma::vec dx1_gl = phi1->dxg;
+    arma::vec dx1_gl = (phi1->basis == Basis::T) ? x1_gl : phi1->dxg;
     arma::vec dw1_gl = phi1->dwg;
     arma::vec x2_gl(n2, arma::fill::none), dx2_gl(n2, arma::fill::none);
     arma::vec w2_gl(n2, arma::fill::none), dw2_gl(n2, arma::fill::none);
