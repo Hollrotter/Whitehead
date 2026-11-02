@@ -31,6 +31,12 @@ void Wing::checkMesh() const
         std::println("Negative volumes were found!");
 }
 
+void Wing::binomialPolynomialOrder(size_t _mx, size_t _my)
+{
+    mx = _mx;
+    my = _my;
+}
+
 void Wing::linear()
 {
     analysis = Analysis::linear;

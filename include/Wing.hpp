@@ -94,6 +94,7 @@ public:
     {
         wakes.push_back(w);
     }
+    void binomialPolynomialOrder(size_t, size_t);
     void linear();
     void nonlinear();
     // Gets the lift
