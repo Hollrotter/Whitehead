@@ -3,7 +3,6 @@
 #include <armadillo>
 #include <print>
 #include <omp.h>
-#include "float.h"
 
 std::pair<arma::vec, arma::vec> gaujac(size_t n, double alpha, double beta);
 

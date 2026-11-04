@@ -2,8 +2,6 @@
 #define ARMA_DONT_PRINT_FAST_MATH_WARNING
 #include <armadillo>
 #include <print>
-#include <omp.h>
-#include "float.h"
 #include "gaujac.hpp"
 
 #pragma omp declare reduction(+ : arma::vec : omp_out += omp_in) \

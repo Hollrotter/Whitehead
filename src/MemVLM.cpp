@@ -22,17 +22,17 @@ void MemVLM::linear()
         for (size_t j = 0; j < ny_v; j++)
             for (size_t iter = 0; iter < 50; iter++)
             {
-                arma::mat J(2, 2, arma::fill::zeros);
-                arma::vec b = {vlm->rC(i, j, 0), vlm->rC(i, j, 1)};
+                arma::mat::fixed<2, 2> J(arma::fill::zeros);
+                arma::vec::fixed<2> b = {vlm->rC(i, j, 0), vlm->rC(i, j, 1)};
                 for (size_t p = 0; p < nx_m; p++)
                 {
                     double Tx = boost::math::chebyshev_t(p,-xC(i, j));
                     for (size_t q = 0; q < ny_m; q++)
                     {
                         double Txy = Tx*boost::math::chebyshev_t(q,-yC(i, j));
-                        J += Txy*arma::mat{{x1_m_bar(p, q), x2_m_bar(p, q)},
+                        J += Txy*arma::mat::fixed<2, 2>{{x1_m_bar(p, q), x2_m_bar(p, q)},
                                            {y1_m_bar(p, q), y2_m_bar(p, q)}};
-                        b -= Txy*arma::vec{x_m_hat(p, q), y_m_hat(p, q)};
+                        b -= Txy*arma::vec::fixed<2>{x_m_hat(p, q), y_m_hat(p, q)};
                     }
                 }
                 b = solve(J, b);
@@ -59,8 +59,8 @@ void MemVLM::linear()
         for (size_t j = 0; j < ny_m; j++)
             for (size_t iter = 0; iter < 100; iter++)
             {
-                arma::mat J(2, 2, arma::fill::zeros);
-                arma::vec b = {membrane->x(i, j), membrane->y(i, j)};
+                arma::mat::fixed<2, 2> J(arma::fill::zeros);
+                arma::vec::fixed<2> b = {membrane->x(i, j), membrane->y(i, j)};
                 for (size_t q = 0; q < ny_v; q++)
                 {
                     double Ty = boost::math::chebyshev_t(q,-Y_m(i, j));

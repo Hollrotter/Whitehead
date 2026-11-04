@@ -23,8 +23,8 @@ void Wing::aerodynamicMatrix()
 {
     arma::vec theta = arma::linspace(0, arma::datum::tau, n_theta);
     double dtheta = theta(1) - theta(0);
-    arma::mat cT(n_theta, std::max({nx, ny, mx, my})+1, arma::fill::none);
-    arma::mat sT(n_theta, std::max({nx, ny, mx, my})+1, arma::fill::none);
+    arma::mat cT(n_theta, std::max({nx, ny, phi1->m, phi2->m})+1, arma::fill::none);
+    arma::mat sT(n_theta, std::max({nx, ny, phi1->m, phi2->m})+1, arma::fill::none);
     cT.col(0).fill(1);
     sT.col(0).fill(1);
     cT.col(1) = cos(theta);

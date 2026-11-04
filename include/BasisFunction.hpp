@@ -1,6 +1,5 @@
 #pragma once
 #include "misc.hpp"
-#include "gaujac.hpp"
 #include "enums.hpp"
 
 class BasisFunction
