@@ -41,9 +41,9 @@ std::pair<arma::vec, arma::vec> ChebyshevT::powerSeries(size_t k, double x) cons
     return std::make_pair(f, df);
 }
 
-std::pair<arma::vec, arma::vec> ChebyshevT::powerSeriesWeight(size_t _) const
+std::pair<arma::mat, arma::mat> ChebyshevT::powerSeriesWeight() const
 {
-    arma::vec c(m+1, arma::fill::zeros), d(m+1, arma::fill::zeros);
-    c(0) = 1;
+    arma::mat c(n, m+1, arma::fill::zeros), d(n, m+1, arma::fill::zeros);
+    c.col(0).ones();
     return std::make_pair(c, d);
 }

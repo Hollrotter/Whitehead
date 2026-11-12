@@ -46,10 +46,41 @@ void Wing::integralRightNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
             break;
         }
     }
-    arma::vec  x2_gl = phi2->xg;
-    arma::vec  w2_gl = phi2->wg;
-    arma::vec dx2_gl = (phi2->basis == Basis::T) ? x2_gl : phi2->dxg;
-    arma::vec dw2_gl = phi2->dwg;
+    arma::vec  x2_gl(n2, arma::fill::none);
+    arma::vec  w2_gl(n2, arma::fill::none);
+    arma::vec dx2_gl(n2, arma::fill::none);
+    arma::vec dw2_gl(n2, arma::fill::none);
+
+    switch (phi2->basis)
+    {
+        case Basis::T:
+            for (size_t jj = 0; jj < n2; jj++)
+            {
+                fastgl::QuadPair gl_y = fastgl::GLPair(n2, jj+1);
+                x2_gl(jj) =-gl_y.x();
+                w2_gl(jj) = gl_y.weight;
+            }
+            dx2_gl = x2_gl;
+            dw2_gl.zeros();
+            break;
+        case Basis::U:
+            x2_gl =-cos(arma::datum::pi*(arma::regspace(0, n2-1)+1)/(n2+1));
+            w2_gl = arma::datum::pi/(n2+1)*(1-x2_gl%x2_gl);
+            std::tie(dx2_gl, dw2_gl) = convert<NMAX>(n2, GAUJACU2[n2]);
+            break;
+        case Basis::PA:
+            std::tie( x2_gl,  w2_gl) = convert<NMAX>(n2, GAUJACA[n2]);
+            std::tie(dx2_gl, dw2_gl) = convert<NMAX>(n2, GAUJACA2[n2]);
+            break;
+        case Basis::PB:
+            std::tie( x2_gl,  w2_gl) = convert<NMAX>(n2, GAUJACB[n2]);
+            std::tie(dx2_gl, dw2_gl) = convert<NMAX>(n2, GAUJACB2[n2]);
+            break;
+    }
+    // arma::vec  x2_gl = phi2->xg;
+    // arma::vec  w2_gl = phi2->wg;
+    // arma::vec dx2_gl = (phi2->basis == Basis::T) ? x2_gl : phi2->dxg;
+    // arma::vec dw2_gl = phi2->dwg;
 
     integralNonlinearEval(i, j, n1, n2, x1_gl, x2_gl, dx1_gl, dx2_gl, w1_gl, w2_gl, dw1_gl, dw2_gl);
 }
@@ -100,20 +131,82 @@ void Wing::integralLeftNonlinear(size_t i, size_t j, size_t n1, size_t n2, doubl
             break;
         }
     }
-    arma::vec  x2_gl = phi2->xg;
-    arma::vec  w2_gl = phi2->wg;
-    arma::vec dx2_gl = (phi2->basis == Basis::T) ? x2_gl : phi2->dxg;
-    arma::vec dw2_gl = phi2->dwg;
+    arma::vec  x2_gl(n2, arma::fill::none);
+    arma::vec  w2_gl(n2, arma::fill::none);
+    arma::vec dx2_gl(n2, arma::fill::none);
+    arma::vec dw2_gl(n2, arma::fill::none);
+
+    switch (phi2->basis)
+    {
+        case Basis::T:
+            for (size_t jj = 0; jj < n2; jj++)
+            {
+                fastgl::QuadPair gl_y = fastgl::GLPair(n2, jj+1);
+                x2_gl(jj) =-gl_y.x();
+                w2_gl(jj) = gl_y.weight;
+            }
+            dx2_gl = x2_gl;
+            dw2_gl.zeros();
+            break;
+        case Basis::U:
+            x2_gl =-cos(arma::datum::pi*(arma::regspace(0, n2-1)+1)/(n2+1));
+            w2_gl = arma::datum::pi/(n2+1)*(1-x2_gl%x2_gl);
+            std::tie(dx2_gl, dw2_gl) = convert<NMAX>(n2, GAUJACU2[n2]);
+            break;
+        case Basis::PA:
+            std::tie( x2_gl,  w2_gl) = convert<NMAX>(n2, GAUJACA[n2]);
+            std::tie(dx2_gl, dw2_gl) = convert<NMAX>(n2, GAUJACA2[n2]);
+            break;
+        case Basis::PB:
+            std::tie( x2_gl,  w2_gl) = convert<NMAX>(n2, GAUJACB[n2]);
+            std::tie(dx2_gl, dw2_gl) = convert<NMAX>(n2, GAUJACB2[n2]);
+            break;
+    }
+    // arma::vec  x2_gl = phi2->xg;
+    // arma::vec  w2_gl = phi2->wg;
+    // arma::vec dx2_gl = (phi2->basis == Basis::T) ? x2_gl : phi2->dxg;
+    // arma::vec dw2_gl = phi2->dwg;
 
     integralNonlinearEval(i, j, n1, n2, x1_gl, x2_gl, dx1_gl, dx2_gl, w1_gl, w2_gl, dw1_gl, dw2_gl);
 }
 
 void Wing::integralUpperNonlinear(size_t i, size_t j, size_t n1, size_t n2, double yp)
 {
-    arma::vec  x1_gl = phi1->xg;
-    arma::vec  w1_gl = phi1->wg;
-    arma::vec dx1_gl = (phi1->basis == Basis::T) ? x1_gl : phi1->dxg;
-    arma::vec dw1_gl = phi1->dwg;
+    arma::vec  x1_gl(n1, arma::fill::none);
+    arma::vec  w1_gl(n1, arma::fill::none);
+    arma::vec dx1_gl(n1, arma::fill::none);
+    arma::vec dw1_gl(n1, arma::fill::none);
+
+    switch (phi1->basis)
+    {
+        case Basis::T:
+            for (size_t ii = 0; ii < n1; ii++)
+            {
+                fastgl::QuadPair gl_x = fastgl::GLPair(n1, ii+1);
+                x1_gl(ii) =-gl_x.x();
+                w1_gl(ii) = gl_x.weight;
+            }
+            dx1_gl = x1_gl;
+            dw1_gl.zeros();
+            break;
+        case Basis::U:
+            x1_gl =-cos(arma::datum::pi*(arma::regspace(0, n1-1)+1)/(n1+1));
+            w1_gl = arma::datum::pi/(n1+1)*(1-x1_gl%x1_gl);
+            std::tie(dx1_gl, dw1_gl) = convert<NMAX>(n1, GAUJACU2[n1]);
+            break;
+        case Basis::PA:
+            std::tie( x1_gl,  w1_gl) = convert<NMAX>(n1, GAUJACA[n1]);
+            std::tie(dx1_gl, dw1_gl) = convert<NMAX>(n1, GAUJACA2[n1]);
+            break;
+        case Basis::PB:
+            std::tie( x1_gl,  w1_gl) = convert<NMAX>(n1, GAUJACB[n1]);
+            std::tie(dx1_gl, dw1_gl) = convert<NMAX>(n1, GAUJACB2[n1]);
+            break;
+    }
+    // arma::vec  x1_gl = phi1->xg;
+    // arma::vec  w1_gl = phi1->wg;
+    // arma::vec dx1_gl = (phi1->basis == Basis::T) ? x1_gl : phi1->dxg;
+    // arma::vec dw1_gl = phi1->dwg;
     arma::vec x2_gl(n2, arma::fill::none), dx2_gl(n2, arma::fill::none);
     arma::vec w2_gl(n2, arma::fill::none), dw2_gl(n2, arma::fill::none);
     switch (phi2->basis)
@@ -164,10 +257,41 @@ void Wing::integralUpperNonlinear(size_t i, size_t j, size_t n1, size_t n2, doub
 
 void Wing::integralLowerNonlinear(size_t i, size_t j, size_t n1, size_t n2, double ym)
 {
-    arma::vec  x1_gl = phi1->xg;
-    arma::vec  w1_gl = phi1->wg;
-    arma::vec dx1_gl = (phi1->basis == Basis::T) ? x1_gl : phi1->dxg;
-    arma::vec dw1_gl = phi1->dwg;
+    arma::vec  x1_gl(n1, arma::fill::none);
+    arma::vec  w1_gl(n1, arma::fill::none);
+    arma::vec dx1_gl(n1, arma::fill::none);
+    arma::vec dw1_gl(n1, arma::fill::none);
+
+    switch (phi1->basis)
+    {
+        case Basis::T:
+            for (size_t ii = 0; ii < n1; ii++)
+            {
+                fastgl::QuadPair gl_x = fastgl::GLPair(n1, ii+1);
+                x1_gl(ii) =-gl_x.x();
+                w1_gl(ii) = gl_x.weight;
+            }
+            dx1_gl = x1_gl;
+            dw1_gl.zeros();
+            break;
+        case Basis::U:
+            x1_gl =-cos(arma::datum::pi*(arma::regspace(0, n1-1)+1)/(n1+1));
+            w1_gl = arma::datum::pi/(n1+1)*(1-x1_gl%x1_gl);
+            std::tie(dx1_gl, dw1_gl) = convert<NMAX>(n1, GAUJACU2[n1]);
+            break;
+        case Basis::PA:
+            std::tie( x1_gl,  w1_gl) = convert<NMAX>(n1, GAUJACA[n1]);
+            std::tie(dx1_gl, dw1_gl) = convert<NMAX>(n1, GAUJACA2[n1]);
+            break;
+        case Basis::PB:
+            std::tie( x1_gl,  w1_gl) = convert<NMAX>(n1, GAUJACB[n1]);
+            std::tie(dx1_gl, dw1_gl) = convert<NMAX>(n1, GAUJACB2[n1]);
+            break;
+    }
+    // arma::vec  x1_gl = phi1->xg;
+    // arma::vec  w1_gl = phi1->wg;
+    // arma::vec dx1_gl = (phi1->basis == Basis::T) ? x1_gl : phi1->dxg;
+    // arma::vec dw1_gl = phi1->dwg;
     arma::vec x2_gl(n2, arma::fill::none), dx2_gl(n2, arma::fill::none);
     arma::vec w2_gl(n2, arma::fill::none), dw2_gl(n2, arma::fill::none);
     switch (phi2->basis)
@@ -634,6 +758,8 @@ void Wing::integralNonlinearEval(size_t &i, size_t &j, size_t &n1, size_t &n2,
     arma::mat sqrt_a0 = sqrt(e_gl_0%(1 + ec_gl_0.slice(0)%pow(dz_0_gldx1, 2) + 2*ec_gl_0.slice(1)%dz_0_gldx1%dz_0_gldx2 + ec_gl_0.slice(2)%pow(dz_0_gldx2, 2)));
     arma::mat sqrt_a1 = sqrt(e_gl_1%(1 + ec_gl_1.slice(0)%pow(dz_1_gldx1, 2) + 2*ec_gl_1.slice(1)%dz_1_gldx1%dz_1_gldx2 + ec_gl_1.slice(2)%pow(dz_1_gldx2, 2)));
     arma::mat sqrt_a2 = sqrt(e_gl_2%(1 + ec_gl_2.slice(0)%pow(dz_2_gldx1, 2) + 2*ec_gl_2.slice(1)%dz_2_gldx1%dz_2_gldx2 + ec_gl_2.slice(2)%pow(dz_2_gldx2, 2)));
+    arma::vec cw1 = phi1->weightFunctionDerivativeFactor(dx1_gl);
+    arma::vec cw2 = phi2->weightFunctionDerivativeFactor(dx2_gl);
     for (size_t ii = 0; ii < n1; ii++)
         for (size_t jj = 0; jj < n2; jj++)
         {
@@ -683,8 +809,8 @@ void Wing::integralNonlinearEval(size_t &i, size_t &j, size_t &n1, size_t &n2,
                 {
                     double dmu0dx1 = dt1 * t2;
                     double dmu0dx2 = t1 * dt2;
-                    double dmu1dx1 = t1_1 * t2 * phi1->weightFunctionDerivativeFactor(dx1_gl(ii));
-                    double dmu2dx2 = t1 * t2_2 * phi2->weightFunctionDerivativeFactor(dx2_gl(jj));
+                    double dmu1dx1 = t1_1 * t2 * cw1(ii);
+                    double dmu2dx2 = t1 * t2_2 * cw2(jj);
                     arma::vec::fixed<2> dmu0dxi = {dmu0dx1, dmu0dx2};
                     arma::vec::fixed<2> dmu1dxi = {dmu1dx1, dmu0dx2};
                     arma::vec::fixed<2> dmu2dxi = {dmu0dx1, dmu2dx2};

@@ -32,20 +32,24 @@ std::pair<arma::vec, arma::vec> ChebyshevU::powerSeries(size_t k, double x) cons
     return std::make_pair(f, df);
 }
 
-std::pair<arma::vec, arma::vec> ChebyshevU::powerSeriesWeight(size_t i) const
+std::pair<arma::mat, arma::mat> ChebyshevU::powerSeriesWeight() const
 {
-    arma::vec c(m+1), d(m+1);
+    arma::mat c(n, m+1, arma::fill::zeros), d(n, m+1, arma::fill::zeros);
     for (size_t ii = 0; ii <= m; ii++)
+    {
         for (size_t jj = 0; jj <= ii/2; jj++)
-            c(ii) += pow(-1, ii-jj)*bi_05[1][ii-jj]*bi[ii-jj][jj]*pow(2*xi(i), ii-2*jj)/pow(1-pow(xi(i), 2), ii-jj);
-    c *= sqrt(1-pow(xi(i), 2));
+            c.col(ii) += pow(-1, ii-jj)*bi_05[1][ii-jj]*bi[ii-jj][jj]*pow(2*xi, ii-2*jj)/pow(1-pow(xi, 2), ii-jj);
+        c.col(ii) %= sqrt(1-pow(xi, 2));
+    }
     for (size_t ii = 0; ii < m; ii++)
+    {
         for (size_t jj = 0; jj <= ii/2; jj++)
         {
-            double con = pow(-1, ii-jj)*bi[ii-jj][jj]*pow(2*xi(i), ii-2*jj)/pow(1-pow(xi(i), 2), ii-jj);
-            d(ii)   += con * bi_05[0][ii-jj] * xi(i);
-            d(ii+1) += con * bi_05[0][ii-jj];
+            arma::vec con = pow(-1, ii-jj)*bi[ii-jj][jj]*pow(2*xi, ii-2*jj)/pow(1-pow(xi, 2), ii-jj);
+            d.col(ii)   += bi_05[0][ii-jj] * con % xi;
+            d.col(ii+1) += bi_05[0][ii-jj] * con;
         }
-    d /=-sqrt(1-pow(xi(i), 2));
+        d.col(ii) /=-sqrt(1-pow(xi, 2));
+    }
     return std::make_pair(c, d);
 }
