@@ -77,7 +77,7 @@ public:
     {
         return k<1 ? 0 : (k+1.5)/2*exp(LGAMMA[2*k+2] - LGAMMA[2*k-1] - LGAMMA[4]);
     }
-    virtual std::pair<arma::vec, arma::vec> powerSeries(size_t k, double x) const override;
+    virtual std::pair<arma::field<arma::mat>, arma::field<arma::mat>> powerSeries() const override;
     virtual std::pair<arma::mat, arma::mat> powerSeriesWeight() const override;
     virtual inline double weightFunction(double x) const override
     {

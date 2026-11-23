@@ -70,7 +70,7 @@ public:
     {
         return k*(k+1)*(k+2)/3;
     }
-    virtual std::pair<arma::vec, arma::vec> powerSeries(size_t k, double x) const override;
+    virtual std::pair<arma::field<arma::mat>, arma::field<arma::mat>> powerSeries() const override;
     virtual std::pair<arma::mat, arma::mat> powerSeriesWeight() const override;
     virtual inline double weightFunction(double x) const override
     {

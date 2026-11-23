@@ -101,6 +101,9 @@ void Wing::aerodynamicMatrix()
     auto [c1, d1] = phi1->powerSeriesWeight();
     auto [c2, d2] = phi2->powerSeriesWeight();
 
+    auto [f1, df1] = phi1->powerSeries();
+    auto [f2, df2] = phi2->powerSeries();
+
     switch (analysis)
     {
         case Analysis::linear:
@@ -119,19 +122,15 @@ void Wing::aerodynamicMatrix()
 
                     size_t k = i+j*nx;
                     for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
-                    {
-                        auto [f2, df2] = phi2->powerSeries(q, xi_2(j));
                         for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
                         {
-                            auto [f1, df1] = phi1->powerSeries(p, xi_1(i));
-
                             arma::mat dmudxi_1(n_theta, p+q+phi1->m+phi2->m+1), dmudxi_2(n_theta, p+q+phi1->m+phi2->m+1);
                             for (size_t s = 0; s <= p; s++)
                             {
-                                arma::vec F1 = f1(s) * cT.col(s);
+                                arma::vec F1 = f1(p)(i, s) * cT.col(s);
                                 for (size_t t = 0; t <= q; t++)
                                 {
-                                    arma::vec f = f2(t) * F1 % sT.col(t);
+                                    arma::vec f = f2(q)(j, t) * F1 % sT.col(t);
                                     for (size_t k2 = 0; k2 <= phi2->m; k2++)
                                     {
                                         arma::vec Fc2 = c2(j, k2) * sT.col(k2);
@@ -156,16 +155,16 @@ void Wing::aerodynamicMatrix()
                                         if (p > 0)
                                             for (size_t s = 0; s < p; s++)
                                             {
-                                                arma::vec F3 = df1(s) * cT.col(s);
+                                                arma::vec F3 = df1(p)(i, s) * cT.col(s);
                                                 for (size_t t = 0; t <= q; t++)
-                                                    dmudxi_1.col(s+t+k1+k2) += f2(t) * F3 % F12 % sT.col(t);
+                                                    dmudxi_1.col(s+t+k1+k2) += f2(q)(j, t) * F3 % F12 % sT.col(t);
                                             }
                                         if (q > 0)
                                             for (size_t s = 0; s <= p; s++)
                                             {
-                                                arma::vec F1 = f1(s) * cT.col(s);
+                                                arma::vec F1 = f1(p)(i, s) * cT.col(s);
                                                 for (size_t t = 0; t < q; t++)
-                                                    dmudxi_2.col(s+t+k1+k2) += df2(t) * F1 % F12 % sT.col(t);
+                                                    dmudxi_2.col(s+t+k1+k2) += df2(q)(j, t) * F1 % F12 % sT.col(t);
                                             }
                                     }
                                 }
@@ -201,7 +200,6 @@ void Wing::aerodynamicMatrix()
                             }
                             A(k, p+q*nx) *= dtheta;
                         }
-                    }
                     size_t c = 1;
                     if (x_left(i) == -1. && x_right(i) < 1. && y_lower(j) == -1. && y_upper(j) == 1.)
                         integralRightLinear(i, j, c*std::ceil((1-x_right(i))/2*nx), c*ny, x_right(i));
@@ -731,19 +729,15 @@ void Wing::aerodynamicMatrix()
 
                     size_t k = i+j*nx;
                     for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
-                    {
-                        auto [f2, df2] = phi2->powerSeries(q, xi_2(j));
                         for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
                         {
-                            auto [f1, df1] = phi1->powerSeries(p, xi_1(i));
-
                             arma::mat dmudxi_1(n_theta, p+q+phi1->m+phi2->m+1), dmudxi_2(n_theta, p+q+phi1->m+phi2->m+1);
                             for (size_t s = 0; s <= p; s++)
                             {
-                                arma::vec F1 = f1(s) * cT.col(s);
+                                arma::vec F1 = f1(p)(i, s) * cT.col(s);
                                 for (size_t t = 0; t <= q; t++)
                                 {
-                                    arma::vec f = f2(t) * F1 % sT.col(t);
+                                    arma::vec f = f2(q)(j, t) * F1 % sT.col(t);
                                     for (size_t k2 = 0; k2 <= phi2->m; k2++)
                                     {
                                         arma::vec Fc2 = c2(j, k2) * sT.col(k2);
@@ -768,16 +762,16 @@ void Wing::aerodynamicMatrix()
                                         if (p > 0)
                                             for (size_t s = 0; s < p; s++)
                                             {
-                                                arma::vec F3 = df1(s) * cT.col(s);
+                                                arma::vec F3 = df1(p)(i, s) * cT.col(s);
                                                 for (size_t t = 0; t <= q; t++)
-                                                    dmudxi_1.col(s+t+k1+k2) += f2(t) * F3 % F12 % sT.col(t);
+                                                    dmudxi_1.col(s+t+k1+k2) += f2(q)(j, t) * F3 % F12 % sT.col(t);
                                             }
                                         if (q > 0)
                                             for (size_t s = 0; s <= p; s++)
                                             {
-                                                arma::vec F1 = f1(s) * cT.col(s);
+                                                arma::vec F1 = f1(p)(i, s) * cT.col(s);
                                                 for (size_t t = 0; t < q; t++)
-                                                    dmudxi_2.col(s+t+k1+k2) += df2(t) * F1 % F12 % sT.col(t);
+                                                    dmudxi_2.col(s+t+k1+k2) += df2(q)(j, t) * F1 % F12 % sT.col(t);
                                             }
                                     }
                                 }
@@ -825,7 +819,6 @@ void Wing::aerodynamicMatrix()
                             arma::vec::fixed<3> q_mu = dtheta*F;
                             A(k, p+q*nx) = dot(q_mu, nC.row(k));
                         }
-                    }
                     size_t c = 1;
                     if (x_left(i) == -1. && x_right(i) < 1. && y_lower(j) == -1. && y_upper(j) == 1.)
                         integralRightNonlinear(i, j, c*std::ceil((1-x_right(i))/2*nx), c*ny, x_right(i));

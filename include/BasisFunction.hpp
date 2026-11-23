@@ -32,7 +32,7 @@ public:
     virtual inline double right(size_t) const = 0;
     virtual inline double leftDerivative(size_t) const = 0;
     virtual inline double rightDerivative(size_t) const = 0;
-    virtual std::pair<arma::vec, arma::vec> powerSeries(size_t, double) const = 0;
+    virtual std::pair<arma::field<arma::mat>, arma::field<arma::mat>> powerSeries() const = 0;
     virtual std::pair<arma::mat, arma::mat> powerSeriesWeight() const = 0;
     virtual inline double weightFunction(double) const = 0;
     virtual inline arma::vec weightFunction(arma::vec) const = 0;

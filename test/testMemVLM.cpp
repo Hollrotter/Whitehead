@@ -36,7 +36,7 @@ int main()
             membrane.planeStrain();
 
             arma::vec x1A = Chebyshev::gaussLobatto(30);
-            arma::vec x2A = (1+Chebyshev::gaussLobatto(30));
+            arma::vec x2A = Chebyshev::gaussLobatto(30)+1;
 
             arma::vec yA = x2A;
             arma::mat xA = x1A*arma::ones(1, x2A.size());
@@ -60,8 +60,8 @@ int main()
 
             vlm.output("plot/Data/MemVLM/p");
 
-            std::cout << "cL = " << vlm.get_lift().t()   / 4 / 10 << '\n';
-            std::cout << "cM = " << vlm.get_moment().t() / 8 / 10 << '\n';
+            std::cout << "cL = " << vlm.get_lift().t()   / 4 / 25 << '\n';
+            std::cout << "cM = " << vlm.get_moment().t() / 8 / 25 << '\n';
 
             break;
         }

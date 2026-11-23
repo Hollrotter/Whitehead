@@ -9,26 +9,32 @@ ChebyshevU::ChebyshevU(size_t _n, size_t _m) : BasisFunction{_n, _m}
     std::tie(dxg, dwg) = convert<NMAX>(n, GAUJACU2[n]);
 }
 
-std::pair<arma::vec, arma::vec> ChebyshevU::powerSeries(size_t k, double x) const
+std::pair<arma::field<arma::mat>, arma::field<arma::mat>> ChebyshevU::powerSeries() const
 {
-    arma::vec c(k/2+1, arma::fill::none), f(k+1, arma::fill::zeros), df(k, arma::fill::zeros);
-    for (size_t s = 0; s <= k/2; s++)
-        c(s) = pow(-1, s)*pow(2, k-2*s)*bi[k-s][s];
-    for (size_t s = 0; s <= k/2; s++)
+    arma::field<arma::mat> f(n), df(n);
+    for (size_t k = 0; k < n; k++)
     {
-        arma::vec F(k+1, arma::fill::zeros);
-        for (size_t t = 0; t <= k-2*s; t++)
-            F(t) += bi[k-2*s][t] * pow(x, k-2*s-t);
-        f += c(s) * F;
-    }
-    if (k > 0)
-        for (size_t s = 0; s <= (k-1)/2; s++)
+        arma::vec c(k/2+1, arma::fill::none);
+        f(k).zeros(n, k+1);
+        df(k).zeros(n, k);
+        for (size_t s = 0; s <= k/2; s++)
+            c(s) = pow(-1, s)*pow(2, k-2*s)*bi[k-s][s];
+        for (size_t s = 0; s <= k/2; s++)
         {
-            arma::vec F(k, arma::fill::zeros);
-            for (size_t t = 0; t <= k-2*s-1; t++)
-                F(t) += bi[k-2*s-1][t]*pow(x, k-2*s-1-t);
-            df += (k-2*s)*c(s) * F;
+            arma::mat F(n, k+1, arma::fill::zeros);
+            for (size_t t = 0; t <= k-2*s; t++)
+                F.col(t) += bi[k-2*s][t] * pow(xi, k-2*s-t);
+            f(k) += c(s) * F;
         }
+        if (k > 0)
+            for (size_t s = 0; s <= (k-1)/2; s++)
+            {
+                arma::mat F(n, k, arma::fill::zeros);
+                for (size_t t = 0; t <= k-2*s-1; t++)
+                    F.col(t) += bi[k-2*s-1][t]*pow(xi, k-2*s-1-t);
+                df(k) += (k-2*s)*c(s) * F;
+            }
+    }
     return std::make_pair(f, df);
 }
 
