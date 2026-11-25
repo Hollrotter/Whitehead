@@ -728,69 +728,60 @@ void Wing::integralLinearEval(size_t &i, size_t &j, size_t &n1, size_t &n2,
     auto [dx_2_gldx1, dx_2_gldx2, dy_2_gldx1, dy_2_gldx2] = Lagrange::TransfiniteQuadMetrics( x1_gl, dx2_gl, chi);
     arma::vec cw1 = phi1->weightFunctionDerivativeFactor(dx1_gl);
     arma::vec cw2 = phi2->weightFunctionDerivativeFactor(dx2_gl);
-    for (size_t jj = 0; jj < n2; jj++)
+    arma::mat  T1   = arma::zeros(n1, nx);
+    arma::mat  T1_1 = arma::zeros(n1, nx);
+    arma::mat dT1   = arma::zeros(n1, nx);
+    T1.col(0)   = phi1->constant(n1);
+    T1_1.col(0) = phi1->constant(n1);
+    dT1.col(0)  = phi1->constantDerivative(n1);
+    T1.col(1)   = phi1->linear(x1_gl);
+    T1_1.col(1) = phi1->linear(dx1_gl);
+    dT1.col(1)  = phi1->linearDerivative(n1);
+    for (size_t p = 1; p < nx-1; p++)
     {
-        double t2   = phi2->constant(); // First Polynomial (j)
-        double t2p1 = phi2->linear(x2_gl(jj)); // Second Polynomial (j+1 -> jp1)
-
-        double t2_2   = phi2->constant(); // First Polynomial (j)
-        double t2p1_2 = phi2->linear(dx2_gl(jj)); // Second Polynomial (j+1 -> jp1)
-
-        double dt2   = phi2->constantDerivative();
-        double dt2p1 = phi2->linearDerivative();
-        for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
+        phi1->next(p,  x1_gl, T1);
+        phi1->next(p, dx1_gl, T1_1);
+        phi1->nextDerivative(p, x1_gl, T1, dT1);
+    }
+    arma::mat  T2   = arma::zeros(n2, ny);
+    arma::mat  T2_2 = arma::zeros(n2, ny);
+    arma::mat dT2   = arma::zeros(n2, ny);
+    T2.col(0)   = phi2->constant(n2);
+    T2_2.col(0) = phi2->constant(n2);
+    dT2.col(0)  = phi2->constantDerivative(n2);
+    T2.col(1)   = phi2->linear(x2_gl);
+    T2_2.col(1) = phi2->linear(dx2_gl);
+    dT2.col(1)  = phi2->linearDerivative(n2);
+    for (size_t q = 1; q < ny-1; q++)
+    {
+        phi2->next(q,  x2_gl, T2);
+        phi2->next(q, dx2_gl, T2_2);
+        phi2->nextDerivative(q, x2_gl, T2, dT2);
+    }
+    for (size_t jj = 0; jj < n2; jj++)
+        for (size_t ii = 0; ii < n1; ii++)
         {
-            for (size_t ii = 0; ii < n1; ii++)
-            {
-                arma::vec::fixed<2> r_0 = {x_0_gl(ii, jj) - xC(i, j), y_0_gl(ii, jj) - yC(i, j)};
-                arma::vec::fixed<2> r_1 = {x_1_gl(ii, jj) - xC(i, j), y_1_gl(ii, jj) - yC(i, j)};
-                arma::vec::fixed<2> r_2 = {x_2_gl(ii, jj) - xC(i, j), y_2_gl(ii, jj) - yC(i, j)};
-                double r3_0 = pow(norm(r_0), 3);
-                double r3_1 = pow(norm(r_1), 3);
-                double r3_2 = pow(norm(r_2), 3);
-
-                double c1_0 =  w1_gl(ii)* w2_gl(jj)/r3_0 * (r_0(0)*dy_0_gldx2(ii, jj) - r_0(1)*dx_0_gldx2(ii, jj));
-                double c2_0 =  w1_gl(ii)* w2_gl(jj)/r3_0 * (r_0(0)*dy_0_gldx1(ii, jj) - r_0(1)*dx_0_gldx1(ii, jj));
-                double c1_1 = dw1_gl(ii)* w2_gl(jj)/r3_1 * (r_1(0)*dy_1_gldx2(ii, jj) - r_1(1)*dx_1_gldx2(ii, jj));
-                double c2_2 =  w1_gl(ii)*dw2_gl(jj)/r3_2 * (r_2(0)*dy_2_gldx1(ii, jj) - r_2(1)*dx_2_gldx1(ii, jj));
-
-                double t1   = phi1->constant(); // First Polynomial (i)
-                double t1p1 = phi1->linear(x1_gl(ii)); // Second Polynomial (i+1 -> ip1)
-
-                double t1_1   = phi1->constant(); // First Polynomial (i)
-                double t1p1_1 = phi1->linear(dx1_gl(ii)); // Second Polynomial (i+1 -> ip1)
-
-                double dt1   = phi1->constantDerivative();
-                double dt1p1 = phi1->linearDerivative();
+            arma::vec::fixed<2> r_0 = {x_0_gl(ii, jj) - xC(i, j), y_0_gl(ii, jj) - yC(i, j)};
+            arma::vec::fixed<2> r_1 = {x_1_gl(ii, jj) - xC(i, j), y_1_gl(ii, jj) - yC(i, j)};
+            arma::vec::fixed<2> r_2 = {x_2_gl(ii, jj) - xC(i, j), y_2_gl(ii, jj) - yC(i, j)};
+            double r3_0 = pow(norm(r_0), 3);
+            double r3_1 = pow(norm(r_1), 3);
+            double r3_2 = pow(norm(r_2), 3);
+            double c1_0 =  w1_gl(ii)* w2_gl(jj)/r3_0 * (r_0(0)*dy_0_gldx2(ii, jj) - r_0(1)*dx_0_gldx2(ii, jj));
+            double c2_0 =  w1_gl(ii)* w2_gl(jj)/r3_0 * (r_0(0)*dy_0_gldx1(ii, jj) - r_0(1)*dx_0_gldx1(ii, jj));
+            double c1_1 = dw1_gl(ii)* w2_gl(jj)/r3_1 * (r_1(0)*dy_1_gldx2(ii, jj) - r_1(1)*dx_1_gldx2(ii, jj));
+            double c2_2 =  w1_gl(ii)*dw2_gl(jj)/r3_2 * (r_2(0)*dy_2_gldx1(ii, jj) - r_2(1)*dx_2_gldx1(ii, jj));
+            for (size_t q = 0; q < ny; q++) // Loop over Polynomial 2-direction
                 for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
                 {
-                    double dmu0dx1 = dt1 *  t2;
-                    double dmu0dx2 =  t1 * dt2;
-                    double dmu1dx1 = t1_1 * t2   * cw1(ii);
-                    double dmu2dx2 = t1   * t2_2 * cw2(jj);
+                    double dmu0dx1 = dT1(ii, p) *  T2(jj, q);
+                    double dmu0dx2 =  T1(ii, p) * dT2(jj, q);
+                    double dmu1dx1 = T1_1(ii, p) * T2(jj, q)   * cw1(ii);
+                    double dmu2dx2 = T1(ii, p)   * T2_2(jj, q) * cw2(jj);
 
                     A(i+j*nx, p+q*nx) += c1_0*dmu0dx1 - c2_0*dmu0dx2 + c1_1*dmu1dx1 - c2_2*dmu2dx2;
-
-                    std::swap(t1, t1p1); // Swap order so the oldest Polynomial will be overwritten
-                    phi1->next(p, x1_gl(ii), t1, t1p1);
-
-                    std::swap(t1_1, t1p1_1); // Swap order so the oldest Polynomial will be overwritten
-                    phi1->next(p, dx1_gl(ii), t1_1, t1p1_1);
-
-                    std::swap(dt1, dt1p1);
-                    phi1->nextDerivative(p, x1_gl(ii), t1, dt1, dt1p1);
                 }
-            }
-            std::swap(t2, t2p1); // Swap order so the oldest Polynomial will be overwritten
-            phi2->next(q, x2_gl(jj), t2, t2p1);
-
-            std::swap(t2_2, t2p1_2); // Swap order so the oldest Polynomial will be overwritten
-            phi2->next(q, dx2_gl(jj), t2_2, t2p1_2);
-
-            std::swap(dt2, dt2p1);
-            phi2->nextDerivative(q, x2_gl(jj), t2, dt2, dt2p1);
         }
-    }
 }
 
 void Wing::regularIntegralLinear(size_t i, size_t j, size_t n1, size_t n2, double xm, double xp, double ym, double yp)

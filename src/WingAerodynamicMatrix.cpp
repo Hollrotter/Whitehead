@@ -125,50 +125,66 @@ void Wing::aerodynamicMatrix()
                         for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
                         {
                             arma::mat dmudxi_1(n_theta, p+q+phi1->m+phi2->m+1), dmudxi_2(n_theta, p+q+phi1->m+phi2->m+1);
-                            for (size_t s = 0; s <= p; s++)
+                            arma::mat F1(n_theta, p+1, arma::fill::none), F3(n_theta, p, arma::fill::none);
+                            arma::mat F2(n_theta, q+1, arma::fill::none), F4(n_theta, q, arma::fill::none);
+                            arma::mat Fc1(n_theta, phi1->m+1, arma::fill::none), Fc2(n_theta, phi2->m+1, arma::fill::none);
+                            arma::mat Fd1(n_theta, phi1->m+1, arma::fill::none), Fd2(n_theta, phi2->m+1, arma::fill::none);
+                            for (size_t s = 0; s < p; s++)
                             {
-                                arma::vec F1 = f1(p)(i, s) * cT.col(s);
+                                F1.col(s) =  f1(p)(i, s) * cT.col(s);
+                                F3.col(s) = df1(p)(i, s) * cT.col(s);
+                            }
+                            F1.col(p) =  f1(p)(i, p) * cT.col(p);
+                            for (size_t t = 0; t < q; t++)
+                            {
+                                F2.col(t) =  f2(q)(j, t) * sT.col(t);
+                                F4.col(t) = df2(q)(j, t) * sT.col(t);
+                            }
+                            F2.col(q) = f2(q)(j, q) * sT.col(q);
+                            for (size_t k1 = 0; k1 <= phi1->m; k1++)
+                            {
+                                Fc1.col(k1) = c1(i, k1) * cT.col(k1);
+                                Fd1.col(k1) = d1(i, k1) * cT.col(k1);
+                            }
+                            for (size_t k2 = 0; k2 <= phi2->m; k2++)
+                            {
+                                Fc2.col(k2) = c2(j, k2) * sT.col(k2);
+                                Fd2.col(k2) = d2(j, k2) * sT.col(k2);
+                            }
+                            for (size_t s = 0; s <= p; s++)
                                 for (size_t t = 0; t <= q; t++)
                                 {
-                                    arma::vec f = f2(q)(j, t) * F1 % sT.col(t);
+                                    arma::vec F12 = F1.col(s) % F2.col(t);
                                     for (size_t k2 = 0; k2 <= phi2->m; k2++)
                                     {
-                                        arma::vec Fc2 = c2(j, k2) * sT.col(k2);
-                                        arma::vec Fd2 = d2(j, k2) * sT.col(k2);
+                                        arma::vec Fc12 = Fc2.col(k2) % F12;
+                                        arma::vec Fd12 = Fd2.col(k2) % F12;
                                         for (size_t k1 = 0; k1 <= phi1->m; k1++)
                                         {
-                                            dmudxi_1.col(s+t+k1+k2) += d1(i, k1)*(cT.col(k1) % Fc2 % f);
-                                            dmudxi_2.col(s+t+k1+k2) += c1(i, k1)*(cT.col(k1) % Fd2 % f);
+                                            dmudxi_1.col(s+t+k1+k2) += Fd1.col(k1) % Fc12;
+                                            dmudxi_2.col(s+t+k1+k2) += Fc1.col(k1) % Fd12;
                                         }
                                     }
                                 }
-                            }
 
                             if (p > 0 || q > 0)
-                            {
                                 for (size_t k2 = 0; k2 <= phi2->m; k2++)
-                                {
-                                    arma::vec F2 = c2(j, k2) * sT.col(k2);
                                     for (size_t k1 = 0; k1 <= phi1->m; k1++)
                                     {
-                                        arma::vec F12 = c1(i, k1)*cT.col(k1) % F2;
-                                        if (p > 0)
-                                            for (size_t s = 0; s < p; s++)
-                                            {
-                                                arma::vec F3 = df1(p)(i, s) * cT.col(s);
-                                                for (size_t t = 0; t <= q; t++)
-                                                    dmudxi_1.col(s+t+k1+k2) += f2(q)(j, t) * F3 % F12 % sT.col(t);
-                                            }
-                                        if (q > 0)
+                                        arma::vec F12 = Fc1.col(k1) % Fc2.col(k2);
+                                        for (size_t s = 0; s < p; s++)
+                                        {
+                                            arma::vec F123 = F3.col(s) % F12;
+                                            for (size_t t = 0; t <= q; t++)
+                                                dmudxi_1.col(s+t+k1+k2) += F2.col(t) % F123;
+                                        }
+                                        for (size_t t = 0; t < q; t++)
+                                        {
+                                            arma::vec F124 = F4.col(t) % F12;
                                             for (size_t s = 0; s <= p; s++)
-                                            {
-                                                arma::vec F1 = f1(p)(i, s) * cT.col(s);
-                                                for (size_t t = 0; t < q; t++)
-                                                    dmudxi_2.col(s+t+k1+k2) += df2(q)(j, t) * F1 % F12 % sT.col(t);
-                                            }
+                                                dmudxi_2.col(s+t+k1+k2) += F1.col(s) % F124;
+                                        }
                                     }
-                                }
-                            }
                             arma::mat gammax = J11(i, j)*dmudxi_2 - J12(i, j)*dmudxi_1;
                             arma::mat gammay = J21(i, j)*dmudxi_2 - J22(i, j)*dmudxi_1;
                             for (size_t n = 0; n < n_theta-1; n++)
@@ -715,7 +731,7 @@ void Wing::aerodynamicMatrix()
             arma::mat d2zdxi_1dxi_2 = D1*dzdxi_2;
             arma::mat d2zdxi_22 = dzdxi_2*D2.t();
 
-            // #pragma omp parallel // This one does not work properly for some reason!
+            #pragma omp parallel for
             for (size_t j = j_min; j < j_max; j++) // Loop over Collocation Points in 2-direction
                 for (size_t i = i_min; i < i_max; i++) // Loop over Collocation Points in 1-direction
                 {
@@ -732,50 +748,66 @@ void Wing::aerodynamicMatrix()
                         for (size_t p = 0; p < nx; p++) // Loop over Polynomial 1-direction
                         {
                             arma::mat dmudxi_1(n_theta, p+q+phi1->m+phi2->m+1), dmudxi_2(n_theta, p+q+phi1->m+phi2->m+1);
-                            for (size_t s = 0; s <= p; s++)
+                            arma::mat F1(n_theta, p+1, arma::fill::none), F3(n_theta, p, arma::fill::none);
+                            arma::mat F2(n_theta, q+1, arma::fill::none), F4(n_theta, q, arma::fill::none);
+                            arma::mat Fc1(n_theta, phi1->m+1, arma::fill::none), Fc2(n_theta, phi2->m+1, arma::fill::none);
+                            arma::mat Fd1(n_theta, phi1->m+1, arma::fill::none), Fd2(n_theta, phi2->m+1, arma::fill::none);
+                            for (size_t s = 0; s < p; s++)
                             {
-                                arma::vec F1 = f1(p)(i, s) * cT.col(s);
+                                F1.col(s) =  f1(p)(i, s) * cT.col(s);
+                                F3.col(s) = df1(p)(i, s) * cT.col(s);
+                            }
+                            F1.col(p) =  f1(p)(i, p) * cT.col(p);
+                            for (size_t t = 0; t < q; t++)
+                            {
+                                F2.col(t) =  f2(q)(j, t) * sT.col(t);
+                                F4.col(t) = df2(q)(j, t) * sT.col(t);
+                            }
+                            F2.col(q) = f2(q)(j, q) * sT.col(q);
+                            for (size_t k1 = 0; k1 <= phi1->m; k1++)
+                            {
+                                Fc1.col(k1) = c1(i, k1) * cT.col(k1);
+                                Fd1.col(k1) = d1(i, k1) * cT.col(k1);
+                            }
+                            for (size_t k2 = 0; k2 <= phi2->m; k2++)
+                            {
+                                Fc2.col(k2) = c2(j, k2) * sT.col(k2);
+                                Fd2.col(k2) = d2(j, k2) * sT.col(k2);
+                            }
+                            for (size_t s = 0; s <= p; s++)
                                 for (size_t t = 0; t <= q; t++)
                                 {
-                                    arma::vec f = f2(q)(j, t) * F1 % sT.col(t);
+                                    arma::vec F12 = F1.col(s) % F2.col(t);
                                     for (size_t k2 = 0; k2 <= phi2->m; k2++)
                                     {
-                                        arma::vec Fc2 = c2(j, k2) * sT.col(k2);
-                                        arma::vec Fd2 = d2(j, k2) * sT.col(k2);
+                                        arma::vec Fc12 = Fc2.col(k2) % F12;
+                                        arma::vec Fd12 = Fd2.col(k2) % F12;
                                         for (size_t k1 = 0; k1 <= phi1->m; k1++)
                                         {
-                                            dmudxi_1.col(s+t+k1+k2) += d1(i, k1)*(cT.col(k1) % Fc2 % f);
-                                            dmudxi_2.col(s+t+k1+k2) += c1(i, k1)*(cT.col(k1) % Fd2 % f);
+                                            dmudxi_1.col(s+t+k1+k2) += Fd1.col(k1) % Fc12;
+                                            dmudxi_2.col(s+t+k1+k2) += Fc1.col(k1) % Fd12;
                                         }
                                     }
                                 }
-                            }
 
                             if (p > 0 || q > 0)
-                            {
                                 for (size_t k2 = 0; k2 <= phi2->m; k2++)
-                                {
-                                    arma::vec F2 = c2(j, k2) * sT.col(k2);
                                     for (size_t k1 = 0; k1 <= phi1->m; k1++)
                                     {
-                                        arma::vec F12 = c1(i, k1)*cT.col(k1) % F2;
-                                        if (p > 0)
-                                            for (size_t s = 0; s < p; s++)
-                                            {
-                                                arma::vec F3 = df1(p)(i, s) * cT.col(s);
-                                                for (size_t t = 0; t <= q; t++)
-                                                    dmudxi_1.col(s+t+k1+k2) += f2(q)(j, t) * F3 % F12 % sT.col(t);
-                                            }
-                                        if (q > 0)
+                                        arma::vec F12 = Fc1.col(k1) % Fc2.col(k2);
+                                        for (size_t s = 0; s < p; s++)
+                                        {
+                                            arma::vec F123 = F3.col(s) % F12;
+                                            for (size_t t = 0; t <= q; t++)
+                                                dmudxi_1.col(s+t+k1+k2) += F2.col(t) % F123;
+                                        }
+                                        for (size_t t = 0; t < q; t++)
+                                        {
+                                            arma::vec F124 = F4.col(t) % F12;
                                             for (size_t s = 0; s <= p; s++)
-                                            {
-                                                arma::vec F1 = f1(p)(i, s) * cT.col(s);
-                                                for (size_t t = 0; t < q; t++)
-                                                    dmudxi_2.col(s+t+k1+k2) += df2(q)(j, t) * F1 % F12 % sT.col(t);
-                                            }
+                                                dmudxi_2.col(s+t+k1+k2) += F1.col(s) % F124;
+                                        }
                                     }
-                                }
-                            }
                             arma::mat dmudx = (J22(i, j)*nC(k, 2) - nC(k, 1)*dzdxi_2(i, j))*dmudxi_1
                                             - (J21(i, j)*nC(k, 2) - nC(k, 1)*dzdxi_1(i, j))*dmudxi_2;
                             arma::mat dmudy = (J11(i, j)*nC(k, 2) - nC(k, 0)*dzdxi_1(i, j))*dmudxi_2
