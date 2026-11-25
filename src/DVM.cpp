@@ -57,7 +57,10 @@ void DVM::dvmSolve()
 {
     geometry();
     aerodynamicMatrix();
+    arma::mat P;
     arma::lu(L, U, P, A);
+    for (size_t k = 0; k < nx; k++)
+        perm_idx(k) = P.row(k).index_max();
 }
 
 /**
@@ -67,7 +70,10 @@ void DVM::dvmSolve()
 void DVM::dvmEval()
 {
     arma::vec w = camber.diff(xC/c) + wE;
-    arma::mat g = solve(trimatu(U), solve(trimatl(L), P*(repelem(w, 1, con) - repelem(alpha.t(), nx, 1))));
+    arma::mat b = repelem(w, 1, con) - repelem(alpha.t(), nx, 1);
+    arma::mat b_perm = b.rows(perm_idx);
+    arma::mat g_bar = solve(trimatl(L), b_perm);
+    arma::mat g     = solve(trimatu(U), g_bar);
     postprocessing(g);
 }
 

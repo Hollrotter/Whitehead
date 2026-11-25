@@ -52,9 +52,9 @@ class Wing
     arma::rowvec h_1s1_west;
     arma::rowvec h_1s2_west;
     arma::mat A = arma::zeros(nxy, nxy); // Aerodynamic Matrix
-    arma::mat L; // Lower triangular matrix
-    arma::mat U; // Upper triangular matrix
-    arma::mat P; // Permutation matrix
+    arma::mat L = arma::mat(nxy, nxy, arma::fill::none); // Lower triangular matrix
+    arma::mat U = arma::mat(nxy, nxy, arma::fill::none); // Upper triangular matrix
+    arma::uvec perm_idx = arma::uvec(nxy, arma::fill::none); // Permutation indices
     arma::vec b = arma::zeros(nxy);
     arma::mat nC; // Unit normal vector of the wing
     arma::vec mu_hat = arma::zeros(nxy); // Amplitudes of doublet distribution

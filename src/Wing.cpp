@@ -295,12 +295,17 @@ void Wing::linearSolve()
         for (size_t i = i_min; i < i_max; i++)
             b(i+j*nx) =-2*arma::datum::tau*alpha;
 
+    arma::mat P;
     arma::lu(L, U, P, A);
+    for (size_t k = 0; k < nxy; k++)
+        perm_idx(k) = P.row(k).index_max();
 }
 
 void Wing::linearEval()
 {
-    mu_hat = solve(trimatu(U), solve(trimatl(L), P*b));
+    arma::vec b_perm = b.elem(perm_idx);
+    arma::vec mu_bar = solve(trimatl(L), b_perm, arma::solve_opts::fast);
+    mu_hat           = solve(trimatu(U), mu_bar, arma::solve_opts::fast);
 }
 
 void Wing::nonlinearSolve()
@@ -363,12 +368,17 @@ void Wing::nonlinearSolve()
         for (size_t i = i_min; i < i_max; i++)
             b(i+j*nx) =-2*arma::datum::tau*dot(nC.row(i+j*nx), Q);
 
+    arma::mat P;
     arma::lu(L, U, P, A);
+    for (size_t k = 0; k < nxy; k++)
+        perm_idx(k) = P.row(k).index_max();
 }
 
 void Wing::nonlinearEval()
 {
-    mu_hat = solve(trimatu(U), solve(trimatl(L), P*b));
+    arma::vec b_perm = b.elem(perm_idx);
+    arma::vec mu_bar = solve(trimatl(L), b_perm, arma::solve_opts::fast);
+    mu_hat           = solve(trimatu(U), mu_bar, arma::solve_opts::fast);
 }
 
 void Wing::postprocessing()

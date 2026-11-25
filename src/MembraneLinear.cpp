@@ -53,7 +53,10 @@ void Membrane::solve_S()
     else
         zBoundary(z.northBC, z.north(i), i, j, z.r1North, z.r2North, h_2s1_north(i), h_2s2_north(i));
 
+    arma::mat P;
     arma::lu(L, U, P, S);
+    for (size_t k = 0; k < nxy; k++)
+        perm_idx(k) = P.row(k).index_max();
 }
 
 void Membrane::solve_b()
@@ -63,5 +66,7 @@ void Membrane::solve_b()
         for (size_t i = 1; i < nx-1; i++)
             b(j*nx+i) =-p(i, j);
 
-    z.arma::mat::operator=(reshape(solve(trimatu(U), solve(trimatl(L), P*b)), nx, ny));
+    arma::vec b_perm = b.elem(perm_idx);
+    arma::vec z_bar              = solve(trimatl(L), b_perm, arma::solve_opts::fast);
+    z.arma::mat::operator=(reshape(solve(trimatu(U), z_bar,  arma::solve_opts::fast), nx, ny));
 }

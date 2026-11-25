@@ -371,7 +371,7 @@ void Membrane::operator()(const arma::mat xNew, const arma::mat yNew)
     S = arma::zeros(nxy, nxy);
     L = arma::zeros(nxy, nxy);
     U = arma::zeros(nxy, nxy);
-    P = arma::zeros(nxy, nxy);
+    perm_idx = arma::uvec(nxy, arma::fill::zeros);
     b = arma::zeros(nxy);
 
     z.initBC(nxNew, nyNew);
@@ -506,7 +506,7 @@ void Membrane::operator()(const std::array<Lagrange::CurveInterpolant*, 4> _chi)
     S = arma::zeros(nxy, nxy);
     L = arma::zeros(nxy, nxy);
     U = arma::zeros(nxy, nxy);
-    P = arma::zeros(nxy, nxy);
+    perm_idx = arma::uvec(nxy, arma::fill::zeros);
     b = arma::zeros(nxy);
 
     z.initBC(nxNew, nyNew);

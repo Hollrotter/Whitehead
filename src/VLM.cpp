@@ -85,7 +85,10 @@ void VLM::vlmSolve()
     z = repelem(z0.t(), nx+1, 1);
     geometry();
     aerodynamicMatrix();
+    arma::mat P;
     arma::lu(L, U, P, A);
+    for (size_t k = 0; k < nxy; k++)
+        perm_idx(k) = P.row(k).index_max();
 }
 
 void VLM::vlmEval()
@@ -95,7 +98,10 @@ void VLM::vlmEval()
     #pragma omp parallel for
     for (size_t n = 0; n < ny; n++)
         w.subvec(n*nx,(n+1)*nx-1) += c.diff((2*RC(arma::span(n*nx,(n+1)*nx-1),0)-x(0,n)-x(0,n+1))/(x(nx, n)-x(0, n)+x(nx, n+1)-x(0, n+1)));
-    arma::mat g = solve(trimatu(U), solve(trimatl(L), P*(repelem(w - r, 1, con) - nC.col(1)*alpha.t())));
+    arma::mat b = repelem(w - r, 1, con) - nC.col(1)*alpha.t();
+    arma::mat b_perm = b.rows(perm_idx);
+    arma::mat g_bar = solve(trimatl(L), b_perm);
+    arma::mat g     = solve(trimatu(U), g_bar);
     postprocessing(g);
 }
 

@@ -21,9 +21,9 @@ class DVM
     arma::vec cL; // Lift coefficient
     arma::vec cM; // Moment coefficient
     arma::mat A = arma::zeros(nx, nx); // Aerodynamic Matrix
-    arma::mat L; // Lower triangular matrix
-    arma::mat U; // Upper triangular matrix
-    arma::mat P; // Permutation matrix
+    arma::mat L = arma::mat(nx, nx, arma::fill::none); // Lower triangular matrix
+    arma::mat U = arma::mat(nx, nx, arma::fill::none); // Upper triangular matrix
+    arma::uvec perm_idx = arma::uvec(nx, arma::fill::none); // Permutation indices
     arma::mat nC; // Normal vector of the surface
     Analysis analysis = Analysis::linear; // Analysis type (linear or nonlinear)
 public:

@@ -133,12 +133,17 @@ void Membrane::planeStrainSolve()
         n22BoundaryLinear(n22.northBC, n22.north(i), i, j, A, h_22s_north(i));
     }
 
+    arma::mat Pv;
     arma::lu(Lv, Uv, Pv, A);
+    for (size_t k = 0; k < 2*nxy; k++)
+        perm_idx_v(k) = Pv.row(k).index_max();
 }
 
 void Membrane::planeStrainEval()
 {
-    arma::vec v = solve(trimatu(Uv), solve(trimatl(Lv), Pv*bv));
+    arma::vec b_perm = bv.elem(perm_idx_v);
+    arma::vec v_bar = solve(trimatl(Lv), b_perm);
+    arma::vec v     = solve(trimatu(Uv), v_bar);
     v1 = arma::reshape(v(arma::span(  0,   nxy-1)), nx, ny);
     v2 = arma::reshape(v(arma::span(nxy, 2*nxy-1)), nx, ny);
 

@@ -13,10 +13,10 @@ class String
     arma::vec z = arma::zeros(n); // z-coordinates of the nodes
     double L0 = sqrt(c*c + pow(z(n-1)-z(0), 2)); // Unstrained length of the string
     arma::vec p = arma::zeros(n); // Pressure at the nodes
-    arma::mat S = arma::zeros(n, n); // Structural Matrix
-    arma::mat L = arma::zeros(n, n); // Lower triangular matrix
-    arma::mat U = arma::zeros(n, n); // Upper triangular matrix
-    arma::mat P = arma::zeros(n, n); // Permutation matrix
+    arma::mat S = arma::mat(n, n, arma::fill::none); // Structural Matrix
+    arma::mat L = arma::mat(n, n, arma::fill::none); // Lower triangular matrix
+    arma::mat U = arma::mat(n, n, arma::fill::none); // Upper triangular matrix
+    arma::uvec perm_idx = arma::uvec(n, arma::fill::none); // Permutation matrix
     arma::vec b = arma::zeros(n); // Right side of linear equation system
     BC front = BC::Dirichlet; // Boundary type of front
     BC back  = BC::Dirichlet; // Boundary type of back

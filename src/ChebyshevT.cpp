@@ -8,6 +8,7 @@ ChebyshevT::ChebyshevT(size_t _n, size_t _) : BasisFunction{_n, 0}
     wg.zeros(n);
     dxg.zeros(n);
     dwg.zeros(n);
+    #pragma omp parallel for
     for (size_t i = 0; i < n; i++)
     {
         fastgl::QuadPair gl = fastgl::GLPair(n, i+1);
@@ -19,6 +20,7 @@ ChebyshevT::ChebyshevT(size_t _n, size_t _) : BasisFunction{_n, 0}
 std::pair<arma::field<arma::mat>, arma::field<arma::mat>> ChebyshevT::powerSeries() const
 {
     arma::field<arma::mat> f(n), df(n);
+    #pragma omp parallel for
     for (size_t k = 0; k < n; k++)
     {
         f(k).zeros(n, k+1);

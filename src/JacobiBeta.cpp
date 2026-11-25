@@ -11,6 +11,7 @@ JacobiBeta::JacobiBeta(size_t _n, size_t _m) : BasisFunction{_n, _m}
 std::pair<arma::field<arma::mat>, arma::field<arma::mat>> JacobiBeta::powerSeries() const
 {
     arma::field<arma::mat> f(n), df(n);
+    #pragma omp parallel for
     for (size_t k = 0; k < n; k++)
     {
         arma::vec c(k+1);
@@ -44,6 +45,7 @@ std::pair<arma::field<arma::mat>, arma::field<arma::mat>> JacobiBeta::powerSerie
 std::pair<arma::mat, arma::mat> JacobiBeta::powerSeriesWeight() const
 {
     arma::mat c(n, m+1), d(n, m+1);
+    #pragma omp parallel for
     for (size_t k = 0; k <= m; k++)
     {
         c.col(k) = bi_05[1][k] / pow(1+xi, k-0.5);

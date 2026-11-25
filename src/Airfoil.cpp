@@ -121,12 +121,17 @@ void Airfoil::postprocessing()
 void Airfoil::linearSolve()
 {
     aerodynamicMatrix();
+    arma::mat P;
     arma::lu(L, U, P, A);
+    for (size_t k = 0; k < nx; k++)
+        perm_idx(k) = P.row(k).index_max();
 }
 
 void Airfoil::linearEval()
 {
     for (size_t i = 0; i < nx; i++)
         b(i) = 2*(alpha - camber.diff(x(i)/c));
-    gamma_hat = solve(trimatu(U), solve(trimatl(L), P*b));
+    arma::vec b_perm = b.elem(perm_idx);
+    arma::vec gamma_bar = solve(trimatl(L), b_perm,    arma::solve_opts::fast);
+    gamma_hat           = solve(trimatu(U), gamma_bar, arma::solve_opts::fast);
 }

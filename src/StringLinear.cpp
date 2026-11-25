@@ -49,7 +49,10 @@ void String::solve_S()
             std::println("No suitable BC provided at back!");
             exit(EXIT_FAILURE);
     }
+    arma::mat P;
     arma::lu(L, U, P, S);
+    for (size_t k = 0; k < n; k++)
+        perm_idx(k) = P.row(k).index_max();
 }
 
 /**
@@ -61,5 +64,7 @@ void String::solve_b()
     b =-p/sigma;
     b(0)   = frontBC;
     b(n-1) = backBC;
-    z = solve(trimatu(U), solve(trimatl(L), P*b));
+    arma::vec b_perm = b.elem(perm_idx);
+    arma::vec z_bar = solve(trimatl(L), b_perm, arma::solve_opts::fast);
+    z               = solve(trimatu(U), z_bar,  arma::solve_opts::fast);
 }
